@@ -2,50 +2,41 @@
 
 ## Introduction
 
-A network port is a number that helps a computer deliver incoming transport
-traffic to the right application endpoint. An IP address identifies a network
-interface or destination; the port helps distinguish services that share
-that address. TCP and UDP each have their own port space.
+A network port is a number that helps deliver transport traffic to an
+application endpoint. An IP address identifies a destination; a port
+distinguishes services sharing that address. TCP and UDP have separate port
+spaces.
 
 ## Why does it exist?
 
-A server can provide several services at one IP address, and one computer can
-run many client applications at once. Port numbers give transport protocols
-a way to route data to the appropriate socket and help identify a conversation.
+A server can provide several services at one address, and one computer can
+run many clients. Ports help route data to the right socket.
 
 ## How does it work?
 
-TCP and UDP headers include source and destination port numbers. A server
-application may listen on a known port, while clients usually receive a
-temporary (ephemeral) source port. A socket is commonly described using an
-address, transport protocol, and port; real operating systems track additional
-details as well.
+TCP and UDP headers include source and destination ports. Servers may listen
+on known ports; clients usually receive a temporary (ephemeral) source port.
+A socket combines an address, transport protocol, and port.
 
-The familiar ranges are system ports `0–1023`, user ports `1024–49151`, and
-dynamic/private ports `49152–65535`. These ranges are used for registration
-and assignment guidance, not a complete security boundary. A port being
-registered does not force software to use it, and an open port does not prove
-that a service is safe.
+The ranges are system ports `0–1023`, user ports `1024–49151`, and
+dynamic/private ports `49152–65535`. Registration does not force software to
+use a port, and an open port does not prove a service is safe.
 
 ## Real-world example
 
-A browser connects to a web server's TCP port 443 for HTTPS. The browser may
-use a temporary local source port. Replies addressed to that connection are
-delivered back to the browser's socket.
+A browser connects to TCP port 443 for HTTPS, typically using a temporary
+local source port. Replies return to the browser's socket.
 
 ## Developer perspective
 
-Services must bind to an appropriate local address and port, and firewalls or
-network rules may control access. A service bound only to loopback is
-available to local programs but usually not directly to other machines.
-Avoid hard-coding assumptions about a client's ephemeral port.
+Services bind to a local address and port; firewalls may control access. A
+service bound only to loopback is available locally, not directly to other
+machines. Do not assume a client's ephemeral port.
 
 ## Practical example
 
-On Linux, `ss -tuln` lists listening TCP and UDP sockets numerically without
-changing configuration. `ss -ltn` focuses on TCP listeners. Whether a port is
-reachable from outside also depends on firewalls, routing, and address
-translation.
+On Linux, `ss -tuln` lists listening TCP and UDP sockets without changing
+configuration. External reachability also depends on firewalls and routing.
 
 ## Important terminology
 
@@ -56,16 +47,13 @@ translation.
 
 ## Advantages and disadvantages
 
-Ports allow many services and conversations to share network addresses.
-Misconfigured listeners can expose unwanted services, and port numbers alone
-do not provide authentication or encryption.
+Ports let services share addresses. Misconfigured listeners can expose
+services; port numbers provide no authentication or encryption.
 
 ## Common misconceptions
 
-- A port is not a physical connector or a separate IP address.
-- Port 443 does not guarantee that the traffic is correctly secured with TLS.
-- Closing a port in an application and blocking it in a firewall are
-  different controls.
+- A port is not a physical connector, and port 443 alone does not guarantee
+  correct TLS or distinguish application shutdown from firewall blocking.
 
 ## Revision questions
 
@@ -79,6 +67,5 @@ do not provide authentication or encryption.
   Authority (IANA) Procedures for the Management of the Service Name and
   Transport Protocol Port Number Registry](https://www.rfc-editor.org/rfc/rfc6335)
   describes port-number ranges and registration procedures.
-- **Third-party explanation — Cloudflare Learning Center:** [What is a
-  port?](https://www.cloudflare.com/learning/network-layer/what-is-a-computer-port/)
-  gives an introductory explanation of ports and common uses.
+- **Third-party explanation — MDN:** [Port](https://developer.mozilla.org/en-US/docs/Glossary/Port)
+  introduces network ports and their role in communication.

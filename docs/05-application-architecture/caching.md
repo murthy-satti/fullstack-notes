@@ -2,11 +2,11 @@
 
 ## Introduction
 
-A cache keeps a temporary copy of data so a later request can be served faster or with less work. Caches appear in browsers, content delivery networks, application processes, and databases. This lesson focuses on the general idea; [Redis](redis.md) is one common service used as an application cache.
+A cache keeps a temporary copy of data so a later request can be served faster. Caches appear in browsers, content delivery networks, and applications. [Redis](redis.md) is one common caching service.
 
 ## Why does it exist?
 
-Repeatedly calculating or fetching the same information can add latency and consume database, network, or compute capacity. A cache can reduce that repeated work. It is most useful when reads repeat and the source is slower or more expensive than the cache.
+Repeatedly fetching the same information adds latency and consumes capacity. Caching is most useful when reads repeat and the source is slower than the cache.
 
 ## How does it work?
 
@@ -18,7 +18,7 @@ A public catalog page may be requested many times per minute. Caching its render
 
 ## Developer perspective
 
-Treat the database or other source as authoritative unless the design says otherwise. Decide which values are safe to cache, how cache keys encode relevant inputs, and how long a value remains valid. Measure hit rate and latency, and plan for a cache outage or cold start.
+Treat the source as authoritative unless the design says otherwise. Choose safe values, keys, and expiration times. Measure hit rate and latency, and plan for cache outages.
 
 ## Practical example
 
@@ -45,7 +45,7 @@ Caching can lower response times and source-system load. It adds memory use, ope
 
 ## Common misconceptions
 
-A cache does not make data permanently available or automatically consistent. A high hit rate is not proof of correctness. Increasing TTL improves reuse but can make changes take longer to appear.
+A cache does not make data permanently available or automatically consistent. A high hit rate is not proof of correctness; a longer TTL can delay visible changes.
 
 ## Revision questions
 

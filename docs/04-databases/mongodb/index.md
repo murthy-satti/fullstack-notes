@@ -13,7 +13,7 @@ MongoDB is a document database. It stores records as BSON documents grouped into
 
 Begin with [Database Fundamentals](../database-fundamentals.md), then use the diagram below to connect an application request to a MongoDB collection.
 
-![Diagram showing an application querying a MongoDB collection of BSON documents, with an index helping locate matching documents.](database-flow.svg)
+![Diagram showing an application querying a MongoDB collection of BSON documents, with an index helping locate matching documents.](../database-flow.svg)
 
 ## Relevant resources
 

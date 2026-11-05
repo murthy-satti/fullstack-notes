@@ -2,15 +2,15 @@
 
 ## Introduction
 
-Redis is an in-memory data store commonly used for caching, short-lived state, and other low-latency workloads. It supports data structures such as strings, hashes, lists, and sets through commands and client libraries. Redis is related to, but not identical with, the general concept of [caching](caching.md).
+Redis is an in-memory data store commonly used for caching and short-lived state. It supports strings, hashes, lists, and sets. Redis is related to, but not identical with, [caching](caching.md).
 
 ## Why does it exist?
 
-Applications sometimes need quick access to small pieces of shared state without repeatedly querying a primary database. Redis provides an efficient network service for these operations. Whether data should live there depends on its persistence, recovery, and consistency requirements.
+Applications sometimes need quick access to shared state without repeatedly querying a primary database. Whether data belongs in Redis depends on persistence and recovery requirements.
 
 ## How does it work?
 
-A client connects to a Redis server and sends commands for keys and values. Data structures support different operations: a string can store a counter or text, a set can represent unique members, and a list can model ordered items. A key can have an expiration time. Redis can be configured for persistence, but an application must understand its chosen durability and recovery settings rather than assume that in-memory storage is permanent.
+A client sends commands for keys and values. A string can store a counter, a set can represent unique members, and a list can model ordered items. Keys can expire. Redis persistence and recovery depend on its configuration.
 
 ## Real-world example
 
@@ -18,7 +18,7 @@ A learning application might keep a temporary count of page views for a demo les
 
 ## Developer perspective
 
-Select structures that match access patterns, use clear key names, set expiration for temporary data, and avoid storing secrets or user data without an appropriate security design. Handle timeouts and Redis unavailability gracefully. A cache outage should not silently turn into unlimited load on the primary database.
+Select structures that match access patterns, use clear key names, and expire temporary data. Handle Redis unavailability gracefully; a cache outage should not overload the primary database.
 
 ## Practical example
 
@@ -40,11 +40,11 @@ The expiration limits the example value's lifetime. Do not run these commands ag
 
 ## Advantages and disadvantages
 
-Redis can provide fast access and useful data structures with simple operations. Memory is limited and can be costly; persistence and failover require configuration and operational understanding. It may be a poor fit as the only store for data that must never be lost unless durability is deliberately designed.
+Redis provides fast access and useful data structures. Memory is limited and can be costly; persistence and failover require deliberate configuration. It may not fit data that must never be lost unless durability is designed.
 
 ## Common misconceptions
 
-Redis is not only a cache, but using it does not automatically make data durable. “In memory” does not mean unlimited capacity or zero latency. Expiring a key is useful, but it does not replace correct authorization or privacy controls.
+Redis is not only a cache, but using it does not automatically make data durable. “In memory” does not mean unlimited capacity or zero latency.
 
 ## Revision questions
 

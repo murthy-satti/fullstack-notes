@@ -2,52 +2,41 @@
 
 ## Introduction
 
-HTTP (Hypertext Transfer Protocol) is an application protocol used to request
-and transfer web resources. A client, such as a browser, sends a request to a
-server, which returns a response. HTTPS is HTTP carried over a protected
-connection, usually using TLS. See [DNS](dns.md) and [TCP and UDP](tcp-and-udp.md)
-for the network services commonly used underneath.
+HTTP (Hypertext Transfer Protocol) transfers web resources. A browser sends a
+request and a server returns a response. HTTPS is HTTP over a protected
+connection, usually using TLS. See [DNS](dns.md) and [TCP and UDP](tcp-and-udp.md).
 
 ## Why does it exist?
 
-Web clients and servers need a shared way to ask for pages, images, data, and
-other resources. HTTP defines request methods, headers, status codes, and
-message semantics so independent software can interoperate.
+Clients and servers need a shared way to exchange resources. HTTP defines
+methods, headers, status codes, and message semantics.
 
 ## How does it work?
 
-A request identifies a method such as `GET` or `POST`, a target, and headers.
+A request contains a method such as `GET` or `POST`, a target, and headers.
 The response contains a status code, headers, and possibly a body. `GET`
-normally retrieves a representation; `POST` commonly submits data for
-processing. A response such as `404` reports that a resource was not found,
-while `200` means the request succeeded according to the response semantics.
+normally retrieves a resource; `POST` commonly submits data. `404` means not
+found; `200` indicates success according to the response semantics.
 
-HTTP is stateless by design: each request is understood independently, though
-cookies or other mechanisms can help applications maintain user state. Modern
-HTTP versions can reuse connections and support multiple exchanges. In HTTPS,
-TLS helps protect confidentiality and integrity and authenticates the server
-according to the certificate and trust system.
+HTTP is stateless: requests are understood independently, though cookies can
+help maintain user state. Modern versions reuse connections. In HTTPS, TLS
+protects data and authenticates the server according to its certificate.
 
 ## Real-world example
 
-When a browser opens a product page, it may send a `GET` request. The server
-responds with HTML, and the browser then requests linked images, stylesheets,
-and scripts. Submitting an order form may use `POST` to send information for
-processing.
+Opening a product page may send `GET` for HTML and additional requests for
+images and stylesheets. Submitting an order form commonly uses `POST`.
 
 ## Developer perspective
 
-Use methods and status codes according to their meaning. Do not assume a
-successful transport connection means the HTTP request succeeded. Validate
-inputs on the server, avoid placing sensitive data in URLs, and use HTTPS for
-sites handling private information.
+Use methods and status codes according to their meaning. A connection does
+not prove a request succeeded. Validate server inputs, avoid sensitive URLs,
+and use HTTPS for private information.
 
 ## Practical example
 
-`curl -I https://example.com` sends an HTTP `HEAD` request and prints response
-headers without downloading the response body. It is a read-only diagnostic
-request, though the server still receives it. `curl -v` can show connection
-and protocol details; avoid sharing output that contains private headers.
+`curl -I https://example.com` sends `HEAD` and prints headers without the
+response body. It is diagnostic, but the server still receives the request.
 
 ## Important terminology
 
@@ -58,15 +47,13 @@ and protocol details; avoid sharing output that contains private headers.
 
 ## Advantages and disadvantages
 
-HTTP is widely supported and extensible. Plain HTTP does not protect data from
-observation or modification in transit; HTTPS addresses this with TLS, but
-application security still depends on correct implementation.
+HTTP is widely supported and extensible. Plain HTTP does not protect data in
+transit; HTTPS adds TLS, but applications still need secure implementation.
 
 ## Common misconceptions
 
-- HTTPS does not mean a site is honest or its content is safe.
-- A `200` response does not guarantee that the page's business operation had
-  the desired effect.
+- HTTPS does not mean a site is honest, and `200` does not guarantee the
+  desired business outcome.
 - HTTP is not limited to HTML; it transfers many kinds of data.
 
 ## Revision questions

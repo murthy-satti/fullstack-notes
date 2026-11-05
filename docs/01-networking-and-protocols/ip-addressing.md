@@ -2,75 +2,61 @@
 
 ## Introduction
 
-An Internet Protocol (IP) address is a numeric address used to deliver packets
-to a network interface. IPv4 addresses are 32 bits, commonly written as four
-decimal numbers such as `192.0.2.25`. IPv6 addresses are 128 bits and are
-usually written as colon-separated hexadecimal groups, for example
-`2001:db8::25`.
+An Internet Protocol (IP) address is a numeric destination for packets.
+IPv4 addresses are 32 bits, commonly written as `192.0.2.25`; IPv6 addresses
+are 128 bits, as in `2001:db8::25`.
 
 ## Why does it exist?
 
-Routers need destination information to forward packets. IP addresses provide
-that information and allow networks to be divided into smaller ranges. They
-are not names for websites; the [DNS](dns.md) system can map a human-readable
-name to one or more IP addresses.
+Routers need destination information to forward packets, and IP addresses
+also let networks be divided into ranges. They are not website names; [DNS](dns.md)
+can map a name to one or more addresses.
 
 ## How does it work?
 
-An IP packet includes source and destination addresses. Routers examine the
-destination and choose a next hop based on routing tables. A prefix such as
-`192.0.2.0/24` describes a range: the `/24` marks how many leading bits form
-the network prefix. IP is connectionless and does not promise that a packet
-will arrive, arrive once, or arrive in order; transport protocols may provide
-additional behavior.
+An IP packet includes source and destination addresses. Routers choose a next
+hop using routing tables. A prefix such as `192.0.2.0/24` marks a range; `/24`
+means 24 leading network bits. IP is connectionless and does not promise
+delivery or ordering.
 
-Private-use ranges are intended for internal networks and are not globally
-routed in the same way as public addresses. Network address translation
-(NAT) commonly lets multiple private devices share a public IPv4 address.
-IPv6's much larger address space reduces the need for that particular
-workaround, though networks may still use translation.
+Private-use ranges are intended for internal networks. Network address
+translation (NAT) often lets multiple private devices share a public IPv4
+address. IPv6's larger address space reduces the need for that workaround.
 
 ## Real-world example
 
-Your laptop might receive a private IPv4 address from a home router. When it
-visits a public site, the router forwards packets and may translate their
-source address. The site sees a public address associated with the connection,
-not necessarily the laptop's private address.
+Your laptop may have a private address from a home router. The router can
+translate it when forwarding traffic to a public site, which sees the public
+connection address instead.
 
 ## Developer perspective
 
-Applications should not assume an address is permanent or uniquely identifies
-a user. Servers may have several addresses, addresses may change, and proxies
-or NAT can place many users behind one public address. Use DNS names for
-service discovery when appropriate; use IP addresses for network-level
-diagnosis.
+Do not assume an address is permanent or identifies a user. Servers may have
+several addresses, and NAT can place many users behind one public address.
+Use DNS names for service discovery and IP addresses for network diagnosis.
 
 ## Practical example
 
-On Linux, `ip address` lists local interface addresses and `ip route` displays
-the routing table. These commands inspect configuration without changing it.
-An address beginning with `127.` is IPv4 loopback; `::1` is IPv6 loopback.
+On Linux, `ip address` lists local addresses and `ip route` displays routes;
+both are read-only. `127.0.0.1` and `::1` are loopback addresses.
 
 ## Important terminology
 
-- **Interface:** a network attachment such as Wi-Fi or Ethernet.
-- **Prefix/subnet:** a set of addresses grouped by shared leading bits.
-- **Loopback:** an address used by a device to communicate with itself.
+- **Interface:** network attachment such as Wi-Fi or Ethernet.
+- **Prefix/subnet:** addresses grouped by shared leading bits.
+- **Loopback:** address used by a device to communicate with itself.
 - **NAT:** translation of network addresses, often at a router.
 
 ## Advantages and disadvantages
 
-IP is scalable and independent of application meaning. Its best-effort
-delivery means applications must handle loss or use suitable transport
-services. IPv4's limited address space led to extensive sharing and translation;
-IPv6 offers a far larger address space but must coexist with IPv4 during
-deployment.
+IP is scalable and independent of application meaning, but its best-effort
+delivery requires applications to handle loss or use a suitable transport.
+IPv6 offers more addresses, but must coexist with IPv4 during deployment.
 
 ## Common misconceptions
 
-- An IP address is not a permanent identity for a person or device.
-- An IP packet alone does not guarantee delivery.
-- A private address can still reach the Internet through a gateway.
+- An IP address is not a permanent identity, and a private address can reach
+  the Internet through a gateway.
 
 ## Revision questions
 

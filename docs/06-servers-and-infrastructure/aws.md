@@ -2,27 +2,27 @@
 
 ## Introduction
 
-Amazon Web Services (AWS) is a cloud platform offering computing, storage, databases, networking, and many other services. Instead of purchasing and maintaining every physical machine, a team can rent resources through AWS and manage them using a console, command-line tools, or APIs.
+Amazon Web Services (AWS) is a cloud platform offering computing, storage, databases, and networking. Instead of maintaining physical machines, a team can rent resources and manage them through a console, command-line tools, or APIs.
 
 ## Why does it exist?
 
-Organizations need infrastructure that can grow, shrink, and be provisioned faster than traditional hardware. Cloud services let teams start with modest capacity, automate routine setup, and pay for measured usage. They do not remove the need to plan, secure, or monitor infrastructure.
+Organizations need infrastructure that can be provisioned and resized quickly. Cloud services let teams start small and pay for measured usage, but do not remove the need to secure and monitor infrastructure.
 
 ## How does it work?
 
-AWS divides its global infrastructure into geographic Regions and Availability Zones. A service such as Amazon EC2 provides virtual servers; Amazon S3 stores objects; Route 53 offers DNS services. A project combines services and configures access with identity and permissions. Resources are created in a chosen Region, and costs depend on service, configuration, and usage.
+AWS divides its infrastructure into geographic Regions and Availability Zones. Amazon EC2 provides virtual servers, S3 stores objects, and Route 53 offers DNS. Teams combine services and configure access permissions. Costs depend on service and usage.
 
 ## Real-world example
 
-A small web application might run its API on EC2, save uploaded images in S3, and use Route 53 to direct its domain. A team can later add more application instances behind a load balancer. This is one possible design, not a requirement to use every AWS service.
+A small web application might run its API on EC2, save images in S3, and use Route 53 for its domain. More instances can later sit behind a load balancer. This is only one possible design.
 
 ## Developer perspective
 
-Developers should understand which services their application depends on, which Region contains the data, and who can change or access resources. Keep infrastructure configuration repeatable, use least-privilege permissions, and review cost and backup requirements. See [servers](servers.md), [load balancing](load-balancing.md), and [CDNs](cdn.md).
+Developers should understand service dependencies, data location, and who can access resources. Keep configuration repeatable, use least-privilege permissions, and review costs and backups. See [servers](servers.md), [load balancing](load-balancing.md), and [CDNs](cdn.md).
 
 ## Practical example
 
-Before deploying, write down the application, storage, and DNS needs. Choose one service for each need, set a spending alert, and test a small deployment. Avoid placing credentials in source code; use a managed identity or secret store where available.
+Before deploying, list application, storage, and DNS needs. Choose services, set a spending alert, and test a small deployment. Never place credentials in source code.
 
 ## Important terminology
 
@@ -34,7 +34,7 @@ Before deploying, write down the application, storage, and DNS needs. Choose one
 
 ## Advantages and disadvantages
 
-AWS offers broad service choices, automation, and global infrastructure. Its breadth can make selection and security configuration difficult, and poorly monitored usage can create unexpected bills. Cloud hosting also does not automatically make an application reliable.
+AWS offers broad choices and global infrastructure. Its breadth can make selection difficult, and unmonitored usage can create unexpected bills. Cloud hosting does not automatically make an application reliable.
 
 ## Common misconceptions
 

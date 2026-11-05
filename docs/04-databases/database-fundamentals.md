@@ -2,25 +2,25 @@
 
 ## Introduction
 
-A database is an organized system for storing information so software can find and change it reliably. Applications use databases for records such as user profiles, orders, messages, and product catalogs. This lesson introduces the ideas shared by many database systems. The [MongoDB learning path](mongodb/index.md) and [PostgreSQL learning path](postgresql/index.md) show two different approaches.
+A database is an organized system for storing information so software can find and change it reliably. Applications use databases for user profiles, orders, messages, and product catalogs. The [MongoDB learning path](mongodb/index.md) and [PostgreSQL learning path](postgresql/index.md) show two approaches.
 
 ## Why does it exist?
 
-Keeping application data only in a program's memory loses it when the program stops and makes it hard to share between users or servers. A database persists data, provides ways to search it, and coordinates simultaneous changes. It can also help enforce rules, such as requiring every order to have an identifier.
+Keeping application data only in a program's memory loses it when the program stops and makes it hard to share. A database persists data, provides ways to search it, and coordinates simultaneous changes.
 
 ## How does it work?
 
-The application sends a request using a database language or client library. The database locates or changes records, applies its consistency rules, and returns a result. Relational databases organize related values into tables; document databases store flexible, structured documents. Many databases use indexes—additional data structures that speed up selected lookups—at the cost of storage and write work.
+The application sends a request using a database language or client library. The database locates or changes records, applies consistency rules, and returns a result. Relational databases organize values into tables; document databases store structured documents. Indexes speed up selected lookups at the cost of storage and write work.
 
-Transactions group operations so they succeed or fail together. Backups and replication address recovery and availability, but do not replace careful data modeling or access control.
+Transactions group operations so they succeed or fail together. Backups and replication help with recovery and availability.
 
 ## Real-world example
 
-A small shop might store customers, products, and orders. An order references the customer and records the purchased items. Staff can look up an order by its number, while a report totals sales by date.
+A shop might store customers, products, and orders. Staff can look up an order by number or total sales by date.
 
 ## Developer perspective
 
-Choose a database based on the shape of the data, query patterns, consistency needs, team experience, and operational constraints—not popularity alone. Define what each record means and how it relates to others before optimizing. Use parameters rather than string-building queries, validate input, and keep credentials out of source code.
+Choose a database based on data shape, query patterns, consistency needs, and operational constraints—not popularity alone. Define what each record means before optimizing. Use parameters, validate input, and keep credentials out of source code.
 
 ## Practical example
 
@@ -45,11 +45,11 @@ SELECT title FROM demo_notes WHERE id = 1;
 
 ## Advantages and disadvantages
 
-Databases make durable, shared, searchable data practical and can enforce important constraints. They also add setup, maintenance, and capacity needs. Indexes and flexible schemas each have trade-offs; no one design is best for every workload.
+Databases make durable, shared, searchable data practical and can enforce constraints. They also add setup and maintenance. No one data model is best for every workload.
 
 ## Common misconceptions
 
-A database is not automatically a backup, and a successful query does not guarantee that the data model is sound. Adding indexes to every field can slow writes and consume space. “NoSQL” does not mean “no structure”; document data still benefits from clear rules.
+A database is not automatically a backup. Adding indexes to every field can slow writes and consume space. “NoSQL” does not mean “no structure”; document data still benefits from clear rules.
 
 ## Revision questions
 

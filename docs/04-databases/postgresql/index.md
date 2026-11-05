@@ -13,7 +13,7 @@ PostgreSQL is an open-source relational database. It stores data in tables with 
 
 Start with [Database Fundamentals](../database-fundamentals.md), then follow the diagram from an application query to related PostgreSQL tables.
 
-![Diagram showing an application sending SQL to PostgreSQL, where related tables and an index return matching rows.](database-flow.svg)
+![Diagram showing an application sending SQL to PostgreSQL, where related tables and an index return matching rows.](../database-flow.svg)
 
 ## Relevant resources
 

@@ -2,15 +2,15 @@
 
 ## Introduction
 
-A message queue lets one part of a system hand work to another part without requiring both to complete the work at the same moment. A producer sends a message; a consumer receives and processes it. Queues are useful when work can happen asynchronously, such as sending a receipt after an order is accepted.
+A message queue lets one part of a system hand work to another without requiring both to finish at the same moment. A producer sends a message; a consumer processes it. This suits asynchronous work such as sending a receipt.
 
 ## Why does it exist?
 
-Some tasks take longer than a user-facing request should wait, or depend on a service that is temporarily unavailable. A queue can buffer work, smooth bursts, and separate responsibilities. It does not remove failure; it gives a system a controlled way to handle and retry some work.
+Some tasks take longer than a user-facing request should wait or depend on a temporarily unavailable service. A queue buffers work, smooths bursts, and separates responsibilities.
 
 ## How does it work?
 
-A producer creates a message describing a task or event and submits it to a broker. The broker stores or routes messages according to its delivery model. A consumer reads a message, performs the work, then acknowledges successful processing. Unacknowledged messages may be delivered again, so consumers should usually tolerate duplicate attempts. Poison messages—those that repeatedly fail—need bounded retries and a review path.
+A producer submits a task or event message to a broker. A consumer reads and processes it, then acknowledges success. Unacknowledged messages may be delivered again, so consumers should tolerate duplicates. Repeated failures need bounded retries and a review path.
 
 ## Real-world example
 
@@ -18,7 +18,7 @@ An online shop can record an order first and place a “send confirmation” mes
 
 ## Developer perspective
 
-Define message ownership, format, versioning, retry policy, and what happens when processing fails. Make side effects idempotent where possible: processing the same message twice should not charge a customer twice or create duplicate work. Monitor queue depth and age, not just whether the broker responds.
+Define message format, retry policy, and failure handling. Make side effects idempotent where possible: processing a message twice should not repeat an action. Monitor queue depth and age.
 
 ## Practical example
 
@@ -43,11 +43,11 @@ if message is not None:
 
 ## Advantages and disadvantages
 
-Queues reduce tight timing dependencies and can absorb workload spikes. They add moving parts, delivery delays, and eventual rather than immediate results. Queue ordering and delivery guarantees vary by product and configuration.
+Queues absorb spikes and reduce timing dependencies. They add moving parts and delays; ordering and delivery guarantees vary by product.
 
 ## Common misconceptions
 
-A queue is not automatically a database or a guarantee of exactly-once side effects. Acknowledgment does not prove that downstream business logic was correct. Adding a queue also does not fix a consumer that cannot keep up.
+A queue does not guarantee exactly-once side effects. Acknowledgment does not prove business logic was correct, and a queue cannot fix a consumer that cannot keep up.
 
 ## Revision questions
 

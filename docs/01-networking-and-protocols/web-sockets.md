@@ -2,52 +2,41 @@
 
 ## Introduction
 
-WebSocket is a protocol for two-way communication between a client and server
-over one long-lived connection. Unlike the usual request-then-response pattern
-of [HTTP](http-and-https.md), either side can send a message whenever it has
-one, once the connection is established.
+WebSocket enables two-way communication over a long-lived connection. Unlike
+typical [HTTP](http-and-https.md), either endpoint can send messages at any
+time after connection.
 
 ## Why does it exist?
 
-Some applications need timely updates without repeatedly asking the server
-whether anything changed. WebSockets support interactive features such as
-live dashboards, collaborative tools, chat, and multiplayer game updates.
+WebSockets support timely updates for live dashboards, collaboration, chat,
+and multiplayer games without repeated client polling.
 
 ## How does it work?
 
-A WebSocket connection typically begins with an HTTP opening handshake. If
-the server agrees, the protocol switches from HTTP to WebSocket framing. The
-connection can then carry text or binary messages in both directions. The
-browser API commonly uses `ws://` for an unencrypted connection and `wss://`
-for a TLS-protected one. A connection remains open until one side closes it
-or the network fails; applications should handle disconnections and reconnect
-when appropriate.
+A connection begins with an HTTP handshake, then switches to WebSocket
+framing. It carries text or binary messages in both directions. Browsers use
+`ws://` or TLS-protected `wss://`. Applications should handle disconnections
+and reconnect when appropriate.
 
-WebSocket provides message framing, not a complete application design. The
-application must decide message formats, authorization, validation, limits,
-and what to do when messages fail. The server must also manage many open
-connections and clean up resources.
+WebSocket supplies framing, not application design. Applications still need
+message formats, authorization, validation, and resource cleanup.
 
 ## Real-world example
 
-A chat page opens a `wss://` connection after the user signs in. When another
-person sends a message, the server can push the new message to the connected
-browser without waiting for another page request.
+A chat page opens `wss://` after sign-in. The server can push new messages to
+the browser without waiting for another page request.
 
 ## Developer perspective
 
-Use WebSockets when continuous two-way updates are valuable. For simpler
-one-way updates, ordinary HTTP polling or server-sent events may be a better
-fit. Authenticate the connection, authorize each action, validate message
-contents, and do not trust data merely because it arrived over TLS.
+Use WebSockets for continuous two-way updates; for one-way updates, polling or
+server-sent events may fit better. Authenticate connections and validate
+messages, even over TLS.
 
 ## Practical example
 
-In a browser developer console on a page you control, this read-only snippet
-can connect to a public echo service and send a harmless test string:
-`const ws = new WebSocket("wss://echo.websocket.events"); ws.onopen = () => ws.send("hello"); ws.onmessage = e => console.log(e.data);`
-The connection is temporary; close it with `ws.close()`. Do not send secrets
-to a public echo service.
+To diagnose a WebSocket connection you control, open browser developer tools
+and inspect the Network panel's handshake and connection status. This is a
+read-only observation; do not send private data to public test services.
 
 ## Important terminology
 
@@ -58,17 +47,13 @@ to a public echo service.
 
 ## Advantages and disadvantages
 
-WebSockets enable low-latency, two-way updates without repeated HTTP request
-setup. Persistent connections consume server resources and can be harder to
-scale, monitor, and secure than short-lived requests.
+WebSockets enable two-way updates without repeated requests. Persistent
+connections use server resources and can be harder to scale and monitor.
 
 ## Common misconceptions
 
-- WebSocket is not simply HTTP with a special message body; it changes
-  protocols after the opening handshake.
-- A secure `wss://` connection protects transport, not application logic.
-- A browser connection can still be interrupted by proxies, sleep, or network
-  changes.
+- WebSocket switches protocols after the handshake; `wss://` protects
+  transport, not application logic, and connections can still be interrupted.
 
 ## Revision questions
 

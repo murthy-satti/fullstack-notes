@@ -16,61 +16,53 @@ transfer.
 
 ## How does it work?
 
-Applications split information into packets. Each packet carries addressing
-information so routers can forward it toward its destination. The route may
-vary, and routers do not need a map of the entire Internet. IP provides
-addressing and forwarding; transport protocols such as TCP or UDP support
-communication between applications. Application protocols define what the
-communicating programs say to each other.
+Applications split information into packets. Routers use addressing
+information to forward each packet toward its destination; packets may take
+different routes. IP handles addressing and forwarding, transport protocols
+such as TCP or UDP carry application data, and application protocols define
+what programs say to each other.
 
 When opening a site, a browser commonly uses [DNS](dns.md) to find an IP
-address, establishes a transport exchange using [TCP or UDP](tcp-and-udp.md),
-then sends [HTTP](http-and-https.md) messages. [TLS](tls-and-ssl.md) can
-protect those messages. The layers cooperate, rather than one protocol doing
-every job.
+address, then sends [HTTP](http-and-https.md) over a transport such as
+[TCP](tcp-and-udp.md). [TLS](tls-and-ssl.md) can protect the exchange.
 
 ## Real-world example
 
-When you load a news page on Wi-Fi, your laptop sends data to the access point.
-Your router forwards it to your ISP, and routers along the route carry packets
-toward the site's network. The server sends a response back; it need not take
-the exact same route.
+Loading a news page sends packets from your device through a Wi-Fi access
+point, router, and ISP toward the site's network. The response may use another
+route.
 
 ## Developer perspective
 
-Knowing the layers helps narrow down failures. A correct URL does not prove
-DNS works; a resolved address does not prove the server accepts connections;
-and an open connection does not prove the application returned the expected
-content. Each stage has its own diagnostic evidence.
+Knowing the layers helps narrow down failures: a resolved address does not
+prove the server accepts connections, and an open connection does not prove
+the application returned the expected content.
 
 ## Practical example
 
-On Linux or macOS, `ping -c 4 example.com` sends four diagnostic echo requests
-and reports responses when the destination and network allow them. No reply
-does not prove that a server is offline: networks often filter ping. Use
-`traceroute example.com` (or `tracepath example.com` on some Linux systems) to
-inspect a route where the tool is installed; intermediate routers may also
-hide replies.
+On Linux or macOS, `ping -c 4 example.com` sends four diagnostic echo requests.
+No reply does not prove a server is offline; networks often filter ping.
+`traceroute example.com` (or Linux `tracepath`) can inspect a route, though
+routers may hide replies.
 
 ## Important terminology
 
 - **Packet:** a formatted unit of network data.
-- **Router:** a device that forwards packets between networks.
+- **Router:** device that forwards packets between networks.
 - **Protocol:** agreed rules for communication.
 - **Client/server:** roles in which a client requests a service and a server
   provides it.
 
 ## Advantages and disadvantages
 
-Interconnection enables global services and lets networks evolve independently.
-It also means communication depends on many separately managed links and
-systems; failures, congestion, and policy restrictions can affect a path.
+Interconnection enables global services and independently managed networks,
+but failures, congestion, or policy restrictions along a path can disrupt
+communication.
 
 ## Common misconceptions
 
 - The Internet and the Web are not synonyms: the Web is an Internet service.
-- Packets do not necessarily follow one fixed route.
-- An IP address identifies a network endpoint at a particular time; it does
+- Packets do not necessarily follow one fixed route, and an IP address does
   not reliably identify a person.
 
 ## Revision questions

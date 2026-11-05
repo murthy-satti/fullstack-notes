@@ -3,6 +3,8 @@
 This section introduces the infrastructure that makes applications reachable
 and available in production, including domains, servers, and delivery services.
 
+![A visitor's request is located through DNS, then may pass through a CDN or proxy before reaching an application server.](infrastructure-flow.svg)
+
 ## Learning objectives
 
 - Understand how domains and DNS configuration connect users to services.

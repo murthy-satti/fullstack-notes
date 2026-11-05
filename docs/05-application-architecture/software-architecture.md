@@ -2,25 +2,25 @@
 
 ## Introduction
 
-Software architecture describes the important structures of a software system and the decisions that shape how its parts work together. It includes components, their responsibilities, communication paths, and constraints. Architecture is not only a diagram: it also includes decisions about deployment, data, and quality goals.
+Software architecture describes a system's important structures and the decisions shaping how its parts work together. It includes components, responsibilities, communication, and constraints—not just a diagram.
 
 ## Why does it exist?
 
-As an application grows, a single feature change can affect many areas. Clear boundaries help teams understand where responsibilities belong and how changes may ripple through the system. Architecture makes trade-offs visible, but cannot eliminate them.
+As an application grows, one feature change can affect many areas. Clear boundaries help teams see responsibilities and trade-offs.
 
 ## How does it work?
 
-An architect or team identifies system goals—such as security, maintainability, responsiveness, and availability—then chooses structures that support them. A monolith packages many capabilities in one deployable application; a service-oriented design separates capabilities into communicating processes. Both can work well. Boundaries, ownership, and operational maturity often matter more than a label.
+A team identifies goals such as security or maintainability, then chooses structures that support them. A monolith packages capabilities in one application; a service-oriented design separates them into communicating processes. Either can work well.
 
-Architecture evolves as constraints change. Teams document high-impact decisions, validate them with prototypes or measurements, and revisit them when evidence changes.
+Teams document high-impact decisions and revisit them when constraints change.
 
 ## Real-world example
 
-A small course platform may begin as one application with modules for accounts, lessons, and progress. Keeping modules distinct can support a simple deployment now while making ownership clearer if the product later grows.
+A course platform may begin as one application with modules for accounts, lessons, and progress. Distinct modules clarify responsibility without requiring separate deployments.
 
 ## Developer perspective
 
-Understand the responsibilities and interfaces of the component you are changing. Prefer explicit contracts, keep related behavior close, and avoid introducing a distributed service unless the boundary solves a real problem. Document important assumptions and operational requirements alongside code.
+Understand the responsibilities and interfaces of the component you change. Prefer explicit contracts and avoid distributed services unless they solve a real problem.
 
 ## Practical example
 
@@ -35,11 +35,11 @@ For a local design exercise, sketch a browser, application, and database. Label 
 
 ## Advantages and disadvantages
 
-Good architecture makes responsibilities and constraints easier to reason about. Documentation and abstraction can become overhead when they do not inform decisions. Distributed designs can improve independent deployment but add network failures and operational work.
+Good architecture clarifies responsibilities. Unhelpful abstraction becomes overhead; distributed designs add network failures and operations work.
 
 ## Common misconceptions
 
-There is no universally best architecture, and microservices are not automatically more scalable. An architecture diagram does not prove that a system meets its goals. A useful design is one a team can build, operate, and change.
+There is no universally best architecture, and microservices are not automatically more scalable. A useful design is one a team can operate and change.
 
 ## Revision questions
 

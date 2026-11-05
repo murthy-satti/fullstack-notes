@@ -2,25 +2,25 @@
 
 ## Introduction
 
-System design is the process of turning requirements into a plan for a system's components, data, interfaces, and operating behavior. It combines product needs with technical constraints. A good design is not the most complicated one; it is a clear, testable fit for the expected workload and quality goals.
+System design turns requirements into a plan for a system's components, data, interfaces, and operating behavior. A good design fits the expected workload and quality goals without unnecessary complexity.
 
 ## Why does it exist?
 
-Before implementation, a team needs to agree on what the system must do and how well it must do it. Design helps expose questions about traffic, data ownership, security, failure, cost, and future changes while there is still time to compare options.
+Before implementation, a team should agree on what the system must do and how well. Design exposes questions about traffic, security, failure, cost, and future changes.
 
 ## How does it work?
 
-Start with functional requirements (what users can do) and non-functional requirements (how the service should perform, remain available, or protect data). Estimate workload at a useful level, define APIs and data models, and sketch the major components. Consider normal and failure paths. Then compare approaches, record assumptions, and validate uncertain areas with a small prototype or measurement.
+Start with functional requirements (what users can do) and non-functional requirements (performance, availability, or security goals). Estimate workload, define APIs and data models, and sketch components and failure paths. Compare approaches and validate uncertain areas.
 
 System design overlaps with [software architecture](software-architecture.md), while concerns such as [caching](caching.md), [queues](message-queues.md), and [scalability](scalability.md) are techniques to consider—not default requirements.
 
 ## Real-world example
 
-For a simple photo-sharing demo, requirements might include uploading an image, viewing it, and limiting access to its owner. A design discussion should address where metadata and image bytes live, how access is checked, and what the user sees if storage is unavailable.
+For a photo-sharing demo, requirements might include uploading, viewing, and restricting images to their owner. Decide where image data lives, how access is checked, and what happens if storage is unavailable.
 
 ## Developer perspective
 
-Clarify ambiguous requirements before choosing technologies. Make security, privacy, and failure handling part of the design. Keep the first version proportional to known needs, define how success will be measured, and revisit estimates when real usage provides evidence.
+Clarify requirements before choosing technologies. Include security and failure handling, keep the first version proportional to need, and measure its results.
 
 ## Practical example
 
@@ -35,11 +35,11 @@ For a local-only exercise, write three requirements for a notes app, draw a brow
 
 ## Advantages and disadvantages
 
-Designing early can prevent expensive misunderstandings and reveal risks. Exact capacity estimates are uncertain, and too much design before feedback can slow learning. Treat plans as hypotheses to validate and update.
+Designing early can reveal risks, but capacity estimates are uncertain. Too much design before feedback slows learning; update plans as evidence changes.
 
 ## Common misconceptions
 
-System design is not a one-time interview diagram or a choice of fashionable tools. A system can be simple yet thoughtfully designed. Adding redundancy or caching without a requirement may increase failure modes instead of reducing risk.
+System design is not a choice of fashionable tools. A simple system can be well designed; unneeded redundancy or caching may add failure modes.
 
 ## Revision questions
 

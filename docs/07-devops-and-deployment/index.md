@@ -3,6 +3,8 @@
 This section covers the practices and tools used to build, test, deploy, and
 maintain applications throughout their lifecycle.
 
+![A code change passes automated checks and a build before release and monitoring.](release-pipeline.svg)
+
 ## Learning objectives
 
 - Understand source control and automated build-and-release workflows.

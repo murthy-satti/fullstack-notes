@@ -2,70 +2,61 @@
 
 ## Introduction
 
-The Domain Name System (DNS) is a distributed naming system. It lets people
-use names such as `example.com` while network software uses IP addresses to
-deliver packets. DNS can also publish other information about a domain.
+The Domain Name System (DNS) is a distributed naming system. It maps names
+such as `example.com` to IP addresses and publishes other domain information.
 
 ## Why does it exist?
 
 Numeric addresses are awkward to remember and may change as services move.
-DNS separates a stable, human-readable name from the current network
-configuration. It is often called the Internet's directory, but it is a
-distributed hierarchy rather than one central database.
+DNS separates a human-readable name from network configuration. It is a
+distributed hierarchy, not one central database.
 
 ## How does it work?
 
-A device usually asks a recursive resolver, often supplied by an ISP or
-configured by an organization. If the answer is not cached, the resolver
-follows DNS delegation from the root to a top-level domain and then to the
-domain's authoritative name server. That server provides records such as an
-`A` record for IPv4, an `AAAA` record for IPv6, or a `CNAME` alias. The
-resolver caches answers according to their time-to-live (TTL).
+A device asks a recursive resolver. If its cache has no answer, the resolver
+follows delegation from the root through a top-level domain to an
+authoritative server. Records include `A` (IPv4), `AAAA` (IPv6), and `CNAME`
+(alias). A time-to-live (TTL) limits caching.
 
-DNS lookups commonly use port 53 over UDP or TCP. The precise choice depends
-on the query and response; it is not correct that DNS always uses UDP.
-Traditional DNS is not encrypted by default, while DNS-over-HTTPS and
-DNS-over-TLS wrap queries in encrypted transports.
+DNS commonly uses port 53 over UDP or TCP; it does not always use UDP.
+Traditional DNS is not encrypted by default. DNS-over-HTTPS and
+DNS-over-TLS encrypt queries in transport.
 
 ## Real-world example
 
-For `https://www.example.com/`, the browser first needs an address for the
-hostname. It may receive an address from a recent cache, or its resolver may
-contact DNS servers. The browser then connects to the returned address. See
+For `https://www.example.com/`, the browser needs an address for the hostname.
+It may use a cache or ask its resolver, then connect to the returned address.
+See
 [IP addressing](ip-addressing.md) and [HTTP and HTTPS](http-and-https.md).
 
 ## Developer perspective
 
-DNS changes take time to appear everywhere because resolvers cache records
-until TTL expiry. Debugging should distinguish a bad DNS answer from an
-unreachable server or an application error. Multiple answers can support
-load distribution, but DNS alone does not guarantee health-aware routing.
+Resolver caches mean DNS changes can take time to appear. Distinguish an
+incorrect answer from an unreachable server or application error. Multiple
+answers can distribute load, but do not guarantee health-aware routing.
 
 ## Practical example
 
-Run `nslookup example.com` or `dig example.com` to request DNS information
-from the configured resolver. These commands perform a query and display its
-answer; they do not change DNS records. A cached answer may differ from what
-another resolver currently sees.
+Run `nslookup example.com` or `dig example.com` to query the configured
+resolver. These display an answer without changing records; another resolver
+may return a different cached answer.
 
 ## Important terminology
 
 - **Resolver:** service that looks up DNS data for a client.
-- **Authoritative server:** source of records for a DNS zone.
+- **Authoritative server:** source of records for a zone.
 - **Record:** typed data, such as `A`, `AAAA`, `MX`, or `CNAME`.
 - **TTL:** how long a response may be cached.
 
 ## Advantages and disadvantages
 
-DNS scales through delegation and caching, and lets services change addresses
-without changing every link. Cached information can be stale during changes,
-and resolution adds a dependency that can fail independently of the website.
+Delegation and caching help DNS scale and let services change addresses.
+Caches can be stale, and DNS can fail independently of the website.
 
 ## Common misconceptions
 
-- DNS is not a single server or a permanent address book.
-- A DNS response does not prove that the destination server is healthy.
-- Changing a record does not instantly clear every resolver's cache.
+- A DNS response does not prove the server is healthy, and a record change
+  does not instantly clear every resolver's cache.
 
 ## Revision questions
 
