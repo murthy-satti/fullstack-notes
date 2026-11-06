@@ -30,37 +30,78 @@ next layer is healthy.
 
 - Understand the Internet's basic building blocks and addressing.
 - Follow the journey of a request through DNS, transport, and web protocols.
+- Explain how a device joins a local network and finds its next-hop router.
 - Recognize the roles of encryption, persistent connections, and ports.
+- Choose troubleshooting tools based on which network layer may have failed.
 
 ## Topics
 
 - [Internet Fundamentals](internet-fundamentals.md)
 - [IP Addressing](ip-addressing.md)
+- [Ethernet and Wi-Fi](ethernet-and-wifi.md)
+- [ARP and IPv6 Neighbor Discovery](arp-and-neighbor-discovery.md)
+- [DHCP](dhcp.md)
+- [ICMP and Network Diagnostics](icmp.md)
 - [TCP and UDP](tcp-and-udp.md)
 - [DNS](dns.md)
 - [HTTP and HTTPS](http-and-https.md)
 - [TLS and SSL](tls-and-ssl.md)
+- [QUIC and HTTP/3](quic-and-http3.md)
 - [WebSockets](web-sockets.md)
+- [Email Protocols](email-protocols.md)
+- [SSH and SFTP](ssh-and-sftp.md)
+- [VPNs and Tunneling](vpn-and-tunneling.md)
+- [NTP and Network Time Synchronization](ntp-and-time-synchronization.md)
+- [MQTT](mqtt.md)
+- [gRPC](grpc.md)
 - [Network Ports](network-ports.md)
 
-Follow the topics in order for a first pass, then revisit the links between
-lessons. For example, [HTTP and HTTPS](http-and-https.md) build on
-[DNS](dns.md), [IP addressing](ip-addressing.md), [TCP and UDP](tcp-and-udp.md),
-[TLS and SSL](tls-and-ssl.md), and [network ports](network-ports.md).
+## How protocols appear in real services
+
+Most public websites use the same Internet building blocks. The business may
+have additional identity checks, security controls, or private connections,
+but a familiar website URL does not imply a special transport protocol.
+
+| Service example | Common network path | Why these protocols fit |
+|---|---|---|
+| Shopping, news, or video website | DNS, Wi-Fi or Ethernet, IP, TCP or QUIC, TLS, HTTP; often a CDN | HTTP delivers pages and APIs; TLS protects data in transit; a CDN can serve content closer to users |
+| Online banking website or app | Usually the same DNS, IP, TLS, and HTTPS foundation; may also use MFA and risk checks | Standard web protocols interoperate with browsers; authentication, authorization, fraud controls, and payment processing are additional application/system responsibilities |
+| Crypto exchange or wallet interface | HTTPS for pages and API calls; WebSockets may stream prices; a blockchain network uses its own peer and transaction rules | A web interface and a blockchain are different protocol layers; using HTTPS does not mean a blockchain transaction is sent as an ordinary web page |
+| Government service portal | Usually DNS, IP, TLS, and HTTPS; some internal services may use private networks or additional identity systems | Common web standards support public access; identity proofing, accessibility, audit, and policy requirements sit above the basic transport |
+| Email service | DNS records to locate mail servers; SMTP to send mail; IMAP or POP3 for mailbox access; TLS commonly protects connections | Email needs separate protocols for delivery between mail servers and access by a user's mail client |
+| Remote server administration | IP routing followed by SSH, commonly over TCP port 22 | SSH provides an authenticated encrypted terminal and related secure functions; access should be restricted to authorized administrators |
+
+These are typical patterns, not guarantees about any particular provider.
+Financial, cryptocurrency, and government systems may also use private
+networks, specialized payment or identity systems, or organization-specific
+controls that are not visible from the public website. Never infer that a
+service is secure or trustworthy solely because it uses HTTPS.
 
 ## Suggested learning path
 
-1. Begin with [Internet Fundamentals](internet-fundamentals.md) to understand
-   the network of networks and the layers involved.
-2. Learn how [IP addressing](ip-addressing.md) and routers move packets.
-3. Compare [TCP and UDP](tcp-and-udp.md), then see how
+1. Begin with [Internet Fundamentals](internet-fundamentals.md), then learn
+   [IP addressing](ip-addressing.md).
+2. See how a device joins a network with [Ethernet and Wi-Fi](ethernet-and-wifi.md),
+   gets configuration through [DHCP](dhcp.md), and finds a local next hop with
+   [ARP and IPv6 Neighbor Discovery](arp-and-neighbor-discovery.md).
+3. Compare [TCP and UDP](tcp-and-udp.md), then learn how
    [ports](network-ports.md) direct data to applications.
-4. Follow a name lookup in [DNS](dns.md), then read
-   [HTTP and HTTPS](http-and-https.md) and [TLS and SSL](tls-and-ssl.md).
-5. Finish with [WebSockets](web-sockets.md), a useful alternative for ongoing
-   two-way communication.
+4. Follow name resolution in [DNS](dns.md), then study
+   [TLS and SSL](tls-and-ssl.md) and [HTTP and HTTPS](http-and-https.md).
+   Continue with [QUIC and HTTP/3](quic-and-http3.md) to understand the modern
+   UDP-based web transport.
+5. Explore other application protocols: [WebSockets](web-sockets.md) for
+   interactive communication, [Email Protocols](email-protocols.md) for mail,
+   [SSH and SFTP](ssh-and-sftp.md) for remote access, [MQTT](mqtt.md) for
+   device messaging, and [gRPC](grpc.md) for service-to-service APIs.
+6. Learn how [VPNs and Tunneling](vpn-and-tunneling.md) connect private
+   networks and why [NTP](ntp-and-time-synchronization.md) matters to
+   distributed systems.
+7. Use [ICMP and Network Diagnostics](icmp.md) to understand common
+   troubleshooting signals.
 
 When diagnosing a problem, ask which step failed rather than treating
 "the Internet is down" as one explanation. A name lookup issue, blocked
 connection, invalid certificate, and application error have different causes
-and different tools.
+and different tools. A [ping](icmp.md) response, for example, is not required
+for an HTTPS service to work.

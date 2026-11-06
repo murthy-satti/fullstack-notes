@@ -31,6 +31,8 @@ In a simplified TLS 1.3 connection:
 
 ![A browser checks the server certificate name, validity dates, and trust chain before authenticating the host.](certificate-trust.svg)
 
+![A client hello includes a server name and supported application protocols, helping a shared HTTPS endpoint select the right certificate and HTTP version.](tls-sni-alpn.svg)
+
 Certificates are signed statements that bind a public key to one or more
 names. A browser checks the certificate chain against trusted certificate
 authorities and verifies the requested name. Ordinary web browsing typically
@@ -58,6 +60,38 @@ Certificate checking is a chain of specific questions:
 Passing these checks means the connection is authenticated according to the
 client's trust model. It does not certify the site's intent or content.
 
+### TLS with domains, proxies, and HTTP
+
+One IP address can host multiple HTTPS domains. The client commonly sends
+the requested hostname using **Server Name Indication (SNI)** during the
+TLS handshake so the server or TLS-terminating proxy can select an
+appropriate certificate. After TLS is established, HTTP also carries the
+request host name for routing. SNI helps select the TLS identity; it does not
+replace HTTP host routing or application authorization.
+
+**Application-Layer Protocol Negotiation (ALPN)** lets the endpoints
+negotiate an application protocol, such as HTTP/1.1 or HTTP/2, as part of
+TLS setup. HTTP/3 uses QUIC and negotiates through QUIC's TLS handshake.
+
+In many deployments, a load balancer or reverse proxy terminates public TLS
+and then forwards traffic to an application service. The operator must
+secure and control the proxy-to-service path too. TLS at the public edge
+does not automatically encrypt every internal hop.
+
+### Common TLS failures a developer may see
+
+| Symptom | Possible cause to check |
+|---|---|
+| Hostname mismatch | Certificate does not cover the requested domain or proxy serves the wrong virtual host |
+| Expired or not-yet-valid certificate | Renewal, deployment, or device clock problem |
+| Untrusted issuer | Missing or incorrect certificate chain, or an unexpected local trust configuration |
+| Certificate works for one domain but not another | SNI, certificate selection, or domain configuration problem |
+| Secure page reports mixed content | Page loads a resource over insecure HTTP |
+| Connection fails only on one network | Proxy inspection, firewall, unsupported configuration, or network policy; diagnose without disabling certificate validation |
+
+Do not make a client ignore certificate errors as a production fix. Verify
+the domain, certificate chain, server clock, and proxy configuration.
+
 ## Real-world example
 
 When signing in to an online service, the browser checks the service's
@@ -72,6 +106,9 @@ cryptography or disable certificate checks to silence an error. Keep
 certificates valid and host names correct. Remember that TLS does not hide
 all connection metadata, prevent phishing, or make application logic secure.
 See [HTTP and HTTPS](http-and-https.md) and [SSL certificates](../07-devops-and-deployment/ssl-certificates.md).
+For full-stack deployments, also check whether TLS terminates at the CDN,
+load balancer, reverse proxy, or application server, and document how each
+subsequent hop is protected.
 
 ## Practical example
 

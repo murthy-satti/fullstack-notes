@@ -20,15 +20,20 @@ affect a connection.
 
 When a browser opens a site, several jobs happen in sequence:
 
-1. The browser reads the URL and identifies the host name.
-2. [DNS](dns.md) finds an IP address for that name.
-3. The device sends packets toward the address. A home router forwards them
-   to an Internet provider, then routers pass them between networks.
-4. A transport such as [TCP](tcp-and-udp.md), or QUIC over UDP, carries data
-   between application endpoints. [Ports](network-ports.md) help identify the
-   destination program.
-5. For HTTPS, [TLS](tls-and-ssl.md) protects the connection. [HTTP](http-and-https.md)
-   carries the request and response.
+1. The device joins a local network over [Wi-Fi or Ethernet](ethernet-and-wifi.md)
+   and usually receives its IP address, gateway, and resolver through
+   [DHCP](dhcp.md) or an IPv6 configuration mechanism.
+2. The browser reads the URL and identifies the host name.
+   [DNS](dns.md) finds one or more IP addresses for that name.
+3. The device determines whether the destination is local. For a remote
+   destination it sends the packet toward its default gateway, resolving
+   that local next hop with [ARP or IPv6 Neighbor Discovery](arp-and-neighbor-discovery.md).
+4. Routers pass IP packets between networks. A transport such as
+   [TCP](tcp-and-udp.md), or QUIC over UDP, carries data between application
+   endpoints. [Ports](network-ports.md) help identify the destination program.
+5. For HTTPS, [TLS](tls-and-ssl.md) protects the connection.
+   [HTTP](http-and-https.md) carries the request and response. The network
+   may use [ICMP](icmp.md) for control and diagnostic messages along the way.
 
 ![A browser request passes through name lookup, routers, a transport, and an application server before a response returns.](internet-request-flow.svg)
 
@@ -60,6 +65,10 @@ slow when latency is high or the server takes time to respond.
 Loading a video page may involve one request for HTML, others for images and
 scripts, and separate media requests to a content delivery network. The
 browser coordinates these exchanges while the network carries their packets.
+An online banking site or a government service portal follows the same basic
+DNS, IP, transport, TLS, and HTTP layers. Their extra identity checks,
+application controls, and private service connections are additional
+requirements, not replacements for the public web protocols.
 
 ## Developer perspective
 
@@ -67,7 +76,8 @@ Layering helps narrow down problems. If DNS returns an address, name lookup
 worked, but that does not prove the server accepts connections. A connection
 does not prove the application returned the expected page. Diagnose one step
 at a time; see [DNS](dns.md), [IP addressing](ip-addressing.md), and
-[HTTP and HTTPS](http-and-https.md).
+[HTTP and HTTPS](http-and-https.md). A [ping](icmp.md) test and an HTTPS
+request check different protocol behavior.
 
 ## Practical example
 

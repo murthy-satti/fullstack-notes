@@ -36,6 +36,8 @@ UDP while implementing reliability and congestion control itself.
 
 ![Two application writes arrive as a TCP byte stream whose read boundaries can differ, so applications need message framing.](tcp-stream-framing.svg)
 
+![A TCP connection is established by SYN, SYN-ACK, and ACK, carries data, and is then closed by its endpoints.](tcp-connection-lifecycle.svg)
+
 | Property | TCP | UDP |
 |---|---|---|
 | Data model | Ordered byte stream | Independent datagrams |
@@ -58,6 +60,31 @@ TCP's byte-stream behavior also matters when designing a server. A single
 need message framing, such as a length field or delimiter, to identify where
 their own messages end. UDP preserves datagram boundaries, but a datagram can
 still be lost or too large for a path.
+
+### TCP in web applications
+
+Traditional HTTP/1.1 and HTTP/2 deployments commonly use TCP. A client
+establishes a TCP connection to a server endpoint, often TCP port 443 for
+HTTPS, and the HTTP implementation may reuse that connection for multiple
+requests. Browsers and servers manage connection pools and keep-alive
+behavior; application code usually does not open one TCP socket per
+`fetch()` call.
+
+Connections can fail or become idle while a request is in flight. Backend
+and proxy clients should use appropriate connect, read, and overall
+deadlines. Retrying can help with transient failures, but retries should be
+bounded and must not duplicate non-idempotent operations unless the
+application has a safe retry mechanism.
+
+WebSockets also commonly begin over TCP before the protocol upgrade; see
+[WebSockets](web-sockets.md). HTTP/3 is different: it uses QUIC over UDP,
+which provides its own reliable streams.
+
+**HTTP persistent connections** let an HTTP implementation reuse a
+connection for more than one request. **TCP keepalive probes** are a
+separate operating-system mechanism that can probe an idle TCP connection.
+Neither mechanism guarantees that an application server is healthy or that a
+request will complete; applications still need deadlines and error handling.
 
 ## Real-world example
 

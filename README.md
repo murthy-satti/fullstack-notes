@@ -45,7 +45,9 @@ Write for a learner who wants clear explanations and practical examples:
 - Explain what a concept is, why it exists, and how it works.
 - Connect ideas to real applications and full-stack development.
 - Include useful examples, commands, or small experiments where relevant.
-- Cover trade-offs, frequent misconceptions, and revision questions.
+- Cover trade-offs and frequent misconceptions. Use dedicated interview
+  question pages where they are part of the subject's learning path; do not
+  add "Revision questions" or "Check your understanding" sections to lessons.
 - Link related lessons and cite official documentation or reliable standards.
 - Prefer original, relevant diagrams over decorative or copied images.
 - Be accurate and version-aware; do not make unsupported performance claims.
@@ -96,8 +98,8 @@ format rather than adding a flat top-level navigation item.
    what each means, and provide practical examples. For HTML, explain
    elements and their relevant attributes; for CSS, properties and values;
    for languages, syntax and APIs; for frameworks, components, props,
-   conventions, and configuration. Include trade-offs, common mistakes,
-   revision questions, and official references where relevant.
+   conventions, and configuration. Include trade-offs, common mistakes, and
+   official references where relevant.
 7. **Add original diagrams** when a flow, relationship, or rendering process
    is easier to understand visually. Store them beside the lesson and include
    descriptive Markdown alt text; do not use decorative or copied images.

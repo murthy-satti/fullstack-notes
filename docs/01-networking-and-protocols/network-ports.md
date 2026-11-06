@@ -39,6 +39,26 @@ five-tuple. Network address translation may rewrite an address or port as
 traffic passes through a router, then track the mapping so replies can be
 sent back to the correct internal client.
 
+### Ports full-stack developers commonly encounter
+
+| Port | Transport | Common service | Developer context |
+|---|---|---|---|
+| `22` | TCP | SSH | Authorized remote administration and Git over SSH |
+| `53` | UDP and TCP | DNS | Name queries; TCP is also used for some responses and transfers |
+| `80` | TCP | HTTP | Unencrypted web endpoint, often redirected to HTTPS |
+| `443` | TCP and UDP | HTTPS / HTTP/3 | HTTPS commonly uses TCP; HTTP/3 uses QUIC over UDP |
+| `3000`, `5173` | TCP | Common development servers | Examples only; framework and developer configuration determine actual ports |
+| `5432` | TCP | PostgreSQL default | Keep database access private and restricted |
+| `3306` | TCP | MySQL default | Keep database access private and restricted |
+| `6379` | TCP | Redis default | Do not expose an unauthenticated service to untrusted networks |
+
+These are conventions and defaults, not guarantees. A service can use a
+different port, and a port number does not prove which program is listening.
+Cloud firewalls, host firewalls, containers, proxies, and network policies
+also affect reachability.
+
+![A browser's local development request reaches a frontend server, which calls an API server; the API uses restricted database ports on a private network.](full-stack-ports.svg)
+
 The port range is split into registration categories:
 
 | Range | IANA category | Common description |
@@ -72,6 +92,17 @@ Applications bind to a local address and port. A service bound only to
 loopback is intended for local access; a service bound to a network interface
 may be reachable from other devices, subject to routing and firewalls.
 Opening a listener is not the same as making it reachable from the Internet.
+For local development, a backend can listen only on `127.0.0.1` when it needs
+to serve the same computer. Binding to `0.0.0.0` listens on all IPv4
+interfaces and can expose the service to other devices if the network and
+firewall permit it. Use the narrowest binding and access rules needed.
+
+In production, a common arrangement exposes HTTP(S) only at a load balancer
+or reverse proxy and keeps application and database ports on private
+networks. For example, a public HTTPS listener may forward to an application
+service, while the database accepts connections only from approved
+application hosts. Network segmentation complements database credentials
+and application authorization; it does not replace them.
 
 ## Practical example
 
@@ -79,6 +110,12 @@ On Linux, `ss -tuln` lists listening TCP and UDP sockets without changing
 configuration. On Windows, `netstat -ano` lists connection and listening
 information with process IDs. These show local state, not whether an external
 firewall permits access.
+
+For an authorized Windows TCP connectivity check, use
+`Test-NetConnection example.com -Port 443`. It tests whether a TCP connection
+to that endpoint could be established; it does not validate TLS, HTTP, or
+application authorization. For HTTP/3, a TCP-only port test does not test
+the UDP-based QUIC path.
 
 ## Important terminology
 

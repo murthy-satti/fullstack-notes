@@ -28,6 +28,8 @@ multiplayer features where both sides need timely updates.
 
 ![Polling repeatedly asks for updates; an open WebSocket connection allows the server to push updates when ready.](websocket-vs-polling.svg)
 
+![A chat application authenticates a WebSocket connection, exchanges messages through a backend, and uses a shared event channel to reach clients on different servers.](websocket-chat-architecture.svg)
+
 WebSocket provides framing, not application meaning. The application still
 needs a message format, authorization rules, validation, error handling, and
 resource cleanup. With `wss://`, TLS protects the connection in transit.
@@ -90,6 +92,63 @@ WebSockets enable server push and two-way messages without repeated HTTP
 requests. Persistent connections consume resources and require careful
 handling during restarts, reconnections, and horizontal scaling.
 
+## WebSockets in a full-stack chat application
+
+1. The browser first authenticates with the application, commonly through
+   an existing session or another documented credential flow.
+2. The browser opens `wss://` to the WebSocket endpoint. The server validates
+   the request and its `Origin` against the application's allowed origins.
+3. The server authenticates the connection and associates it with a user or
+   authorized room. It must still authorize each action; being connected is
+   not permission to read or send every message.
+4. The client and server exchange application messages, often JSON with a
+   message type, identifier, and payload. The server validates size, shape,
+   rate, and authorization before acting.
+5. To deliver a message to clients connected to multiple application
+   instances, deployments commonly publish events through a shared broker
+   or message system. Each instance forwards the event to its own connected
+   clients.
+
+The WebSocket protocol does not define chat rooms, message persistence,
+read receipts, offline delivery, or exactly-once processing. Store durable
+messages separately when required, and let reconnecting clients request
+missed events using an application-level cursor or sequence.
+
+### Browser authentication considerations
+
+The browser's built-in `WebSocket` constructor does not provide a general
+option for setting arbitrary HTTP request headers. Common designs therefore
+use a secure session cookie during the handshake or an application-defined
+authentication exchange after the connection opens. If authentication is
+sent as the first WebSocket message, restrict what an unauthenticated
+connection can do and close it promptly if authentication fails.
+
+Avoid putting long-lived access tokens in the WebSocket URL: URLs can appear
+in logs and monitoring systems. If a design uses a short-lived connection
+ticket in the URL, it should be single-use where practical, narrowly scoped,
+and protected from logging. Regardless of the credential design, validate
+the expected `Origin` for browser clients and authorize each requested room
+or action.
+
+### Connection lifecycle and operational details
+
+| Concern | Developer responsibility |
+|---|---|
+| Authentication | Validate the user during connection setup and handle session expiry or revocation |
+| Authorization | Check room membership and permissions for each subscription and message |
+| Origin | Allow only expected web origins when cookie-based authentication is used |
+| Heartbeat | Detect broken or idle connections; network intermediaries may close quiet connections |
+| Reconnect | Use bounded backoff with jitter and define how clients recover missed state |
+| Scaling | Track connection ownership and distribute events across server instances when needed |
+| Backpressure | Bound queued messages or disconnect slow consumers to avoid unbounded memory growth |
+| Deployment | Configure proxies and load balancers to support long-lived upgraded connections and sensible idle timeouts |
+| Observability | Record connection counts, close reasons, message rates, and errors without logging secrets or private message bodies |
+
+If authentication uses cookies, browsers may attach those cookies to a
+WebSocket handshake. Validate `Origin` and use appropriate cookie and
+session protections to reduce cross-site WebSocket hijacking risk. Do not
+assume CORS response rules alone protect WebSockets.
+
 ## Common misconceptions
 
 - WebSocket starts with an HTTP-based handshake, then uses WebSocket frames.
@@ -100,3 +159,4 @@ handling during restarts, reconnections, and horizontal scaling.
 
 - **Official documentation — MDN:** [The WebSocket API](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API) explains browser-side connections and message events.
 - **Official standard — RFC Editor:** [RFC 6455, The WebSocket Protocol](https://www.rfc-editor.org/rfc/rfc6455) specifies the opening handshake and framing.
+- **Official documentation — MDN:** [Writing WebSocket client applications](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_client_applications) describes browser connection and event handling.

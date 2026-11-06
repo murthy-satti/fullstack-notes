@@ -46,11 +46,43 @@ query.
 | `MX` | Mail exchange host and priority | Route email for a domain |
 | `TXT` | Text data | Publish domain verification or email policy data |
 | `NS` | Name server for a zone | Delegate DNS authority |
+| `CAA` | Certificate issuance policy | Indicate which certificate authorities may issue for a domain |
 
 If a record has a TTL of `300` seconds, a resolver may reuse the cached
 answer for about five minutes. A low TTL can help changes become visible
 sooner after caches expire, but it does not force resolvers to discard
 existing cached data immediately.
+
+## DNS for application domains
+
+When deploying a web application, DNS connects the name users type to the
+hosting platform or service endpoint. A typical setup might include:
+
+| Name and record | Example purpose |
+|---|---|
+| `example.com` — `A` or `AAAA` | Point the domain to an IPv4 or IPv6 address when the host provides one |
+| `www.example.com` — `CNAME` | Alias `www` to a platform-provided hostname |
+| `api.example.com` — `CNAME`, `A`, or `AAAA` | Route API traffic to its host, gateway, or load balancer |
+| `example.com` — `MX` | Route email for the domain; unrelated to web hosting |
+| Domain verification — `TXT` | Prove domain control to a hosting or identity provider |
+
+This is an illustrative design, not a universal deployment recipe. A DNS
+provider may offer an apex-alias feature for the root domain, and hosting
+providers specify which targets and record types they support. A DNS
+`CNAME` cannot generally coexist with other ordinary records at the same
+owner name; follow the provider's instructions for the domain apex.
+
+Changing a record changes authoritative DNS data, but resolvers can retain
+older answers until cached TTLs expire. During a migration, the old and new
+destinations may both receive traffic for a time. Lowering a TTL well before
+a planned change can reduce some cache delay, but does not guarantee
+instantaneous propagation.
+
+![A user-facing domain is resolved by DNS to a hosting endpoint, while a separate API subdomain can point to an API gateway.](dns-for-web-app.svg)
+
+DNS selects a destination name or address; it does not configure TLS
+certificates, application virtual hosts, redirects, or API routing. Those
+must also be configured at the host, proxy, and application layers.
 
 DNSSEC adds signatures that let a validating resolver check that DNS data
 matches its signed chain of trust. It does not encrypt DNS queries; DoH and
@@ -69,7 +101,9 @@ to that server. A DNS answer is not proof the server is available. See
 TTL and resolver caches mean a DNS change may not appear everywhere
 immediately. Troubleshoot name resolution separately from routing, firewall,
 TLS, and application errors. Multiple DNS answers can distribute traffic,
-but do not by themselves guarantee health-aware routing.
+but do not by themselves guarantee health-aware routing. For an application,
+check that the DNS record points to the intended host and that the host is
+configured to serve the requested domain name.
 
 ## Practical example
 
@@ -77,6 +111,11 @@ On Windows, run `nslookup example.com`. On Linux or macOS, `dig example.com`
 shows a query and answer when `dig` is installed. Both query a resolver; they
 do not change DNS records. Another resolver may have a different cached
 answer.
+
+To inspect selected record types, use `dig example.com A`,
+`dig example.com AAAA`, or `dig example.com MX`. On Windows,
+`nslookup -type=MX example.com` queries MX records. These commands do not
+reveal every resolver's cache state or prove that the web service is healthy.
 
 ## Important terminology
 
