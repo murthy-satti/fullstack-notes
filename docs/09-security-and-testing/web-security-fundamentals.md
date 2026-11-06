@@ -41,12 +41,6 @@ Layered security reduces reliance on any one control and limits the impact of mi
 - Input validation does not replace output encoding or access control.
 - Security is not finished when an application launches.
 
-## Revision questions
-
-1. What does defense in depth mean?
-2. Why must authorization happen on the server?
-3. Name a secret that should not be written to application logs.
-
 ## Further Learning & References
 
 - **OWASP project:** [OWASP Top 10](https://owasp.org/Top10/) is an awareness overview of common web application risks.

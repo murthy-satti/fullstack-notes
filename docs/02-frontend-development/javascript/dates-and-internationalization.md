@@ -61,13 +61,6 @@ date is just a formatted string.
 - A date without timezone context can be interpreted differently than
   intended.
 
-## Check your understanding
-
-1. What does a `Date` object's numeric value represent?
-2. Why should a timestamp include timezone context?
-3. How can `Intl.DateTimeFormat` help?
-4. Do locale-formatted strings have a single universal output?
-
 ## Further learning
 
 - [MDN: Date](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date)

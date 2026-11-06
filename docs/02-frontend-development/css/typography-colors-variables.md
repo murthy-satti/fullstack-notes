@@ -49,12 +49,6 @@ property.
 - A font size that looks comfortable on one monitor may not work at zoom or
   on a small device.
 
-## Check your understanding
-
-1. How do custom properties help a design system?
-2. Why should color not be the only state indicator?
-3. What happens when a custom property is redefined on a descendant?
-
 ## Further learning
 
 - [MDN: CSS custom properties](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)

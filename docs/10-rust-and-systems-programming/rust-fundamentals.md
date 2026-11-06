@@ -51,12 +51,6 @@ Rust combines performance with strong compile-time guarantees and a productive p
 - A successful compile does not prove program logic is correct.
 - Safe Rust greatly reduces certain memory risks but does not remove all security or reliability concerns.
 
-## Revision questions
-
-1. What does `Result<T, E>` represent?
-2. What jobs does Cargo handle?
-3. Why can safe code still contain logic defects?
-
 ## Further Learning & References
 
 - **Official documentation:** [The Rust Programming Language](https://doc.rust-lang.org/book/) is the primary guided introduction to Rust.

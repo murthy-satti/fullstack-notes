@@ -100,13 +100,6 @@ its value from React; **uncontrolled input** holds its value in the DOM;
 - Client-side validation improves UX but does not replace server validation.
 - A disabled button alone may not explain why submission is unavailable.
 
-## Check your understanding
-
-1. What does a stable key help React do?
-2. How does a controlled input receive its displayed value?
-3. What states should a request-driven UI represent?
-4. Why must the server validate submitted values?
-
 ## Further learning
 
 - [React Learn: Rendering lists](https://react.dev/learn/rendering-lists)

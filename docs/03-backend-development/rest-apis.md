@@ -69,12 +69,6 @@ REST does not prescribe one universal URL or JSON format.
 - Every successful request does not need to use status `200`; for example,
   resource creation can use `201`.
 
-## Revision questions
-
-1. How do HTTP method and URL work together to describe a request?
-2. What is one difference between `PUT` and `PATCH`?
-3. Why should an API document its status codes and response schema?
-
 ## Further Learning & References
 
 - **Official standard:** [RFC 9110: HTTP Semantics](https://www.rfc-editor.org/rfc/rfc9110) defines HTTP methods, status codes, and message semantics.

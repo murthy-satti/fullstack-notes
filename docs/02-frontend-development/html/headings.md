@@ -46,13 +46,6 @@ understand and helps developers maintain the page.
 - Nesting a section does not automatically change the meaning of its
   heading level.
 
-## Check your understanding
-
-1. What should determine whether you use `<h2>` or `<h3>`?
-2. How can you change the visual size of a heading without changing its
-   semantic level?
-3. Why are descriptive headings helpful to keyboard and screen-reader users?
-
 ## Further learning
 
 - [MDN: Headings](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Heading_Elements)

@@ -41,12 +41,6 @@ built-in type transformation.
 - `Readonly<T>` is generally shallow unless nested values are also readonly.
 - Utility types do not change runtime objects.
 
-## Check your understanding
-
-1. How does `Pick` differ from `Omit`?
-2. What does `Readonly` guarantee, and what does it not do?
-3. Why should an API payload still be validated?
-
 ## Further learning
 
 - [TypeScript Handbook: Utility Types](https://www.typescriptlang.org/docs/handbook/utility-types.html)

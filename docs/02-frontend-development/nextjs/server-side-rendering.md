@@ -38,12 +38,6 @@ shared caches.
   Components.
 - Rendering does not replace access control.
 
-## Check your understanding
-
-1. When is HTML produced in SSR?
-2. Why might an SSR page still need hydration?
-3. Which factors can affect SSR response time?
-
 ## Further learning
 
 - [Next.js: Server rendering](https://nextjs.org/docs/app/building-your-application/rendering/server-components)

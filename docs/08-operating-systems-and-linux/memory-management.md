@@ -54,12 +54,6 @@ have costs; heavy swapping can make a system slow.
 - High memory use may include reclaimable caches; virtual memory is not
   identical to swap.
 
-## Revision questions
-
-1. How does virtual memory help isolate processes?
-2. What is the role of a page table?
-3. Why can heavy swapping reduce responsiveness?
-
 ## Further Learning & References
 
 - **Official documentation — Linux man-pages project:** [mmap(2)](https://man7.org/linux/man-pages/man2/mmap.2.html)

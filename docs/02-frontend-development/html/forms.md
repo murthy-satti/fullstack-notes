@@ -35,12 +35,6 @@ Native controls provide keyboard interaction, mobile input hints, and
 baseline validation. They improve usability but do not replace server-side
 validation, authorization, or secure transport over HTTPS.
 
-## Check your understanding
-
-1. Which attribute determines the submitted key for a control?
-2. Why should a server validate data even when an input has `required`?
-3. Which lesson explains the difference between GET and POST?
-
 ## Further learning
 
 - [MDN: Forms](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Forms)

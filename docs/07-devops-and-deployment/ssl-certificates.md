@@ -40,12 +40,6 @@ TLS protects data in transit. Certificate renewal requires care, and HTTPS does 
 
 A certificate does not guarantee an application is safe or prevent phishing. It is not an endorsement of the site's content.
 
-## Revision questions
-
-1. What does a browser check in a website certificate?
-2. Why must a private key be protected?
-3. What does HTTPS protect, and what does it not prove?
-
 ## Further Learning & References
 
 - **Official Let’s Encrypt documentation:** [Getting started](https://letsencrypt.org/getting-started/) explains free automated certificates and how to begin.

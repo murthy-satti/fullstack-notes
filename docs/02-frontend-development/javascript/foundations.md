@@ -125,12 +125,6 @@ reasoning about UI state.
 - `null` and `undefined` are different values.
 - TypeScript types do not change JavaScript's runtime type behavior.
 
-## Check your understanding
-
-1. What does `const` protect, and what does it not protect?
-2. How do `??` and `||` differ when the left value is `0`?
-3. Does assigning an object to another variable make a copy?
-
 ## Further learning
 
 - [MDN: JavaScript Guide](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide)

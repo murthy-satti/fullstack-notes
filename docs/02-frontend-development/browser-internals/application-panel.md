@@ -46,12 +46,6 @@ behavior.
 - Clearing storage may remove login or offline data.
 - A service worker cache is separate from the ordinary HTTP cache.
 
-## Check your understanding
-
-1. Which storage is designed for structured client-side records?
-2. What does `HttpOnly` prevent?
-3. Why might clearing site data change the behavior being debugged?
-
 ## Further learning
 
 - [Chrome DevTools: Application panel](https://developer.chrome.com/docs/devtools/application/)

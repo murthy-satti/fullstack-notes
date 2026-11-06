@@ -84,13 +84,6 @@ elements. **Event target** is the element that originated an event;
 - `querySelectorAll` is static; it does not automatically include elements
   added later.
 
-## Check your understanding
-
-1. What does an event listener do?
-2. How do bubbling and event delegation relate?
-3. Why is handling form submission often better than handling only a button
-   click?
-
 ## Further learning
 
 - [MDN: Introduction to events](https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Scripting/Events)

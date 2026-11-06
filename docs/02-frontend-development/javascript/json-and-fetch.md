@@ -70,13 +70,6 @@ with useful, accessible interface states.
 - CORS and authentication rules can affect whether a browser can read a
   response.
 
-## Check your understanding
-
-1. What does `response.ok` indicate?
-2. Why can `response.json()` reject?
-3. How do `JSON.stringify` and `JSON.parse` differ?
-4. Why should API data be validated before use?
-
 ## Further learning
 
 - [MDN: Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API)

@@ -64,12 +64,6 @@ loop, and its package ecosystem requires dependency management.
 - Node.js is not a browser and does not provide browser-only APIs such as `document`.
 - Node.js can serve HTTP without Express, though a framework may add useful structure.
 
-## Revision questions
-
-1. What does Node.js add beyond the JavaScript language?
-2. Why can synchronous CPU-heavy work affect other requests?
-3. How does the runtime differ from a browser environment?
-
 ## Further Learning & References
 
 - **Official docs:** [Node.js: Introduction to Node.js](https://nodejs.org/en/learn/getting-started/introduction-to-nodejs) explains the runtime and common uses.

@@ -84,12 +84,6 @@ Overly specific selectors and overrides can make the cascade hard to reason abou
   determines the final result.
 - Responsive design is not simply shrinking a desktop page.
 
-## Revision questions
-
-1. What are the selector and declarations in a CSS rule?
-2. Name two factors that influence which competing style is applied.
-3. How does a media-independent layout technique such as Grid help responsiveness?
-
 ## Further Learning & References
 
 - **Reference:** [MDN CSS](https://developer.mozilla.org/en-US/docs/Web/CSS) explains CSS concepts and documents selectors, properties, and values.

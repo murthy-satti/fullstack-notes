@@ -32,12 +32,6 @@ A loading fallback does not mean every task can be cancelled or retried.
 It also does not replace explicit error handling. Use smaller boundaries
 when parts of a page can load independently.
 
-## Check your understanding
-
-1. Which file convention provides route-level loading UI?
-2. Why should a loading layout resemble the final content?
-3. Does a loading boundary guarantee cancellation of pending work?
-
 ## Further learning
 
 - [Next.js: Loading UI and streaming](https://nextjs.org/docs/app/building-your-application/routing/loading-ui-and-streaming)

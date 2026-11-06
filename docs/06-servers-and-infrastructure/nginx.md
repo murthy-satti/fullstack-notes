@@ -40,12 +40,6 @@ Nginx is flexible, widely deployed, and can efficiently serve static files or pr
 
 Nginx is not a programming language or a replacement for an application's business logic. It can be a web server and proxy at once, but those roles are distinct and independently configured.
 
-## Revision questions
-
-1. What does an Nginx `location` block match?
-2. Why test configuration before reloading?
-3. Give one task handled by Nginx and one handled by an application.
-
 ## Further Learning & References
 
 - **Official Nginx documentation:** [Beginner’s Guide](https://nginx.org/en/docs/beginners_guide.html) introduces configuration structure and common tasks.

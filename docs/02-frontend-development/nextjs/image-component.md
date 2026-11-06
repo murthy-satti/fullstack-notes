@@ -56,12 +56,6 @@ provide an appropriate `alt` value; do not lazy-load the main image visible
 immediately without a reason. Availability of the default optimizer
 depends on the deployment platform.
 
-## Check your understanding
-
-1. What does `sizes` tell the image system?
-2. What must a parent provide when `fill` is used?
-3. Does image optimization replace meaningful alternative text?
-
 ## Further learning
 
 - [Next.js: `Image`](https://nextjs.org/docs/app/api-reference/components/image)

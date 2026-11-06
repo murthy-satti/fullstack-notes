@@ -73,12 +73,6 @@ client-side work can make code harder to maintain or pages slower.
 - The browser DOM and `fetch` are Web APIs, not built-in parts of ECMAScript.
 - Client-side validation cannot replace server-side validation.
 
-## Revision questions
-
-1. What work does the browser provide beyond the JavaScript language?
-2. How does an event listener connect an action to code?
-3. Why must a server validate data even if the browser checks it?
-
 ## Explore JavaScript topics
 
 - [Values, variables, and functions](javascript/foundations.md): primitive

@@ -58,12 +58,6 @@ items in a layout without adding margins to each child.
 - Flexbox and Grid can be combined; they solve related but different layout
   problems.
 
-## Check your understanding
-
-1. How does `border-box` change width calculations?
-2. When is Grid a natural choice over Flexbox?
-3. What is the difference between padding and margin?
-
 ## Further learning
 
 - [MDN: The box model](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_box_model/Introduction_to_the_CSS_box_model)

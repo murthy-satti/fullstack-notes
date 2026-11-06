@@ -40,12 +40,6 @@ Git supports history, offline work, and collaboration. Merges and rebases requir
 
 GitHub is not Git, and local commits are not automatically published. Deleting a file does not erase it from repository history.
 
-## Revision questions
-
-1. How do Git and GitHub differ?
-2. What is the purpose of staging?
-3. What happens in a pull request?
-
 ## Further Learning & References
 
 - **Official Git documentation:** [About Version Control](https://git-scm.com/book/en/v2/Getting-Started-About-Version-Control) introduces version-control ideas and Git's model.

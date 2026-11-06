@@ -100,12 +100,6 @@ identifies each case; **narrowing** reduces possible types after a check.
 - `any` can hide errors rather than solve them.
 - An optional property may be missing; reading it can produce `undefined`.
 
-## Check your understanding
-
-1. What does a discriminant property tell the checker?
-2. How does `unknown` differ from `any`?
-3. Why does a type assertion not validate a server response?
-
 ## Further learning
 
 - [TypeScript Handbook: Everyday types](https://www.typescriptlang.org/docs/handbook/2/everyday-types.html)

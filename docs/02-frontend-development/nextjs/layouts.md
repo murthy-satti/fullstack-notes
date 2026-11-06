@@ -43,12 +43,6 @@ organize distinct layouts without adding URL segments.
 - A nested layout wraps its descendants, not unrelated routes.
 - A layout and a template have different lifecycle behavior.
 
-## Check your understanding
-
-1. Which layout file is required by the App Router?
-2. What document elements must the root layout provide?
-3. How does a template differ from a layout?
-
 ## Further learning
 
 - [Next.js: Layouts and pages](https://nextjs.org/docs/app/building-your-application/routing/pages-and-layouts)

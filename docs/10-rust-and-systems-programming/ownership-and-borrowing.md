@@ -51,12 +51,6 @@ Ownership enables automatic cleanup without a garbage collector. Its rules can b
 - A reference cannot safely outlive the value it refers to.
 - `&mut` means exclusive access, not simply a preference to mutate.
 
-## Revision questions
-
-1. What happens to the old binding after a move?
-2. Which combination of immutable and mutable borrows is allowed?
-3. Why might cloning not be the best response to a borrow error?
-
 ## Further Learning & References
 
 - **Official documentation:** [The Rust Book, References and Borrowing](https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html) gives examples of borrowing rules.

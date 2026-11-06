@@ -105,12 +105,6 @@ external boundaries.
 - `T extends U` constrains `T`; it does not mean `T` is exactly `U`.
 - Avoid defaulting to `any` for convenience.
 
-## Check your understanding
-
-1. What does `keyof Product` produce?
-2. What relationship does a generic preserve?
-3. Does `readonly` freeze an object at runtime?
-
 ## Further learning
 
 - [TypeScript Handbook: Object types](https://www.typescriptlang.org/docs/handbook/2/objects.html)

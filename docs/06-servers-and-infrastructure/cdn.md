@@ -40,12 +40,6 @@ CDNs can reduce latency and origin traffic. They add configuration complexity; s
 
 A CDN does not automatically speed every page: cacheability and origin response time matter. It does not replace secure application code.
 
-## Revision questions
-
-1. What happens on a cache hit compared with a cache miss?
-2. Why should private account responses not be publicly cached?
-3. How can versioned filenames help with cached assets?
-
 ## Further Learning & References
 
 - **Official Cloudflare documentation:** [What is a CDN?](https://www.cloudflare.com/learning/cdn/what-is-a-cdn/) explains CDN locations, caching, and delivery.

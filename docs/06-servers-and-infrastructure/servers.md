@@ -40,12 +40,6 @@ Servers give teams control over software and runtime settings. They require plan
 
 A server need not be a large physical computer. One host can run several services, and one service can span hosts. “Always on” does not mean “always available.”
 
-## Revision questions
-
-1. How is a server different from a client?
-2. What role does a port play?
-3. Name two responsibilities involved in operating a server.
-
 ## Further Learning & References
 
 - **Official AWS documentation:** [Amazon EC2 concepts](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/concepts.html) introduces virtual servers and their lifecycle.

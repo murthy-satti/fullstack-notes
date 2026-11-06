@@ -52,12 +52,6 @@ may perform the requested action.
 - Browser validation is useful feedback, not trusted enforcement.
 - A hidden form field is user-controlled input.
 
-## Check your understanding
-
-1. Why must a Server Action validate and authorize independently?
-2. Can a hidden field be trusted?
-3. What feedback should a form provide during submission?
-
 ## Further learning
 
 - [Next.js: Updating data](https://nextjs.org/docs/app/getting-started/updating-data)

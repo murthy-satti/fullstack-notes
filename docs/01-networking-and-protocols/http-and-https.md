@@ -114,13 +114,6 @@ secure by itself.
 - `200 OK` does not guarantee that the user's broader task succeeded.
 - HTTP transfers more than HTML, including JSON, images, and media.
 
-## Revision questions
-
-1. Which parts commonly appear in an HTTP request and response?
-2. How does HTTPS add protection to HTTP?
-3. How do `GET` and `POST` usually differ?
-4. What does stateless mean, and how can a website still remember a login?
-
 ## Further Learning & References
 
 - **Official documentation — MDN (beginner-friendly):** [An overview of HTTP](https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview) introduces requests, responses, and the client-server model.

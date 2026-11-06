@@ -37,12 +37,6 @@ replace accessibility or remove browser history; it enhances internal route
 navigation. Do not enable prefetch indiscriminately without considering the
 installed version and network cost.
 
-## Check your understanding
-
-1. Why does `Link` render an anchor?
-2. When is a regular `<a>` appropriate?
-3. Why should interactive controls not be nested inside a link?
-
 ## Further learning
 
 - [Next.js: `Link`](https://nextjs.org/docs/app/api-reference/components/link)

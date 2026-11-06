@@ -49,12 +49,6 @@ With TypeScript, props can have an explicit type.
 - A component is not required for every single HTML element; use components
   where they clarify reuse or responsibility.
 
-## Check your understanding
-
-1. What is the direction of prop data flow?
-2. How does JSX insert a JavaScript expression?
-3. Why should a component have a clear responsibility?
-
 ## Further learning
 
 - [React Learn: Your first component](https://react.dev/learn/your-first-component)

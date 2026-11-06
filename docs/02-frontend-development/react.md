@@ -75,12 +75,6 @@ make controls accessible.
 - State setters schedule updates; they do not synchronously replace the
   current variable's value.
 
-## Check your understanding
-
-1. How do props differ from state?
-2. What does a state setter request?
-3. Why should render logic be pure?
-
 ## Further learning
 
 - [React Learn](https://react.dev/learn)

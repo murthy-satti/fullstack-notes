@@ -41,12 +41,6 @@ Tauri reuses web UI skills and invokes native Rust code. Behavior can differ amo
 - A desktop app is not automatically safe from web-style injection.
 - Tauri's permission model still requires careful configuration.
 
-## Revision questions
-
-1. What role does the webview play in a Tauri app?
-2. Why should Rust commands validate frontend inputs?
-3. What is the purpose of limiting capabilities?
-
 ## Further Learning & References
 
 - **Official documentation:** [Tauri documentation](https://v2.tauri.app/) explains setup, application architecture, commands, and security concepts for Tauri 2.

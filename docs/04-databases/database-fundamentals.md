@@ -51,12 +51,6 @@ Databases make durable, shared, searchable data practical and can enforce constr
 
 A database is not automatically a backup. Adding indexes to every field can slow writes and consume space. “NoSQL” does not mean “no structure”; document data still benefits from clear rules.
 
-## Revision questions
-
-1. Why should an application use persistent storage?
-2. What does an index trade for faster lookups?
-3. When might a transaction be useful?
-
 ## Further Learning & References
 
 - **Official PostgreSQL documentation — [Getting Started](https://www.postgresql.org/docs/current/tutorial.html):** a guided introduction to relational database concepts and SQL.

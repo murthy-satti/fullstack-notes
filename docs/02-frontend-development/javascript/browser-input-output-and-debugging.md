@@ -150,14 +150,6 @@ accessible status messages.
 - `console.time` is not a substitute for a proper profiling workflow.
 - `innerHTML` parses markup and must not receive untrusted content directly.
 
-## Check your understanding
-
-1. What values can `prompt()` return?
-2. Which property is generally safer for displaying plain text?
-3. How do `console.debug`, `console.warn`, and `console.error` differ?
-4. What do `console.timeLog()` and `console.timeEnd()` do differently?
-5. Does `console.assert()` stop the program?
-
 ## Further learning
 
 - [MDN: `window.prompt`](https://developer.mozilla.org/en-US/docs/Web/API/Window/prompt)

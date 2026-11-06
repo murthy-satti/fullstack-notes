@@ -40,12 +40,6 @@ Environment variables separate settings from code and are widely supported. They
 
 Environment variables are not automatically secret or shared across processes. A `.env` file is a convention that requires tool or shell support.
 
-## Revision questions
-
-1. Why use different configuration values in different environments?
-2. Why should application code validate environment variables?
-3. What protection does an environment variable not provide by itself?
-
 ## Further Learning & References
 
 - **Official Node.js documentation:** [`process.env`](https://nodejs.org/api/process.html#processenv) describes how Node.js applications access environment variables.

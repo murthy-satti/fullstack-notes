@@ -33,12 +33,6 @@ to find real long tasks before optimizing.
 - Browser APIs are not part of the ECMAScript language specification.
 - An asynchronous API can still lead to expensive synchronous callback work.
 
-## Check your understanding
-
-1. What is the distinction between the JavaScript engine and browser APIs?
-2. Why can a callback still block rendering?
-3. What kinds of work may be moved to a Worker?
-
 ## Further learning
 
 - [MDN: JavaScript event loop](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Event_loop)

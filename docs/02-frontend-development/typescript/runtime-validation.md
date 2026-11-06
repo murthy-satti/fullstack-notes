@@ -55,12 +55,6 @@ input into a structured representation; **validation** verifies constraints.
 - Validation improves correctness but does not replace authorization or
   output encoding.
 
-## Check your understanding
-
-1. Why should untrusted data start as `unknown`?
-2. What is the difference between parsing and validating?
-3. Name two trust boundaries in a web application.
-
 ## Further learning
 
 - [TypeScript Handbook: `unknown`](https://www.typescriptlang.org/docs/handbook/2/functions.html#unknown)

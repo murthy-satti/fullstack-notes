@@ -40,12 +40,6 @@ Containers improve consistency and repeatability. They add networking and storag
 
 A container is not a full virtual machine; it may share the host kernel. Configuration and external services can still differ in production.
 
-## Revision questions
-
-1. How does an image differ from a container?
-2. Where should data go if it must survive container removal?
-3. Why should credentials not be built into an image?
-
 ## Further Learning & References
 
 - **Official Docker documentation:** [Docker overview](https://docs.docker.com/get-started/overview/) introduces images, containers, and the engine.

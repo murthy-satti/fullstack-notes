@@ -41,12 +41,6 @@ Write link text that makes sense out of context, such as “Read the HTML
 forms guide” rather than “click here.” Ensure keyboard focus is visible.
 Check that internal links still resolve after moving pages.
 
-## Check your understanding
-
-1. Which attribute defines where a link navigates?
-2. When should a button be used instead of an anchor?
-3. Why is “click here” weak link text?
-
 ## Further learning
 
 - [MDN: `<a>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a)

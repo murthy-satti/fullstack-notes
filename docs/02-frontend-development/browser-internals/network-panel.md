@@ -45,12 +45,6 @@ before and after a change.
 - HAR exports and screenshots may contain cookies, authorization headers,
   search queries, or personal data. Remove sensitive values before sharing.
 
-## Check your understanding
-
-1. Which request details help explain a failed API call?
-2. What does an initiator tell you?
-3. Why can a successful HTTP status still correspond to an application error?
-
 ## Further learning
 
 - [Chrome DevTools: Network overview](https://developer.chrome.com/docs/devtools/network/)

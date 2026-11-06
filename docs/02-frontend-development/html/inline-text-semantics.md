@@ -41,12 +41,6 @@ or sections.
 - `<span>` has no built-in meaning; do not use it when a semantic element
   fits.
 
-## Check your understanding
-
-1. Which element marks a code fragment?
-2. How do `<em>` and `<i>` differ?
-3. When is `<br>` appropriate?
-
 ## Further learning
 
 - [MDN: Text-level semantics](https://developer.mozilla.org/en-US/docs/Web/HTML/Element#text_content)

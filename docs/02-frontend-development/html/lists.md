@@ -50,12 +50,6 @@ Use `<ol>` when sequence or ranking matters, such as numbered instructions.
 Use `<ul>` for a group such as a set of related features. Do not select list
 elements only because their default markers are convenient.
 
-## Check your understanding
-
-1. Which list should represent steps that must be followed in order?
-2. Where should a nested list appear relative to its parent list item?
-3. What roles do `<dt>` and `<dd>` play?
-
 ## Further learning
 
 - [MDN: `<ul>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/ul)

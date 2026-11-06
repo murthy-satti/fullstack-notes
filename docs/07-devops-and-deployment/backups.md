@@ -40,12 +40,6 @@ Backups enable recovery but consume storage and require maintenance. Replicas al
 
 A successful backup job does not prove a restore will work. A backup on the same machine may be lost with the original.
 
-## Revision questions
-
-1. How do RPO and RTO differ?
-2. Why should backups be restored in a test?
-3. Why is replication not always a backup?
-
 ## Further Learning & References
 
 - **Official AWS documentation:** [What is AWS Backup?](https://docs.aws.amazon.com/aws-backup/latest/devguide/whatisbackup.html) describes managed backup and recovery concepts.

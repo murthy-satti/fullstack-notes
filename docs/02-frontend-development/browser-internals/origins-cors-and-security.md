@@ -41,12 +41,6 @@ cookies under specific browser and server policies.
   request.
 - CORS does not protect an API from all unauthorized access.
 
-## Check your understanding
-
-1. Which parts make up an origin?
-2. Which side must return the CORS permission headers?
-3. Why is CORS not an authentication mechanism?
-
 ## Further learning
 
 - [MDN: Same-origin policy](https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy)

@@ -52,12 +52,6 @@ a user preference that should influence nonessential animation.
 - Focus styling is important for keyboard users, not just decoration.
 - A transition is not appropriate for every property or every user.
 
-## Check your understanding
-
-1. What does `:focus-visible` represent?
-2. Why should a control communicate state without relying on hover alone?
-3. How can CSS respond to a reduced-motion preference?
-
 ## Further learning
 
 - [MDN: Using media queries](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_media_queries/Using_media_queries)

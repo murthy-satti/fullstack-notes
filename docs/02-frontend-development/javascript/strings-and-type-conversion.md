@@ -91,13 +91,6 @@ when the control looks numeric. Validate the result and handle `NaN`.
 String conversion is not HTML escaping, URL encoding, or input validation.
 Use context-appropriate APIs when inserting data into HTML, URLs, or SQL.
 
-## Check your understanding
-
-1. Why does `"5" + 1` differ from `"5" - 1`?
-2. What does `Number("twelve")` produce?
-3. Why is `Boolean("false")` true?
-4. Does `string.length` always count visible characters?
-
 ## Further learning
 
 - [MDN: Text formatting](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Text_formatting)

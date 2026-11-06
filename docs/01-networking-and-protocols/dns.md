@@ -106,14 +106,6 @@ fail independently of the website it helps locate.
 - DNSSEC does not hide a query; encrypted DNS does not mean the resolver
   cannot see the name being requested.
 
-## Revision questions
-
-1. How does a recursive resolver differ from an authoritative server?
-2. What sequence of referrals might a resolver follow for a new name?
-3. What does a TTL control?
-4. Why might two devices temporarily get different DNS answers?
-5. How does an `A` record differ from an `AAAA` record?
-
 ## Further Learning & References
 
 - **Official documentation — MDN (beginner-friendly):** [DNS](https://developer.mozilla.org/en-US/docs/Glossary/DNS) introduces the naming system and the role of DNS records.

@@ -49,12 +49,6 @@ Queues absorb spikes and reduce timing dependencies. They add moving parts and d
 
 A queue does not guarantee exactly-once side effects. Acknowledgment does not prove business logic was correct, and a queue cannot fix a consumer that cannot keep up.
 
-## Revision questions
-
-1. Why might email delivery be moved to a worker?
-2. Why should consumers expect possible duplicate delivery?
-3. What metrics help reveal a growing backlog?
-
 ## Further Learning & References
 
 - **Official AWS documentation — [Amazon SQS Developer Guide](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/welcome.html):** explains a managed queue service, its concepts, and usage.

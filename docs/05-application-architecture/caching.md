@@ -47,12 +47,6 @@ Caching can lower response times and source-system load. It adds memory use, ope
 
 A cache does not make data permanently available or automatically consistent. A high hit rate is not proof of correctness; a longer TTL can delay visible changes.
 
-## Revision questions
-
-1. What happens on a cache hit and on a miss?
-2. Name two ways a cached value can become stale.
-3. Why should keys distinguish users or request parameters when needed?
-
 ## Further Learning & References
 
 - **Third-party explanation — [Cloudflare: What is caching?](https://www.cloudflare.com/learning/cdn/what-is-caching/):** introduces caching and explains how it helps deliver content.

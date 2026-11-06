@@ -41,12 +41,6 @@ Passkeys and MFA reduce takeover risk, while sessions add convenience. Added ste
 - Encoding or encrypting passwords is not a substitute for password hashing.
 - MFA is valuable, but does not prevent every phishing or session theft scenario.
 
-## Revision questions
-
-1. What is the difference between authentication and authorization?
-2. Why should session IDs change after a privilege change?
-3. What protections should apply to account recovery?
-
 ## Further Learning & References
 
 - **OWASP guidance:** [Authentication Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html) covers defensive implementation and verification practices.

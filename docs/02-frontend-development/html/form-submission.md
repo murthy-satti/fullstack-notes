@@ -54,12 +54,6 @@ control is not a security boundary. Protect state-changing requests against
 cross-site request forgery where relevant to the application's
 authentication model.
 
-## Check your understanding
-
-1. Why is GET useful for search forms?
-2. What happens to a control that has a value but no `name`?
-3. Does using POST make a request confidential without HTTPS?
-
 ## Further learning
 
 - [MDN: `<form>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/form)

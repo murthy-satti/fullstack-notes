@@ -32,12 +32,6 @@ same UI. Give list items stable keys so React can match them across updates.
 - A component function may run more than once in development.
 - Do not perform network requests or mutate global values during render.
 
-## Check your understanding
-
-1. What is the difference between render and commit?
-2. Why should component rendering be pure?
-3. What information do stable keys provide?
-
 ## Further learning
 
 - [React Learn: Render and commit](https://react.dev/learn/render-and-commit)

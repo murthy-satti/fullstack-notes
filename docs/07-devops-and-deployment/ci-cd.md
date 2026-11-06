@@ -40,12 +40,6 @@ CI/CD reduces repetitive work and catches defects earlier. Pipelines need mainte
 
 CI/CD does not mean deploying every commit to production. Teams can automate tests and require production approval.
 
-## Revision questions
-
-1. What is continuous integration intended to automate?
-2. How do continuous delivery and deployment differ?
-3. Why should workflow permissions be limited?
-
 ## Further Learning & References
 
 - **Official GitHub documentation:** [Understanding GitHub Actions](https://docs.github.com/en/actions/about-github-actions/understanding-github-actions) explains workflows, jobs, events, and runners.

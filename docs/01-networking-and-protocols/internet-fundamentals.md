@@ -107,13 +107,6 @@ failures, or filtering along a path can interrupt service.
   reliably a person.
 - Bandwidth is not the same as throughput, and neither is the same as latency.
 
-## Revision questions
-
-1. What is the difference between the Internet and the Web?
-2. Which job does a router perform?
-3. Why might `ping` fail even if a website works?
-4. Which step translates a host name into an address?
-
 ## Further Learning & References
 
 - **Official documentation — MDN (beginner-friendly):** [How the Web works](https://developer.mozilla.org/en-US/docs/Learn/Getting_started_with_the_web/How_the_Web_works) follows a browser request and response in accessible language.

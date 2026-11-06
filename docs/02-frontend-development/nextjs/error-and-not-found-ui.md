@@ -54,12 +54,6 @@ internal service details.
 - A retry button does not ensure the failed service is healthy.
 - A not-found page does not protect a private URL.
 
-## Check your understanding
-
-1. Why must `error.tsx` be a Client Component?
-2. What does `reset()` attempt to do?
-3. Why is a not-found page not access control?
-
 ## Further learning
 
 - [Next.js: Error handling](https://nextjs.org/docs/app/building-your-application/routing/error-handling)

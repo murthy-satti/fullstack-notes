@@ -74,13 +74,6 @@ dynamically added controls.
 - A button click handler alone misses some form submission paths.
 - Client-side validation is not a security boundary.
 
-## Check your understanding
-
-1. What is the difference between `target` and `currentTarget`?
-2. Why listen for `submit` on a form instead of `click` on its button?
-3. What does `preventDefault()` do?
-4. When can event delegation be useful?
-
 ## Further learning
 
 - [MDN: Event reference](https://developer.mozilla.org/en-US/docs/Web/Events)

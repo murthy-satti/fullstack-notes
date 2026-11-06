@@ -41,12 +41,6 @@ Tests can catch regressions early and make refactoring less risky. They cost tim
 - High code coverage does not guarantee useful assertions.
 - Manual testing and automated testing complement one another.
 
-## Revision questions
-
-1. What distinguishes a unit test from an end-to-end test?
-2. Why add a regression test when fixing a bug?
-3. What does coverage tell you, and what does it not tell you?
-
 ## Further Learning & References
 
 - **Official documentation:** [pytest documentation](https://docs.pytest.org/en/stable/) explains Python test discovery, assertions, fixtures, and running tests.

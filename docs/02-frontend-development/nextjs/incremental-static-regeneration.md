@@ -126,12 +126,6 @@ must be immediately consistent for every user.
   external cache.
 - Static export does not support all server-backed ISR behaviors.
 
-## Check your understanding
-
-1. How does time-based revalidation differ from event-based invalidation?
-2. Why is a time interval not necessarily an exact regeneration timer?
-3. What must a CMS webhook do before it calls a revalidation API?
-
 ## Further learning
 
 - [Next.js: Revalidating data](https://nextjs.org/docs/app/building-your-application/caching#revalidating)

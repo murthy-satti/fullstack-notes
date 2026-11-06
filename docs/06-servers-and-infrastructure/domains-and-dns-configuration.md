@@ -36,12 +36,6 @@ To direct `api.example.com`, get the exact target and record type from the hosti
 
 Buying a domain does not create a website or mailbox. DNS helps clients find a service; it does not store a web page. Lowering a TTL does not instantly clear existing caches.
 
-## Revision questions
-
-1. What do A, MX, and CNAME records represent?
-2. Which system is authoritative for a domain's published records?
-3. Why might a DNS update not be visible immediately?
-
 ## Further Learning & References
 
 - **Internet standard:** [RFC 1034: Domain Names—Concepts and Facilities](https://www.rfc-editor.org/rfc/rfc1034) describes DNS architecture and concepts.

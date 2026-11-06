@@ -63,12 +63,6 @@ same inputs and environment.
   it for every piece of data can cause flicker and delayed content.
 - `suppressHydrationWarning` should not be applied broadly.
 
-## Check your understanding
-
-1. Why must the first client render match server HTML?
-2. Name three values that may vary between server and browser rendering.
-3. Why is suppressing a warning not a general fix?
-
 ## Further learning
 
 - [Next.js: React hydration error](https://nextjs.org/docs/messages/react-hydration-error)

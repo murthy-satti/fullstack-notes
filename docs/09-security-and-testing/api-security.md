@@ -41,12 +41,6 @@ Explicit API controls reduce accidental data exposure and make behavior testable
 - An unguessable identifier does not replace an ownership check.
 - A valid token does not automatically authorize every operation.
 
-## Revision questions
-
-1. How are authentication and authorization different?
-2. Why should a server check ownership for each resource request?
-3. Name two defenses that complement, but do not replace, authorization.
-
 ## Further Learning & References
 
 - **Official standard/project:** [OWASP API Security Project](https://owasp.org/www-project-api-security/) describes common API risks and defensive guidance.

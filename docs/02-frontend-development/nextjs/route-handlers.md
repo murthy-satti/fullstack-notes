@@ -96,13 +96,6 @@ identity is established.
 - HTTP method names do not enforce that a handler is safe; the code must
   implement the intended semantics.
 
-## Check your understanding
-
-1. What is the difference between App Router route handlers and Pages Router
-   API routes?
-2. Where should authorization occur?
-3. Why should a webhook signature be verified before trusting its payload?
-
 ## Further learning
 
 - [Next.js: Route Handlers](https://nextjs.org/docs/app/building-your-application/routing/route-handlers)

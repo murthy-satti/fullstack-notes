@@ -52,12 +52,6 @@ component folder is routable or that `route.ts` renders page UI. Pages
 Router conventions such as `pages/about.tsx` are a different routing
 system.
 
-## Check your understanding
-
-1. Which file normally makes a route renderable?
-2. What URL maps to `app/products/reviews/page.tsx`?
-3. Does a folder containing a helper component automatically create a URL?
-
 ## Further learning
 
 - [Next.js: Defining routes](https://nextjs.org/docs/app/building-your-application/routing/defining-routes)

@@ -96,14 +96,6 @@ handling during restarts, reconnections, and horizontal scaling.
 - `wss://` protects transport but does not validate application permissions.
 - A persistent connection can still be interrupted by networks or servers.
 
-## Revision questions
-
-1. How does WebSocket differ from a typical request-response exchange?
-2. What does `wss://` indicate?
-3. Which application responsibilities remain after a connection is secure?
-4. When might Server-Sent Events be simpler?
-5. Why should a reconnect strategy avoid retrying in a tight loop?
-
 ## Further Learning & References
 
 - **Official documentation — MDN:** [The WebSocket API](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API) explains browser-side connections and message events.

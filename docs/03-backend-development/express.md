@@ -75,12 +75,6 @@ validation, structure, security, and many other concerns.
 - Registering a route does not automatically validate its request data.
 - Middleware order can change application behavior.
 
-## Revision questions
-
-1. What happens when a request enters an Express application?
-2. Why is middleware order important?
-3. What does `express.json()` make available to routes?
-
 ## Further Learning & References
 
 - **Official guide:** [Express routing](https://expressjs.com/en/guide/routing.html) explains route methods, paths, and handlers.

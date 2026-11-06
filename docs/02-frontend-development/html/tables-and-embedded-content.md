@@ -13,12 +13,6 @@ Use a table for data that has meaningful rows and columns, not to position
 the page layout. Embed another page only when it adds real value and can be
 used accessibly.
 
-## Check your understanding
-
-1. What does a table caption help communicate?
-2. Why does an iframe need an accessible title?
-3. Which lesson discusses iframe sandboxing?
-
 ## Further learning
 
 - [MDN: `<table>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/table)

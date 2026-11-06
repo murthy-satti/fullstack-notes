@@ -42,12 +42,6 @@ Route parameters are untrusted input. Validate them before using them in
 queries, file access, or authorization decisions. A route handler is an HTTP
 endpoint, not a React page.
 
-## Check your understanding
-
-1. What does the App Router use to describe routes?
-2. Is every folder under `app/` automatically a public page?
-3. Why should a developer identify App Router versus Pages Router?
-
 ## Further learning
 
 - [Next.js: Getting started](https://nextjs.org/docs/app/getting-started)

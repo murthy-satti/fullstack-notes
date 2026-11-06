@@ -48,12 +48,6 @@ lookup; **method receiver** is the object to the left of the method call;
 - Arrow functions do not have their own `this` or `arguments`.
 - JavaScript `class` syntax still uses prototypes for instance methods.
 
-## Check your understanding
-
-1. What determines `this` in a normal method call?
-2. How does property lookup use the prototype chain?
-3. Why may an arrow function behave differently as an object method?
-
 ## Further learning
 
 - [MDN: Working with objects](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Working_with_objects)

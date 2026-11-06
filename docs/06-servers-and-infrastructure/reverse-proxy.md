@@ -40,12 +40,6 @@ A reverse proxy centralizes routing and can simplify TLS and traffic management.
 
 A reverse proxy is not automatically a firewall or authentication system. Backends still need access controls and secure application logic.
 
-## Revision questions
-
-1. What is the reverse proxy's role between client and backend?
-2. Why should applications trust forwarded headers only from known proxies?
-3. Name a setting that can cause proxy and application behavior to differ.
-
 ## Further Learning & References
 
 - **Official Nginx documentation:** [Reverse proxy module](https://nginx.org/en/docs/http/ngx_http_proxy_module.html) explains proxying requests and related directives.

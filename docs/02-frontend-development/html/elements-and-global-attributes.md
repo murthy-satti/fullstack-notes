@@ -83,12 +83,6 @@ custom names. IDs should be unique within a document. The `style` attribute
 works, but reusable design belongs in CSS. `data-*` is for application data,
 not a replacement for accessible names or built-in semantics.
 
-## Check your understanding
-
-1. What is the difference between a boolean and an enumerated attribute?
-2. Why does `required="false"` still enable the `required` attribute?
-3. When should `data-*` be used instead of an ARIA attribute?
-
 ## Further learning
 
 - [MDN: HTML attributes reference](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes)

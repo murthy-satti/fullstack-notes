@@ -61,12 +61,6 @@ where useful, but avoid delaying the main image visible immediately. `alt`
 text is not a caption, and `loading="lazy"` does not make an oversized image
 small.
 
-## Check your understanding
-
-1. When is empty `alt` text appropriate?
-2. How do `srcset` and `sizes` work together?
-3. Why should image dimensions be specified?
-
 ## Further learning
 
 - [MDN: Responsive images](https://developer.mozilla.org/en-US/docs/Web/HTML/Guides/Responsive_images)

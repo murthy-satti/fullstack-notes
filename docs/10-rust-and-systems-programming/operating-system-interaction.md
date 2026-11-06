@@ -49,12 +49,6 @@ Standard library interfaces make common tasks clear and portable. Operating-syst
 - Checking a path and using it later can have race conditions; design sensitive file operations carefully.
 - A command string should not be assembled from untrusted input and passed through a shell.
 
-## Revision questions
-
-1. Why do file operations return `Result`?
-2. How does passing process arguments separately help avoid shell interpretation?
-3. What aspects of filesystem behavior may vary across platforms?
-
 ## Further Learning & References
 
 - **Official documentation:** [The Rust Book, I/O Project](https://doc.rust-lang.org/book/ch12-00-an-io-project.html) demonstrates reading input, structuring errors, and building a small command-line program.

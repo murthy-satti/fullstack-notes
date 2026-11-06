@@ -48,13 +48,6 @@ These patterns can make rich interfaces feel natural, but add route state,
 fallback, and testing requirements. Use them only when their UI behavior
 benefits from the added complexity.
 
-## Check your understanding
-
-1. Does a route group name appear in its URL?
-2. What UI problem can parallel routes help solve?
-3. Why should advanced routing be tested for direct navigation as well as
-   in-app clicks?
-
 ## Further learning
 
 - [Next.js: Route groups](https://nextjs.org/docs/app/building-your-application/routing/route-groups)

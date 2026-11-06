@@ -78,12 +78,6 @@ for (const score of scores) {
 - `&&` and `||` do not always return `true` or `false`.
 - `for...in` does not provide array values in the same way `for...of` does.
 
-## Check your understanding
-
-1. How do `??` and `||` differ for a value of `0`?
-2. Why should a switch case often end with `break`?
-3. Which loop is designed to iterate values from an array?
-
 ## Further learning
 
 - [MDN: Expressions and operators](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Expressions_and_operators)

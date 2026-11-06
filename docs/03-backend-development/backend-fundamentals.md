@@ -57,12 +57,6 @@ deployment, monitoring, and careful handling of failures, security, and scaling.
 - A database is not the whole backend; validation and application rules matter.
 - A successful HTTP response does not prove that the result is correct.
 
-## Revision questions
-
-1. Why should authorization rules be enforced by the backend?
-2. What is the difference between business logic and persistence?
-3. What basic stages occur between receiving a request and returning a response?
-
 ## Further Learning & References
 
 - **Reference:** [MDN: Introduction to the server side](https://developer.mozilla.org/en-US/docs/Learn/Server-side/First_steps/Introduction) explains server-side responsibilities and request processing.

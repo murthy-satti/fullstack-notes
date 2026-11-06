@@ -103,12 +103,6 @@ Poorly structured markup is difficult to navigate and maintain.
   thoughtful labels and alternatives matter.
 - A `<div>` is not the best default for every piece of content.
 
-## Revision questions
-
-1. What does semantic HTML communicate beyond how content looks?
-2. What is the DOM, and how is it related to an HTML document?
-3. Why should a form control have an associated label?
-
 ## Further Learning & References
 
 - **Official standard:** [WHATWG HTML Living Standard](https://html.spec.whatwg.org/multipage/) defines HTML elements, parsing, and browser behavior.

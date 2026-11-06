@@ -53,12 +53,6 @@ browser's default layout participation.
 - A higher `z-index` does not always win across stacking contexts.
 - `fixed` content can obscure users when zoomed or on small screens.
 
-## Check your understanding
-
-1. Which position value removes an element from normal flow?
-2. Why may a child with `z-index: 9999` still appear behind another element?
-3. When is sticky positioning useful?
-
 ## Further learning
 
 - [MDN: Position](https://developer.mozilla.org/en-US/docs/Web/CSS/position)

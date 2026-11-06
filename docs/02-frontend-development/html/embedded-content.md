@@ -48,12 +48,6 @@ the frame. `loading="lazy"` is a loading hint and may not defer a frame in
 every situation. Embedding a page does not make its content part of the
 parent document's DOM.
 
-## Check your understanding
-
-1. Why should an iframe have a descriptive `title`?
-2. What does `sandbox` help control?
-3. Is iframe content part of the parent page's DOM?
-
 ## Further learning
 
 - [MDN: `<iframe>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe)

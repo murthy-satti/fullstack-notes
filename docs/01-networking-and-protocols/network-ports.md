@@ -105,14 +105,6 @@ number provides no authentication or encryption.
 - A listening port does not prove that external networks can reach it.
 - TCP port 53 and UDP port 53 are distinct endpoints; DNS can use both.
 
-## Revision questions
-
-1. How does a port complement an IP address?
-2. Why does a client usually use an ephemeral source port?
-3. What information helps distinguish one network flow from another?
-4. What does a local listening-socket listing fail to prove?
-5. Why is TCP port 53 different from UDP port 53?
-
 ## Further Learning & References
 
 - **Official documentation — MDN (beginner-friendly):** [Port](https://developer.mozilla.org/en-US/docs/Glossary/Port) introduces network ports and their role in communication.

@@ -88,12 +88,6 @@ performance depend on the browser and page.
 - Reduced-motion support is not just disabling every transition; preserve
   essential state feedback.
 
-## Check your understanding
-
-1. How do a transition and keyframe animation differ?
-2. Why does transform not move neighboring content in normal flow?
-3. How can CSS respect a user's reduced-motion preference?
-
 ## Further learning
 
 - [MDN: Using CSS transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_transitions/Using_CSS_transitions)

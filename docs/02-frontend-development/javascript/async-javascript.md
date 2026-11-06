@@ -54,12 +54,6 @@ in which operations complete.
 - `Promise.all` rejects if one of its input Promises rejects; use other
   combinators when partial results are required.
 
-## Check your understanding
-
-1. What value does an `async` function return?
-2. Why should code check `response.ok` after `fetch`?
-3. What UI states should a data request usually represent?
-
 ## Further learning
 
 - [MDN: Promises](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Using_promises)

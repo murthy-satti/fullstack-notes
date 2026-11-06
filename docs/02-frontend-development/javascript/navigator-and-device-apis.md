@@ -61,13 +61,6 @@ only what the feature requires and disclose sensitive capability requests.
 Never trust client-reported platform, user-agent, online, or hardware
 information for security decisions.
 
-## Check your understanding
-
-1. Why is `navigator.onLine` not proof that an API is reachable?
-2. Why should feature detection usually be preferred to user-agent parsing?
-3. What is the difference between querying a permission and obtaining it?
-4. Why should geolocation or camera access be requested only when useful?
-
 ## Further learning
 
 - [MDN: Navigator](https://developer.mozilla.org/en-US/docs/Web/API/Navigator)

@@ -41,12 +41,6 @@ Performance tests provide evidence for capacity and can expose bottlenecks early
 - More virtual users do not automatically mean a more realistic test.
 - A passing result today does not guarantee future capacity.
 
-## Revision questions
-
-1. Why are percentiles useful alongside averages?
-2. How do load, stress, and soak tests differ?
-3. What should a test plan specify before it runs?
-
 ## Further Learning & References
 
 - **Official documentation:** [Grafana k6 documentation](https://grafana.com/docs/k6/latest/) explains load-test scripts, execution, and performance metrics.

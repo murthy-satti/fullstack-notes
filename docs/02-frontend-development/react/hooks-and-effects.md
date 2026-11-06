@@ -56,12 +56,6 @@ reactive values used by an effect; **cleanup** reverses external setup;
   development behavior and component remounts matter.
 - Effects do not run during server rendering.
 
-## Check your understanding
-
-1. What kind of work belongs in an effect?
-2. Why does an event listener effect need cleanup?
-3. Why must hooks not be called conditionally?
-
 ## Further learning
 
 - [React Learn: Synchronizing with Effects](https://react.dev/learn/synchronizing-with-effects)

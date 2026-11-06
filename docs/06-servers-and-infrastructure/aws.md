@@ -40,12 +40,6 @@ AWS offers broad choices and global infrastructure. Its breadth can make selecti
 
 Cloud resources are not free or maintenance-free. AWS manages underlying facilities, but customers remain responsible for application behavior, data protection, access rules, and many configuration choices.
 
-## Revision questions
-
-1. What is the difference between a Region and an Availability Zone?
-2. Name one AWS service for virtual servers and one for object storage.
-3. Why should a team set spending alerts?
-
 ## Further Learning & References
 
 - **Official AWS documentation:** [What is Amazon EC2?](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/concepts.html) introduces virtual server concepts and EC2 terminology.

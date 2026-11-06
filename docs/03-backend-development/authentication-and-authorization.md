@@ -61,12 +61,6 @@ protocols and libraries rather than inventing schemes.
 - Hiding a button in the frontend is not an access-control check.
 - Encoding a token does not necessarily encrypt it or make it trustworthy.
 
-## Revision questions
-
-1. Explain authentication and authorization in your own words.
-2. Why must a backend check ownership when retrieving a record?
-3. Why should passwords never be stored as plain text?
-
 ## Further Learning & References
 
 - **Reference:** [MDN: HTTP authentication](https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication) explains HTTP authentication mechanisms and challenges.

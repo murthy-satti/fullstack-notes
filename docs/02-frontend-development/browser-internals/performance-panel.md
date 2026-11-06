@@ -37,12 +37,6 @@ largest measured bottleneck rather than chasing small isolated numbers.
 - Network delay and main-thread delay are different bottlenecks.
 - Improving a synthetic score may not improve the user's actual task.
 
-## Check your understanding
-
-1. What does a flame chart represent?
-2. How can you distinguish network waiting from main-thread work?
-3. Why should you repeat a recording after a change?
-
 ## Further learning
 
 - [Chrome DevTools: Performance overview](https://developer.chrome.com/docs/devtools/performance/)

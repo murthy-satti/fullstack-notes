@@ -58,12 +58,6 @@ Use a visible label for every choice and make groups understandable without
 relying only on visual placement. Do not treat a selected value as trusted:
 the server must validate that the value is allowed for the current user.
 
-## Check your understanding
-
-1. Which control is best when multiple independent options can be selected?
-2. Why do radio buttons in a group share the same `name`?
-3. Which element can provide a visible title for a group of controls?
-
 ## Further learning
 
 - [MDN: `<select>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/select)

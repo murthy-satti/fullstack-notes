@@ -56,12 +56,6 @@ universally compatible.
 - A directory is not necessarily a physical folder, and deleting a name does
   not ensure that its data is unrecoverable.
 
-## Revision questions
-
-1. What information does file-system metadata describe?
-2. What does mounting do?
-3. Why are backups needed even when a file system is reliable?
-
 ## Further Learning & References
 
 - **Official documentation — Linux man-pages project:** [inode(7)](https://man7.org/linux/man-pages/man7/inode.7.html)

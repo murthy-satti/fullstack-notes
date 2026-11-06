@@ -55,12 +55,6 @@ meaningful elements over manually inserting spaces or repeated line breaks.
 - `<blockquote cite>` does not by itself display a citation.
 - `<pre>` is not a general-purpose way to preserve page layout whitespace.
 
-## Check your understanding
-
-1. Which element represents a paragraph?
-2. What is the difference between `<q>` and `<blockquote>`?
-3. Why should code examples use `<code>` inside `<pre>`?
-
 ## Further learning
 
 - [MDN: `<p>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/p)

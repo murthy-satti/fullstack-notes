@@ -90,12 +90,6 @@ unwanted authenticated request.
   authentication needs CSRF-aware design.
 - `cookies()` usage can make output depend on each request.
 
-## Check your understanding
-
-1. What does `HttpOnly` prevent?
-2. How do a session and a cookie differ?
-3. Why is cookie-based authentication relevant to CSRF?
-
 ## Further learning
 
 - [Next.js: `cookies`](https://nextjs.org/docs/app/api-reference/functions/cookies)

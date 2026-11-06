@@ -73,13 +73,6 @@ Destructuring and spread can make updates clear, but deeply nested patterns
 can hide assumptions about input shape. Spread is not a deep clone, and
 rest parameters are not the same feature as spread despite sharing `...`.
 
-## Check your understanding
-
-1. How does object destructuring find a property?
-2. What does a rest parameter collect?
-3. Why is `{ ...user }` only a shallow copy?
-4. What does optional chaining protect against?
-
 ## Further learning
 
 - [MDN: Destructuring](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring)

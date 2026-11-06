@@ -56,12 +56,6 @@ Use `autocomplete` tokens for common information. `accept`, `pattern`, and
 `required` improve the browser experience but do not replace validation on
 the server.
 
-## Check your understanding
-
-1. What is the difference between `id` and `name` on an input?
-2. Why is a placeholder not a substitute for a label?
-3. Can a hidden input safely establish a user's permission?
-
 ## Further learning
 
 - [MDN: `<input>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input)

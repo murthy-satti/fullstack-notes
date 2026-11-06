@@ -122,13 +122,6 @@ specific framework version they deploy.
   depend on the route, server, network, assets, caching, and application code.
 - A `"use client"` file is not a safe place for secrets.
 
-## Revision questions
-
-1. What does Next.js add to React?
-2. Why should a developer avoid claiming that a framework is always faster?
-3. What is the default component model in the App Router?
-4. How do you pass a custom port to the standard `npm run dev` script?
-
 ## Explore the Next.js topics
 
 - [Getting started and project structure](nextjs/getting-started.md)

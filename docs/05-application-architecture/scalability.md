@@ -42,12 +42,6 @@ Scaling can improve capacity but raises cost and complexity. Horizontal scaling 
 
 More servers do not guarantee faster responses or reliability. “Scale later” works best when architecture preserves a path to evolve.
 
-## Revision questions
-
-1. How do vertical and horizontal scaling differ?
-2. Why can adding application instances overload a database?
-3. Which measurements would help locate a bottleneck?
-
 ## Further Learning & References
 
 - **Official AWS documentation — [Reliability Pillar: Design Principles](https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/design-principles.html):** discusses resilient workload design, including scaling and recovery principles.

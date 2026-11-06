@@ -43,12 +43,6 @@ finishes before another job starts on that thread.
 - `async`/`await` changes how asynchronous code is written, not the underlying
   need to schedule completion.
 
-## Check your understanding
-
-1. Why does a long synchronous loop make a page unresponsive?
-2. Which runs first in the example: a Promise reaction or a timer?
-3. When might a Web Worker be useful?
-
 ## Further learning
 
 - [MDN: JavaScript event loop](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Event_loop)

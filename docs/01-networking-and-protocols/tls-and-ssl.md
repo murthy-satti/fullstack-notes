@@ -107,13 +107,6 @@ connection cannot protect data after it reaches a compromised endpoint.
 - SSL is not the current protocol to enable; modern deployments use TLS.
 - Encryption does not prevent phishing, malware, or unsafe application code.
 
-## Revision questions
-
-1. What security properties does TLS help provide?
-2. What does a browser check in a server certificate?
-3. Why does a valid certificate not prove that a website is trustworthy?
-4. What does TLS protect that HTTP alone does not?
-
 ## Further Learning & References
 
 - **Official documentation — MDN (beginner-friendly):** [Transport Layer Security (TLS)](https://developer.mozilla.org/en-US/docs/Web/Security/Transport_Layer_Security) explains TLS, certificates, and their role in web security.

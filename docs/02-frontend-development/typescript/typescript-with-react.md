@@ -43,12 +43,6 @@ from the surrounding JSX and values.
 - `React.FC` is not required for every function component.
 - A type assertion cannot repair an incorrectly shaped response.
 
-## Check your understanding
-
-1. How can an optional prop be represented?
-2. Why should API data be validated at runtime even when components are typed?
-3. When can React infer an event type?
-
 ## Further learning
 
 - [React TypeScript Cheatsheet](https://react-typescript-cheatsheet.netlify.app/)

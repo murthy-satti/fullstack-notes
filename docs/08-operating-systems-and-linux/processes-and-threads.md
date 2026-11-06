@@ -54,12 +54,6 @@ oversubscription make programs harder to test.
 - A process is a running instance, threads sharing a process are not isolated,
   and adding threads does not guarantee speed.
 
-## Revision questions
-
-1. Which resources are commonly shared by threads in one process?
-2. What is a race condition?
-3. When might a separate process be preferable to another thread?
-
 ## Further Learning & References
 
 - **Official documentation — Linux man-pages project:** [clone(2)](https://man7.org/linux/man-pages/man2/clone.2.html)

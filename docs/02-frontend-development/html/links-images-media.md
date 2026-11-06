@@ -19,12 +19,6 @@ interface. Media elements describe content that the browser can render or
 play. Choose descriptive names and alternatives so people using assistive
 technology can understand the purpose and meaning.
 
-## Check your understanding
-
-1. When should an image use empty `alt` text?
-2. Which element should be used for an action rather than navigation?
-3. What HTML element connects captions to a video?
-
 ## Further learning
 
 - [MDN: HTML elements reference](https://developer.mozilla.org/en-US/docs/Web/HTML/Element)

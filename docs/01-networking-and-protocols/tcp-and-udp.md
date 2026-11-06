@@ -109,13 +109,6 @@ application.
 - UDP does not mean an application cannot be reliable; QUIC is an example of
   a protocol that builds additional behavior over UDP.
 
-## Revision questions
-
-1. What does the TCP three-way handshake establish?
-2. Why does TCP deliver a byte stream rather than messages?
-3. Which delivery responsibilities does UDP leave to an application?
-4. Why can a late voice packet be less useful than a lost one?
-
 ## Further Learning & References
 
 - **Official documentation — MDN (beginner-friendly):** [Transmission Control Protocol (TCP)](https://developer.mozilla.org/en-US/docs/Glossary/TCP) summarizes TCP's role in network communication.

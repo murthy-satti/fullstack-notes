@@ -54,12 +54,6 @@ bugs or security weaknesses. Maintenance and limited permissions matter.
 - The kernel is not the whole OS, and an OS does not guarantee applications
   are safe. A Linux distribution adds utilities and applications.
 
-## Revision questions
-
-1. What is the kernel responsible for?
-2. Why do applications use system calls?
-3. What is the difference between the kernel and a Linux distribution?
-
 ## Further Learning & References
 
 - **Official documentation — Linux man-pages project:** [syscalls(2)](https://man7.org/linux/man-pages/man2/syscalls.2.html)

@@ -95,12 +95,6 @@ primary export; **exception** is an error value thrown during execution;
 - `finally` is not a place to return a second result that accidentally
   overrides the original return or exception.
 
-## Check your understanding
-
-1. What is the difference between a named and default export?
-2. What does `import()` return?
-3. Where should an error be caught?
-
 ## Further learning
 
 - [MDN: JavaScript modules](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)

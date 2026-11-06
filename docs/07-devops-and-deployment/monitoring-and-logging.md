@@ -40,12 +40,6 @@ Monitoring shortens diagnosis and reveals trends. It needs storage and access co
 
 More logs do not automatically ease debugging. An alert is not a diagnosis, and dashboards cannot show uncollected data.
 
-## Revision questions
-
-1. What is one difference between a metric and a log?
-2. How can a correlation ID help diagnose a request?
-3. What should never be written to ordinary logs?
-
 ## Further Learning & References
 
 - **Official AWS documentation:** [What is Amazon CloudWatch?](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/WhatIsCloudWatch.html) describes metrics, logs, alarms, and monitoring.

@@ -78,12 +78,6 @@ values from ancestors; **cascade layer** groups rules into an explicit order.
   point.
 - `!important` does not fix a confusing stylesheet design.
 
-## Check your understanding
-
-1. Why can a matching rule still lose?
-2. Which selector group outranks classes in the basic specificity comparison?
-3. Does specificity come before cascade origin and importance?
-
 ## Further learning
 
 - [MDN: Cascade](https://developer.mozilla.org/en-US/docs/Web/CSS/Cascade)

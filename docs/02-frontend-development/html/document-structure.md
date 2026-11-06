@@ -80,12 +80,6 @@ element; the **DOM** is the browser's parsed, in-memory representation.
 - `async` and `defer` have different scheduling behavior; neither should be
   added blindly to a script that depends on parsing order.
 
-## Check your understanding
-
-1. What belongs in `head`, and what belongs in `body`?
-2. What information does the `lang` attribute provide?
-3. Why include a viewport meta element?
-
 ## Further learning
 
 - [MDN: Basic HTML syntax](https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Structuring_content/Basic_HTML_syntax)

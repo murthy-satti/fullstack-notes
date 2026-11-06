@@ -91,12 +91,6 @@ external data. See [runtime validation](typescript/runtime-validation.md).
 - More annotations are not always better; inference is often clear and
   reliable.
 
-## Check your understanding
-
-1. What runs after TypeScript is built?
-2. How does `unknown` differ from `any`?
-3. Why should an API response be checked at runtime?
-
 ## Further learning
 
 - [TypeScript Handbook](https://www.typescriptlang.org/docs/handbook/intro.html)

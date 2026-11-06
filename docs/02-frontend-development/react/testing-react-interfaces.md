@@ -34,12 +34,6 @@ checks an expected result; **mock** replaces a dependency for a test;
 - Snapshot output alone may not explain whether behavior is correct.
 - Tests tied to implementation details can break during harmless refactoring.
 
-## Check your understanding
-
-1. Why test accessible roles and labels?
-2. What is the difference between a component and end-to-end test?
-3. Why should tests focus on observable behavior?
-
 ## Further learning
 
 - [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/)

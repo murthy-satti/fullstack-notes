@@ -93,12 +93,6 @@ accessibility tree.
 - `float` is not a substitute for Flexbox or Grid for general application
   layout.
 
-## Check your understanding
-
-1. How do margin and padding differ?
-2. Which property is useful for spacing items in a Grid or Flex container?
-3. What differs between `display: none` and `visibility: hidden`?
-
 ## Further learning
 
 - [MDN: CSS reference](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference)

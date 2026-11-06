@@ -54,12 +54,6 @@ Treat every route parameter as untrusted. Validate its format, confirm the
 requested record exists, and check authorization before returning protected
 data. Escaping or type-checking a parameter alone does not grant access.
 
-## Check your understanding
-
-1. What does `[productId]` represent in a route?
-2. How does `[...slug]` differ from `[[...slug]]`?
-3. Why is a route parameter not an authorization check?
-
 ## Further learning
 
 - [Next.js: Dynamic segments](https://nextjs.org/docs/app/building-your-application/routing/dynamic-routes)

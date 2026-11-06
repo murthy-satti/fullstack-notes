@@ -48,12 +48,6 @@ Use the smallest practical client boundary. Do not move an entire route to
 the browser just to implement one interactive widget. Keep secrets and
 privileged data operations on trusted server code.
 
-## Check your understanding
-
-1. What does `"use client"` establish?
-2. Why should browser-only APIs not run during server rendering?
-3. Does CSR automatically make a page impossible to index?
-
 ## Further learning
 
 - [Next.js: Client Components](https://nextjs.org/docs/app/building-your-application/rendering/client-components)

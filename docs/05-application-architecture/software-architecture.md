@@ -41,12 +41,6 @@ Good architecture clarifies responsibilities. Unhelpful abstraction becomes over
 
 There is no universally best architecture, and microservices are not automatically more scalable. A useful design is one a team can operate and change.
 
-## Revision questions
-
-1. What is the difference between a component and a boundary?
-2. Why might a modular monolith be a reasonable starting point?
-3. Which quality attribute matters most for a system you use?
-
 ## Further Learning & References
 
 - **Official AWS documentation — [AWS Well-Architected Framework](https://docs.aws.amazon.com/wellarchitected/latest/framework/welcome.html):** provides a structured set of questions and pillars for evaluating cloud workloads.

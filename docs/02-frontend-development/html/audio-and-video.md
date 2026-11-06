@@ -50,12 +50,6 @@ policy. Captions improve access but do not necessarily describe visual
 information; provide an appropriate audio description or transcript when
 needed.
 
-## Check your understanding
-
-1. Which element provides timed captions?
-2. What is the purpose of a video `poster`?
-3. Does `preload="auto"` force the browser to download the whole media file?
-
 ## Further learning
 
 - [MDN: `<audio>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio)

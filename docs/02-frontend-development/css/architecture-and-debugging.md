@@ -37,12 +37,6 @@ mechanism, depending on the toolchain.
 - A computed value may come from inheritance or browser defaults, not only
   the rule closest to the element.
 
-## Check your understanding
-
-1. What should you inspect when a style appears crossed out?
-2. Why are complex selectors costly to maintain?
-3. What does a CSS Module scope?
-
 ## Further learning
 
 - [MDN: CSS troubleshooting](https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Styling_basics/Debugging_CSS)

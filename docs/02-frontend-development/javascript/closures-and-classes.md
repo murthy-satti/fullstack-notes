@@ -80,12 +80,6 @@ Closures share access to captured bindings, not snapshots of their values.
 created from a constructor/class; **prototype** provides shared behavior;
 **encapsulation** limits direct access to implementation details.
 
-## Check your understanding
-
-1. What does a closure retain?
-2. Where are ordinary class instance methods typically shared?
-3. What is the difference between a static member and an instance member?
-
 ## Further learning
 
 - [MDN: Closures](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures)

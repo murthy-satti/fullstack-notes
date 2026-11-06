@@ -50,13 +50,6 @@ systems.
 - Validation does not replace output encoding or parameterized database
   operations.
 
-## Check your understanding
-
-1. Why must the server repeat important validation?
-2. What does `required` guarantee, and what does it not guarantee?
-3. How can a form error be made easier to understand for assistive-technology
-   users?
-
 ## Further learning
 
 - [MDN: Constraint validation](https://developer.mozilla.org/en-US/docs/Web/HTML/Constraint_validation)

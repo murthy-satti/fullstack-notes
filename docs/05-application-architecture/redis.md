@@ -46,12 +46,6 @@ Redis provides fast access and useful data structures. Memory is limited and can
 
 Redis is not only a cache, but using it does not automatically make data durable. “In memory” does not mean unlimited capacity or zero latency.
 
-## Revision questions
-
-1. Which Redis data structure might represent unique members?
-2. Why give temporary keys an expiration?
-3. What should an application consider if Redis is unavailable?
-
 ## Further Learning & References
 
 - **Official Redis documentation — [Data types](https://redis.io/docs/latest/develop/data-types/):** introduces Redis structures and their core use cases.

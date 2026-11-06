@@ -46,12 +46,6 @@ combines layers; **layout shift** is unexpected movement of visible content.
 - The browser does not wait for every resource before showing anything.
 - More JavaScript is not a universal solution to rendering problems.
 
-## Check your understanding
-
-1. How are layout and paint different?
-2. Why can fixed image dimensions reduce layout shifts?
-3. Which panel can help investigate a slow interaction?
-
 ## Further learning
 
 - [MDN: How browsers work](https://developer.mozilla.org/en-US/docs/Web/Performance/How_browsers_work)

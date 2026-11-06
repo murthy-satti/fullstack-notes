@@ -51,12 +51,6 @@ Concurrency can keep applications responsive and increase throughput. It adds co
 - `Arc<T>` provides shared ownership, not automatic thread-safe mutation.
 - Rust's safety guarantees do not prevent deadlocks or incorrect business logic.
 
-## Revision questions
-
-1. How does a channel differ from sharing a mutable variable?
-2. What does `join` do in the example?
-3. Why is `Arc<Mutex<T>>` sometimes used together?
-
 ## Further Learning & References
 
 - **Official documentation:** [The Rust Book, Fearless Concurrency](https://doc.rust-lang.org/book/ch16-00-concurrency.html) introduces threads, message passing, and shared state.

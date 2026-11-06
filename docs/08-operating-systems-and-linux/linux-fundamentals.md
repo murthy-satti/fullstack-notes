@@ -55,12 +55,6 @@ differences and command-line complexity can challenge beginners.
 - Linux is not one distribution. A terminal hosts a shell, and diagnostic
   output alone does not guarantee system health.
 
-## Revision questions
-
-1. What does a Linux distribution add to the kernel?
-2. How do absolute and relative paths differ?
-3. Which commands in the practical example only inspect state?
-
 ## Further Learning & References
 
 - **Official documentation — Linux man-pages project:** [Linux manual page

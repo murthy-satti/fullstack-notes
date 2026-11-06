@@ -84,13 +84,6 @@ cookie but does not stop all request forgery or fix XSS. Cookie rules,
 SameSite defaults, and partitioning behavior vary with browsers and
 deployment; follow current standards and security guidance.
 
-## Check your understanding
-
-1. How does `document` differ from `window`?
-2. What does `HttpOnly` prevent?
-3. Can JavaScript set the `HttpOnly` attribute?
-4. Does an HttpOnly cookie remove the need for other security controls?
-
 ## Further learning
 
 - [MDN: Window](https://developer.mozilla.org/en-US/docs/Web/API/Window)

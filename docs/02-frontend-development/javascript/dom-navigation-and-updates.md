@@ -63,14 +63,6 @@ using it. A static NodeList does not update when matching elements are
 added later. For interaction, prefer semantic buttons, links, and form
 controls over clickable generic containers.
 
-## Check your understanding
-
-1. What is the difference between `querySelector` and
-   `querySelectorAll`?
-2. Why is a `NodeList` from `querySelectorAll` called static?
-3. Name two operations available through `classList`.
-4. Why should untrusted text not be assigned to `innerHTML`?
-
 ## Further learning
 
 - [MDN: Document Object Model](https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model)

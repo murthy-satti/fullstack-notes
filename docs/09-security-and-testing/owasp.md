@@ -41,12 +41,6 @@ OWASP provides accessible, widely used references and a shared vocabulary. Lists
 - The Top 10 is not an exhaustive catalog or a step-by-step secure coding standard.
 - A control copied from guidance still needs testing in its real environment.
 
-## Revision questions
-
-1. How does the purpose of the Top 10 differ from ASVS?
-2. Why should teams record the version of guidance they use?
-3. What should accompany a security checklist?
-
 ## Further Learning & References
 
 - **OWASP project:** [OWASP Top 10](https://owasp.org/Top10/) introduces major web application risk categories for awareness.

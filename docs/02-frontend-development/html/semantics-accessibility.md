@@ -89,12 +89,6 @@ behavior. See [HTML elements and global attributes](elements-and-global-attribut
   thematic section, usually with a heading.
 - ARIA adds semantics but generally does not implement interaction behavior.
 
-## Check your understanding
-
-1. When is `<article>` more suitable than `<section>`?
-2. What is the difference between `<strong>` and `<b>`?
-3. Why should a native button be preferred over a clickable `<div>`?
-
 ## Further learning
 
 - [MDN: HTML elements reference](https://developer.mozilla.org/en-US/docs/Web/HTML/Element)

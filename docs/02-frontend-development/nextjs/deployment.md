@@ -46,12 +46,6 @@ preview, and production settings distinct.
 - Public environment variables are not secrets; client-exposed values can be
   read by users.
 
-## Check your understanding
-
-1. Why should production builds be tested before release?
-2. What should be checked when choosing a deployment platform?
-3. Which environment variables must never be exposed to browser code?
-
 ## Further learning
 
 - [Next.js: Deploying](https://nextjs.org/docs/app/getting-started/deploying)

@@ -64,13 +64,6 @@ listeners and APIs designed around callbacks. Choose Promises for
 composable asynchronous results. A zero-delay timer still runs later, not
 immediately.
 
-## Check your understanding
-
-1. What is a callback?
-2. Does `setTimeout(fn, 0)` run `fn` immediately?
-3. Why can deeply nested callbacks be difficult to maintain?
-4. Which APIs cancel a timeout and an interval?
-
 ## Further learning
 
 - [MDN: Functions as callbacks](https://developer.mozilla.org/en-US/docs/Glossary/Callback_function)

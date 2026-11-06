@@ -41,12 +41,6 @@ Designing early can reveal risks, but capacity estimates are uncertain. Too much
 
 System design is not a choice of fashionable tools. A simple system can be well designed; unneeded redundancy or caching may add failure modes.
 
-## Revision questions
-
-1. How do functional and non-functional requirements differ?
-2. Why should a design include failure paths?
-3. Which assumptions in a design should be validated first?
-
 ## Further Learning & References
 
 - **Official AWS documentation — [AWS Well-Architected Framework](https://docs.aws.amazon.com/wellarchitected/latest/framework/welcome.html):** offers questions for reviewing operational, security, reliability, and performance decisions.

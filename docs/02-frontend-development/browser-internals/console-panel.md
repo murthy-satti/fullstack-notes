@@ -60,12 +60,6 @@ data.
 - The Console is not a substitute for automated tests.
 - A runtime error may be caused by data or timing, not only syntax.
 
-## Check your understanding
-
-1. What information can a stack trace provide?
-2. When is `console.table()` useful?
-3. Why should Console snippets from untrusted sources not be pasted blindly?
-
 ## Further learning
 
 - [Chrome DevTools: Console overview](https://developer.chrome.com/docs/devtools/console/)

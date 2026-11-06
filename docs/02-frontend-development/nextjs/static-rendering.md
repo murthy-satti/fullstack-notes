@@ -38,12 +38,6 @@ additional deployment constraints and does not support every
 server-dependent Next.js feature. Static does not mean “no JavaScript”;
 client-side interaction can still be added.
 
-## Check your understanding
-
-1. Why can a CDN serve statically rendered output efficiently?
-2. What kind of data should not be placed in shared static output?
-3. Is static rendering identical to static export?
-
 ## Further learning
 
 - [Next.js: Static exports](https://nextjs.org/docs/app/guides/static-exports)

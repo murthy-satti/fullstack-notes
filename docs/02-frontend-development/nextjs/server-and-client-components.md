@@ -53,12 +53,6 @@ server-rendered UI when needed.
 - Adding `"use client"` to the root unnecessarily can increase client-side
   JavaScript.
 
-## Check your understanding
-
-1. When does a component need the client boundary?
-2. What kind of props can cross a server/client boundary?
-3. Why should secrets remain out of rendered output?
-
 ## Further learning
 
 - [Next.js: Server and Client Components](https://nextjs.org/docs/app/building-your-application/rendering/server-components)

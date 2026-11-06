@@ -49,12 +49,6 @@ files or packages.
 - A `tsconfig` option copied from another framework may conflict with the
   project's build system.
 
-## Check your understanding
-
-1. Why might a framework build need a separate type-check command?
-2. What does module resolution control?
-3. Why should compiler settings be committed?
-
 ## Further learning
 
 - [TypeScript Handbook: TSConfig](https://www.typescriptlang.org/docs/handbook/tsconfig-json.html)

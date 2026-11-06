@@ -58,12 +58,6 @@ simplest narrow layout, then enhancing it for wider space.
 - A layout that fits the viewport can still be hard to read or operate.
 - Media queries complement, but do not replace, flexible layout.
 
-## Check your understanding
-
-1. When should a breakpoint be introduced?
-2. Why use a maximum content width?
-3. What should you test besides a narrow viewport?
-
 ## Further learning
 
 - [MDN: Responsive design](https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/CSS_layout/Responsive_Design)

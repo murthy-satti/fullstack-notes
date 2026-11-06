@@ -40,12 +40,6 @@ Load balancing spreads load and can help with maintenance or failure recovery. I
 
 Adding instances does not always make an application scale: shared dependencies may still limit it. A passing health check does not prove every feature works.
 
-## Revision questions
-
-1. What is a health check used for?
-2. Why can session affinity make scaling less flexible?
-3. What kinds of dependencies may remain bottlenecks?
-
 ## Further Learning & References
 
 - **Official Nginx documentation:** [HTTP load balancing](https://nginx.org/en/docs/http/load_balancing.html) explains upstream servers and balancing methods.

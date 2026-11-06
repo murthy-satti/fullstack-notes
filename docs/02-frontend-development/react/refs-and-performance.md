@@ -42,12 +42,6 @@ updates. Direct DOM manipulation may conflict with React's own updates. A
 component re-render is not automatically a performance problem; optimize
 measured expensive work.
 
-## Check your understanding
-
-1. Why does changing a ref not trigger a render?
-2. When is state a better choice than a ref?
-3. Why profile before adding memoization?
-
 ## Further learning
 
 - [React Learn: Referencing values with refs](https://react.dev/learn/referencing-values-with-refs)

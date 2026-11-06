@@ -39,12 +39,6 @@ browser into making an unwanted authenticated request.
 - Middleware checks do not replace checks at the protected operation.
 - A successful login does not mean every resource is accessible.
 
-## Check your understanding
-
-1. How do authentication and authorization differ?
-2. Why check permissions at the data operation?
-3. What should never be shipped in a browser bundle?
-
 ## Further learning
 
 - [Next.js: Authentication](https://nextjs.org/docs/app/guides/authentication)

@@ -65,13 +65,6 @@ The alternative text communicates the image's relevant content.
   some changes can require layout or paint.
 - Adding more JavaScript is not always faster than a browser-provided feature.
 
-## Revision questions
-
-1. What are the DOM and CSSOM used for?
-2. How do layout and paint differ?
-3. Why can reserving image dimensions improve loading stability?
-4. Which DevTools panel would you use to inspect a failed API request?
-
 ## Explore browser tools and rendering
 
 - [Page rendering pipeline](browser-internals/rendering-pipeline.md)

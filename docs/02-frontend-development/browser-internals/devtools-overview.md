@@ -49,12 +49,6 @@ the cascade; **waterfall** visualizes request timing.
 - Do not share screenshots, HAR files, or Console output without checking for
   tokens and personal data.
 
-## Check your understanding
-
-1. Which panel should you open first for a failed API request?
-2. What is the difference between source CSS and computed style?
-3. Why should a captured network log be treated carefully?
-
 ## Further learning
 
 - [Chrome DevTools documentation](https://developer.chrome.com/docs/devtools/)

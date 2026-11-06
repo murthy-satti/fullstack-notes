@@ -71,12 +71,6 @@ logical measurement and can map to multiple device pixels. A selector
 matching an element does not guarantee its rule wins; see the
 [cascade lesson](cascade-and-selectors.md).
 
-## Check your understanding
-
-1. What are the selector and declaration in a CSS rule?
-2. How do `rem` and `em` differ conceptually?
-3. What is an at-rule?
-
 ## Further learning
 
 - [MDN: CSS syntax](https://developer.mozilla.org/en-US/docs/Web/CSS/Syntax)

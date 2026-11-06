@@ -86,13 +86,6 @@ Methods such as `map` create a new outer array but do not deep-copy objects
 inside it. `sort`, `splice`, `push`, and `pop` mutate the array. Choose
 methods based on whether mutation is intended.
 
-## Check your understanding
-
-1. When should you choose `filter` instead of `map`?
-2. What does `forEach` return?
-3. Why does `[30, 4, 100].sort()` not produce numeric order?
-4. Why provide an initial value to `reduce`?
-
 ## Further learning
 
 - [MDN: Indexed collections](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Indexed_collections)

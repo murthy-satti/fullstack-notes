@@ -106,14 +106,6 @@ interoperate with IPv4 during deployment.
 - IPv6 is not simply IPv4 written differently; it has a larger address format
   and different network behaviors.
 
-## Revision questions
-
-1. How do IPv4 and IPv6 address sizes differ?
-2. What does `/24` describe in a network prefix?
-3. When does a device send a packet to its default gateway?
-4. Why might a server see a different address from a laptop's local address?
-5. In `192.168.1.42/24`, which bits identify the network?
-
 ## Further Learning & References
 
 - **Official documentation — MDN (beginner-friendly):** [IP address](https://developer.mozilla.org/en-US/docs/Glossary/IP_Address) introduces the address concept and its role in routing.

@@ -68,13 +68,6 @@ Passing a function does not call it: `handler` is a reference, while
 `handler()` invokes it. Closures let inner functions retain access to
 lexical bindings; see [closures and classes](closures-and-classes.md).
 
-## Check your understanding
-
-1. How does a function declaration differ from a function expression?
-2. When does a default parameter apply?
-3. What does an arrow function do with `this`?
-4. How do `let` and `var` differ in scope?
-
 ## Further learning
 
 - [MDN: Functions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Functions)

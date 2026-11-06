@@ -46,12 +46,6 @@ horizontal scrolling may be appropriate for wide data. Do not use tables
 to position unrelated interface regions. CSS Grid and Flexbox are layout
 tools.
 
-## Check your understanding
-
-1. What does `<caption>` communicate?
-2. How does a `<th>` differ from a `<td>`?
-3. When is a table the wrong choice?
-
 ## Further learning
 
 - [MDN: `<table>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/table)

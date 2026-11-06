@@ -89,12 +89,6 @@ hidden or misleading metadata to claim content that users cannot see.
 - `noindex` does not prevent someone from directly visiting a URL.
 - Server rendering and metadata do not guarantee search ranking.
 
-## Check your understanding
-
-1. When should `generateMetadata` be used instead of a static export?
-2. What does a canonical URL communicate?
-3. Why is `noindex` not an access-control feature?
-
 ## Further learning
 
 - [Next.js: Metadata and OG images](https://nextjs.org/docs/app/building-your-application/optimizing/metadata)

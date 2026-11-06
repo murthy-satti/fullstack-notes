@@ -115,12 +115,6 @@ work; **revalidation** refreshes cached data or output.
 - Caching is not automatically safe for per-user data.
 - ISR does not mean every cached page refreshes at an exact scheduled second.
 
-## Check your understanding
-
-1. What is the difference between data caching and route-output caching?
-2. Why should independent requests often run concurrently?
-3. What must be checked before caching personalized data?
-
 ## Further learning
 
 - [Next.js: Fetching data](https://nextjs.org/docs/app/building-your-application/data-fetching)

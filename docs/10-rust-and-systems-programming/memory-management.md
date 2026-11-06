@@ -47,12 +47,6 @@ Ownership provides predictable cleanup and prevents many memory errors in safe c
 - Borrowing does not duplicate the owned value.
 - Memory safety does not prevent all leaks or excessive memory use.
 
-## Revision questions
-
-1. What happens when an owned value leaves its scope?
-2. How does borrowing avoid transferring ownership?
-3. Does safe Rust guarantee that a program cannot leak memory?
-
 ## Further Learning & References
 
 - **Official documentation:** [The Rust Book, Understanding Ownership](https://doc.rust-lang.org/book/ch04-00-understanding-ownership.html) explains moves, references, and lifetimes.

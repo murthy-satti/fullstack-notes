@@ -62,12 +62,6 @@ errors can hide distinctions; overly detailed responses can leak information.
 - A `try/catch` block does not automatically handle every asynchronous error.
 - Logging an error is not the same as recovering from it or notifying the client.
 
-## Revision questions
-
-1. Why should clients receive a safe message instead of a stack trace?
-2. Give an example of an expected operational error.
-3. What are the responsibilities of an Express error handler?
-
 ## Further Learning & References
 
 - **Official guide:** [Express error handling](https://expressjs.com/en/guide/error-handling.html) explains how errors are passed through Express and handled.

@@ -47,12 +47,6 @@ state.
 - Props and state have different owners: a component receives props and owns
   its local state.
 
-## Check your understanding
-
-1. What does calling a state setter request?
-2. When is a functional state update useful?
-3. Why should objects in state be updated immutably?
-
 ## Further learning
 
 - [React Learn: State — a component's memory](https://react.dev/learn/state-a-components-memory)

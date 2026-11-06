@@ -51,12 +51,6 @@ errors within its supported scope.
 - A React error boundary does not catch every JavaScript error.
 - A loading fallback should not be the only feedback for a failed operation.
 
-## Check your understanding
-
-1. What kind of work does the `lazy` example defer?
-2. Which errors do error boundaries not catch automatically?
-3. What determines whether a data source works with Suspense?
-
 ## Further learning
 
 - [React reference: `Suspense`](https://react.dev/reference/react/Suspense)

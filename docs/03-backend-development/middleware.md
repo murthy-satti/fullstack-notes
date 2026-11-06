@@ -70,12 +70,6 @@ and a middleware that forgets to continue or respond can stall a request.
 - Calling `next()` does not mean a response has been sent.
 - Authentication middleware should not be confused with authorization policy.
 
-## Revision questions
-
-1. What are the main choices middleware has after processing a request?
-2. Why does registration order matter?
-3. What can happen if middleware neither responds nor calls `next()`?
-
 ## Further Learning & References
 
 - **Official guide:** [Express: Using middleware](https://expressjs.com/en/guide/using-middleware.html) explains application, router, and error middleware.

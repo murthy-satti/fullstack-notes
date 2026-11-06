@@ -54,12 +54,6 @@ the application has a need for its capabilities.
 - Context does not replace server data fetching or persistence.
 - Any component reading a changed context value may need to render again.
 
-## Check your understanding
-
-1. When is passing props simpler than context?
-2. What does a context provider do?
-3. Does context itself save data to a server?
-
 ## Further learning
 
 - [React Learn: Passing data deeply with context](https://react.dev/learn/passing-data-deeply-with-context)

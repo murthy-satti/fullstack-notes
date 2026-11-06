@@ -57,12 +57,6 @@ page's origin privileges.
 - Local storage is not encrypted secret storage.
 - Browser APIs vary in availability and permission requirements.
 
-## Check your understanding
-
-1. Why should a frontend check `response.ok`?
-2. Which storage is suitable for larger structured records?
-3. Why is local storage unsafe for secrets in many threat models?
-
 ## Further learning
 
 - [MDN: Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API)

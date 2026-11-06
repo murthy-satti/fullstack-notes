@@ -59,12 +59,6 @@ Extract a Hook when it gives behavior a meaningful name or removes real
 duplication. Do not create a custom Hook only to hide a few lines of markup.
 Custom Hooks share logic, not automatically shared state.
 
-## Check your understanding
-
-1. What does a custom Hook share?
-2. Why must Hooks be called in a consistent order?
-3. Does two components calling the same custom Hook share one state value?
-
 ## Further learning
 
 - [React Learn: Reusing logic with custom Hooks](https://react.dev/learn/reusing-logic-with-custom-hooks)
