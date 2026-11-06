@@ -2,76 +2,123 @@
 
 ## Introduction
 
-TCP (Transmission Control Protocol) and UDP (User Datagram Protocol) are
-transport protocols carried over IP. They let programs communicate using
-port numbers, with different delivery models for different needs.
+Transmission Control Protocol (TCP) and User Datagram Protocol (UDP) carry
+application data between programs using port numbers. Both sit above
+[IP addressing](ip-addressing.md), but they offer different communication
+models.
 
 ## Why does it exist?
 
-IP moves packets between addresses but does not promise complete, ordered
-delivery. TCP adds a reliable byte stream; UDP offers datagrams and leaves
-more decisions to the application.
+IP forwards packets but does not promise that application data arrives
+complete or in order. Applications need transport behavior suited to their
+task: some need an ordered stream, while others need independent messages and
+can tolerate loss.
 
 ## How does it work?
 
-TCP establishes a connection and uses sequence numbers, acknowledgements,
-retransmission, and flow and congestion control for an ordered byte stream.
-It does not preserve the boundaries of individual writes.
+TCP first establishes connection state. A typical opening uses a
+three-message handshake: the client sends `SYN`, the server replies
+`SYN-ACK`, and the client sends `ACK`. Once established, sequence numbers and
+acknowledgements let TCP detect missing data and retransmit it. Flow control
+helps avoid overwhelming the receiver; congestion control adapts sending to
+network conditions.
 
-UDP sends datagrams without a TCP-style connection; it does not retransmit
-missing data or ensure ordering. Applications can add those mechanisms.
-DNS commonly uses UDP for small queries, but can also use TCP.
+TCP delivers an ordered **byte stream**, not a sequence of the application's
+original writes. If a program sends two writes, the receiver may read their
+bytes in a different grouping.
+
+UDP sends separate datagrams without a TCP-style connection. It provides no
+transport-level retransmission, ordering, or congestion control. An
+application protocol can add behavior it needs. For example, QUIC runs over
+UDP while implementing reliability and congestion control itself.
+
+![TCP establishes connection state and acknowledges an ordered stream; UDP sends independent datagrams without transport-level recovery.](tcp-udp-models.svg)
+
+![Two application writes arrive as a TCP byte stream whose read boundaries can differ, so applications need message framing.](tcp-stream-framing.svg)
+
+| Property | TCP | UDP |
+|---|---|---|
+| Data model | Ordered byte stream | Independent datagrams |
+| Delivery recovery | Acknowledgements and retransmission | Not provided by UDP |
+| Setup | Connection handshake | No TCP-style handshake |
+| Typical fit | Web pages, file transfer, database connections | DNS queries, voice, games, or protocols built on UDP |
+
+### Reliable delivery is not the same as fast delivery
+
+TCP retransmits missing bytes and keeps later bytes from being delivered to
+the application before earlier missing bytes. This provides a useful ordered
+stream, but waiting for recovery can delay later data. UDP exposes individual
+datagrams to the application without doing that transport-level recovery.
+Applications that need reliable UDP-based communication must implement or
+use a protocol that handles acknowledgements, retransmissions, and congestion
+control. QUIC is one such protocol and is used by HTTP/3.
+
+TCP's byte-stream behavior also matters when designing a server. A single
+`send` call is not guaranteed to match a single `receive` call. Applications
+need message framing, such as a length field or delimiter, to identify where
+their own messages end. UDP preserves datagram boundaries, but a datagram can
+still be lost or too large for a path.
 
 ## Real-world example
 
-A file download benefits from TCP's ordered recovery. Live voice or game
-updates may prefer timely UDP datagrams, where an old late update is less
-useful than the next one.
+A file download normally needs all bytes in order, so TCP's recovery is
+useful. A live call values timely audio; an old packet that arrives late may
+be less useful than continuing with newer audio. The calling application
+still manages its own media and network behavior.
 
 ## Developer perspective
 
-Choose based on application requirements, not claims that one is universally
-faster. TCP simplifies reliability but recovery can add delay. UDP shifts
-reliability and congestion handling to the application. Their port spaces are
-distinct.
+Choose a transport based on required delivery semantics, latency, and the
+application protocol—not on the claim that UDP is always faster. TCP handles
+many reliability details, but stream boundaries must be designed at the
+application layer. UDP provides datagrams, but the application must consider
+loss, ordering, security, and congestion. HTTP/3 uses QUIC over UDP; see
+[HTTP and HTTPS](http-and-https.md).
 
 ## Practical example
 
-On Linux, `ss -t -a` and `ss -u -a` inspect TCP and UDP sockets. An empty
-local result does not prove a service cannot be reached through a proxy,
-container, or another machine.
+On Linux, `ss -t -a` lists TCP sockets and `ss -u -a` lists UDP sockets.
+These commands inspect local socket state. An empty result does not prove a
+remote service is unreachable; proxies, containers, and firewalls affect what
+is visible. To test a service you are authorized to reach from Windows,
+`Test-NetConnection example.com -Port 443` reports whether a TCP connection
+could be established; it does not test whether an HTTP page works.
 
 ## Important terminology
 
-- **Connection:** TCP communication state between endpoints.
-- **Byte stream:** ordered bytes without message boundaries.
-- **Datagram:** one discrete UDP message.
-- **Acknowledgement:** a signal that data was received.
+- **Handshake:** opening exchange that establishes protocol state.
+- **Byte stream:** ordered bytes with no preserved message boundaries.
+- **Datagram:** a discrete message delivered by UDP.
+- **Acknowledgement:** a signal used to confirm receipt of data.
+- **Congestion control:** behavior that adapts sending to network load.
+- **Flow control:** behavior that helps prevent a sender from overwhelming
+  the receiver.
+- **Retransmission:** sending data again after it appears to have been lost.
 
 ## Advantages and disadvantages
 
-TCP provides ordered reliability but maintains state and may retransmit.
-UDP has low overhead but does not guarantee delivery.
+TCP provides a convenient ordered stream and recovery, but maintains
+connection state and retransmits lost data. UDP has simple datagram semantics
+and no TCP-style setup, but leaves important reliability behavior to the
+application.
 
 ## Common misconceptions
 
-- UDP is not inherently insecure or always faster; security depends on the
-  application, and TCP delivers a stream rather than preserved messages.
+- UDP is not inherently insecure or guaranteed to be faster.
+- TCP does not preserve the boundaries of individual writes.
+- UDP does not mean an application cannot be reliable; QUIC is an example of
+  a protocol that builds additional behavior over UDP.
 
 ## Revision questions
 
-1. Which transport provides ordered reliable delivery by default?
-2. What does UDP leave to the application?
-3. Why can a late voice packet be less useful than a lost one?
+1. What does the TCP three-way handshake establish?
+2. Why does TCP deliver a byte stream rather than messages?
+3. Which delivery responsibilities does UDP leave to an application?
+4. Why can a late voice packet be less useful than a lost one?
 
 ## Further Learning & References
 
-- **Official standard — RFC Editor:** [RFC 9293, Transmission Control
-  Protocol](https://www.rfc-editor.org/rfc/rfc9293) defines TCP.
-- **Official standard — RFC Editor:** [RFC 768, User Datagram
-  Protocol](https://www.rfc-editor.org/rfc/rfc768) defines UDP's datagram
-  format and checksum behavior.
-- **Third-party explanation — Wikipedia:** [Transmission Control
-  Protocol](https://en.wikipedia.org/wiki/Transmission_Control_Protocol) and
-  [User Datagram Protocol](https://en.wikipedia.org/wiki/User_Datagram_Protocol)
-  provide complementary overviews of each transport.
+- **Official documentation — MDN (beginner-friendly):** [Transmission Control Protocol (TCP)](https://developer.mozilla.org/en-US/docs/Glossary/TCP) summarizes TCP's role in network communication.
+- **Official documentation — MDN (beginner-friendly):** [User Datagram Protocol (UDP)](https://developer.mozilla.org/en-US/docs/Glossary/UDP) introduces UDP datagrams and how they differ from TCP.
+- **Official standard — RFC Editor:** [RFC 9293, Transmission Control Protocol](https://www.rfc-editor.org/rfc/rfc9293) defines TCP behavior.
+- **Official standard — RFC Editor:** [RFC 768, User Datagram Protocol](https://www.rfc-editor.org/rfc/rfc768) specifies UDP datagrams and checksums.

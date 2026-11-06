@@ -2,73 +2,121 @@
 
 ## Introduction
 
-An Internet Protocol (IP) address is a numeric destination for packets.
-IPv4 addresses are 32 bits, commonly written as `192.0.2.25`; IPv6 addresses
-are 128 bits, as in `2001:db8::25`.
+An Internet Protocol (IP) address labels a network interface so packets can
+be delivered toward it. IPv4 addresses contain 32 bits and are often written
+as four decimal numbers, such as `192.0.2.25`. IPv6 addresses contain 128
+bits and use hexadecimal groups, such as `2001:db8::25`.
+
+An address is not a web site name. [DNS](dns.md) can resolve a name to one or
+more IP addresses.
 
 ## Why does it exist?
 
-Routers need destination information to forward packets, and IP addresses
-also let networks be divided into ranges. They are not website names; [DNS](dns.md)
-can map a name to one or more addresses.
+Routers need a destination address to decide where to forward a packet.
+Prefixes group addresses into networks so routing can use compact rules
+instead of listing every device separately.
 
 ## How does it work?
 
-An IP packet includes source and destination addresses. Routers choose a next
-hop using routing tables. A prefix such as `192.0.2.0/24` marks a range; `/24`
-means 24 leading network bits. IP is connectionless and does not promise
-delivery or ordering.
+1. A device sends an IP packet with source and destination addresses.
+2. It checks whether the destination is on its local subnet. If not, it sends
+   the packet to a configured gateway, usually a router.
+3. Routers use routing tables to choose a next hop. The packet may cross
+   several networks before reaching its destination.
+4. IP makes a best-effort delivery attempt. It does not itself guarantee that
+   packets arrive, arrive once, or arrive in order.
 
-Private-use ranges are intended for internal networks. Network address
-translation (NAT) often lets multiple private devices share a public IPv4
-address. IPv6's larger address space reduces the need for that workaround.
+![A laptop sends traffic for an outside network through its local router; the router forwards it toward the destination.](ip-routing-path.svg)
+
+![An IPv4 /24 prefix divides 192.168.1.42 into 24 network bits and 8 host bits.](ipv4-prefix.svg)
+
+A prefix such as `192.168.1.0/24` means the first 24 bits identify the
+network. That leaves 8 bits for addresses within this IPv4 subnet. In a
+typical `/24` local network, `192.168.1.42` belongs to the range represented
+by `192.168.1.0/24`.
+
+### Worked prefix example
+
+For `192.168.1.42/24`, `/24` means the first 24 bits are the network prefix.
+The corresponding network is `192.168.1.0/24`; in a conventional IPv4
+subnet, `.0` names the network and `.255` is its directed broadcast address,
+leaving `.1` through `.254` for host addresses. This `/24` arithmetic is a
+learning example, not a rule that every network must use a `/24`. IPv6 uses
+prefix lengths too, but has no broadcast address.
+
+| Address type | Example | Typical purpose |
+|---|---|---|
+| Private IPv4 | `192.168.1.42` | Internal home or office network |
+| Public IPv4 | Assigned by a provider or cloud host | Globally routed destination |
+| Loopback IPv4 | `127.0.0.1` | This same device |
+| Loopback IPv6 | `::1` | This same device |
+| IPv6 documentation prefix | `2001:db8::/32` | Examples in learning material, not public assignment |
+
+Private IPv4 ranges are used inside networks and are not globally routed.
+Network address translation (NAT) commonly lets multiple private devices
+share a public IPv4 address. IPv6 provides a much larger address space; it
+does not remove the need for firewalls or all forms of address translation.
 
 ## Real-world example
 
-Your laptop may have a private address from a home router. The router can
-translate it when forwarding traffic to a public site, which sees the public
-connection address instead.
+Your laptop may receive `192.168.1.42` from a home router. When it connects
+to a public web server, the router typically translates the connection so the
+outside service sees the network's public address rather than that private
+address.
 
 ## Developer perspective
 
-Do not assume an address is permanent or identifies a user. Servers may have
-several addresses, and NAT can place many users behind one public address.
-Use DNS names for service discovery and IP addresses for network diagnosis.
+Do not treat an IP address as a permanent identity. Addresses can change,
+servers can have several, and NAT can place many users behind one public
+address. Use DNS names for service discovery and IP tools to diagnose
+network paths. An address alone does not establish a user's identity.
 
 ## Practical example
 
-On Linux, `ip address` lists local addresses and `ip route` displays routes;
-both are read-only. `127.0.0.1` and `::1` are loopback addresses.
+On Windows, `ipconfig` shows interface addresses and the default gateway.
+On Linux, `ip address` lists local addresses and `ip route` displays routes.
+These commands inspect local configuration. `127.0.0.1` and `::1` are
+loopback addresses used to reach the same device.
 
 ## Important terminology
 
-- **Interface:** network attachment such as Wi-Fi or Ethernet.
-- **Prefix/subnet:** addresses grouped by shared leading bits.
-- **Loopback:** address used by a device to communicate with itself.
-- **NAT:** translation of network addresses, often at a router.
+- **Interface:** a network attachment such as Wi-Fi or Ethernet.
+- **Prefix/subnet:** a set of addresses sharing a number of leading bits.
+- **Gateway:** a router used to reach destinations outside the local subnet.
+- **Loopback:** an address used by a device to communicate with itself.
+- **NAT:** translation of network addresses, often performed by a router.
+- **Network address:** the prefix identifying a subnet, such as
+  `192.168.1.0/24`.
+- **Broadcast:** an IPv4 destination used to reach all hosts on a local
+  subnet; IPv6 does not use broadcast.
 
 ## Advantages and disadvantages
 
-IP is scalable and independent of application meaning, but its best-effort
-delivery requires applications to handle loss or use a suitable transport.
-IPv6 offers more addresses, but must coexist with IPv4 during deployment.
+IP is scalable and independent of application meaning. Its best-effort
+delivery means applications need an appropriate transport or recovery
+strategy. IPv6 offers many more addresses, but real networks still need to
+interoperate with IPv4 during deployment.
 
 ## Common misconceptions
 
-- An IP address is not a permanent identity, and a private address can reach
-  the Internet through a gateway.
+- A public IP does not necessarily identify one person or one device.
+- A private address can reach public services through a gateway.
+- IP by itself does not provide reliable, ordered application data; see
+  [TCP and UDP](tcp-and-udp.md).
+- IPv6 is not simply IPv4 written differently; it has a larger address format
+  and different network behaviors.
 
 ## Revision questions
 
 1. How do IPv4 and IPv6 address sizes differ?
-2. What does `/24` represent in a network prefix?
-3. Why might a server see a different address from a laptop's local address?
+2. What does `/24` describe in a network prefix?
+3. When does a device send a packet to its default gateway?
+4. Why might a server see a different address from a laptop's local address?
+5. In `192.168.1.42/24`, which bits identify the network?
 
 ## Further Learning & References
 
-- **Official standard — RFC Editor:** [RFC 791, Internet Protocol](https://www.rfc-editor.org/rfc/rfc791)
-  defines IPv4 packet delivery.
-- **Official standard — RFC Editor:** [RFC 8200, Internet Protocol,
-  Version 6](https://www.rfc-editor.org/rfc/rfc8200) specifies IPv6.
-- **Third-party explanation — MDN:** [What is a URL?](https://developer.mozilla.org/en-US/docs/Learn/Common_questions/Web_mechanics/What_is_a_URL)
-  explains how names and network destinations fit into web addresses.
+- **Official documentation — MDN (beginner-friendly):** [IP address](https://developer.mozilla.org/en-US/docs/Glossary/IP_Address) introduces the address concept and its role in routing.
+- **Official standard — RFC Editor:** [RFC 791, Internet Protocol](https://www.rfc-editor.org/rfc/rfc791) specifies IPv4 packet delivery.
+- **Official standard — RFC Editor:** [RFC 8200, Internet Protocol, Version 6](https://www.rfc-editor.org/rfc/rfc8200) specifies IPv6.
+- **Official standard — RFC Editor:** [RFC 1918, Address Allocation for Private Internets](https://www.rfc-editor.org/rfc/rfc1918) defines the familiar private IPv4 address ranges.

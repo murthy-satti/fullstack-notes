@@ -2,70 +2,118 @@
 
 ## Introduction
 
-A network port is a number that helps deliver transport traffic to an
-application endpoint. An IP address identifies a destination; a port
-distinguishes services sharing that address. TCP and UDP have separate port
-spaces.
+A network port is a number used by a transport protocol to deliver traffic
+to an application endpoint. An IP address identifies a network interface;
+the port helps distinguish services using that address. TCP and UDP have
+separate port spaces.
 
 ## Why does it exist?
 
-A server can provide several services at one address, and one computer can
-run many clients. Ports help route data to the right socket.
+A server can offer several services on one address, and a computer can run
+many client programs at once. Ports let the operating system match incoming
+TCP segments or UDP datagrams to the appropriate socket.
 
 ## How does it work?
 
-TCP and UDP headers include source and destination ports. Servers may listen
-on known ports; clients usually receive a temporary (ephemeral) source port.
-A socket combines an address, transport protocol, and port.
+TCP and UDP headers include source and destination ports. A server application
+binds a socket to a local address and port and listens or waits for datagrams.
+A client normally uses a temporary **ephemeral port** as its source port.
 
-The ranges are system ports `0–1023`, user ports `1024–49151`, and
-dynamic/private ports `49152–65535`. Registration does not force software to
-use a port, and an open port does not prove a service is safe.
+A network connection is commonly distinguished by the transport protocol,
+source address and port, and destination address and port. The same port
+number can be used simultaneously by TCP and UDP because they are separate
+transport namespaces.
+
+For example, these values describe an HTTPS connection from a laptop:
+
+| Part | Example | Role |
+|---|---|---|
+| Protocol | TCP | Selects the transport behavior |
+| Source address | `192.168.1.25` | Client's local interface address |
+| Source port | `53000` | Temporary client endpoint |
+| Destination address | `203.0.113.10` | Server network endpoint |
+| Destination port | `443` | HTTPS service endpoint |
+
+Together, the protocol and these four values form what is commonly called a
+five-tuple. Network address translation may rewrite an address or port as
+traffic passes through a router, then track the mapping so replies can be
+sent back to the correct internal client.
+
+The port range is split into registration categories:
+
+| Range | IANA category | Common description |
+|---|---|---|
+| `0–1023` | System Ports | Well-known service ports |
+| `1024–49151` | User Ports | Registered application services |
+| `49152–65535` | Dynamic/Private Ports | Often used for temporary client ports |
+
+Operating systems may use different local ephemeral-port ranges. IANA
+categories are not a promise that a port is free or safe to expose.
+
+![A browser uses a temporary source port to reach an HTTPS service on TCP port 443; the response returns to that client socket.](port-endpoints.svg)
+
+![Protocol, source and destination IP addresses, and source and destination ports identify a network flow.](port-five-tuple.svg)
+
+IANA divides the range into System Ports (`0–1023`), User Ports
+(`1024–49151`), and Dynamic/Private Ports (`49152–65535`). These categories
+describe registration and allocation practices; they do not guarantee that
+a port is available or that an application uses its registered number.
 
 ## Real-world example
 
-A browser connects to TCP port 443 for HTTPS, typically using a temporary
-local source port. Replies return to the browser's socket.
+A browser might connect from an ephemeral local port such as `53000` to a
+web server's TCP port `443`. The server's reply is addressed back to that
+client socket. The exact client port is selected by the operating system and
+can differ for another connection.
 
 ## Developer perspective
 
-Services bind to a local address and port; firewalls may control access. A
-service bound only to loopback is available locally, not directly to other
-machines. Do not assume a client's ephemeral port.
+Applications bind to a local address and port. A service bound only to
+loopback is intended for local access; a service bound to a network interface
+may be reachable from other devices, subject to routing and firewalls.
+Opening a listener is not the same as making it reachable from the Internet.
 
 ## Practical example
 
 On Linux, `ss -tuln` lists listening TCP and UDP sockets without changing
-configuration. External reachability also depends on firewalls and routing.
+configuration. On Windows, `netstat -ano` lists connection and listening
+information with process IDs. These show local state, not whether an external
+firewall permits access.
 
 ## Important terminology
 
-- **Listening:** waiting for incoming connections or datagrams.
-- **Ephemeral port:** temporary port commonly selected for a client.
-- **Socket:** operating-system communication endpoint.
-- **Port range:** group of numbers reserved or assigned for use.
+- **Listening:** a TCP socket waiting for incoming connections.
+- **Ephemeral port:** temporary port commonly used by a client.
+- **Socket:** operating-system endpoint for network communication.
+- **Binding:** associating an application socket with a local address and
+  port.
+- **Port range:** a range used for specific registration and allocation
+  categories.
+- **Five-tuple:** transport protocol plus the source and destination
+  addresses and ports that identify a network flow.
 
 ## Advantages and disadvantages
 
-Ports let services share addresses. Misconfigured listeners can expose
-services; port numbers provide no authentication or encryption.
+Ports let many services share an address and help operating systems route
+traffic to applications. Misconfigured listeners can expose services; a port
+number provides no authentication or encryption.
 
 ## Common misconceptions
 
-- A port is not a physical connector, and port 443 alone does not guarantee
-  correct TLS or distinguish application shutdown from firewall blocking.
+- A network port is not a physical connector.
+- Port `443` alone does not guarantee correct TLS.
+- A listening port does not prove that external networks can reach it.
+- TCP port 53 and UDP port 53 are distinct endpoints; DNS can use both.
 
 ## Revision questions
 
 1. How does a port complement an IP address?
-2. Why does a client usually use an ephemeral port?
-3. What does a listening socket report fail to tell you about reachability?
+2. Why does a client usually use an ephemeral source port?
+3. What information helps distinguish one network flow from another?
+4. What does a local listening-socket listing fail to prove?
+5. Why is TCP port 53 different from UDP port 53?
 
 ## Further Learning & References
 
-- **Official standard — RFC Editor:** [RFC 6335, Internet Assigned Numbers
-  Authority (IANA) Procedures for the Management of the Service Name and
-  Transport Protocol Port Number Registry](https://www.rfc-editor.org/rfc/rfc6335)
-  describes port-number ranges and registration procedures.
-- **Third-party explanation — MDN:** [Port](https://developer.mozilla.org/en-US/docs/Glossary/Port)
-  introduces network ports and their role in communication.
+- **Official documentation — MDN (beginner-friendly):** [Port](https://developer.mozilla.org/en-US/docs/Glossary/Port) introduces network ports and their role in communication.
+- **Official standard — RFC Editor:** [RFC 6335, Internet Assigned Numbers Authority Procedures for the Management of the Service Name and Transport Protocol Port Number Registry](https://www.rfc-editor.org/rfc/rfc6335) explains port ranges and registration procedures.
