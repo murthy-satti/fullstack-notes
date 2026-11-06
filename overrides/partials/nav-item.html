@@ -46,6 +46,7 @@
   {% endif %}
 {% endmacro %}
 {% macro render(nav_item, path, level, parent) %}
+  {% set original_title = nav_item.title %}
   {% set class = "md-nav__item" %}
   {% if nav_item.active %}
     {% set class = class ~ " md-nav__item--active" %}
@@ -112,9 +113,19 @@
         <nav class="md-nav" data-md-level="{{ level }}" aria-labelledby="{{ path }}_label" aria-expanded="{{ nav_item.active | tojson }}">
           {% if nav_item.active and level == 1 and nav.homepage %}
             <div class="md-nav__home md-nav__home--mobile">
-              <a href="{{ nav.homepage.url | url }}" class="md-nav__link" aria-label="Back to home">
-                <span class="md-ellipsis">&larr; Home</span>
-              </a>
+              {% if page and page.url.startswith("02-frontend-development/") and page.url != "02-frontend-development/" %}
+                <a href="{{ '02-frontend-development/' | url }}" class="md-nav__link" aria-label="Back to Frontend Development">
+                  <span class="md-ellipsis">&larr; Back to Frontend</span>
+                </a>
+              {% elif page and (page.url.startswith("04-databases/mongodb/") or page.url.startswith("04-databases/postgresql/")) %}
+                <a href="{{ '04-databases/' | url }}" class="md-nav__link" aria-label="Back to Databases">
+                  <span class="md-ellipsis">&larr; Back to Databases</span>
+                </a>
+              {% else %}
+                <a href="{{ nav.homepage.url | url }}" class="md-nav__link" aria-label="Back to home">
+                  <span class="md-ellipsis">&larr; Home</span>
+                </a>
+              {% endif %}
             </div>
           {% endif %}
           <label class="md-nav__title" for="{{ path }}">
@@ -124,7 +135,17 @@
           <ul class="md-nav__list" data-md-scrollfix>
             {% for item in nav_item.children %}
               {% if not index or item != index %}
-                {{ render(item, path ~ "_" ~ loop.index, level + 1, nav_item) }}
+                {% if level == 1 and original_title == "Frontend Development" and page and page.url.startswith("02-frontend-development/") and page.url != "02-frontend-development/" %}
+                  {% if item.children and item.children[0].url and page.url.startswith(item.children[0].url) %}
+                    {{ render(item, path ~ "_" ~ loop.index, level + 1, nav_item) }}
+                  {% endif %}
+                {% elif level == 1 and original_title == "Databases" and page and (page.url.startswith("04-databases/mongodb/") or page.url.startswith("04-databases/postgresql/")) %}
+                  {% if item.children and item.children[0].url and page.url.startswith(item.children[0].url) %}
+                    {{ render(item, path ~ "_" ~ loop.index, level + 1, nav_item) }}
+                  {% endif %}
+                {% else %}
+                  {{ render(item, path ~ "_" ~ loop.index, level + 1, nav_item) }}
+                {% endif %}
               {% endif %}
             {% endfor %}
           </ul>

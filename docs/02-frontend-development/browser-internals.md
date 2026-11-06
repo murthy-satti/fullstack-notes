@@ -34,7 +34,10 @@ Optimizing images and batching updates can improve the experience.
 Think about the critical resources needed for the first useful view. Use
 semantic markup and efficient assets, avoid long main-thread tasks, and
 measure before optimizing. The [HTML](html.md), [CSS](css.md), and
-[JavaScript](javascript.md) lessons cover the inputs involved.
+[JavaScript](javascript.md) lessons cover the inputs involved. Browser
+Developer Tools (DevTools) provide direct evidence about page behavior:
+inspect messages in the Console, requests in Network, saved browser data in
+Application, and runtime work in Performance.
 
 ## Practical example
 
@@ -67,8 +70,19 @@ The alternative text communicates the image's relevant content.
 1. What are the DOM and CSSOM used for?
 2. How do layout and paint differ?
 3. Why can reserving image dimensions improve loading stability?
+4. Which DevTools panel would you use to inspect a failed API request?
+
+## Explore browser tools and rendering
+
+- [Page rendering pipeline](browser-internals/rendering-pipeline.md)
+- [DevTools overview](browser-internals/devtools-overview.md)
+- [Console panel](browser-internals/console-panel.md)
+- [Network panel](browser-internals/network-panel.md)
+- [Application panel](browser-internals/application-panel.md)
+- [Performance panel](browser-internals/performance-panel.md)
 
 ## Further Learning & References
 
 - **Reference:** [MDN: How browsers work](https://developer.mozilla.org/en-US/docs/Web/Performance/How_browsers_work) explains parsing, rendering, and the critical rendering path.
 - **Reference:** [MDN: Critical rendering path](https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/Critical_rendering_path) describes how browsers prioritize resources and build a page for rendering.
+- **Review:** [Browser Internals Interview Questions and Answers](browser-internals/interview-questions-and-answers.md).

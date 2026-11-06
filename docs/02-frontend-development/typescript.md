@@ -1,77 +1,104 @@
 # TypeScript
 
-## Introduction
+TypeScript is a programming language and toolchain built on JavaScript. It
+adds a static type system that checks many relationships between values
+before the program runs. TypeScript source is transformed to JavaScript for
+execution; ordinary type annotations do not exist at runtime.
 
-TypeScript adds a static type system to JavaScript. Developers describe
-expected values and relationships, and tools find many mistakes before
-execution. TypeScript ultimately emits JavaScript.
+## Why use it?
 
-## Why does it exist?
+Types can document a function's contract, improve editor completion, and
+catch errors during development. They are especially helpful when many
+components and developers share data structures. They do not prove that a
+network response or user input is valid.
 
-In a growing codebase, data and function inputs may be unclear. Types
-document expectations, catch mismatches, and make refactoring safer.
+## Type inference and annotations
 
-## How does it work?
+The checker can infer types from values. Add explicit annotations where they
+clarify a public contract or prevent an ambiguous type.
 
-The checker analyzes source and infers types where possible. A build step
-transforms supported syntax into JavaScript; type information is generally
-erased and does not validate external data at runtime.
+```ts
+const siteName = "Engineering Notes"; // inferred string
+let visitCount: number = 0;           // explicit annotation
 
-## Real-world example
+function greet(name: string): string {
+  return `Hello, ${name}`;
+}
+```
 
-An application can define a `Book` type with an identifier and title. The
-editor can warn about a missing property or an incorrect value type. API data
-still needs runtime validation.
+## Everyday type building blocks
 
-## Developer perspective
+- **Primitive types:** `string`, `number`, `boolean`, `bigint`, `symbol`,
+  `null`, and `undefined`.
+- **Arrays:** `string[]` or `Array<string>`.
+- **Objects:** named properties, including optional properties like
+  `nickname?: string`.
+- **Union:** `A | B`, meaning one of several possibilities.
+- **Literal type:** an exact value such as `"loading"` or `200`.
+- **Tuple:** fixed-position values such as `[number, string]`.
+- **Function type:** parameter and return types, such as
+  `(id: string) => boolean`.
+- **`unknown`:** a value that must be checked before use.
+- **`never`:** a value that cannot occur, useful for exhaustive checks.
 
-Use types to clarify contracts, not to annotate every obvious value. Prefer
-narrow types and model optional values explicitly.
-TypeScript is especially useful alongside [JavaScript](javascript.md) and
-[React](react.md); code using [Next.js](nextjs.md) can also be written in
-TypeScript.
+Prefer `unknown` to `any` at uncertain boundaries. `any` turns off many
+useful checks.
 
 ## Practical example
 
 ```ts
-type Book = {
-  id: number;
-  title: string;
-};
+type LoadState =
+  | { status: "loading" }
+  | { status: "success"; items: string[] }
+  | { status: "error"; message: string };
 
-function describeBook(book: Book): string {
-  return `${book.title} (#${book.id})`;
+function describe(state: LoadState): string {
+  switch (state.status) {
+    case "loading":
+      return "Loading";
+    case "success":
+      return `${state.items.length} items`;
+    case "error":
+      return state.message;
+  }
 }
 ```
 
-Calling `describeBook` with an object that has a string `id` is a type error
-unless the declared type is changed.
+The discriminant `status` lets the checker know which fields are available
+in each branch.
 
-## Important terminology
+## TypeScript and runtime data
 
-- **Static type checking:** Analysis of types before code executes.
-- **Type inference:** The checker deriving a type from context or a value.
-- **Type annotation:** Syntax that explicitly states a type.
-- **Transpilation:** Transforming source code into another language version.
+Types are erased or otherwise do not automatically check arbitrary values at
+runtime. Validate API responses, browser storage, user input, and other
+external data. See [runtime validation](typescript/runtime-validation.md).
 
-## Advantages and disadvantages
+## Learning path
 
-TypeScript improves editor support and catches many errors before runtime.
-It adds build concerns, and types cannot guarantee network data is valid.
+- [Types and narrowing](typescript/types-and-narrowing.md)
+- [Functions, objects, and generics](typescript/functions-objects-generics.md)
+- [Advanced and utility types](typescript/advanced-and-utility-types.md)
+- [Compiler and project configuration](typescript/compiler-and-project-configuration.md)
+- [TypeScript with React](typescript/typescript-with-react.md)
+- [Runtime data validation](typescript/runtime-validation.md)
 
 ## Common misconceptions
 
-- TypeScript does not replace JavaScript at runtime; it produces JavaScript.
-- Types are not automatically runtime checks.
-- TypeScript does not prevent every bug; tests and careful design remain useful.
+- TypeScript does not replace JavaScript at runtime.
+- A type assertion does not convert or validate the actual value.
+- A type-safe program can still have logic, accessibility, security, and
+  performance bugs.
+- More annotations are not always better; inference is often clear and
+  reliable.
 
-## Revision questions
+## Check your understanding
 
-1. What runs in the browser after TypeScript code is built?
-2. What is the difference between type inference and an annotation?
-3. Why should API data be validated at runtime?
+1. What runs after TypeScript is built?
+2. How does `unknown` differ from `any`?
+3. Why should an API response be checked at runtime?
 
-## Further Learning & References
+## Further learning
 
-- **Official docs:** [TypeScript Handbook](https://www.typescriptlang.org/docs/handbook/intro.html) introduces the type system and language tools.
-- **Official docs:** [TypeScript for JavaScript Programmers](https://www.typescriptlang.org/docs/handbook/typescript-in-5-minutes.html) gives JavaScript developers a concise orientation.
+- [TypeScript Handbook](https://www.typescriptlang.org/docs/handbook/intro.html)
+- [TypeScript for JavaScript Programmers](https://www.typescriptlang.org/docs/handbook/typescript-in-5-minutes.html)
+- [TypeScript Interview Questions and Answers](typescript/interview-questions-and-answers.md)

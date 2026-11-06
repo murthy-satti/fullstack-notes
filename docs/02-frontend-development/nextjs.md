@@ -2,15 +2,47 @@
 
 ## Introduction
 
-Next.js is a React framework for web applications. It adds structure and
-features such as routing and server rendering. Pages can be rendered on a
-server, in a browser, or with a combination suited to a route.
+Next.js is an open-source React framework created by Vercel and first released
+in 2016. It gives React applications conventions and tools for routing,
+server-side code, rendering, and production builds. Next.js applications still
+use React; Next.js adds a framework around it.
 
 ## Why does it exist?
 
-React builds interfaces, while applications also need routing, data loading,
-and rendering choices. Next.js provides conventions and integrated features
-for these needs.
+React helps build user interfaces, but a production website also needs a
+routing system, a way to load data, decisions about where pages render, and a
+deployment strategy. Next.js integrates these concerns so a team can build
+many kinds of web applications in one project.
+
+## Next.js compared with React
+
+| React by itself | Next.js |
+|---|---|
+| A UI library for building components | A framework built on React |
+| Does not prescribe a built-in routing system | Provides file-system routing |
+| Rendering and data-loading choices come from the app and its tools | Adds server and static rendering options, with behavior depending on route and configuration |
+| Can be used in many environments | Provides conventions for web applications and supported deployments |
+
+Neither is automatically faster or better for every project. Choose based on
+the application's needs, the team's familiarity, hosting constraints, and how
+the user experience should work.
+
+## What Next.js adds
+
+- **File-system routing:** folders and special files define URL routes.
+- **Rendering choices:** pages can use static generation, request-time server
+  rendering, client-side work, or a combination appropriate to the route.
+- **Server-side endpoints:** Route Handlers can expose HTTP endpoints within
+  the application.
+- **Image and metadata tools:** the Image component and metadata APIs support
+  image delivery and page descriptions, subject to configuration and hosting.
+- **Production tooling:** the framework provides build and optimization
+  features, including code splitting, while the actual result depends on how
+  the application is structured.
+
+These features help, but they do not automatically guarantee better SEO,
+faster pages, or a secure API. Those outcomes still depend on implementation,
+content, and deployment.
 
 ## How does it work?
 
@@ -21,54 +53,113 @@ rendering, with behavior depending on version and route configuration.
 
 ## Real-world example
 
-A product route can render information on the server and use a client
-component for an interactive quantity selector.
+A product page can render its title and description as server-generated
+content, while a small client component handles an interactive quantity
+selector. This keeps the browser work focused on the parts that need it.
 
 ## Developer perspective
 
-Start with [React](react.md), then learn the routing and rendering model.
-Decide which code needs browser interaction; never expose secrets in
-client-side code.
-Also understand [TypeScript](typescript.md) if the application uses typed
-components.
+Learn [React](react.md) first, then study routes, rendering, and the boundary
+between server and browser code. Never put secrets in client-side code.
+Understand [TypeScript](typescript.md) if the project uses typed components.
+
+The App Router has evolved over several releases. Check the version-specific
+official documentation before copying a configuration or caching example
+from an older tutorial.
 
 ## Practical example
 
-```tsx
-// app/about/page.tsx
-export default function AboutPage() {
-  return <main><h1>About this project</h1></main>;
-}
+The current recommended starter command creates a project using the current
+stable release:
+
+```bash
+npx create-next-app@latest
 ```
 
-This page file maps to `/about` in the App Router. Production routes may add
-metadata, data loading, and error or loading UI.
+In the project directory, start the development server:
+
+```bash
+cd my-app
+npm run dev
+```
+
+By default, the local app is available at `http://localhost:3000`. To use
+another port with the standard npm script, pass the argument through:
+
+```bash
+npm run dev -- --port 3001
+```
+
+The URL is local to your development machine; it is not a public production
+address.
 
 ## Important terminology
 
-- **Route:** A URL and the UI or handler associated with it.
-- **Server Component:** A component rendered in the server-oriented model.
-- **Client Component:** A component marked for browser-side interactivity.
-- **Rendering strategy:** Where and when page output is generated.
+- **React framework:** A system built on React that adds application-level
+  conventions and capabilities.
+- **App Router:** The routing system based on the `app` directory.
+- **Server rendering:** Producing page output on the server rather than
+  building the entire initial page in the browser.
+- **Static generation:** Producing route output ahead of a user request when
+  its data and configuration allow it.
+- **Hydration:** Connecting browser-side React behavior to server-rendered
+  markup when client interactivity is needed.
 
-## Advantages and disadvantages
+## Advantages and trade-offs
 
-Next.js supplies routing and rendering conventions. Its server/client
-boundaries add concepts to learn, and behavior can vary by version.
+Next.js supplies routing, build tooling, and multiple rendering options in an
+integrated framework. Server/client boundaries and caching introduce
+additional concepts; teams also need to understand the behavior of the
+specific framework version they deploy.
 
 ## Common misconceptions
 
-- Next.js is not a replacement for learning React; it is built on React.
+- Next.js is not a competing UI library; it is built on React.
 - Server rendering does not mean every component runs only on the server.
-- Marking code for client execution does not make secrets safe to include.
+- Static generation, server rendering, and client-side rendering are not
+  interchangeable terms.
+- Server rendering does not guarantee a fixed speed improvement. Results
+  depend on the route, server, network, assets, caching, and application code.
+- A `"use client"` file is not a safe place for secrets.
 
 ## Revision questions
 
-1. What responsibilities does Next.js add beyond React?
-2. When might a component need client-side interactivity?
-3. What route does `app/about/page.tsx` represent in the App Router?
+1. What does Next.js add to React?
+2. Why should a developer avoid claiming that a framework is always faster?
+3. What is the default component model in the App Router?
+4. How do you pass a custom port to the standard `npm run dev` script?
+
+## Explore the Next.js topics
+
+- [Getting started and project structure](nextjs/getting-started.md)
+- [App Router overview](nextjs/app-router.md), followed by
+  [file-system routing](nextjs/file-system-routing.md),
+  [dynamic routes](nextjs/dynamic-routes.md), and
+  [route groups and advanced routing](nextjs/advanced-routing.md).
+- [Rendering strategies overview](nextjs/rendering-strategies.md), then
+  focused lessons on [client rendering](nextjs/client-side-rendering.md),
+  [static rendering](nextjs/static-rendering.md),
+  [server rendering](nextjs/server-side-rendering.md), and
+  [ISR](nextjs/incremental-static-regeneration.md).
+- [Layouts, loading, and errors overview](nextjs/layouts-loading-errors.md),
+  followed by lessons on [layouts](nextjs/layouts.md),
+  [loading UI](nextjs/loading-ui.md), and
+  [error and not-found UI](nextjs/error-and-not-found-ui.md).
+- [Server and Client Components](nextjs/server-and-client-components.md)
+- [Data fetching and caching](nextjs/data-fetching-and-caching.md)
+- [Forms and Server Actions](nextjs/forms-and-server-actions.md)
+- [Route handlers and API endpoints](nextjs/route-handlers.md)
+- [Cookies and sessions](nextjs/cookies-and-sessions.md)
+- [Link and Image overview](nextjs/link-and-image-components.md), followed
+  by focused lessons on the [Link](nextjs/link-component.md) and
+  [Image](nextjs/image-component.md) components.
+- [Hydration errors and troubleshooting](nextjs/hydration-errors.md)
+- [Authentication and security](nextjs/authentication-and-security.md)
+- [Metadata, images, and SEO](nextjs/metadata-images-seo.md)
+- [Deployment and production](nextjs/deployment.md)
 
 ## Further Learning & References
 
-- **Official docs:** [Next.js App Router](https://nextjs.org/docs/app) covers routes, layouts, rendering, and server/client components.
-- **Official docs:** [Next.js installation and setup](https://nextjs.org/docs/app/getting-started/installation) explains creating and running an App Router application.
+- **Official docs:** [Next.js documentation](https://nextjs.org/docs) covers installation, routing, rendering, and deployment.
+- **Official docs:** [Next.js App Router](https://nextjs.org/docs/app) documents the App Router and its features.
+- **Review:** [Next.js Interview Questions and Answers](nextjs/interview-questions-and-answers.md).

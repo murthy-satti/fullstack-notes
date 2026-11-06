@@ -19,6 +19,11 @@ An engine parses and executes JavaScript. The browser provides APIs such as
 the DOM and `fetch`; these are host features, not the language itself. The
 event loop coordinates queued asynchronous work.
 
+JavaScript is dynamically typed: values have runtime types, while variables
+can refer to values of different types at different times. It supports
+functions as values, objects, modules, and asynchronous operations using
+Promises and `async`/`await`.
+
 ## Real-world example
 
 When a user submits a search, code can request and render results. The server
@@ -37,12 +42,14 @@ using JavaScript components.
 ```js
 const button = document.querySelector("#greeting");
 
-button.addEventListener("click", () => {
+button?.addEventListener("click", () => {
   button.textContent = "Hello, learner!";
 });
 ```
 
-The browser finds the element and runs the callback on a click.
+The browser finds the element and runs the callback on a click. The optional
+chain avoids calling the listener method if the element is absent; TypeScript
+or a deliberate null check can make that condition more explicit.
 
 ## Important terminology
 
@@ -51,6 +58,8 @@ The browser finds the element and runs the callback on a click.
 - **Event:** A notification of an action or occurrence, such as a click.
 - **Promise:** An object representing a result that may become available later.
 - **DOM:** A programmable representation of a web document.
+- **Event loop:** Host scheduling mechanism that runs queued asynchronous
+  callbacks when JavaScript execution is available.
 
 ## Advantages and disadvantages
 
@@ -69,6 +78,45 @@ client-side work can make code harder to maintain or pages slower.
 1. What work does the browser provide beyond the JavaScript language?
 2. How does an event listener connect an action to code?
 3. Why must a server validate data even if the browser checks it?
+
+## Explore JavaScript topics
+
+- [Values, variables, and functions](javascript/foundations.md): primitive
+  types, declarations, operators, and basic functions.
+- [Strings and type conversion](javascript/strings-and-type-conversion.md):
+  string operations, coercion, parsing, and explicit conversion.
+- [Operators and control flow](javascript/operators-and-control-flow.md):
+  comparisons, conditionals, switch statements, and loops.
+- [Control flow and collections](javascript/control-flow-and-collections.md):
+  iteration and the core collection types.
+- [Arrays and array methods](javascript/arrays-and-array-methods.md):
+  common methods including `forEach`, `map`, `filter`, `reduce`, `sort`,
+  chaining, and two-dimensional arrays.
+- [Objects, destructuring, and spread](javascript/objects-destructuring-and-spread.md):
+  nested objects, object/array destructuring, rest parameters, and spread.
+- [Objects, prototypes, and `this`](javascript/objects-prototypes-this.md)
+- [Functions and scope](javascript/functions-and-scope.md): declarations,
+  expressions, arrow functions, parameters, return values, and scope.
+- [Closures and classes](javascript/closures-and-classes.md): closures,
+  constructors, static members, inheritance, `super`, getters, and setters.
+- [Browser input, output, and debugging](javascript/browser-input-output-and-debugging.md):
+  common output methods, input dialogs, and console timing.
+- [DOM and events overview](javascript/dom-and-events.md), followed by
+  focused lessons on [DOM navigation and updates](javascript/dom-navigation-and-updates.md)
+  and [event listeners and forms](javascript/event-listeners-and-forms.md).
+- [Callbacks, timers, and callback hell](javascript/callbacks-and-timers.md)
+- [Promises and async/await](javascript/async-javascript.md)
+- [Event loop and concurrency](javascript/event-loop-and-concurrency.md)
+- [JSON and fetching API data](javascript/json-and-fetch.md)
+- [Browser APIs and storage](javascript/browser-apis-and-storage.md)
+- [Window, document, and cookies](javascript/window-document-and-cookies.md)
+- [Navigator and device APIs](javascript/navigator-and-device-apis.md):
+  browser language, online hints, permissions, location, media, clipboard,
+  sharing, and other capability APIs.
+- [Dates and internationalization](javascript/dates-and-internationalization.md)
+- [Modules and error handling](javascript/modules-and-errors.md)
+- [JavaScript Interview Questions and Answers](javascript/interview-questions-and-answers.md):
+  review core concepts with concise answers and examples.
 
 ## Further Learning & References
 

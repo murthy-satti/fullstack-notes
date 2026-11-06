@@ -1,40 +1,34 @@
 # React
 
-## Introduction
+React is a JavaScript library for building user interfaces from components.
+A React component describes UI for its current inputs; state and events let
+the interface respond to user actions.
 
-React is a JavaScript library for building user interfaces from reusable
-components. A component describes a part of the interface, such as a button,
-navigation bar, or product card. React updates the page when the data used by
-those components changes.
+## What React provides
 
-## Why does it exist?
+- **Components:** reusable functions that describe interface parts.
+- **Props:** inputs passed from a parent component.
+- **State:** data that changes and causes the UI to update.
+- **JSX:** syntax for describing UI in JavaScript source.
+- **Hooks:** functions such as `useState`, `useEffect`, and `useContext` that
+  connect function components to React capabilities.
+- **Rendering and reconciliation:** React calculates UI and applies needed
+  updates to the host environment.
 
-As interfaces grow, manually coordinating every DOM update becomes difficult.
-React lets developers describe what the interface should look like for a
-particular state. It then manages updates when that state changes, while
-components encourage reuse and separation of concerns.
+React itself does not prescribe a complete application architecture,
+server-rendering strategy, or built-in router. Frameworks such as
+[Next.js](nextjs.md) build on React and supply application-level conventions.
 
-## How does it work?
+## How a React update works
 
-Components are commonly JavaScript functions that return JSX, a syntax
-extension for describing UI. Props pass information from a parent component;
-state represents data that can change over time. React renders the component
-tree and updates the DOM as needed. Hooks such as `useState` let function
-components use React features.
+1. A user event invokes an event handler.
+2. The handler may call a state setter.
+3. React renders the affected component tree using current props and state.
+4. React reconciles the result and commits necessary DOM changes.
+5. Effects synchronize with external systems after commit where appropriate.
 
-## Real-world example
-
-A shopping cart button might display an item count. When a user adds a
-product, the count changes, and the component renders the new value rather
-than requiring code to find and manually edit a text node.
-
-## Developer perspective
-
-Keep components focused, use stable keys when rendering lists, and avoid
-changing state directly. State should live at the nearest common component
-that needs it. Learn [JavaScript](javascript.md) first; [TypeScript](typescript.md)
-can describe props and state, while [Next.js](nextjs.md) builds on React for
-full-stack web applications.
+Rendering should be pure: do not mutate external state, manipulate the DOM,
+or make side-effecting requests while calculating the component output.
 
 ## Practical example
 
@@ -43,39 +37,52 @@ import { useState } from "react";
 
 function LikeButton() {
   const [likes, setLikes] = useState(0);
-  return <button onClick={() => setLikes(likes + 1)}>Likes: {likes}</button>;
+  return (
+    <button onClick={() => setLikes((current) => current + 1)}>
+      Likes: {likes}
+    </button>
+  );
 }
 ```
 
 Calling the state setter requests a render with the updated count.
 
-## Important terminology
+## React topic map
 
-- **Component:** Reusable unit that describes part of a user interface.
-- **Props:** Inputs passed to a component by its parent.
-- **State:** Component data that can change and trigger a render.
-- **JSX:** Syntax for describing UI in JavaScript source.
+- [Components, JSX, and props](react/components-jsx-props.md)
+- [State and events](react/state-and-events.md)
+- [Hooks and effects](react/hooks-and-effects.md)
+- [Custom hooks](react/custom-hooks.md)
+- [Lists, forms, and UI states](react/lists-forms-states.md)
+- [Rendering and reconciliation](react/rendering-and-reconciliation.md)
+- [Context and state sharing](react/context-and-state-sharing.md)
+- [Refs and performance](react/refs-and-performance.md)
+- [Suspense and error boundaries](react/suspense-and-error-boundaries.md)
+- [Testing React interfaces](react/testing-react-interfaces.md)
 
-## Advantages and disadvantages
+## Developer perspective and common misconceptions
 
-Components and declarative rendering help organize interactive interfaces.
-React introduces concepts and tooling to learn, and careless state placement
-or unnecessary rendering can make an application harder to understand or less
-efficient.
+Learn JavaScript first. Keep components focused, use stable list keys, and
+place state at the nearest common owner that needs it. Learn accessibility
+and browser behavior alongside React; a framework does not automatically
+make controls accessible.
 
-## Common misconceptions
+- React is not the same thing as JSX; JSX is commonly used syntax transformed
+  by build tooling.
+- A component render does not mean the browser rebuilds the entire DOM.
+- Effects are for synchronizing with external systems, not a default place
+  for every calculation.
+- State setters schedule updates; they do not synchronously replace the
+  current variable's value.
 
-- React is a library, not a complete routing or server framework by itself.
-- JSX is transformed by tooling; browsers do not interpret JSX directly.
-- A component render does not mean React always rebuilds the entire page DOM.
-
-## Revision questions
+## Check your understanding
 
 1. How do props differ from state?
-2. What does a state setter do?
-3. Why should rendered list items have stable keys?
+2. What does a state setter request?
+3. Why should render logic be pure?
 
-## Further Learning & References
+## Further learning
 
-- **Official docs:** [React Learn](https://react.dev/learn) teaches components, state, events, and rendering with interactive explanations.
-- **Official API reference:** [React reference](https://react.dev/reference/react) documents the React APIs and built-in components.
+- [React Learn](https://react.dev/learn)
+- [React API reference](https://react.dev/reference/react)
+- [React Interview Questions and Answers](react/interview-questions-and-answers.md)
