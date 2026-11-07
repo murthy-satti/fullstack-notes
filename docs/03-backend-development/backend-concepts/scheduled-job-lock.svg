@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="400" viewBox="0 0 780 400" role="img" aria-labelledby="sjl-title sjl-desc">
+  <title id="sjl-title">Running a scheduled job once across several instances with a lock</title>
+  <desc id="sjl-desc">At 02:00 the cron schedule fires on all three app instances. Each instance tries to take the lock with Redis SET lock:nightly-report NX EX 300. Redis grants it to only one instance: instance B gets OK and runs the nightly report, while instances A and C get nil and skip. The lock expires after 300 seconds. Without the lock, the report would be generated three times, once per instance.</desc>
+  <defs>
+    <marker id="sjl-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#40566b"/>
+    </marker>
+    <marker id="sjl-ret" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#60788d"/>
+    </marker>
+  </defs>
+  <rect width="780" height="400" rx="14" fill="#f5f7fb"/>
+  <g font-family="Arial, sans-serif" text-anchor="middle">
+    <text x="390" y="34" font-size="13" font-weight="700" fill="#40566b">02:00: the cron schedule fires on every instance</text>
+
+    <rect x="30" y="56" width="160" height="48" rx="8" fill="#fff0d9" stroke="#bd7a20" stroke-width="2"/>
+    <text x="110" y="76" font-size="14" font-weight="700" fill="#66400f">Instance A</text>
+    <text x="110" y="93" font-size="11.5" fill="#66400f">cron: 0 2 * * *</text>
+    <rect x="30" y="146" width="160" height="48" rx="8" fill="#fff0d9" stroke="#bd7a20" stroke-width="2"/>
+    <text x="110" y="166" font-size="14" font-weight="700" fill="#66400f">Instance B</text>
+    <text x="110" y="183" font-size="11.5" fill="#66400f">cron: 0 2 * * *</text>
+    <rect x="30" y="236" width="160" height="48" rx="8" fill="#fff0d9" stroke="#bd7a20" stroke-width="2"/>
+    <text x="110" y="256" font-size="14" font-weight="700" fill="#66400f">Instance C</text>
+    <text x="110" y="273" font-size="11.5" fill="#66400f">cron: 0 2 * * *</text>
+
+    <rect x="290" y="96" width="200" height="148" rx="8" fill="#f0e9fb" stroke="#8062a8" stroke-width="2"/>
+    <text x="390" y="124" font-size="14" font-weight="700" fill="#463365">Redis</text>
+    <text x="390" y="152" font-size="11.5" fill="#463365">SET lock:nightly-report</text>
+    <text x="390" y="168" font-size="11.5" fill="#463365">instanceId NX EX 300</text>
+    <text x="390" y="198" font-size="11.5" font-weight="700" fill="#463365">only the first SET wins</text>
+    <text x="390" y="216" font-size="11.5" fill="#463365">lock expires after 300 s</text>
+
+    <rect x="590" y="56" width="170" height="48" rx="8" fill="#eef1f5" stroke="#8a96a3" stroke-width="2"/>
+    <text x="675" y="76" font-size="14" font-weight="700" fill="#36424e">A skips</text>
+    <text x="675" y="93" font-size="11.5" fill="#36424e">lock already held</text>
+    <rect x="590" y="146" width="170" height="48" rx="8" fill="#e8f5e9" stroke="#53845b" stroke-width="2"/>
+    <text x="675" y="166" font-size="14" font-weight="700" fill="#294a2e">B runs the report</text>
+    <text x="675" y="183" font-size="11.5" fill="#294a2e">once, then releases</text>
+    <rect x="590" y="236" width="170" height="48" rx="8" fill="#eef1f5" stroke="#8a96a3" stroke-width="2"/>
+    <text x="675" y="256" font-size="14" font-weight="700" fill="#36424e">C skips</text>
+    <text x="675" y="273" font-size="11.5" fill="#36424e">lock already held</text>
+
+    <g fill="none" stroke="#40566b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M190 80H240V130H288" marker-end="url(#sjl-arrow)"/>
+      <path d="M190 170H288" marker-end="url(#sjl-arrow)"/>
+      <path d="M190 260H240V210H288" marker-end="url(#sjl-arrow)"/>
+    </g>
+    <g fill="none" stroke="#60788d" stroke-width="2" stroke-dasharray="5 4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M490 130H540V80H588" marker-end="url(#sjl-ret)"/>
+      <path d="M490 170H588" marker-end="url(#sjl-ret)"/>
+      <path d="M490 210H540V260H588" marker-end="url(#sjl-ret)"/>
+    </g>
+    <g font-size="11.5" fill="#36424e">
+      <text x="239" y="162">SET NX</text>
+      <text x="564" y="72">nil</text>
+      <text x="539" y="162">OK</text>
+      <text x="564" y="278">nil</text>
+    </g>
+
+    <rect x="140" y="312" width="500" height="40" rx="8" fill="#fde8e6" stroke="#b5473a" stroke-width="2"/>
+    <text x="390" y="337" font-size="13" font-weight="700" fill="#6b241c">Without the lock, the 02:00 report runs 3 times, once per instance</text>
+    <text x="390" y="382" font-size="13" fill="#40566b">Make the job idempotent anyway: a lock can expire while a slow job is still running.</text>
+  </g>
+</svg>

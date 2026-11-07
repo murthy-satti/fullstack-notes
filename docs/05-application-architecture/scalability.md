@@ -1,48 +1,93 @@
 # Scalability
 
-## Introduction
+Scalability is a system's ability to handle more load, such as more users,
+requests, or data, by adding resources, while keeping response times and
+error rates acceptable. A scalable system grows by adding capacity rather than
+by being rewritten, and it stays available and correct enough while it grows.
 
-Scalability is a system's ability to handle growth in users, requests, or data while meeting its responsiveness goals. Growth may require changing how work is performed or stored. [System design](system-design.md) provides a broader view.
+## What scalability involves
 
-## Why does it exist?
+- **Vertical scaling:** giving one machine more CPU, memory, or faster disks.
+  Simple, but limited and often a single point of failure.
+- **Horizontal scaling:** adding more machines or instances behind a load
+  balancer. Nearly unlimited, but requires stateless services and shared
+  state stores.
+- **Data scaling:** read replicas, connection pooling, partitioning, and
+  sharding when one database can no longer keep up.
+- **Availability:** redundancy and failover so the system keeps serving when
+  parts fail.
+- **Consistency trade-offs:** deciding where slightly stale data is acceptable
+  in exchange for speed and availability.
+- **Capacity planning:** estimating future load and keeping enough headroom.
 
-A design that works for a demo may become slow under higher load. Planning helps identify bottlenecks, but scaling before measuring can waste money and add complexity.
+## How a system usually scales
 
-## How does it work?
+1. **Measure:** load test and profile to find the real bottleneck.
+2. **Optimize:** fix slow queries, add indexes, and remove unnecessary work.
+3. **Cache:** serve repeated reads from memory or a CDN.
+4. **Scale out the stateless tier:** run more application instances behind a
+   load balancer, with sessions and files moved out of instance memory.
+5. **Offload work:** move slow tasks to queues and background workers.
+6. **Scale the data tier:** add read replicas, then partition or shard when
+   writes or data size outgrow one primary.
 
-Vertical scaling adds resources to one machine; horizontal scaling adds instances and distributes requests. Horizontal approaches may require load balancing, shared state, and safe concurrent work. Caching, queues, and indexes can reduce repeated work.
-
-A system may be limited by its database, network, or an external service. Metrics and load tests help find the constraint.
-
-## Real-world example
-
-A registration service gets a burst when enrollment opens. A load balancer can distribute requests and a queue defer confirmation emails. Adding web instances alone may increase database pressure.
-
-## Developer perspective
-
-Identify workload and service goals, then measure latency, throughput, errors, and resource use. Scale the bottleneck, check costs, and test failure behavior.
+Each step adds complexity, so take the next one only when measurements show
+the current setup cannot meet the requirements.
 
 ## Practical example
 
-For a local demo, record response duration while repeating a harmless request to a local endpoint. Compare a small and larger sample, then inspect logs and resource use. This is an observation exercise, not a production load test; avoid sending generated traffic to systems you do not own.
+```text
+Availability target    Allowed downtime per year    Allowed downtime per month
+99%                    about 3.65 days              about 7.3 hours
+99.9%                  about 8.77 hours             about 43.8 minutes
+99.99%                 about 52.6 minutes           about 4.4 minutes
+99.999%                about 5.26 minutes           about 26 seconds
+```
 
-## Important terminology
+Each extra nine cuts the allowed downtime by a factor of ten, and usually
+requires more redundancy, automation, and cost.
 
-- **Vertical scaling:** increasing resources on one machine.
-- **Horizontal scaling:** adding machines or service instances.
-- **Throughput:** work completed per unit of time.
-- **Latency:** time taken for one operation.
-- **Bottleneck:** constrained component limiting overall performance.
+## Scalability topic map
 
-## Advantages and disadvantages
+**Scaling the system**
 
-Scaling can improve capacity but raises cost and complexity. Horizontal scaling exposes state-sharing challenges; scaling blindly may only move a bottleneck.
+- [Scalability fundamentals](scalability/scalability-fundamentals.md)
+- [Stateless services and autoscaling](scalability/stateless-services-and-autoscaling.md)
+- [Database scaling](scalability/database-scaling.md)
 
-## Common misconceptions
+**Staying available and correct**
 
-More servers do not guarantee faster responses or reliability. “Scale later” works best when architecture preserves a path to evolve.
+- [Availability and reliability](scalability/availability-and-reliability.md)
+- [Consistency and the CAP theorem](scalability/consistency-and-cap-theorem.md)
 
-## Further Learning & References
+**Measuring and planning**
 
-- **Official AWS documentation — [Reliability Pillar: Design Principles](https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/design-principles.html):** discusses resilient workload design, including scaling and recovery principles.
-- **Official AWS documentation — [Elastic Load Balancing](https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/what-is-load-balancing.html):** explains distributing traffic across targets.
+- [Performance and latency](scalability/performance-and-latency.md)
+- [Capacity planning](scalability/capacity-planning.md)
+
+**Review**
+
+- [Scalability interview questions and answers](scalability/interview-questions-and-answers.md)
+
+## Developer perspective and common misconceptions
+
+Design services to be stateless from the start, keep data access efficient,
+and measure with percentiles rather than averages. Scale the part that is
+actually the bottleneck, and remember that every added component is also
+something that can fail.
+
+- Scalability is not the same as performance: a fast system for one user can
+  still collapse under load.
+- Adding servers does not help if the database or a shared lock is the
+  bottleneck.
+- Microservices are not required for scalability; a stateless monolith scales
+  horizontally too.
+- High availability is not achieved by one powerful machine; it comes from
+  redundancy without single points of failure.
+
+## Further learning
+
+- [Google SRE Book](https://sre.google/sre-book/table-of-contents/)
+- [AWS Well-Architected Framework](https://docs.aws.amazon.com/wellarchitected/latest/framework/welcome.html)
+- [Load balancing](../06-servers-and-infrastructure/load-balancing.md)
+- [Scalability interview questions and answers](scalability/interview-questions-and-answers.md)

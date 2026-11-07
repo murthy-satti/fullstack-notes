@@ -1,41 +1,47 @@
 # Express
 
-## Introduction
+Express is a minimal web framework for Node.js. It adds routing, middleware,
+and convenient request and response helpers on top of the built-in
+`node:http` module, so you can build APIs and web servers without handling
+every low-level HTTP detail yourself.
 
-Express is a web framework for Node.js. It provides a small set of tools for
-handling HTTP requests and responses, defining routes, and composing
-middleware. Developers can use it to create APIs and web servers without
-manually managing every low-level HTTP detail.
+## What Express provides
 
-## Why does it exist?
+- **Routing:** match an HTTP method and path, such as `GET /users/:id`, to the
+  code that handles it.
+- **Middleware:** functions that run in order for each request to parse
+  bodies, log, authenticate, or reject a request early.
+- **Request helpers:** `req.params`, `req.query`, `req.body`, `req.get()`,
+  and more for reading what the client sent.
+- **Response helpers:** `res.status()`, `res.json()`, `res.redirect()`,
+  `res.cookie()`, and `res.sendFile()` for building replies.
+- **Routers:** `express.Router()` groups related routes and middleware into
+  modules that can be mounted under a path.
+- **Error handling:** a dedicated error-handling middleware signature for
+  turning failures into consistent responses.
 
-Node.js includes built-in networking APIs, but an application still needs an
-organized way to match URLs and methods to behavior. Express supplies a
-minimal routing and middleware model that developers can extend with
-additional libraries.
+Express is deliberately unopinionated. It does not choose a database,
+validation library, authentication system, or folder structure for you. You
+add these yourself, which keeps Express flexible but means you must make and
+document those decisions.
 
-## How does it work?
+Express 5 is the current major version. The most visible changes from
+Express 4 are that errors from `async` handlers reach the error handler
+automatically, and that route path syntax for wildcards and optional segments
+has changed. The lessons show Express 5 and point out Express 4 differences
+where you are likely to meet them in older code.
 
-An Express application registers middleware and route handlers. For each
-request, Express runs applicable middleware in order, then finds a matching
-route. A handler can send a response, modify the request/response context, or
-pass control onward. A request must eventually receive a response or be
-handed to another handler.
+## How Express handles a request
 
-## Real-world example
-
-A task API can use `GET /tasks` to list items and `POST /tasks` to create one.
-A logging middleware can run for both routes, while an authentication
-middleware can protect only routes that require a signed-in user. See
-[REST APIs](rest-apis.md) for method and resource conventions.
-
-## Developer perspective
-
-Register middleware in the intended order, keep route handlers focused, and
-handle errors centrally. Express does not automatically validate every input
-or define an authentication system; add these deliberately with
-[middleware](middleware.md) and appropriate application logic. For
-authentication concepts, see [authentication and authorization](authentication-and-authorization.md).
+1. Node.js receives the HTTP request and passes it to the Express app.
+2. Express runs registered middleware in the order it was added, for example
+   `express.json()`, a logger, and an authentication check.
+3. Each middleware either ends the response or calls `next()` to continue.
+4. The router finds the first route whose method and path match.
+5. The route handler validates input, calls the business logic, and sends a
+   response.
+6. If anything fails, the error is passed to error-handling middleware, which
+   sends an error response.
 
 ## Practical example
 
@@ -43,39 +49,98 @@ authentication concepts, see [authentication and authorization](authentication-a
 import express from "express";
 
 const app = express();
-app.use(express.json());
+app.use(express.json()); // Parse JSON request bodies into req.body.
 
-app.get("/health", (request, response) => {
-  response.json({ status: "ok" });
+const tasks = [{ id: 1, title: "Learn Express" }];
+
+app.get("/tasks", (req, res) => {
+  res.json(tasks);
 });
 
-app.listen(3000);
+app.post("/tasks", (req, res) => {
+  const title = req.body?.title;
+  if (typeof title !== "string" || title.trim() === "") {
+    return res.status(400).json({ error: "title is required" });
+  }
+  const task = { id: tasks.length + 1, title };
+  tasks.push(task);
+  res.status(201).json(task);
+});
+
+app.listen(3000, () => {
+  console.log("API listening on http://localhost:3000");
+});
 ```
 
-The JSON middleware parses JSON request bodies; the route returns a JSON
-health response. Production applications should configure listening and
-errors for their environment.
+`GET /tasks` returns the list, and `POST /tasks` validates the input, then
+returns `201 Created` with the new task or `400 Bad Request` with an error.
 
-## Important terminology
+## Express topic map
 
-- **Application:** The Express instance that configures a server.
-- **Route:** A method and path associated with request-handling code.
-- **Handler:** A function that processes a request or passes it onward.
-- **Router:** A modular set of route and middleware definitions.
+**Foundations**
 
-## Advantages and disadvantages
+- [Getting started with Express](express/getting-started.md)
+- [Routing and routers](express/routing-and-routers.md)
 
-Express is lightweight, flexible, and supported by a large ecosystem. That
-flexibility means applications must choose their own conventions for
-validation, structure, security, and many other concerns.
+**Requests and responses**
 
-## Common misconceptions
+- [The request object](express/request-object.md)
+- [The response object](express/response-object.md)
+- [Body parsing and content types](express/body-parsing-and-content-types.md)
 
-- Express is not part of Node.js; it is a separate framework package.
-- Registering a route does not automatically validate its request data.
-- Middleware order can change application behavior.
+**Middleware, validation, and errors**
 
-## Further Learning & References
+- [Middleware](express/middleware.md)
+- [Request validation](express/request-validation.md)
+- [Error handling in Express](express/error-handling-in-express.md)
 
-- **Official guide:** [Express routing](https://expressjs.com/en/guide/routing.html) explains route methods, paths, and handlers.
-- **Official guide:** [Express middleware](https://expressjs.com/en/guide/using-middleware.html) describes middleware behavior and registration.
+**Browser and client concerns**
+
+- [Configuring CORS in Express](express/cors-in-express.md)
+- [Cookies and sessions in Express](express/cookies-and-sessions.md)
+- [Implementing authentication in Express](express/authentication-in-express.md)
+
+**Files and views**
+
+- [File uploads with Multer](express/file-uploads.md)
+- [Static files and template engines](express/static-files-and-template-engines.md)
+
+**Building for production**
+
+- [Structuring an Express project](express/project-structure.md)
+- [Express security best practices](express/security-best-practices.md)
+- [Testing Express APIs](express/testing-express-apis.md)
+- [Running Express in production](express/production-and-performance.md)
+
+**Project**
+
+- [Project: TaskFlow API](projects.md#taskflow-api)
+
+**Review**
+
+- [Express interview questions and answers](express/interview-questions-and-answers.md)
+
+## Developer perspective and common misconceptions
+
+Learn [Node.js](nodejs.md) and the HTTP basics in
+[Important Backend Concepts](backend-concepts.md) first, especially
+[HTTP methods](backend-concepts/http-methods.md) and
+[status codes](backend-concepts/http-status-codes.md). Register middleware in
+a deliberate order, keep route handlers thin by moving business logic into
+services, validate every input, and handle errors in one place.
+
+- Express is not part of Node.js; it is a separate npm package.
+- Registering a route does not validate its input; you must add validation.
+- Middleware order changes behavior: a body parser registered after a route
+  does not run for that route.
+- `res.json()` does not stop your function; code after it still runs unless
+  you `return`.
+- Express does not make an API secure by default; headers, rate limits, CORS,
+  and authentication are added deliberately.
+
+## Further learning
+
+- [Express: Getting started](https://expressjs.com/en/starter/installing.html)
+- [Express 5 API reference](https://expressjs.com/en/5x/api/)
+- [Express: Migrating to Express 5](https://expressjs.com/en/guide/migrating-5.html)
+- [Express interview questions and answers](express/interview-questions-and-answers.md)

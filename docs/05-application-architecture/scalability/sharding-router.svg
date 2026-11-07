@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="470" viewBox="0 0 800 470" role="img" aria-labelledby="shr-title shr-desc">
+  <title id="shr-title">Routing by shard key, a hot shard, and a scatter-gather query</title>
+  <desc id="shr-desc">With the shard key: the app sends a query for customerId 42 to the router, which computes hash(customerId) mod 3 and sends it to exactly one shard, shard 2. Shard 2 also holds MegaCorp, one very large tenant, so it carries about 80 percent of the load while shards 1 and 3 are lightly used: a hot shard caused by a skewed key. Without the shard key, a query such as WHERE email equals a@x.com cannot be routed, so the router asks all three shards and merges and sorts the results, which is slower and harder to paginate.</desc>
+  <defs>
+    <marker id="shr-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#40566b"/>
+    </marker>
+    <marker id="shr-arrow-ret" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#60788d"/>
+    </marker>
+  </defs>
+  <rect width="800" height="470" rx="14" fill="#f5f7fb"/>
+  <g font-family="Arial, sans-serif" text-anchor="middle">
+    <text x="24" y="28" font-size="13" font-weight="700" fill="#40566b" text-anchor="start">With the shard key: one shard answers</text>
+    <rect x="40" y="44" width="150" height="48" rx="8" fill="#fff0d9" stroke="#bd7a20" stroke-width="2"/>
+    <text x="115" y="64" font-size="13" font-weight="700" fill="#66400f">App</text>
+    <text x="115" y="81" font-size="11" fill="#66400f">WHERE customerId = 42</text>
+    <rect x="290" y="44" width="220" height="48" rx="8" fill="#eef1f5" stroke="#8a96a3" stroke-width="2"/>
+    <text x="400" y="64" font-size="13" font-weight="700" fill="#36424e">Router</text>
+    <text x="400" y="81" font-size="11.5" fill="#36424e">shard = hash(customerId) % 3</text>
+
+    <rect x="40" y="140" width="210" height="80" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="145" y="160" font-size="13" font-weight="700" fill="#263e5a">Shard 1</text>
+    <text x="145" y="176" font-size="11" fill="#263e5a">hash range A</text>
+    <rect x="295" y="140" width="210" height="80" rx="8" fill="#fde8e6" stroke="#b5473a" stroke-width="2.5"/>
+    <text x="400" y="160" font-size="13" font-weight="700" fill="#6b241c">Shard 2 (hot)</text>
+    <text x="400" y="176" font-size="11" fill="#6b241c">range B, includes MegaCorp</text>
+    <rect x="550" y="140" width="210" height="80" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="655" y="160" font-size="13" font-weight="700" fill="#263e5a">Shard 3</text>
+    <text x="655" y="176" font-size="11" fill="#263e5a">hash range C</text>
+
+    <g stroke-width="1">
+      <rect x="60" y="190" width="170" height="14" rx="3" fill="#ffffff" stroke="#8a96a3"/>
+      <rect x="60" y="190" width="34" height="14" rx="3" fill="#8fb0d6" stroke="#4774aa"/>
+      <rect x="315" y="190" width="170" height="14" rx="3" fill="#ffffff" stroke="#8a96a3"/>
+      <rect x="315" y="190" width="136" height="14" rx="3" fill="#d98a7f" stroke="#b5473a"/>
+      <rect x="570" y="190" width="170" height="14" rx="3" fill="#ffffff" stroke="#8a96a3"/>
+      <rect x="570" y="190" width="34" height="14" rx="3" fill="#8fb0d6" stroke="#4774aa"/>
+    </g>
+    <g font-size="11" font-weight="700">
+      <text x="145" y="215" fill="#263e5a">load 20%</text>
+      <text x="400" y="215" fill="#6b241c">load 80%</text>
+      <text x="655" y="215" fill="#263e5a">load 20%</text>
+    </g>
+    <text x="400" y="240" font-size="11.5" font-style="italic" fill="#6b241c">one huge tenant on one shard: a skewed key makes a hot shard</text>
+
+    <g fill="none" stroke="#c9d1db" stroke-width="1.5">
+      <path d="M330 92 160 138"/>
+      <path d="M470 92 640 138"/>
+    </g>
+    <g fill="none" stroke="#40566b" stroke-width="2" stroke-linecap="round">
+      <path d="M190 68H288" marker-end="url(#shr-arrow)"/>
+      <path d="M400 92V138" marker-end="url(#shr-arrow)"/>
+    </g>
+    <text x="408" y="120" font-size="11.5" font-weight="700" fill="#40566b" text-anchor="start">hash(42) % 3 = shard 2</text>
+
+    <path d="M24 258H776" stroke="#c9d1db" stroke-width="1.5"/>
+    <text x="24" y="284" font-size="13" font-weight="700" fill="#66400f" text-anchor="start">Without the shard key: scatter-gather</text>
+
+    <rect x="24" y="320" width="170" height="52" rx="8" fill="#fff0d9" stroke="#bd7a20" stroke-width="2"/>
+    <text x="109" y="341" font-size="12.5" font-weight="700" fill="#66400f">App</text>
+    <text x="109" y="359" font-size="11" fill="#66400f">WHERE email = "a@x.com"</text>
+    <rect x="226" y="320" width="110" height="52" rx="8" fill="#eef1f5" stroke="#8a96a3" stroke-width="2"/>
+    <text x="281" y="341" font-size="12.5" font-weight="700" fill="#36424e">Router</text>
+    <text x="281" y="359" font-size="11" fill="#36424e">cannot pick one</text>
+    <g font-size="12" font-weight="700" fill="#263e5a">
+      <rect x="400" y="296" width="100" height="30" rx="6" fill="#e5efff" stroke="#4774aa" stroke-width="1.5"/>
+      <text x="450" y="316">shard 1</text>
+      <rect x="400" y="331" width="100" height="30" rx="6" fill="#e5efff" stroke="#4774aa" stroke-width="1.5"/>
+      <text x="450" y="351">shard 2</text>
+      <rect x="400" y="366" width="100" height="30" rx="6" fill="#e5efff" stroke="#4774aa" stroke-width="1.5"/>
+      <text x="450" y="386">shard 3</text>
+    </g>
+    <rect x="560" y="320" width="216" height="52" rx="8" fill="#f0e9fb" stroke="#8062a8" stroke-width="2"/>
+    <text x="668" y="341" font-size="12.5" font-weight="700" fill="#463365">Merge and sort results</text>
+    <text x="668" y="359" font-size="11" fill="#463365">slower; pagination is harder</text>
+
+    <g fill="none" stroke="#40566b" stroke-width="2" stroke-linecap="round">
+      <path d="M194 346H224" marker-end="url(#shr-arrow)"/>
+      <path d="M336 340 398 312" marker-end="url(#shr-arrow)"/>
+      <path d="M336 346H398" marker-end="url(#shr-arrow)"/>
+      <path d="M336 352 398 380" marker-end="url(#shr-arrow)"/>
+    </g>
+    <g fill="none" stroke="#60788d" stroke-width="2" stroke-dasharray="5 4" stroke-linecap="round">
+      <path d="M500 312 558 338" marker-end="url(#shr-arrow-ret)"/>
+      <path d="M500 346H558" marker-end="url(#shr-arrow-ret)"/>
+      <path d="M500 380 558 354" marker-end="url(#shr-arrow-ret)"/>
+    </g>
+    <text x="400" y="440" font-size="13" fill="#40566b">Pick a high-cardinality, evenly used shard key that your main queries include.</text>
+  </g>
+</svg>

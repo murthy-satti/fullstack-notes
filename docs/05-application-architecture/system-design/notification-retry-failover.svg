@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="610" viewBox="0 0 800 610" role="img" aria-labelledby="nrf-title nrf-desc">
+  <title id="nrf-title">How a notification worker handles expiry, duplicates, failover, retries, and dead letters</title>
+  <desc id="nrf-desc">A worker takes a job. If it is past its expiry, it is marked expired. If the worker cannot atomically move the delivery from queued to sending, another worker has it and the job is skipped. If the primary provider is unhealthy, the secondary provider is used. The worker sends with a timeout. On success the delivery is marked sent. A permanent error such as an invalid token or hard bounce marks it failed and deactivates the device or suppresses the address. A transient error is retried later with backoff and jitter while attempts remain; after the last attempt the job goes to the dead-letter queue and an alert fires.</desc>
+  <defs>
+    <marker id="nrf-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#40566b"/>
+    </marker>
+  </defs>
+  <rect width="800" height="610" rx="14" fill="#f5f7fb"/>
+  <g font-family="Arial, sans-serif" text-anchor="middle">
+    <rect x="230" y="20" width="200" height="36" rx="18" fill="#eef1f5" stroke="#8a96a3" stroke-width="2"/>
+    <text x="330" y="43" font-size="14" font-weight="700" fill="#36424e">Worker takes a job</text>
+
+    <g fill="#eef1f5" stroke="#8a96a3" stroke-width="2">
+      <path d="M330 76 430 106 330 136 230 106z"/>
+      <path d="M330 160 430 190 330 220 230 190z"/>
+      <path d="M330 244 430 274 330 304 230 274z"/>
+      <path d="M330 400 410 430 330 460 250 430z"/>
+      <path d="M640 400 725 430 640 460 555 430z"/>
+    </g>
+    <g font-size="12" font-weight="700" fill="#36424e">
+      <text x="330" y="103">past</text>
+      <text x="330" y="117">expiresAt?</text>
+      <text x="330" y="187">claim it:</text>
+      <text x="330" y="201">queued → sending?</text>
+      <text x="330" y="271">primary provider</text>
+      <text x="330" y="285">healthy?</text>
+      <text x="330" y="434">result?</text>
+      <text x="640" y="427">attempts</text>
+      <text x="640" y="441">left?</text>
+    </g>
+
+    <g fill="#eef1f5" stroke="#8a96a3" stroke-width="2">
+      <rect x="530" y="84" width="220" height="44" rx="8"/>
+      <rect x="530" y="168" width="220" height="44" rx="8"/>
+    </g>
+    <g font-size="14" font-weight="700" fill="#36424e">
+      <text x="640" y="102">Mark expired</text>
+      <text x="640" y="186">Skip the job</text>
+    </g>
+    <g font-size="11.5" fill="#36424e">
+      <text x="640" y="119">a stale OTP is useless</text>
+      <text x="640" y="203">another worker has it</text>
+    </g>
+
+    <g fill="#fff0d9" stroke="#bd7a20" stroke-width="2">
+      <rect x="530" y="252" width="220" height="44" rx="8"/>
+      <rect x="220" y="328" width="220" height="44" rx="8"/>
+    </g>
+    <g font-size="14" font-weight="700" fill="#66400f">
+      <text x="640" y="270">Use the secondary</text>
+      <text x="330" y="346">Send to provider</text>
+    </g>
+    <g font-size="11.5" fill="#66400f">
+      <text x="640" y="287">circuit breaker is open</text>
+      <text x="330" y="363">with a timeout</text>
+    </g>
+
+    <rect x="220" y="490" width="220" height="44" rx="8" fill="#e8f5e9" stroke="#53845b" stroke-width="2"/>
+    <text x="330" y="508" font-size="14" font-weight="700" fill="#294a2e">Mark sent</text>
+    <text x="330" y="525" font-size="11.5" fill="#294a2e">store providerMessageId</text>
+
+    <g fill="#fde8e6" stroke="#b5473a" stroke-width="2">
+      <rect x="15" y="408" width="160" height="44" rx="8"/>
+      <rect x="530" y="490" width="220" height="44" rx="8"/>
+    </g>
+    <g font-size="14" font-weight="700" fill="#6b241c">
+      <text x="95" y="426">Mark failed</text>
+      <text x="640" y="508">Dead-letter queue</text>
+    </g>
+    <g font-size="11.5" fill="#6b241c">
+      <text x="95" y="443">deactivate / suppress</text>
+      <text x="640" y="525">alert, replay after a fix</text>
+    </g>
+
+    <g fill="none" stroke="#40566b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M330 56V74" marker-end="url(#nrf-arrow)"/>
+      <path d="M430 106H528" marker-end="url(#nrf-arrow)"/>
+      <path d="M330 136V158" marker-end="url(#nrf-arrow)"/>
+      <path d="M430 190H528" marker-end="url(#nrf-arrow)"/>
+      <path d="M330 220V242" marker-end="url(#nrf-arrow)"/>
+      <path d="M430 274H528" marker-end="url(#nrf-arrow)"/>
+      <path d="M330 304V326" marker-end="url(#nrf-arrow)"/>
+      <path d="M640 296V350H442" marker-end="url(#nrf-arrow)"/>
+      <path d="M330 372V398" marker-end="url(#nrf-arrow)"/>
+      <path d="M330 460V488" marker-end="url(#nrf-arrow)"/>
+      <path d="M250 430H177" marker-end="url(#nrf-arrow)"/>
+      <path d="M410 430H553" marker-end="url(#nrf-arrow)"/>
+      <path d="M640 460V488" marker-end="url(#nrf-arrow)"/>
+    </g>
+    <path d="M725 430H778V38H432" fill="none" stroke="#60788d" stroke-width="2" stroke-dasharray="6 4" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#nrf-arrow)"/>
+
+    <g font-size="12" font-weight="700" fill="#40566b">
+      <text x="479" y="98">yes</text>
+      <text x="340" y="152" text-anchor="start">no</text>
+      <text x="479" y="182">no</text>
+      <text x="340" y="236" text-anchor="start">yes</text>
+      <text x="479" y="266">no</text>
+      <text x="340" y="320" text-anchor="start">yes</text>
+      <text x="650" y="480" text-anchor="start">no</text>
+      <text x="748" y="422">yes</text>
+    </g>
+    <g font-size="11.5" font-style="italic" fill="#40566b">
+      <text x="213" y="422">permanent</text>
+      <text x="481" y="422">transient</text>
+      <text x="481" y="447">timeout, 5xx, 429</text>
+      <text x="213" y="447">bad token</text>
+      <text x="340" y="481" text-anchor="start">success</text>
+      <text x="605" y="30">retry later: backoff + jitter, honor Retry-After</text>
+    </g>
+    <text x="400" y="580" font-size="13" fill="#40566b">Transient errors retry with backoff; permanent ones stop at once; repeated failures end in the DLQ.</text>
+  </g>
+</svg>

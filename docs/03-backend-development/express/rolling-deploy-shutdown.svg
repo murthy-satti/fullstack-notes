@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="650" viewBox="0 0 780 650" role="img" aria-labelledby="rds-title rds-desc">
+  <title id="rds-title">A zero-downtime rolling deploy with readiness checks and graceful shutdown</title>
+  <desc id="rds-desc">The orchestrator starts the new v2 instance, which connects its database pool and starts listening. The load balancer calls GET /readyz on v2, gets 200, and adds v2 to the rotation. The orchestrator then sends SIGTERM to the old v1 instance, which sets shuttingDown to true. The load balancer's next GET /readyz on v1 returns 503, so it stops sending traffic to v1. v1 calls server.close so in-flight requests finish, then closes its database pool and exits with code 0, with a forced exit after a timeout if something hangs.</desc>
+  <defs>
+    <marker id="rds-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#40566b"/>
+    </marker>
+    <marker id="rds-ret" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#60788d"/>
+    </marker>
+  </defs>
+  <rect width="780" height="650" rx="14" fill="#f5f7fb"/>
+  <g font-family="Arial, sans-serif" text-anchor="middle">
+    <rect x="25" y="20" width="150" height="48" rx="8" fill="#eef1f5" stroke="#8a96a3" stroke-width="2"/>
+    <text x="100" y="40" font-size="14" font-weight="700" fill="#36424e">Orchestrator</text>
+    <text x="100" y="57" font-size="11.5" fill="#36424e">deploy tool, PM2, k8s</text>
+    <rect x="225" y="20" width="150" height="48" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="300" y="40" font-size="14" font-weight="700" fill="#263e5a">Load balancer</text>
+    <text x="300" y="57" font-size="11.5" fill="#263e5a">routes traffic</text>
+    <rect x="425" y="20" width="150" height="48" rx="8" fill="#fff0d9" stroke="#bd7a20" stroke-width="2"/>
+    <text x="500" y="40" font-size="14" font-weight="700" fill="#66400f">Old instance v1</text>
+    <text x="500" y="57" font-size="11.5" fill="#66400f">serving traffic</text>
+    <rect x="615" y="20" width="150" height="48" rx="8" fill="#e8f5e9" stroke="#53845b" stroke-width="2"/>
+    <text x="690" y="40" font-size="14" font-weight="700" fill="#294a2e">New instance v2</text>
+    <text x="690" y="57" font-size="11.5" fill="#294a2e">just deployed</text>
+
+    <g stroke="#8a96a3" stroke-width="1.5" stroke-dasharray="5 5">
+      <path d="M100 68V604"/>
+      <path d="M300 68V236M300 272V436M300 472V604"/>
+      <path d="M500 68V320M500 356V486M500 522V538"/>
+      <path d="M690 68V120M690 156V604"/>
+    </g>
+    <path d="M492 584 508 600M508 584 492 600" stroke="#b5473a" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M500 574V584" stroke="#8a96a3" stroke-width="1.5" stroke-dasharray="5 5"/>
+
+    <rect x="615" y="120" width="150" height="36" rx="8" fill="#e8f5e9" stroke="#53845b" stroke-width="2"/>
+    <text x="690" y="135" font-size="11.5" font-weight="700" fill="#294a2e">2. connect DB pool,</text>
+    <text x="690" y="149" font-size="11.5" fill="#294a2e">app.listen()</text>
+    <rect x="225" y="236" width="150" height="36" rx="8" fill="#e8f5e9" stroke="#53845b" stroke-width="2"/>
+    <text x="300" y="251" font-size="11.5" font-weight="700" fill="#294a2e">v2 joins</text>
+    <text x="300" y="265" font-size="11.5" fill="#294a2e">the rotation</text>
+    <rect x="425" y="320" width="150" height="36" rx="8" fill="#fff0d9" stroke="#bd7a20" stroke-width="2"/>
+    <text x="500" y="335" font-size="11.5" font-weight="700" fill="#66400f">6. shuttingDown = true</text>
+    <text x="500" y="349" font-size="11.5" fill="#66400f">readiness now fails</text>
+    <rect x="225" y="436" width="150" height="36" rx="8" fill="#fde8e6" stroke="#b5473a" stroke-width="2"/>
+    <text x="300" y="451" font-size="11.5" font-weight="700" fill="#6b241c">stop sending</text>
+    <text x="300" y="465" font-size="11.5" fill="#6b241c">new traffic to v1</text>
+    <rect x="425" y="486" width="150" height="36" rx="8" fill="#fff0d9" stroke="#bd7a20" stroke-width="2"/>
+    <text x="500" y="501" font-size="11.5" font-weight="700" fill="#66400f">9. server.close()</text>
+    <text x="500" y="515" font-size="11.5" fill="#66400f">in-flight requests finish</text>
+    <rect x="425" y="538" width="150" height="36" rx="8" fill="#fff0d9" stroke="#bd7a20" stroke-width="2"/>
+    <text x="500" y="553" font-size="11.5" font-weight="700" fill="#66400f">10. db.close(), exit(0)</text>
+    <text x="500" y="567" font-size="11.5" fill="#66400f">forced exit after 30 s</text>
+
+    <g text-anchor="start" fill="#36424e">
+      <text x="112" y="96" font-size="12" font-weight="700">1. start v2</text>
+      <text x="312" y="180" font-size="12" font-weight="700">3. GET /readyz</text>
+      <text x="512" y="214" font-size="12" font-weight="700">4. 200 OK</text>
+      <text x="112" y="296" font-size="12" font-weight="700">5. SIGTERM</text>
+      <text x="312" y="380" font-size="12" font-weight="700">7. GET /readyz</text>
+      <text x="312" y="414" font-size="12" font-weight="700" fill="#b5473a">8. 503</text>
+    </g>
+
+    <g fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M100 106H688" stroke="#40566b" marker-end="url(#rds-arrow)"/>
+      <path d="M300 190H688" stroke="#40566b" marker-end="url(#rds-arrow)"/>
+      <path d="M690 222H302" stroke="#60788d" stroke-dasharray="6 4" marker-end="url(#rds-ret)"/>
+      <path d="M100 306H498" stroke="#40566b" marker-end="url(#rds-arrow)"/>
+      <path d="M300 390H498" stroke="#40566b" marker-end="url(#rds-arrow)"/>
+      <path d="M500 422H302" stroke="#b5473a" stroke-dasharray="6 4" marker-end="url(#rds-ret)"/>
+    </g>
+    <text x="390" y="632" font-size="13" fill="#40566b">Readiness moves traffic before shutdown, and server.close() lets running requests finish.</text>
+  </g>
+</svg>

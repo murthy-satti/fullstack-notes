@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="490" viewBox="0 0 780 490" role="img" aria-labelledby="ttc-title ttc-desc">
+  <title id="ttc-title">Two-tier caching: in-process LRU, then Redis, then the database</title>
+  <desc id="ttc-desc">A request first checks the in-process LRU cache of this instance and returns in microseconds on a hit. On a miss it checks Redis, and on a hit copies the value into the local LRU and returns in under a millisecond. On a miss in both it queries the database, stores the result in Redis with a TTL of about 300 seconds and in the local LRU with a TTL of about 5 seconds, and returns it. When product 17 changes, the application updates the database, UNLINKs the Redis key, and publishes an invalidation message; every instance's subscriber deletes its local copy. Without the message, local copies still expire within about 5 seconds.</desc>
+  <defs>
+    <marker id="ttc-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#40566b"/>
+    </marker>
+  </defs>
+  <rect width="780" height="490" rx="14" fill="#f5f7fb"/>
+  <g font-family="Arial, sans-serif" text-anchor="middle">
+    <text x="200" y="36" font-size="14" font-weight="700" fill="#36424e">Read: nearest tier first</text>
+    <text x="590" y="36" font-size="14" font-weight="700" fill="#36424e">When product 17 changes</text>
+    <path d="M400 24V440" stroke="#c3ccd7" stroke-width="1.5"/>
+
+    <rect x="60" y="48" width="180" height="36" rx="18" fill="#eef1f5" stroke="#8a96a3" stroke-width="2"/>
+    <text x="150" y="71" font-size="14" font-weight="700" fill="#36424e">Request</text>
+    <path d="M150 104 240 132 150 160 60 132z" fill="#eef1f5" stroke="#8a96a3" stroke-width="2"/>
+    <text x="150" y="129" font-size="12" font-weight="700" fill="#36424e">in-process</text>
+    <text x="150" y="143" font-size="12" font-weight="700" fill="#36424e">LRU hit?</text>
+    <path d="M150 182 240 210 150 238 60 210z" fill="#eef1f5" stroke="#8a96a3" stroke-width="2"/>
+    <text x="150" y="214" font-size="12" font-weight="700" fill="#36424e">Redis hit?</text>
+    <rect x="50" y="258" width="200" height="48" rx="8" fill="#fff0d9" stroke="#bd7a20" stroke-width="2"/>
+    <text x="150" y="278" font-size="14" font-weight="700" fill="#66400f">Query the database</text>
+    <text x="150" y="295" font-size="11.5" fill="#66400f">milliseconds</text>
+    <rect x="50" y="326" width="200" height="62" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="150" y="346" font-size="14" font-weight="700" fill="#263e5a">Store in both tiers</text>
+    <text x="150" y="364" font-size="11.5" fill="#263e5a">Redis: TTL ~5 min, shared</text>
+    <text x="150" y="379" font-size="11.5" fill="#263e5a">LRU: TTL ~5 s, this instance</text>
+    <rect x="50" y="408" width="200" height="36" rx="8" fill="#e8f5e9" stroke="#53845b" stroke-width="2"/>
+    <text x="150" y="431" font-size="14" font-weight="700" fill="#294a2e">Return the value</text>
+
+    <rect x="272" y="108" width="116" height="48" rx="8" fill="#e8f5e9" stroke="#53845b" stroke-width="2"/>
+    <text x="330" y="128" font-size="14" font-weight="700" fill="#294a2e">Return</text>
+    <text x="330" y="145" font-size="11.5" fill="#294a2e">microseconds</text>
+    <rect x="272" y="180" width="116" height="62" rx="8" fill="#e8f5e9" stroke="#53845b" stroke-width="2"/>
+    <text x="330" y="200" font-size="14" font-weight="700" fill="#294a2e">Copy to LRU</text>
+    <text x="330" y="218" font-size="11.5" fill="#294a2e">then return,</text>
+    <text x="330" y="233" font-size="11.5" fill="#294a2e">sub-millisecond</text>
+
+    <g fill="none" stroke="#40566b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M150 84V102" marker-end="url(#ttc-arrow)"/>
+      <path d="M150 160V180" marker-end="url(#ttc-arrow)"/>
+      <path d="M150 238V256" marker-end="url(#ttc-arrow)"/>
+      <path d="M150 306V324" marker-end="url(#ttc-arrow)"/>
+      <path d="M150 388V406" marker-end="url(#ttc-arrow)"/>
+      <path d="M240 132H270" marker-end="url(#ttc-arrow)"/>
+      <path d="M240 210H270" marker-end="url(#ttc-arrow)"/>
+    </g>
+    <g font-size="12" font-weight="700" fill="#40566b">
+      <text x="254" y="124">yes</text>
+      <text x="254" y="202">yes</text>
+      <text x="164" y="175">no</text>
+      <text x="164" y="252">no</text>
+    </g>
+
+    <rect x="440" y="50" width="300" height="48" rx="8" fill="#fff0d9" stroke="#bd7a20" stroke-width="2"/>
+    <text x="590" y="70" font-size="14" font-weight="700" fill="#66400f">Update the database</text>
+    <text x="590" y="87" font-size="11.5" fill="#66400f">PUT /products/17</text>
+    <rect x="440" y="118" width="300" height="48" rx="8" fill="#fde8e6" stroke="#b5473a" stroke-width="2"/>
+    <text x="590" y="138" font-size="14" font-weight="700" fill="#6b241c">UNLINK the Redis key</text>
+    <text x="590" y="155" font-size="11.5" fill="#6b241c">the shared copy is gone</text>
+    <rect x="440" y="186" width="300" height="48" rx="8" fill="#f0e9fb" stroke="#8062a8" stroke-width="2"/>
+    <text x="590" y="206" font-size="14" font-weight="700" fill="#463365">PUBLISH an invalidation</text>
+    <text x="590" y="223" font-size="11.5" fill="#463365">message names product:17</text>
+    <rect x="430" y="276" width="150" height="48" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="505" y="296" font-size="14" font-weight="700" fill="#263e5a">Instance A</text>
+    <text x="505" y="313" font-size="11.5" fill="#263e5a">deletes local copy</text>
+    <rect x="600" y="276" width="150" height="48" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="675" y="296" font-size="14" font-weight="700" fill="#263e5a">Instance B</text>
+    <text x="675" y="313" font-size="11.5" fill="#263e5a">deletes local copy</text>
+    <g fill="none" stroke="#40566b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M590 98V116" marker-end="url(#ttc-arrow)"/>
+      <path d="M590 166V184" marker-end="url(#ttc-arrow)"/>
+      <path d="M560 234 512 274" marker-end="url(#ttc-arrow)"/>
+      <path d="M620 234 668 274" marker-end="url(#ttc-arrow)"/>
+    </g>
+    <text x="590" y="258" font-size="11.5" font-style="italic" fill="#40566b">subscribers</text>
+    <text x="590" y="356" font-size="11.5" font-style="italic" fill="#40566b">Without the message, local copies</text>
+    <text x="590" y="371" font-size="11.5" font-style="italic" fill="#40566b">still expire within their ~5 s TTL.</text>
+    <text x="390" y="472" font-size="13" fill="#40566b">The short local TTL limits how long instances can disagree; Pub/Sub clears them sooner.</text>
+  </g>
+</svg>

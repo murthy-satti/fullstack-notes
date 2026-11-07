@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="380" viewBox="0 0 800 380" role="img" aria-labelledby="nsp-title nsp-desc">
+  <title id="nsp-title">The extract-errors stream pipeline, backpressure, and the leftover line</title>
+  <desc id="nsp-desc">pipeline() connects app.log, createReadStream reading 64 KB utf8 chunks, the serverErrorsOnly Transform that splits lines, keeps the leftover, and passes only 5xx lines, createGzip, and createWriteStream writing errors.log.gz. When a downstream buffer is full, write() returns false and the stream upstream pauses until the drain event. A chunk can end in the middle of a line, such as "GET /api/ca", and the next chunk starts with "rt 503 12ms"; the leftover joins them into the complete line before filtering. Because only a few chunks are in memory at any time, a 588 MB input used about 64 MB of memory.</desc>
+  <defs>
+    <marker id="nsp-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#40566b"/>
+    </marker>
+    <marker id="nsp-arrow-back" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#b5473a"/>
+    </marker>
+  </defs>
+  <rect width="800" height="380" rx="14" fill="#f5f7fb"/>
+  <g font-family="Arial, sans-serif" text-anchor="middle">
+    <text x="24" y="32" font-size="13" font-weight="700" fill="#40566b" text-anchor="start">await pipeline(read, transform, gzip, write)</text>
+
+    <rect x="20" y="56" width="100" height="64" rx="8" fill="#eef1f5" stroke="#8a96a3" stroke-width="2"/>
+    <text x="70" y="84" font-size="12.5" font-weight="700" fill="#36424e">app.log</text>
+    <text x="70" y="101" font-size="11" fill="#36424e">588 MB</text>
+    <rect x="146" y="56" width="140" height="64" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="216" y="80" font-size="12.5" font-weight="700" fill="#263e5a">createReadStream</text>
+    <text x="216" y="97" font-size="11" fill="#263e5a">64 KB chunks</text>
+    <text x="216" y="111" font-size="11" fill="#263e5a">encoding: "utf8"</text>
+    <rect x="312" y="56" width="172" height="64" rx="8" fill="#fff0d9" stroke="#bd7a20" stroke-width="2"/>
+    <text x="398" y="80" font-size="12.5" font-weight="700" fill="#66400f">serverErrorsOnly()</text>
+    <text x="398" y="97" font-size="11" fill="#66400f">split lines, keep leftover</text>
+    <text x="398" y="111" font-size="11" fill="#66400f">push only 5xx lines</text>
+    <rect x="510" y="56" width="114" height="64" rx="8" fill="#f0e9fb" stroke="#8062a8" stroke-width="2"/>
+    <text x="567" y="84" font-size="12.5" font-weight="700" fill="#463365">createGzip()</text>
+    <text x="567" y="101" font-size="11" fill="#463365">compress</text>
+    <rect x="650" y="56" width="130" height="64" rx="8" fill="#e8f5e9" stroke="#53845b" stroke-width="2"/>
+    <text x="715" y="80" font-size="12.5" font-weight="700" fill="#294a2e">createWriteStream</text>
+    <text x="715" y="97" font-size="11" fill="#294a2e">errors.log.gz</text>
+
+    <g fill="none" stroke="#40566b" stroke-width="2" stroke-linecap="round">
+      <path d="M120 88H144" marker-end="url(#nsp-arrow)"/>
+      <path d="M286 88H310" marker-end="url(#nsp-arrow)"/>
+      <path d="M484 88H508" marker-end="url(#nsp-arrow)"/>
+      <path d="M624 88H648" marker-end="url(#nsp-arrow)"/>
+    </g>
+    <path d="M715 120V146H216V122" fill="none" stroke="#b5473a" stroke-width="2" stroke-dasharray="6 4" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#nsp-arrow-back)"/>
+    <text x="466" y="166" font-size="11.5" font-weight="700" fill="#6b241c">backpressure: a full buffer makes write() return false;</text>
+    <text x="466" y="182" font-size="11.5" fill="#6b241c">the stream upstream pauses reading until "drain"</text>
+
+    <path d="M24 204H776" stroke="#c9d1db" stroke-width="1.5"/>
+    <text x="24" y="228" font-size="13" font-weight="700" fill="#40566b" text-anchor="start">Why the Transform keeps a leftover: chunks ignore line boundaries</text>
+    <rect x="24" y="242" width="220" height="48" rx="8" fill="#eef1f5" stroke="#8a96a3" stroke-width="2"/>
+    <text x="134" y="262" font-size="12" font-weight="700" fill="#36424e">end of chunk 1</text>
+    <text x="134" y="279" font-size="11.5" fill="#36424e">"... GET /api/ca"</text>
+    <rect x="270" y="242" width="200" height="48" rx="8" fill="#eef1f5" stroke="#8a96a3" stroke-width="2"/>
+    <text x="370" y="262" font-size="12" font-weight="700" fill="#36424e">start of chunk 2</text>
+    <text x="370" y="279" font-size="11.5" fill="#36424e">"rt 503 12ms\n..."</text>
+    <rect x="510" y="242" width="266" height="48" rx="8" fill="#fff0d9" stroke="#bd7a20" stroke-width="2"/>
+    <text x="643" y="262" font-size="12" font-weight="700" fill="#66400f">leftover + chunk 2</text>
+    <text x="643" y="279" font-size="11.5" fill="#66400f">"... GET /api/cart 503 12ms"</text>
+    <text x="257" y="271" font-size="16" font-weight="700" fill="#40566b">+</text>
+    <path d="M470 266H508" fill="none" stroke="#40566b" stroke-width="2" stroke-linecap="round" marker-end="url(#nsp-arrow)"/>
+
+    <rect x="24" y="310" width="752" height="30" rx="15" fill="#e8f5e9" stroke="#53845b" stroke-width="1.5"/>
+    <text x="400" y="330" font-size="12" font-weight="700" fill="#294a2e">588 MB in, about 64 MB of memory used: only a few chunks exist at any moment</text>
+    <text x="400" y="366" font-size="12.5" fill="#40566b">Data flows forward in chunks; a slow consumer slows the producer instead of filling memory.</text>
+  </g>
+</svg>

@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="560" viewBox="0 0 780 560" role="img" aria-labelledby="escq-title escq-desc">
+  <title id="escq-title">Event sourcing with CQRS: commands append events, queries read projections</title>
+  <desc id="escq-desc">On the write side, a WithdrawMoney command for account a-1 loads the account's event stream and replays it to get the current state, balance 70 at version 4. If the balance is too low the command is rejected; otherwise MoneyWithdrawn of 50 is appended to the append-only event store, expecting version 4, so a concurrent writer causes a conflict instead of a lost update. On the read side, a projection subscribes to new events and updates read models such as an account_balances table and a search index. Queries such as GET balance read the read model, which may lag slightly. To fix or add a read model, replay all events from the first one.</desc>
+  <defs>
+    <marker id="escq-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#40566b"/>
+    </marker>
+    <marker id="escq-arrow-p" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#8062a8"/>
+    </marker>
+  </defs>
+  <rect width="780" height="560" rx="14" fill="#f5f7fb"/>
+  <g font-family="Arial, sans-serif" text-anchor="middle">
+    <text x="24" y="32" font-size="13" font-weight="700" fill="#66400f" text-anchor="start">WRITE SIDE (commands)</text>
+    <rect x="24" y="46" width="170" height="48" rx="24" fill="#eef1f5" stroke="#8a96a3" stroke-width="2"/>
+    <text x="109" y="66" font-size="12.5" font-weight="700" fill="#36424e">WithdrawMoney</text>
+    <text x="109" y="83" font-size="11" fill="#36424e">account a-1, amount 50</text>
+    <rect x="224" y="46" width="200" height="48" rx="8" fill="#fff0d9" stroke="#bd7a20" stroke-width="2"/>
+    <text x="324" y="66" font-size="12.5" font-weight="700" fill="#66400f">load stream a-1, replay</text>
+    <text x="324" y="83" font-size="11" fill="#66400f">balance 70, version 4</text>
+    <path d="M534 42 610 70 534 98 458 70z" fill="#eef1f5" stroke="#8a96a3" stroke-width="2"/>
+    <text x="534" y="67" font-size="11.5" font-weight="700" fill="#36424e">balance</text>
+    <text x="534" y="81" font-size="11.5" font-weight="700" fill="#36424e">&gt;= 50?</text>
+    <rect x="636" y="48" width="120" height="44" rx="8" fill="#fde8e6" stroke="#b5473a" stroke-width="2"/>
+    <text x="696" y="67" font-size="12.5" font-weight="700" fill="#6b241c">reject</text>
+    <text x="696" y="83" font-size="11" fill="#6b241c">nothing stored</text>
+    <rect x="404" y="126" width="260" height="44" rx="8" fill="#fff0d9" stroke="#bd7a20" stroke-width="2"/>
+    <text x="534" y="145" font-size="12.5" font-weight="700" fill="#66400f">append MoneyWithdrawn { 50 }</text>
+    <text x="534" y="162" font-size="11" fill="#66400f">expected version 4 (else: conflict, retry)</text>
+
+    <rect x="204" y="196" width="300" height="150" rx="10" fill="#f0e9fb" stroke="#8062a8" stroke-width="2.5"/>
+    <text x="354" y="218" font-size="13" font-weight="700" fill="#463365">event store: stream a-1 (append-only)</text>
+    <g font-size="11.5" fill="#463365" text-anchor="start">
+      <text x="222" y="242">1  AccountOpened</text>
+      <text x="222" y="262">2  MoneyDeposited { 100 }</text>
+      <text x="222" y="282">3  MoneyWithdrawn { 50 }</text>
+      <text x="222" y="302">4  MoneyDeposited { 20 }</text>
+    </g>
+    <rect x="216" y="310" width="276" height="24" rx="6" fill="#fff0d9" stroke="#bd7a20" stroke-width="1.5"/>
+    <text x="222" y="327" font-size="11.5" font-weight="700" fill="#66400f" text-anchor="start">5  MoneyWithdrawn { 50 }   ← new</text>
+
+    <line x1="24" y1="366" x2="756" y2="366" stroke="#d5dce6" stroke-width="1.5"/>
+    <text x="24" y="390" font-size="13" font-weight="700" fill="#263e5a" text-anchor="start">READ SIDE (queries)</text>
+
+    <rect x="244" y="400" width="220" height="40" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="354" y="418" font-size="12.5" font-weight="700" fill="#263e5a">projection</text>
+    <text x="354" y="433" font-size="11" fill="#263e5a">subscribes to new events</text>
+    <rect x="160" y="470" width="190" height="44" rx="8" fill="#e8f5e9" stroke="#53845b" stroke-width="2"/>
+    <text x="255" y="489" font-size="12.5" font-weight="700" fill="#294a2e">account_balances</text>
+    <text x="255" y="505" font-size="11" fill="#294a2e">a-1: balance 20</text>
+    <rect x="364" y="470" width="190" height="44" rx="8" fill="#e8f5e9" stroke="#53845b" stroke-width="2"/>
+    <text x="459" y="489" font-size="12.5" font-weight="700" fill="#294a2e">search index</text>
+    <text x="459" y="505" font-size="11" fill="#294a2e">another read model</text>
+    <rect x="24" y="470" width="110" height="44" rx="22" fill="#eef1f5" stroke="#8a96a3" stroke-width="2"/>
+    <text x="79" y="489" font-size="12" font-weight="700" fill="#36424e">GET balance</text>
+    <text x="79" y="505" font-size="11" fill="#36424e">a query</text>
+
+    <rect x="590" y="400" width="166" height="114" rx="8" fill="#ffffff" stroke="#8062a8" stroke-width="1.5" stroke-dasharray="5 4"/>
+    <text x="673" y="420" font-size="12" font-weight="700" fill="#463365">replay to rebuild</text>
+    <g font-size="11" fill="#463365">
+      <text x="673" y="440">fixed a projection bug,</text>
+      <text x="673" y="456">or need a new view?</text>
+      <text x="673" y="472">empty the read model</text>
+      <text x="673" y="488">and feed every event</text>
+      <text x="673" y="504">again from event 1</text>
+    </g>
+
+    <g fill="none" stroke="#40566b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M194 70H222" marker-end="url(#escq-arrow)"/>
+      <path d="M424 70H456" marker-end="url(#escq-arrow)"/>
+      <path d="M610 70H634" marker-end="url(#escq-arrow)"/>
+      <path d="M534 98V124" marker-end="url(#escq-arrow)"/>
+      <path d="M534 170V182H460V194" marker-end="url(#escq-arrow)"/>
+      <path d="M324 194V96" stroke-dasharray="3 3" marker-end="url(#escq-arrow)"/>
+      <path d="M354 346V398" marker-end="url(#escq-arrow)"/>
+      <path d="M310 440V468" marker-end="url(#escq-arrow)"/>
+      <path d="M410 440V468" marker-end="url(#escq-arrow)"/>
+      <path d="M134 492H158" marker-end="url(#escq-arrow)"/>
+    </g>
+    <path d="M504 270H673V398" fill="none" stroke="#8062a8" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#escq-arrow-p)"/>
+    <g font-size="11" font-weight="700" fill="#40566b">
+      <text x="622" y="62">no</text>
+      <text x="546" y="116" text-anchor="start">yes</text>
+    </g>
+    <text x="334" y="186" font-size="10.5" font-style="italic" fill="#40566b" text-anchor="start">reads events</text>
+    <text x="364" y="376" font-size="11" font-style="italic" fill="#40566b" text-anchor="start">published after append</text>
+    <text x="79" y="530" font-size="10.5" font-style="italic" fill="#40566b">may lag a moment</text>
+    <text x="390" y="550" font-size="12.5" fill="#40566b">Events are the source of truth; read models are disposable, query-friendly copies built from them.</text>
+  </g>
+</svg>
