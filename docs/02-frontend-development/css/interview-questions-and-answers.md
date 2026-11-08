@@ -13,7 +13,8 @@ is presented, including layout, color, typography, and responsive behavior.
 ### 2. What is the cascade?
 
 The cascade resolves competing declarations by considering origin and
-importance, cascade layer, specificity, and source order. The exact
+importance, cascade layer, specificity, scoping proximity when `@scope`
+applies, and source order. The exact
 comparison rules matter when multiple rules match the same property.
 
 ### 3. What is CSS specificity?
@@ -55,8 +56,9 @@ They can be combined in one layout.
 
 An absolutely positioned element is positioned relative to its nearest
 ancestor that establishes a containing block for absolute positioning,
-commonly one with a non-static position. If none exists, it uses the
-initial containing block.
+often a positioned ancestor, but transforms, filters, containment, and some
+other properties can establish one too. If none exists, it uses the initial
+containing block.
 
 ### 9. What does `z-index` do?
 
@@ -113,3 +115,31 @@ information and functionality available without animation.
 - [CSS overview](../css.md)
 - [MDN: CSS reference](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference)
 - [MDN: CSS layout](https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/CSS_layout)
+
+## Scenario questions
+
+### 16. A `z-index: 9999` tooltip still appears behind a dialog. Why?
+
+`z-index` is compared within stacking contexts; a large value cannot escape its ancestor's context. Inspect the ancestors for properties that create stacking contexts, such as transforms, opacity below one, positioned elements with a `z-index`, or containment. Compare the ancestor contexts first. Move the overlay to a suitable top-level layer or adjust the relevant ancestor ordering instead of continually increasing the child's number.
+
+### 17. A flex child refuses to shrink and pushes the page horizontally. What do you check?
+
+Flex items often have an automatic minimum size based on their content. Inspect the computed width and min-width, then try `min-width: 0` on the shrinking flex item and ensure long content can wrap or scroll appropriately. Check intrinsic-width content such as images, long URLs, and code blocks. Avoid hiding overflow on the whole page as a first fix because it can conceal inaccessible content.
+
+### 18. A grid layout creates unexpectedly wide columns for long text. How can you correct it?
+
+Grid tracks using `1fr` can still respect a content-based minimum. Use a track definition such as `minmax(0, 1fr)` where the design permits the track to shrink, and allow the content to wrap with suitable overflow rules. Inspect intrinsic sizing before adding fixed widths, since fixed widths can fail at other viewport sizes or with translated text.
+
+### 19. A mobile layout has a horizontal scrollbar only on one route. How do you find the cause?
+
+Use responsive DevTools and inspect elements extending beyond the viewport. Check fixed widths, `100vw` combined with padding or scrollbars, positioned elements, unbroken text, and media that lacks a max-width. Temporarily outline elements or compare scroll width with viewport width to locate the overflow source. Fix the responsible component and verify narrow and wide viewports, zoom, and long content.
+
+### 20. A CSS change fixes one component but breaks unrelated pages. What is a likely cause?
+
+A broad selector, global custom property, or high-specificity rule may affect more elements than intended. Inspect matched rules and computed styles in DevTools, then scope the rule to the component or use an explicit design token. Keep cascade layers and component conventions consistent; avoid escalating specificity with increasingly complex selectors because that makes later overrides harder to predict.
+
+### 21. How do you implement an animation that respects reduced-motion settings?
+
+Keep the state change and information available without motion, then provide a reduced or removed animation under `prefers-reduced-motion: reduce`. For example, shorten a transition or disable nonessential transforms while preserving focus and feedback. Test both settings and avoid relying on motion alone to communicate status.
+
+## Further learning

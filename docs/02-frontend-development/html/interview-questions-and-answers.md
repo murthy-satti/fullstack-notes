@@ -129,3 +129,31 @@ behavior, focus, color contrast, alternatives, and testing also matter.
 - [MDN: HTML elements reference](https://developer.mozilla.org/en-US/docs/Web/HTML/Element)
 - [WHATWG HTML Living Standard](https://html.spec.whatwg.org/multipage/)
 - [W3C WAI: Tutorials](https://www.w3.org/WAI/tutorials/)
+
+## Scenario questions
+
+### 21. A form looks correct, but screen-reader users cannot tell what each field means. What do you inspect?
+
+Check that each control has a programmatic label, typically a `<label>` associated by matching `for` and `id`. A placeholder is not a durable substitute: it can disappear during entry and may not provide the expected accessible name. Group related controls with `fieldset` and `legend` where appropriate, and associate useful error text with the relevant control. Verify the result with keyboard navigation and accessibility inspection.
+
+### 22. A button-looking control changes the URL but does not perform an action. Which element should it use?
+
+Use an anchor with a meaningful `href` when the outcome is navigation, including to another page or a section. Use a `<button>` for an action such as opening a dialog or submitting data. Native elements provide expected keyboard behavior, focus, and semantics; styling a generic `<div>` to look interactive does not provide those behaviors automatically.
+
+### 23. A decorative image is announced with an unhelpful filename. How should it be marked up?
+
+If the image conveys no information beyond nearby content, use `alt=""` so assistive technology can skip it. If it carries meaning, provide a concise alternative that communicates that meaning in context. Do not repeat an adjacent caption verbatim unless that repetition is useful. For complex charts, provide the key information in nearby text or a data table rather than putting a long explanation in `alt`.
+
+### 24. A submitted form omits a checked checkbox from the request. Why?
+
+Only successful controls are submitted. A checkbox needs a `name`, and an unchecked checkbox is omitted; checked values are submitted using its `value` or a default value. Disabled controls are also omitted. Inspect the actual form data and make sure the server handles omitted values deliberately rather than assuming the browser submits `false` for every unchecked box.
+
+### 25. A table is difficult to navigate with assistive technology. What semantic fixes might help?
+
+Use a real `<table>` for tabular data, mark header cells with `<th>`, and use `scope="col"` or `scope="row"` for straightforward relationships. Give the table a useful caption when it needs a title. For complex multi-level headers, explicit associations may be needed. Do not use tables for page layout, and verify that the reading order remains understandable on small screens.
+
+### 26. A user can activate a custom control with a mouse but not a keyboard. What is the likely issue?
+
+The control may be built from a non-interactive element without keyboard behavior or semantics. Prefer a native `<button>`, `<a>`, or form control. If a custom widget is necessary, implement its accessible role, name, focus behavior, keyboard interaction, and state according to the relevant pattern, then test it with keyboard and assistive technology. Adding `tabindex="0"` alone does not reproduce native interaction.
+
+## Further learning

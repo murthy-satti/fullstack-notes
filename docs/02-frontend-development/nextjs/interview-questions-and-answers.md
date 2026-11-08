@@ -120,3 +120,31 @@ authorization.
 - [Next.js overview](../nextjs.md)
 - [Next.js documentation](https://nextjs.org/docs)
 - [Next.js App Router](https://nextjs.org/docs/app)
+
+## Scenario questions
+
+### 18. A page renders correctly in the browser, but hydration reports different markup. What do you investigate?
+
+Find the first mismatching element in the error and compare the server output with the initial client render. Common causes include reading browser-only values during render, locale- or time-dependent output, random IDs, and invalid HTML nesting. Make the initial render deterministic; move browser-only reads into an appropriate client effect or provide the same stable input to both renders. Suppressing a warning does not fix divergent UI.
+
+### 19. A secret is available in a Client Component because it was passed as a prop. Is it safe?
+
+No. Props passed to a Client Component are serialized for the browser and should be treated as public. Keep secrets and privileged operations in server-only code, expose only the minimum result needed by the interface, and use server-side authorization for every protected operation. A variable name or hidden UI does not make data secret.
+
+### 20. A user sees stale product data after an administrator updates it. Where do you look?
+
+Trace the data path and identify which layer is caching: the data-fetching request, route output, client-side router cache, CDN, or application cache. Check the framework version and route configuration because caching defaults and controls vary. Choose an explicit freshness policy, then invalidate or revalidate the relevant tag, path, or cache entry after a successful update. Verify both the updated page and other pages that share the data.
+
+### 21. A Route Handler returns private data to any visitor who knows the URL. What is missing?
+
+The handler must authenticate the caller and authorize access to the specific resource on the server. Validate route parameters and request bodies, then check ownership or permission before reading or changing data. Client-side route guards and hidden links are only interface behavior and cannot enforce access control.
+
+### 22. A page is unexpectedly rendered dynamically and response latency increases. How do you diagnose it?
+
+Inspect the route's data dependencies and runtime configuration for request-specific inputs such as cookies, headers, or uncached data access. Check build and runtime diagnostics for the framework version in use, then confirm with response headers and representative production measurements. Decide whether the page truly needs per-request data; if not, restructure the data flow and caching policy deliberately. Do not force static rendering if it would serve user-specific information to other users.
+
+### 23. A form mutation works through the UI but can be triggered by a crafted request. What should protect it?
+
+Treat every Server Action and Route Handler as an externally reachable mutation boundary. Validate the input, authenticate the caller, authorize the requested operation and resource, and apply CSRF protections appropriate to the authentication design and framework configuration. UI visibility, TypeScript types, and server-only execution do not prove that a caller is allowed to perform the action.
+
+## Further learning

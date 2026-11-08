@@ -305,8 +305,9 @@ handling cross-cutting concerns. It should not contain business logic.
 ### 43. What is the backend-for-frontend pattern?
 
 Each client type, such as mobile and web, gets its own backend layer that
-aggregates and shapes data for that client's needs. It avoids a single
-compromised API but can duplicate logic if business rules leak into BFFs.
+aggregates and shapes data for that client's needs. It does not inherently
+improve security; authorization and validation still belong in the relevant
+layers. Business rules should not be duplicated across BFFs.
 
 ### 44. What is a saga?
 

@@ -113,3 +113,31 @@ avoid depending unnecessarily on private implementation details.
 - [React overview](../react.md)
 - [React documentation](https://react.dev/learn)
 - [React: Rules of Hooks](https://react.dev/reference/rules/rules-of-hooks)
+
+## Scenario questions
+
+### 17. A component shows stale search results when a slower earlier request finishes last. How do you prevent it?
+
+Treat each query as a distinct request and prevent obsolete results from replacing the latest state. With an effect, abort the previous fetch using `AbortController` during cleanup, or track a request identifier and ignore responses that are no longer current. Also represent loading and error states explicitly. Do not rely on response order matching request order.
+
+### 18. A list of editable rows loses typed values after items are reordered. What is likely wrong?
+
+The list may use array indexes as keys. React uses keys to match sibling elements between renders, so an index can cause component state to follow a position instead of the item. Use a stable unique identifier from the data. If the underlying item identity truly changes, choose a new key intentionally so React resets that component's local state.
+
+### 19. A component renders in a loop after adding an effect. What do you inspect?
+
+Check whether the effect updates state that appears in its dependency list, causing another effect run, and whether dependencies are recreated on every render. Determine whether the effect is actually synchronizing with an external system; derived values usually belong in render or a memoized calculation, not an effect. If synchronization is needed, make the effect idempotent and provide correct cleanup.
+
+### 20. A child wrapped in `memo` still renders every time its parent renders. Why?
+
+`memo` can skip rendering only when props compare equal by its comparison behavior. New object and function literals have new identities on each parent render, so they can invalidate the comparison. First measure whether the render is costly. Then reduce unnecessary prop changes or use memoization where it provides a measured benefit; `memo`, `useMemo`, and `useCallback` are not guarantees against all renders.
+
+### 21. A subscription keeps firing after a component disappears. What should the effect do?
+
+The effect should return a cleanup function that unsubscribes using the same subscription handle or callback identity. Cleanup also runs before an effect re-synchronizes when dependencies change. Test mount, dependency changes, and unmount; development Strict Mode may intentionally run an extra setup/cleanup cycle to reveal effects that are not safe to repeat.
+
+### 22. Two distant components need the same data, and updating Context makes a large part of the app render. What options do you consider?
+
+First confirm the cost with the Profiler. Keep state near the components that own it when possible; split Context values by update frequency or responsibility, or use a state store with selectors when the application needs fine-grained subscriptions. Context is a propagation mechanism, not automatically a performance problem, and premature global state can make ownership harder to follow.
+
+## Further learning

@@ -114,3 +114,31 @@ these steps, but type checking and execution remain different concerns.
 - [TypeScript overview](../typescript.md)
 - [TypeScript Handbook](https://www.typescriptlang.org/docs/handbook/intro.html)
 - [TypeScript: `tsconfig.json`](https://www.typescriptlang.org/tsconfig)
+
+## Scenario questions
+
+### 16. An API response is typed as `User`, but a missing field crashes the page. Why did TypeScript not catch it?
+
+A type annotation does not validate JSON at runtime. If the response was asserted as `User` or trusted through an unchecked cast, the compiler accepted the claim without inspecting the payload. Treat external data as `unknown`, validate its shape at the boundary with explicit checks or a schema library, and only then expose a trusted domain type to the rest of the application.
+
+### 17. A function accepts a union but callers repeatedly pass the wrong object shape. How can the type model help?
+
+Model valid variants as a discriminated union with a literal tag, such as `{ kind: "email"; address: string } | { kind: "sms"; phone: string }`. The tag makes narrowing explicit and lets the compiler reject combinations that do not belong to either variant. Avoid a bag of many optional fields when only certain combinations are valid.
+
+### 18. A switch over a union silently misses a new variant after the type changes. How can you make it exhaustive?
+
+After handling each known discriminant, assign the remaining value to `never` in a default branch. If a new union member is added, the remaining value is no longer `never`, producing a compile-time error. This is a compile-time safeguard; still decide how unknown values from external data should be handled at runtime.
+
+### 19. A generic helper returns `any` despite having a type parameter. What should you check?
+
+Look for an `any` input, an overly broad constraint, an unsafe assertion, or a library declaration that leaks `any`. `any` can flow through generic code and disable checking. Prefer `unknown` for untrusted values, constrain type parameters only as needed, and preserve the relationship between inputs and outputs rather than asserting a desired result.
+
+### 20. A value can be missing, `null`, or a concrete value. How should the type express it?
+
+Model the states explicitly, for example `value?: string | null` when the property may be absent, explicitly null, or a string. Then handle each state intentionally; optional chaining can avoid an exception but may collapse meaningful states. Match the API contract and compiler options such as `strictNullChecks`, and normalize the value at the boundary if downstream code needs fewer states.
+
+### 21. A developer adds `as SomeType` to silence a compile error. When is that appropriate?
+
+An assertion changes the compiler's view but does not convert or validate the runtime value. Use one only when a fact is established by surrounding logic that TypeScript cannot express, and keep the assertion close to that proof. Prefer a type guard, parser, or improved type model when possible; broad or chained assertions can hide real defects.
+
+## Further learning

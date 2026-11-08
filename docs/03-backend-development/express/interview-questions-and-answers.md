@@ -169,9 +169,10 @@ handler.
 
 File uploads use `multipart/form-data`, which the built-in parsers ignore.
 Middleware such as Multer parses them, placing files in `req.file` or
-`req.files` and text fields in `req.body`. Configure limits on file size and
-count (Multer's defaults are unlimited apart from field size), and do not
-trust the client's filename or MIME type.
+`req.files` and text fields in `req.body`. Set explicit limits: common Multer
+defaults leave file size, file count, field count, and part count unlimited
+(while field size has a default limit). Do not trust the client's filename
+or MIME type.
 
 ### 22. Why might a webhook route need the raw body?
 

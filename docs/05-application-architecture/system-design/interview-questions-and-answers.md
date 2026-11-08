@@ -63,9 +63,10 @@ Multiply DAU by actions per user per day and divide by 86,400 seconds
 
 ### 8. Why estimate peak and not just average load?
 
-Systems fail at peaks, not averages. Traffic follows daily cycles and
-events; sizing for the average guarantees overload during busy hours. Peak
-estimates also determine headroom and autoscaling limits.
+Average load alone can understate capacity needs when traffic has peaks or
+bursts. Estimate representative peak and burst rates, identify the
+bottleneck, then choose headroom and autoscaling limits from the service
+objective.
 
 ### 9. How much downtime does 99.99% availability allow?
 
@@ -81,10 +82,10 @@ from structured data, since they belong in object storage.
 
 ### 11. How do you size a cache?
 
-Use the 80/20 rule: a small share of items serves most reads, so caching
-about 20% of the daily read working set captures most of the benefit. Memory
-≈ 0.2 × unique items read per day × item size; using total requests instead
-of unique items gives an upper bound.
+There is no universal 80/20 cache size. Measure the workload's hot-key
+working set over the relevant TTL and target hit ratio, account for object
+sizes and cache overhead, and validate with hit, eviction, latency, and
+origin-load metrics.
 
 ### 12. Name some latency numbers every engineer should know.
 
@@ -111,10 +112,11 @@ authentication, per-key rate limits and quotas, versioning, and analytics.
 
 ### 15. When should you use a CDN?
 
-Whenever the same content is served to many users, especially static assets
-and media, and for cacheable public API responses. A CDN cuts latency by
-serving from nearby edge locations, reduces origin load and egress cost, and
-absorbs traffic spikes.
+Use a CDN when content is cacheable and users benefit from geographic
+proximity or origin offload. Static assets and media are common examples;
+public API responses need explicit cache semantics and a suitable cache key.
+A CDN can cut latency by serving from nearby edge locations, reduce origin
+load and egress cost, and absorb traffic spikes.
 
 ### 16. Why should application servers be stateless?
 

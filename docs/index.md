@@ -14,15 +14,17 @@ through application development and deployment:
 3. [Backend Development](03-backend-development/index.md)
 4. [Databases](04-databases/index.md)
 5. [Application Architecture](05-application-architecture/index.md)
-6. [Servers and Infrastructure](06-servers-and-infrastructure/index.md)
-7. [DevOps and Deployment](07-devops-and-deployment/index.md)
-8. [Operating Systems and Linux](08-operating-systems-and-linux/index.md)
-9. [Security and Testing](09-security-and-testing/index.md)
-10. [Rust and Systems Programming](10-rust-and-systems-programming/index.md)
+6. [AI and Machine Learning](11-ai-and-machine-learning/index.md)
+7. [Servers and Infrastructure](06-servers-and-infrastructure/index.md)
+8. [DevOps and Deployment](07-devops-and-deployment/index.md)
+9. [Operating Systems and Linux](08-operating-systems-and-linux/index.md)
+10. [Security and Testing](09-security-and-testing/index.md)
+11. [Rust and Systems Programming](10-rust-and-systems-programming/index.md)
 
 ## How to use these notes
 
 Start with a section's overview, then follow its lessons or jump to a topic
-that answers a specific question. Lessons will focus on clear explanations,
-practical examples, developer perspectives, terminology, and revision
-questions. Related concepts will be linked as the notes grow.
+that answers a specific question. Lessons focus on clear explanations,
+practical examples, developer perspectives, and terminology. Sections with
+an interview-question page use it for review. Related concepts are linked
+throughout the notes.

@@ -18,11 +18,12 @@ The documentation is organized into these learning areas:
 3. Backend Development
 4. Databases
 5. Application Architecture
-6. Servers and Infrastructure
-7. DevOps and Deployment
-8. Operating Systems and Linux
-9. Security and Testing
-10. Rust and Systems Programming
+6. AI and Machine Learning
+7. Servers and Infrastructure
+8. DevOps and Deployment
+9. Operating Systems and Linux
+10. Security and Testing
+11. Rust and Systems Programming
 
 Each area has an overview page that describes its learning objectives and
 topics. Lessons and diagrams live under `docs/`. The navigation and page

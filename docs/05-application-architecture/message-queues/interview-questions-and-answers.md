@@ -12,8 +12,9 @@ questions drawn from real production work.
 
 A message queue is a buffer, managed by a broker, where producers put
 messages and consumers take them out to process later. It decouples services
-in time and space, levels out bursts of load, lets consumers scale
-independently, and keeps work safe while a consumer is down or failing.
+in time and space, levels out bursts of load, and lets consumers scale
+independently. It can retain work during consumer outages when the queue and
+messages are configured for durable storage, subject to retention limits.
 
 ### 2. What are a producer, a consumer, and a broker?
 

@@ -40,10 +40,11 @@ dependency.
 
 ### 5. What is the difference between safe and idempotent methods?
 
-A safe method does not change server state (`GET`, `HEAD`, `OPTIONS`). An
-idempotent method has the same effect whether performed once or many times
-(`GET`, `PUT`, `DELETE`, and the safe methods). `POST` is neither, which is
-why retrying it can create duplicates.
+A safe method does not request a state change (`GET`, `HEAD`, `OPTIONS`,
+`TRACE`). An idempotent method has the same intended effect whether performed
+once or repeatedly (`GET`, `HEAD`, `OPTIONS`, `TRACE`, `PUT`, `DELETE`).
+`POST` is neither by definition, so retries need application-level
+idempotency protection when duplicate effects matter.
 
 ### 6. What is the difference between PUT and PATCH?
 
@@ -90,11 +91,11 @@ someone else changed it, preventing lost updates.
 
 ### 12. What do `Cache-Control: no-cache` and `no-store` mean?
 
-`no-cache` allows storing the response but requires revalidation with the
-server before each reuse. `no-store` forbids storing the response at all,
-which is appropriate for sensitive data. `max-age` sets how long a response
-is fresh; `private` restricts caching to the browser rather than shared
-caches.
+`no-cache` allows storage but requires successful validation before reuse.
+`no-store` tells caches not to store the response, but is not a complete
+privacy guarantee. `max-age` sets freshness lifetime; `private` allows
+private caches such as a user agent to store the response while prohibiting
+shared caches from storing it.
 
 ## CORS
 
@@ -237,9 +238,10 @@ probe many accounts quickly.
 
 `HttpOnly` hides the cookie from JavaScript, limiting theft through XSS.
 `Secure` sends it only over HTTPS. `SameSite` controls whether it is sent on
-cross-site requests: `Strict` never, `Lax` only on top-level navigations
-with safe methods such as `GET`, `None` always (requires `Secure`). Together
-they protect session cookies.
+cross-site requests: `Strict` limits sending to same-site contexts; `Lax`
+also permits some top-level cross-site navigations using safe methods;
+`None` permits cross-site use when `Secure` is set. Browser privacy settings
+may still block cross-site cookies.
 
 ### 31. What is a JWT, and is its payload secret?
 
@@ -283,8 +285,9 @@ requests, checking the `Origin` header, and never changing state with `GET`.
 The client redirects the user to the authorization server with a `state`
 and a code challenge (hash of a secret verifier). After sign-in and consent,
 the server redirects back with a short-lived code, which the client exchanges
-along with the verifier for tokens. OpenID Connect adds an ID token
-describing who signed in, plus discovery and userinfo endpoints.
+along with the verifier for tokens. OpenID Connect adds an ID token and a
+standard UserInfo endpoint to OAuth 2.0. Provider discovery is defined by a
+related specification and is an optional deployment feature.
 
 ## Validation and error handling
 
@@ -292,9 +295,10 @@ describing who signed in, plus discovery and userinfo endpoints.
 
 Validation checks input against rules and rejects what does not conform, at
 the trust boundary. Output encoding transforms data for the context it is
-placed in (HTML, SQL, URL, shell) so it is treated as data rather than code.
-You need both; there is no single input sanitization that is safe for every
-output.
+placed in (HTML, JavaScript, CSS, or URLs) so it is treated as data rather
+than code. For SQL use parameterized queries; for shells, avoid constructing
+command strings and use safe argument APIs. You need both; there is no single
+input sanitization that is safe for every output.
 
 ### 38. How does NoSQL injection work in a MongoDB login query?
 
@@ -338,8 +342,9 @@ is spent. They answer different questions and work best together.
 
 Averages hide slow outliers: a few very slow requests barely move the mean.
 Percentiles show what the slowest 5% or 1% of requests experience, which
-often includes your most active users. Alerts and SLOs are usually defined
-on percentiles.
+often includes your most active users. Teams track percentiles such as p95
+and p99; a latency SLO can also state the fraction of requests that must
+meet a specific threshold.
 
 ### 44. Explain the token bucket rate limiting algorithm.
 

@@ -495,9 +495,10 @@ query strings and headers on requests.
 page, differing by `utm_*` parameters or a header such as `User-Agent`.
 
 **Likely causes and fixes:** tracking parameters or high-variety headers in
-the key, `Vary: User-Agent`, or a `Set-Cookie` that makes responses
-uncacheable. Remove them from the key and keep only inputs that change the
-response. See [HTTP and CDN caching](http-and-cdn-caching.md).
+the key, `Vary: User-Agent`, or a cache policy that prevents shared storage.
+Do not assume `Set-Cookie` alone makes a response uncacheable; inspect origin
+and CDN rules. Remove high-variety inputs from the key only when they do not
+change the response. See [HTTP and CDN caching](http-and-cdn-caching.md).
 
 ### 62. A price change shows on the product page, but category listings still show the old price. How do you fix it?
 

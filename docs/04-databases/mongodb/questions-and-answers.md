@@ -214,7 +214,11 @@ Read concern controls the consistency level of data returned by a read. Write co
 
 ### 51. What does majority write concern mean?
 
-It requests acknowledgment from a majority of voting members, subject to deployment configuration. It is commonly used when writes need stronger durability than a single-member acknowledgment.
+It requests acknowledgment from the calculated majority of data-bearing
+voting members; arbiters do not store data and cannot acknowledge the write.
+The precise durability behavior depends on MongoDB version and deployment
+configuration, so majority is stronger than a primary-only acknowledgment
+but should not be described as an unconditional durability guarantee.
 
 ### 52. What is a replica set?
 
