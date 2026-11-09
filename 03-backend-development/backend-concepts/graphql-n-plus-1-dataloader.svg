@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="440" viewBox="0 0 800 440" role="img" aria-labelledby="gnd-title gnd-desc">
+  <title id="gnd-title">The GraphQL N+1 problem and how DataLoader batches it</title>
+  <desc id="gnd-desc">Without DataLoader, the books resolver runs one query that returns three books, and then the author resolver runs once per book, sending three separate queries for authors 7, 8, and 9: four queries in total, one plus N. With DataLoader, each author resolver calls loader.load with its author ID; DataLoader collects the IDs during one tick of the event loop and sends a single query with WHERE id IN 7, 8, 9: two queries in total, however many books there are.</desc>
+  <defs>
+    <marker id="gnd-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#40566b"/>
+    </marker>
+  </defs>
+  <rect width="800" height="440" rx="14" fill="#f5f7fb"/>
+  <g font-family="Arial, sans-serif" text-anchor="middle">
+    <rect x="16" y="16" width="376" height="386" rx="10" fill="#ffffff" stroke="#8a96a3" stroke-width="1.5"/>
+    <rect x="408" y="16" width="376" height="386" rx="10" fill="#ffffff" stroke="#8a96a3" stroke-width="1.5"/>
+    <text x="204" y="40" font-size="13" font-weight="700" fill="#40566b">Without DataLoader</text>
+    <text x="596" y="40" font-size="13" font-weight="700" fill="#40566b">With DataLoader</text>
+
+    <rect x="116" y="56" width="176" height="34" rx="8" fill="#fff0d9" stroke="#bd7a20" stroke-width="2"/>
+    <text x="204" y="78" font-size="13" font-weight="700" fill="#66400f">books resolver</text>
+    <rect x="96" y="114" width="216" height="34" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="204" y="136" font-size="12" font-weight="700" fill="#263e5a">query 1: SELECT 3 books</text>
+
+    <rect x="508" y="56" width="176" height="34" rx="8" fill="#fff0d9" stroke="#bd7a20" stroke-width="2"/>
+    <text x="596" y="78" font-size="13" font-weight="700" fill="#66400f">books resolver</text>
+    <rect x="488" y="114" width="216" height="34" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="596" y="136" font-size="12" font-weight="700" fill="#263e5a">query 1: SELECT 3 books</text>
+
+    <g fill="#fff0d9" stroke="#bd7a20" stroke-width="2">
+      <rect x="28" y="182" width="108" height="40" rx="8"/>
+      <rect x="150" y="182" width="108" height="40" rx="8"/>
+      <rect x="272" y="182" width="108" height="40" rx="8"/>
+      <rect x="420" y="182" width="108" height="40" rx="8"/>
+      <rect x="542" y="182" width="108" height="40" rx="8"/>
+      <rect x="664" y="182" width="108" height="40" rx="8"/>
+    </g>
+    <g fill="#66400f">
+      <text x="82" y="199" font-size="12" font-weight="700">author resolver</text>
+      <text x="82" y="214" font-size="11">book 1</text>
+      <text x="204" y="199" font-size="12" font-weight="700">author resolver</text>
+      <text x="204" y="214" font-size="11">book 2</text>
+      <text x="326" y="199" font-size="12" font-weight="700">author resolver</text>
+      <text x="326" y="214" font-size="11">book 3</text>
+      <text x="474" y="199" font-size="12" font-weight="700">author resolver</text>
+      <text x="474" y="214" font-size="11">book 1</text>
+      <text x="596" y="199" font-size="12" font-weight="700">author resolver</text>
+      <text x="596" y="214" font-size="11">book 2</text>
+      <text x="718" y="199" font-size="12" font-weight="700">author resolver</text>
+      <text x="718" y="214" font-size="11">book 3</text>
+    </g>
+
+    <g fill="#fde8e6" stroke="#b5473a" stroke-width="2">
+      <rect x="28" y="262" width="108" height="40" rx="8"/>
+      <rect x="150" y="262" width="108" height="40" rx="8"/>
+      <rect x="272" y="262" width="108" height="40" rx="8"/>
+    </g>
+    <g fill="#6b241c">
+      <text x="82" y="279" font-size="12" font-weight="700">query 2</text>
+      <text x="82" y="294" font-size="11">WHERE id = 7</text>
+      <text x="204" y="279" font-size="12" font-weight="700">query 3</text>
+      <text x="204" y="294" font-size="11">WHERE id = 8</text>
+      <text x="326" y="279" font-size="12" font-weight="700">query 4</text>
+      <text x="326" y="294" font-size="11">WHERE id = 9</text>
+    </g>
+
+    <rect x="488" y="262" width="216" height="40" rx="8" fill="#f0e9fb" stroke="#8062a8" stroke-width="2"/>
+    <text x="596" y="279" font-size="12" font-weight="700" fill="#463365">DataLoader collects 7, 8, 9</text>
+    <text x="596" y="294" font-size="11" fill="#463365">during one event-loop tick</text>
+    <rect x="488" y="326" width="216" height="36" rx="8" fill="#e8f5e9" stroke="#53845b" stroke-width="2"/>
+    <text x="596" y="341" font-size="12" font-weight="700" fill="#294a2e">query 2</text>
+    <text x="596" y="355" font-size="11" fill="#294a2e">WHERE id IN (7, 8, 9)</text>
+
+    <g fill="none" stroke="#40566b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M204 90V112" marker-end="url(#gnd-arrow)"/>
+      <path d="M204 148V164H82V180" marker-end="url(#gnd-arrow)"/>
+      <path d="M204 148V180" marker-end="url(#gnd-arrow)"/>
+      <path d="M204 148V164H326V180" marker-end="url(#gnd-arrow)"/>
+      <path d="M82 222V260" marker-end="url(#gnd-arrow)"/>
+      <path d="M204 222V260" marker-end="url(#gnd-arrow)"/>
+      <path d="M326 222V260" marker-end="url(#gnd-arrow)"/>
+      <path d="M596 90V112" marker-end="url(#gnd-arrow)"/>
+      <path d="M596 148V164H474V180" marker-end="url(#gnd-arrow)"/>
+      <path d="M596 148V180" marker-end="url(#gnd-arrow)"/>
+      <path d="M596 148V164H718V180" marker-end="url(#gnd-arrow)"/>
+      <path d="M474 222V242H560V260" marker-end="url(#gnd-arrow)"/>
+      <path d="M596 222V260" marker-end="url(#gnd-arrow)"/>
+      <path d="M718 222V242H632V260" marker-end="url(#gnd-arrow)"/>
+      <path d="M596 302V324" marker-end="url(#gnd-arrow)"/>
+    </g>
+    <g font-size="11" font-style="italic" fill="#40566b">
+      <text x="440" y="238">load(7)</text>
+      <text x="628" y="238" text-anchor="start">load(8)</text>
+      <text x="752" y="238">load(9)</text>
+    </g>
+
+    <text x="204" y="340" font-size="13" font-weight="700" fill="#b5473a">4 queries for 3 books</text>
+    <text x="204" y="358" font-size="11.5" fill="#6b241c">1 + N: grows with every book</text>
+    <text x="596" y="386" font-size="13" font-weight="700" fill="#294a2e">2 queries, however many books</text>
+    <text x="400" y="426" font-size="13" fill="#40566b">Resolvers run per field; DataLoader turns many single-ID lookups into one batched query.</text>
+  </g>
+</svg>

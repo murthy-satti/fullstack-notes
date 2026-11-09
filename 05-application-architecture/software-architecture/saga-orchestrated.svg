@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="440" viewBox="0 0 780 440" role="img" aria-labelledby="saga-title saga-desc">
+  <title id="saga-title">Checkout saga: local steps forward, compensations in reverse when a step fails</title>
+  <desc id="saga-desc">The order starts as PENDING. The orchestrator calls inventory.reserve and records release as its compensation, then payments.charge and records refund, then orders.confirm, and the order becomes CONFIRMED. If payments.charge fails, the orchestrator runs the recorded compensations in reverse order; only release was recorded, because the charge never completed, so it calls inventory.release and then orders.cancel with the reason, and the order becomes CANCELLED. Every step and compensation must be idempotent.</desc>
+  <defs>
+    <marker id="saga-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#40566b"/>
+    </marker>
+    <marker id="saga-arrow-r" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#b5473a"/>
+    </marker>
+  </defs>
+  <rect width="780" height="440" rx="14" fill="#f5f7fb"/>
+  <g font-family="Arial, sans-serif" text-anchor="middle">
+    <text x="24" y="32" font-size="13" font-weight="700" fill="#294a2e" text-anchor="start">Happy path (left to right)</text>
+    <rect x="24" y="48" width="160" height="56" rx="8" fill="#eef1f5" stroke="#8a96a3" stroke-width="2"/>
+    <text x="104" y="71" font-size="13" font-weight="700" fill="#36424e">order PENDING</text>
+    <text x="104" y="89" font-size="11" fill="#36424e">a "semantic lock"</text>
+    <rect x="208" y="48" width="160" height="56" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="288" y="71" font-size="13" font-weight="700" fill="#263e5a">1. inventory.reserve</text>
+    <text x="288" y="89" font-size="11" fill="#263e5a">records: release()</text>
+    <rect x="392" y="48" width="160" height="56" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="472" y="71" font-size="13" font-weight="700" fill="#263e5a">2. payments.charge</text>
+    <text x="472" y="89" font-size="11" fill="#263e5a">records: refund()</text>
+    <rect x="576" y="48" width="160" height="56" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="656" y="71" font-size="13" font-weight="700" fill="#263e5a">3. orders.confirm</text>
+    <text x="656" y="89" font-size="11" fill="#263e5a">final local step</text>
+    <rect x="576" y="128" width="160" height="32" rx="16" fill="#53845b"/>
+    <text x="656" y="149" font-size="13" font-weight="700" fill="#ffffff">order CONFIRMED</text>
+
+    <g fill="none" stroke="#40566b" stroke-width="2" stroke-linecap="round">
+      <path d="M184 76H206" marker-end="url(#saga-arrow)"/>
+      <path d="M368 76H390" marker-end="url(#saga-arrow)"/>
+      <path d="M552 76H574" marker-end="url(#saga-arrow)"/>
+      <path d="M656 104V126" marker-end="url(#saga-arrow)"/>
+    </g>
+
+    <line x1="24" y1="184" x2="756" y2="184" stroke="#d5dce6" stroke-width="1.5"/>
+    <text x="24" y="210" font-size="13" font-weight="700" fill="#6b241c" text-anchor="start">Step 2 fails: compensate completed steps in reverse (right to left)</text>
+
+    <rect x="392" y="228" width="160" height="56" rx="8" fill="#fde8e6" stroke="#b5473a" stroke-width="2"/>
+    <text x="472" y="251" font-size="13" font-weight="700" fill="#6b241c">payments.charge</text>
+    <text x="472" y="269" font-size="11" fill="#6b241c">throws: card declined</text>
+    
+    <rect x="208" y="228" width="160" height="56" rx="8" fill="#fff0d9" stroke="#bd7a20" stroke-width="2"/>
+    <text x="288" y="251" font-size="13" font-weight="700" fill="#66400f">inventory.release</text>
+    <text x="288" y="269" font-size="11" fill="#66400f">undo step 1</text>
+    <rect x="24" y="228" width="160" height="56" rx="8" fill="#fff0d9" stroke="#bd7a20" stroke-width="2"/>
+    <text x="104" y="251" font-size="13" font-weight="700" fill="#66400f">orders.cancel</text>
+    <text x="104" y="269" font-size="11" fill="#66400f">with the error reason</text>
+    <rect x="24" y="308" width="160" height="32" rx="16" fill="#b5473a"/>
+    <text x="104" y="329" font-size="13" font-weight="700" fill="#ffffff">order CANCELLED</text>
+
+    <g fill="none" stroke="#b5473a" stroke-width="2" stroke-linecap="round">
+      <path d="M392 256H370" marker-end="url(#saga-arrow-r)"/>
+      <path d="M208 256H186" marker-end="url(#saga-arrow-r)"/>
+      <path d="M104 284V306" marker-end="url(#saga-arrow-r)"/>
+    </g>
+
+    <rect x="576" y="228" width="180" height="112" rx="8" fill="#ffffff" stroke="#dfe5ee" stroke-width="1.5"/>
+    <g font-size="11" fill="#36424e" text-anchor="start">
+      <text x="588" y="248">refund() is not run: the</text>
+      <text x="588" y="263">charge never completed,</text>
+      <text x="588" y="278">so it was never recorded.</text>
+      <text x="588" y="302">Compensations are semantic</text>
+      <text x="588" y="317">undos (release, refund),</text>
+      <text x="588" y="332">not database rollbacks.</text>
+    </g>
+
+    <rect x="24" y="362" width="732" height="40" rx="8" fill="#eef1f5" stroke="#8a96a3" stroke-width="1.5"/>
+    <text x="390" y="387" font-size="12" fill="#36424e">Each step and compensation must be idempotent; a real orchestrator persists progress so it can resume after a crash.</text>
+    <text x="390" y="426" font-size="13" fill="#40566b">One local transaction per service; consistency comes from finishing forward or undoing backward.</text>
+  </g>
+</svg>

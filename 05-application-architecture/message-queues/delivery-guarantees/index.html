@@ -1,0 +1,2770 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../messaging-fundamentals/">
+      
+      
+        <link rel="next" href="../rabbitmq/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Delivery Guarantees and Ordering - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#delivery-guarantees-and-ordering" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Delivery Guarantees and Ordering
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-ai-and-machine-learning/" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../06-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-devops-and-deployment/" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../08-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to Application Architecture">
+          <span class="md-ellipsis">&larr; Back to Architecture</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to Application Architecture">
+                  <span class="md-ellipsis">&larr; Back to Architecture</span>
+                </a>
+              
+            </div>
+          
+          
+            <label class="md-nav__title" for="__nav_6">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Application Architecture
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_5" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_6_5" id="__nav_6_5_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Message Queues
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_5_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_6_5">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Message Queues
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../messaging-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Messaging Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Delivery Guarantees and Ordering
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Delivery Guarantees and Ordering
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-three-delivery-semantics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The three delivery semantics
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="The three delivery semantics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#at-most-once" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        At-most-once
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#at-least-once" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        At-least-once
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exactly-once-and-effectively-once" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exactly-once and "effectively once"
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#where-messages-get-lost-or-duplicated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where messages get lost or duplicated
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#acknowledgements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Acknowledgements
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#redelivery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Redelivery
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#visibility-timeouts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Visibility timeouts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ordering-guarantees" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ordering guarantees
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#duplicates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Duplicates
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#poison-messages-and-dead-letter-queues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Poison messages and dead-letter queues
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-idempotent-consumer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The idempotent consumer
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#idempotent-consumer-with-postgresql" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Idempotent consumer with PostgreSQL
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#extending-the-lease-during-long-work-sqs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Extending the lease during long work (SQS)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#version-check-for-ordering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version check for ordering
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../rabbitmq/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Brokers
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../messaging-patterns/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Messaging Patterns
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-ai-and-machine-learning/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI and Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../06-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-devops-and-deployment/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DevOps and Deployment
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../08-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-three-delivery-semantics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The three delivery semantics
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="The three delivery semantics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#at-most-once" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        At-most-once
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#at-least-once" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        At-least-once
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exactly-once-and-effectively-once" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exactly-once and "effectively once"
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#where-messages-get-lost-or-duplicated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where messages get lost or duplicated
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#acknowledgements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Acknowledgements
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#redelivery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Redelivery
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#visibility-timeouts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Visibility timeouts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ordering-guarantees" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ordering guarantees
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#duplicates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Duplicates
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#poison-messages-and-dead-letter-queues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Poison messages and dead-letter queues
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-idempotent-consumer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The idempotent consumer
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#idempotent-consumer-with-postgresql" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Idempotent consumer with PostgreSQL
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#extending-the-lease-during-long-work-sqs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Extending the lease during long work (SQS)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#version-check-for-ordering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version check for ordering
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="delivery-guarantees-and-ordering">Delivery Guarantees and Ordering<a class="headerlink" href="#delivery-guarantees-and-ordering" title="Permanent link">&para;</a></h1>
+<p>Every messaging system promises something about how often a message is
+delivered (never more than once? at least once?) and in what order. These
+promises decide whether your system can lose an order, charge a card twice,
+or apply updates in the wrong sequence. This page explains the guarantees,
+where they break, and how to build consumers that are correct anyway.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Networks and processes fail between any two steps.</strong> A consumer can
+  finish its work and crash before acknowledging; a producer can send a
+  message and lose the broker's confirmation. Each gap produces either a lost
+  message or a duplicate.</li>
+<li><strong>Most production systems are at-least-once</strong>, so duplicates are normal,
+  not exceptional. A consumer that is not idempotent will eventually
+  double-ship, double-email, or double-charge.</li>
+<li><strong>Ordering is weaker than people assume.</strong> Parallel consumers and retries
+  reorder messages even on a "FIFO" queue.</li>
+<li><strong>One malformed message can block or flood a system</strong> unless poison
+  messages are detected and set aside.</li>
+</ul>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Stripe webhooks are at-least-once.</strong> Stripe's documentation warns that
+  webhook endpoints might occasionally receive the same event more than once,
+  and tells integrators to log the IDs of processed events and skip ones
+  already seen. It also says not to use the event's <code>created</code> timestamp to
+  decide order, but to track event IDs instead
+  (<a href="https://docs.stripe.com/webhooks">Stripe webhooks</a>).</li>
+<li><strong>Stripe idempotency keys.</strong> Stripe's API accepts an idempotency key so a
+  client can safely retry after a connection error without creating a second
+  object; for API v1 Stripe saves the status code and body of the first
+  request made with a key and returns them for retries
+  (<a href="https://docs.stripe.com/api/idempotent_requests">Stripe API reference</a>).</li>
+<li><strong>Shopify payments.</strong> Shopify's guide to resilient payment systems lists
+  idempotency keys among its top practices: at Shopify's scale, a
+  once-in-a-million failure during payment processing happens many times a
+  day, and a retried payment must not charge a card twice
+  (<a href="https://shopify.engineering/building-resilient-payment-systems">Shopify Engineering</a>).</li>
+<li><strong>Slack avoids job loss with durable storage.</strong> Slack replaced its purely
+  in-memory Redis job queue path with Kafka as durable storage, to buffer
+  against memory exhaustion and job loss
+  (<a href="https://slack.engineering/scaling-slacks-job-queue/">Slack Engineering</a>).</li>
+<li><strong>Amazon measures availability with DLQs.</strong> The AWS Builders' Library notes
+  that a message which runs out of retries is dropped or put in a dead-letter
+  queue, and that the rate of dropped or dead-lettered messages is a useful
+  availability measurement, though it can detect problems late
+  (<a href="https://aws.amazon.com/builders-library/avoiding-insurmountable-queue-backlogs/">Avoiding insurmountable queue backlogs</a>).</li>
+</ul>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="the-three-delivery-semantics">The three delivery semantics<a class="headerlink" href="#the-three-delivery-semantics" title="Permanent link">&para;</a></h3>
+<p><img alt="Three rows compare where the ack happens. At-most-once acks before processing, so a crash loses the message. At-least-once acks after processing, so a crash before the ack causes redelivery and the work runs twice. Effectively once saves the message ID with the side effect in one transaction, so the redelivered duplicate is found and simply acked." src="../ack-timing-semantics.svg" /></p>
+<table>
+<thead>
+<tr>
+<th>Semantics</th>
+<th>Promise</th>
+<th>How it is achieved</th>
+<th>Risk</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>At-most-once</td>
+<td>Delivered zero or one time</td>
+<td>Acknowledge (or commit) <strong>before</strong> processing; no retries</td>
+<td>Messages can be lost</td>
+</tr>
+<tr>
+<td>At-least-once</td>
+<td>Delivered one or more times</td>
+<td>Acknowledge <strong>after</strong> processing; redeliver if no ack</td>
+<td>Duplicates</td>
+</tr>
+<tr>
+<td>Exactly-once</td>
+<td>Delivered and processed exactly one time</td>
+<td>Only within a closed system (for example Kafka transactions), or approximated with deduplication</td>
+<td>Costly, limited in scope</td>
+</tr>
+</tbody>
+</table>
+<h4 id="at-most-once">At-most-once<a class="headerlink" href="#at-most-once" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code>receive -&gt; ACK -&gt; process
+                    X crash here: the message is gone forever
+</code></pre></div>
+<p>Acceptable for data where a loss is harmless and duplicates are worse:
+high-volume metrics, a live "user is typing" indicator.</p>
+<h4 id="at-least-once">At-least-once<a class="headerlink" href="#at-least-once" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code>receive -&gt; process -&gt; ACK
+                   X crash here: no ack, so the broker redelivers -&gt; processed twice
+</code></pre></div>
+<p>The default choice for business data. You accept duplicates and make the
+consumer idempotent.</p>
+<h4 id="exactly-once-and-effectively-once">Exactly-once and "effectively once"<a class="headerlink" href="#exactly-once-and-effectively-once" title="Permanent link">&para;</a></h4>
+<p>True exactly-once delivery to an arbitrary consumer is not possible in
+general: the consumer's side effect (a database write, an email, a payment)
+and the acknowledgement to the broker are two separate actions in two
+separate systems, and a crash can always land between them.</p>
+<p>What systems actually offer:</p>
+<ul>
+<li><strong>Exactly-once inside one system.</strong> Kafka transactions can atomically
+  consume from a topic, produce to other topics, and commit offsets, so a
+  read-process-write pipeline that stays inside Kafka produces each result
+  once. See <a href="../apache-kafka/">Apache Kafka</a>.</li>
+<li><strong>Deduplication windows.</strong> SQS FIFO queues drop a message whose
+  deduplication ID was already seen in the last five minutes. That prevents
+  duplicate <em>sends</em>, not duplicate <em>processing</em> after a consumer crash.</li>
+<li><strong>Effectively once = at-least-once + idempotent processing.</strong> The broker
+  may deliver twice, but the consumer recognizes the duplicate and the side
+  effect happens once. This is the practical answer for almost every system.</li>
+</ul>
+<h3 id="where-messages-get-lost-or-duplicated">Where messages get lost or duplicated<a class="headerlink" href="#where-messages-get-lost-or-duplicated" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code> Producer ---(1)---&gt; Broker ---(2)---&gt; Consumer ---(3)---&gt; Side effect
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Loss happens when</th>
+<th>Duplicate happens when</th>
+<th>Protection</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>(1) Publish</td>
+<td>The producer does not wait for the broker's confirmation, and the broker crashes before storing the message</td>
+<td>The broker stored the message, but the confirmation was lost, so the producer retries</td>
+<td>Publisher confirms / <code>acks=all</code>; idempotent producers or deduplication IDs</td>
+</tr>
+<tr>
+<td>Broker storage</td>
+<td>The message was not persisted, or stored on one node that died</td>
+<td>(rare)</td>
+<td>Durable queues, persistent messages, replication</td>
+</tr>
+<tr>
+<td>(2) Delivery and ack</td>
+<td>Auto-ack: the broker considers it done on delivery, then the consumer crashes</td>
+<td>The consumer processed it but the ack was lost or the consumer crashed before acking</td>
+<td>Manual ack after processing</td>
+</tr>
+<tr>
+<td>(3) Side effect</td>
+<td>The consumer acked, then failed to apply the effect</td>
+<td>Redelivery applies the effect again</td>
+<td>Ack after the effect; idempotent effect</td>
+</tr>
+</tbody>
+</table>
+<p>Also note the <strong>dual-write problem</strong> on the producer side: saving to your
+database and publishing to the broker are two writes that can disagree. The
+<a href="../messaging-patterns/">transactional outbox</a> pattern fixes it.</p>
+<h3 id="acknowledgements">Acknowledgements<a class="headerlink" href="#acknowledgements" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Automatic acknowledgement:</strong> the broker marks a message done as soon as
+  it is delivered (RabbitMQ <code>noAck: true</code>) or the client commits positions on
+  a timer (Kafka auto-commit). Simple and fast, but a crash mid-processing
+  can lose work; with periodic commits it can also cause duplicates.</li>
+<li><strong>Manual acknowledgement:</strong> your code acknowledges after the work
+  succeeds:<ul>
+<li>RabbitMQ: <code>ack</code>, or <code>nack</code>/<code>reject</code> to signal failure.</li>
+<li>Amazon SQS: <code>DeleteMessage</code> with the receipt handle.</li>
+<li>Kafka: commit the offset after processing.</li>
+<li>Google Pub/Sub: <code>ack</code> before the acknowledgement deadline.</li>
+</ul>
+</li>
+</ul>
+<p>Always acknowledge <strong>after</strong> the side effect is durable. If processing fails,
+either negatively acknowledge (to retry or dead-letter) or simply do not ack
+and let the broker redeliver.</p>
+<h3 id="redelivery">Redelivery<a class="headerlink" href="#redelivery" title="Permanent link">&para;</a></h3>
+<p>What triggers a second delivery depends on the system:</p>
+<ul>
+<li><strong>RabbitMQ:</strong> unacknowledged messages are requeued when the consumer's
+  channel or connection closes, or when the consumer <code>nack</code>s with
+  <code>requeue: true</code>. Redelivered messages carry a <code>redelivered</code> flag.</li>
+<li><strong>Amazon SQS:</strong> a received message becomes invisible for the <strong>visibility
+  timeout</strong>. If it is not deleted before the timeout ends, it becomes visible
+  again and another consumer can receive it. The <code>ApproximateReceiveCount</code>
+  attribute counts deliveries.</li>
+<li><strong>Kafka:</strong> there is no per-message redelivery. After a crash or rebalance,
+  the consumer group resumes from the <strong>last committed offset</strong>, so
+  everything after it is read again.</li>
+<li><strong>Google Pub/Sub:</strong> a message not acknowledged before its ack deadline is
+  redelivered.</li>
+</ul>
+<h3 id="visibility-timeouts">Visibility timeouts<a class="headerlink" href="#visibility-timeouts" title="Permanent link">&para;</a></h3>
+<p>A visibility timeout (SQS) or acknowledgement deadline (Pub/Sub) is a lease:
+"this consumer has the message for N seconds".</p>
+<div class="highlight"><pre><span></span><code>t=0s    consumer A receives msg-1        msg-1 invisible to everyone else
+t=0-30s A processes it
+t=25s   A deletes msg-1                  done
+---
+t=0s    consumer A receives msg-2
+t=30s   timeout expires, A still busy    msg-2 visible again
+t=31s   consumer B receives msg-2        now processed twice in parallel
+</code></pre></div>
+<p>Rules:</p>
+<ul>
+<li>Set the timeout <strong>longer than your worst-case processing time</strong> (SQS
+  defaults to 30 seconds and allows up to 12 hours).</li>
+<li>For long jobs, <strong>extend the lease while working</strong> (SQS
+  <code>ChangeMessageVisibility</code>, Pub/Sub deadline extension), like a heartbeat.</li>
+<li>Even with a good timeout, design for the parallel-duplicate case above.</li>
+</ul>
+<h3 id="ordering-guarantees">Ordering guarantees<a class="headerlink" href="#ordering-guarantees" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>System</th>
+<th>Ordering guarantee</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RabbitMQ queue</td>
+<td>FIFO into the queue; delivery order is preserved for a single consumer, but multiple consumers, prefetch, and requeues interleave and reorder processing</td>
+</tr>
+<tr>
+<td>Kafka</td>
+<td>Strict order <strong>within a partition</strong>; none across partitions. Messages with the same key go to the same partition</td>
+</tr>
+<tr>
+<td>SQS standard</td>
+<td>Best-effort ordering only; messages can arrive out of order</td>
+</tr>
+<tr>
+<td>SQS FIFO</td>
+<td>Strict order <strong>within a message group ID</strong>; groups are processed in parallel</td>
+</tr>
+<tr>
+<td>Google Pub/Sub</td>
+<td>Ordered per <strong>ordering key</strong> when message ordering is enabled</td>
+</tr>
+<tr>
+<td>Azure Service Bus</td>
+<td>Ordered per <strong>session</strong> when sessions are used</td>
+</tr>
+</tbody>
+</table>
+<p>The common idea: <strong>global order does not scale.</strong> Systems give you order
+within a <em>key</em> (customer, order, account) and parallelism across keys. Pick
+the key so that messages that must stay in order share it.</p>
+<p>What breaks ordering even on an ordered channel:</p>
+<ul>
+<li><strong>Competing consumers:</strong> message 1 goes to a slow worker and message 2 to
+  a fast one, so 2 finishes first.</li>
+<li><strong>Retries:</strong> message 1 fails and is retried after message 2 succeeded.</li>
+<li><strong>Multiple producers:</strong> two services publishing about the same entity
+  have no shared clock.</li>
+</ul>
+<p>When order matters, combine a per-entity key with consumer-side checks such
+as version numbers ("apply only if <code>event.version === current.version + 1</code>").
+See <a href="../messaging-patterns/">messaging patterns</a>.</p>
+<h3 id="duplicates">Duplicates<a class="headerlink" href="#duplicates" title="Permanent link">&para;</a></h3>
+<p>Sources of duplicate messages you should expect:</p>
+<ul>
+<li>Producer retries after a lost confirmation.</li>
+<li>Consumer crash after processing but before the ack.</li>
+<li>Visibility timeout or ack deadline expiring during slow processing.</li>
+<li>Kafka rebalances after offsets were processed but not committed.</li>
+<li>Upstream systems (webhooks, other services) that themselves deliver at
+  least once.</li>
+<li>Operators replaying a dead-letter queue.</li>
+</ul>
+<h3 id="poison-messages-and-dead-letter-queues">Poison messages and dead-letter queues<a class="headerlink" href="#poison-messages-and-dead-letter-queues" title="Permanent link">&para;</a></h3>
+<p>A <strong>poison message</strong> fails every time it is processed: malformed JSON, a
+reference to a deleted record, a bug triggered by one specific input. With
+naive requeueing it loops forever, burning CPU and, on ordered channels,
+blocking everything behind it.</p>
+<p>A <strong>dead-letter queue (DLQ)</strong> is where such messages are moved after a
+limited number of attempts:</p>
+<p><img alt="Flowchart: the consumer handles a message; success acks it; a permanent error sends it straight to the dead-letter queue; a transient error is retried later with backoff while attempts remain, and goes to the DLQ when the limit is reached. The DLQ alerts the owner, who fixes the cause and redrives the messages to the queue." src="../poison-message-dlq.svg" /></p>
+<table>
+<thead>
+<tr>
+<th>System</th>
+<th>How dead-lettering works</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RabbitMQ</td>
+<td>A queue's dead-letter exchange receives messages that are rejected without requeue, expire, overflow the queue, or exceed a quorum queue's delivery limit</td>
+</tr>
+<tr>
+<td>Amazon SQS</td>
+<td>A redrive policy moves a message to the DLQ after <code>maxReceiveCount</code> receives</td>
+</tr>
+<tr>
+<td>Kafka</td>
+<td>No built-in DLQ; applications publish failures to a retry or dead-letter topic</td>
+</tr>
+<tr>
+<td>Google Pub/Sub</td>
+<td>A dead-letter topic after a configured maximum number of delivery attempts</td>
+</tr>
+<tr>
+<td>Azure Service Bus</td>
+<td>A built-in dead-letter subqueue after the maximum delivery count</td>
+</tr>
+</tbody>
+</table>
+<p>Also distinguish error types: <strong>permanent</strong> errors (validation failure,
+unknown message type) should go to the DLQ immediately; <strong>transient</strong> errors
+(timeouts, <code>503</code>) deserve retries with backoff. See
+<a href="../../../03-backend-development/backend-concepts/timeouts-retries-and-idempotency/">timeouts, retries, and idempotency</a>.</p>
+<h3 id="the-idempotent-consumer">The idempotent consumer<a class="headerlink" href="#the-idempotent-consumer" title="Permanent link">&para;</a></h3>
+<p><img alt="Flowchart: in one transaction the consumer inserts the message ID into processed_messages; if no new row is inserted the message is a duplicate, so it rolls back and acks; otherwise it applies the business change and commits, then acks; if the change or commit fails it rolls back without acking and the broker redelivers the message." src="../idempotent-consumer-flow.svg" /></p>
+<p>An idempotent consumer produces the same result no matter how many times it
+sees a message. Three techniques, often combined:</p>
+<ol>
+<li><strong>Natural idempotency.</strong> Write operations that are idempotent by nature:
+   <code>SET status = 'shipped'</code> instead of "toggle", upserts keyed by a business
+   ID, "add item X" as a set insert instead of a counter increment.</li>
+<li><strong>Conditional updates.</strong> Apply a change only if the current state allows
+   it: <code>UPDATE orders SET status = 'paid' WHERE id = $1 AND status = 'pending'</code>.
+   A second delivery matches zero rows.</li>
+<li><strong>Deduplication table (inbox).</strong> Record each processed message ID with a
+   unique constraint, <strong>in the same database transaction</strong> as the business
+   change. If the insert conflicts, the message is a duplicate and is
+   skipped.</li>
+</ol>
+<p>For external side effects that are not in your database (charging a card,
+calling a partner API), pass the message ID as the provider's
+<strong>idempotency key</strong>.</p>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<p>Choose the guarantee per kind of data:</p>
+<ul>
+<li><strong>At-most-once</strong> fits data where a loss is harmless and freshness matters
+  more than completeness: high-volume metrics samples, presence ("user is
+  typing"), live location pings that are replaced seconds later.</li>
+<li><strong>At-least-once with idempotent consumers</strong> fits almost all business data:
+  orders, payments, emails, account changes. This should be your default.</li>
+<li><strong>Kafka exactly-once (transactions)</strong> fits read-process-write pipelines that
+  stay entirely inside Kafka, such as stream aggregations.</li>
+<li><strong>Ordered channels</strong> (partitions, FIFO message groups, sessions) fit
+  entities whose events must apply in sequence: balance changes, status
+  transitions.</li>
+</ul>
+<p>Do not use:</p>
+<ul>
+<li>Exactly-once features as a substitute for idempotent side effects.</li>
+<li>FIFO or single-partition ordering when order does not matter; it caps
+  throughput and makes one slow message delay others.</li>
+<li>Auto-ack or commit-before-processing for business data.</li>
+<li>Infinite requeue as an error-handling strategy.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Data</th>
+<th>Semantics</th>
+<th>Ordering</th>
+<th>Typical mechanism</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Page-view metrics</td>
+<td>At-most-once acceptable</td>
+<td>None</td>
+<td>Fire-and-forget, auto-ack</td>
+</tr>
+<tr>
+<td>Order placed / payment captured</td>
+<td>At-least-once + idempotent consumer</td>
+<td>Per order</td>
+<td>Manual ack, inbox table, idempotency key to payment provider</td>
+</tr>
+<tr>
+<td>Account balance updates</td>
+<td>At-least-once + idempotent</td>
+<td>Strict per account</td>
+<td>Kafka key or FIFO group = account ID, version checks</td>
+</tr>
+<tr>
+<td>Stream aggregation inside Kafka</td>
+<td>Exactly-once</td>
+<td>Per partition</td>
+<td>Kafka transactions, <code>read_committed</code></td>
+</tr>
+<tr>
+<td>Notifications</td>
+<td>At-least-once, duplicates tolerable but deduplicated</td>
+<td>None</td>
+<td>Dedup by message ID with a short TTL</td>
+</tr>
+</tbody>
+</table>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="idempotent-consumer-with-postgresql">Idempotent consumer with PostgreSQL<a class="headerlink" href="#idempotent-consumer-with-postgresql" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">processed_messages</span><span class="w"> </span><span class="p">(</span>
+<span class="w">  </span><span class="n">message_id</span><span class="w">   </span><span class="nb">text</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="p">,</span>
+<span class="w">  </span><span class="n">processed_at</span><span class="w"> </span><span class="n">timestamptz</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="n">now</span><span class="p">()</span>
+<span class="p">);</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="nx">pg</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"pg"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">pool</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">pg</span><span class="p">.</span><span class="nx">Pool</span><span class="p">();</span><span class="w"> </span><span class="c1">// connection settings from PG* environment variables</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">handleDepositMessage</span><span class="p">(</span><span class="nx">message</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">client</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">pool</span><span class="p">.</span><span class="nx">connect</span><span class="p">();</span>
+<span class="w">  </span><span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="nx">client</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s2">"BEGIN"</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// 1. Claim the message ID; a duplicate hits the primary key and inserts nothing</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">claim</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">client</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span>
+<span class="w">      </span><span class="s2">"INSERT INTO processed_messages (message_id) VALUES ($1) ON CONFLICT DO NOTHING"</span><span class="p">,</span>
+<span class="w">      </span><span class="p">[</span><span class="nx">message</span><span class="p">.</span><span class="nx">id</span><span class="p">],</span>
+<span class="w">    </span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">claim</span><span class="p">.</span><span class="nx">rowCount</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="mf">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">await</span><span class="w"> </span><span class="nx">client</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s2">"ROLLBACK"</span><span class="p">);</span>
+<span class="w">      </span><span class="k">return</span><span class="p">;</span><span class="w"> </span><span class="c1">// already processed: safe to ack again</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// 2. The business change, in the SAME transaction</span>
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="nx">client</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span>
+<span class="w">      </span><span class="s2">"UPDATE accounts SET balance = balance + $1 WHERE id = $2"</span><span class="p">,</span>
+<span class="w">      </span><span class="p">[</span><span class="nx">message</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">amount</span><span class="p">,</span><span class="w"> </span><span class="nx">message</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">accountId</span><span class="p">],</span>
+<span class="w">    </span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="nx">client</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s2">"COMMIT"</span><span class="p">);</span><span class="w"> </span><span class="c1">// both succeed or neither does</span>
+<span class="w">  </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="nx">err</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="nx">client</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s2">"ROLLBACK"</span><span class="p">);</span>
+<span class="w">    </span><span class="k">throw</span><span class="w"> </span><span class="nx">err</span><span class="p">;</span><span class="w"> </span><span class="c1">// do not ack: the broker will redeliver</span>
+<span class="w">  </span><span class="p">}</span><span class="w"> </span><span class="k">finally</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">client</span><span class="p">.</span><span class="nx">release</span><span class="p">();</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>The caller acknowledges the message only if <code>handleDepositMessage</code> resolves.
+A redelivery of the same message is now harmless. Clean old rows out of
+<code>processed_messages</code> after a period longer than any possible redelivery.</p>
+<h3 id="extending-the-lease-during-long-work-sqs">Extending the lease during long work (SQS)<a class="headerlink" href="#extending-the-lease-during-long-work-sqs" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">SQSClient</span><span class="p">,</span><span class="w"> </span><span class="nx">ChangeMessageVisibilityCommand</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"@aws-sdk/client-sqs"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">sqs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">SQSClient</span><span class="p">({});</span>
+
+<span class="c1">// Every 20 s, push the visibility timeout out by another 60 s while we work</span>
+<span class="kd">function</span><span class="w"> </span><span class="nx">keepInvisible</span><span class="p">(</span><span class="nx">queueUrl</span><span class="p">,</span><span class="w"> </span><span class="nx">receiptHandle</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">timer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">setInterval</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">sqs</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="ow">new</span><span class="w"> </span><span class="nx">ChangeMessageVisibilityCommand</span><span class="p">({</span>
+<span class="w">      </span><span class="nx">QueueUrl</span><span class="o">:</span><span class="w"> </span><span class="nx">queueUrl</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">ReceiptHandle</span><span class="o">:</span><span class="w"> </span><span class="nx">receiptHandle</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">VisibilityTimeout</span><span class="o">:</span><span class="w"> </span><span class="mf">60</span><span class="p">,</span>
+<span class="w">    </span><span class="p">})).</span><span class="k">catch</span><span class="p">((</span><span class="nx">err</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="s2">"extend visibility failed"</span><span class="p">,</span><span class="w"> </span><span class="nx">err</span><span class="p">));</span>
+<span class="w">  </span><span class="p">},</span><span class="w"> </span><span class="mf">20</span><span class="nx">_000</span><span class="p">);</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">clearInterval</span><span class="p">(</span><span class="nx">timer</span><span class="p">);</span><span class="w"> </span><span class="c1">// call when processing ends</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="version-check-for-ordering">Version check for ordering<a class="headerlink" href="#version-check-for-ordering" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">applyStockEvent</span><span class="p">(</span><span class="nx">event</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="c1">// Only apply if this is the next version; older or duplicate events match no rows</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span>
+<span class="w">    </span><span class="s2">"UPDATE stock SET quantity = $1, version = $2 WHERE sku = $3 AND version = $2 - 1"</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="nx">event</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">quantity</span><span class="p">,</span><span class="w"> </span><span class="nx">event</span><span class="p">.</span><span class="nx">version</span><span class="p">,</span><span class="w"> </span><span class="nx">event</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">sku</span><span class="p">],</span>
+<span class="w">  </span><span class="p">);</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">result</span><span class="p">.</span><span class="nx">rowCount</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="mf">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Duplicate (already applied) or out of order (a gap): decide per business rule,</span>
+<span class="w">    </span><span class="c1">// e.g. ignore stale events, or retry later if the expected version is missing</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Default to at-least-once delivery with idempotent consumers.</strong></li>
+<li><strong>Confirm publishes</strong> (publisher confirms, <code>acks=all</code>) and use durable,
+  replicated storage for important messages.</li>
+<li><strong>Acknowledge after the side effect is committed.</strong></li>
+<li><strong>Store the dedup record and the business change in one transaction.</strong></li>
+<li><strong>Set visibility timeouts above worst-case processing time</strong> and extend
+  them for long jobs.</li>
+<li><strong>Partition by the entity whose order matters</strong>; never rely on global
+  order.</li>
+<li><strong>Limit retries and configure a DLQ on every queue</strong>, with an alert when it
+  is not empty.</li>
+<li><strong>Separate transient from permanent failures.</strong></li>
+<li><strong>Use message IDs as idempotency keys</strong> for external APIs.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>The same job runs twice, at the same time.</strong> <em>Detect:</em> two workers log
+  the same message ID seconds apart; SQS <code>ApproximateReceiveCount</code> is 2 or
+  more on messages that never failed. <em>Cause:</em> the visibility timeout (or ack
+  deadline) is shorter than the slowest executions. <em>Fix:</em> raise the timeout
+  above worst-case processing time and extend it with a heartbeat for long
+  jobs; keep the consumer idempotent anyway.</li>
+<li><strong>Messages disappear during deploys.</strong> <em>Detect:</em> counts of processed
+  messages are lower than published ones; work is missing after each release.
+  <em>Cause:</em> auto-ack (or committing offsets before processing), so killed
+  workers lose in-flight messages. <em>Fix:</em> acknowledge after processing and
+  shut down gracefully (stop consuming, finish in-flight work, then exit).</li>
+<li><strong>One Kafka partition stops moving.</strong> <em>Detect:</em> consumer lag grows on a
+  single partition while others stay near zero; logs repeat the same error
+  for the same offset. <em>Cause:</em> a poison record that always throws, retried
+  forever. <em>Fix:</em> after N attempts publish it to a retry or dead-letter topic
+  and continue; alert on dead-letter volume.</li>
+<li><strong>CPU pegged by a hot retry loop.</strong> <em>Detect:</em> RabbitMQ shows a very high
+  redelivery rate; the same message ID appears thousands of times in logs.
+  <em>Cause:</em> <code>nack</code> with <code>requeue: true</code> on every error. <em>Fix:</em> cap attempts
+  in the handler, then reject without requeue to a dead-letter exchange, and
+  use delayed retry queues. Since RabbitMQ 4.3, a quorum queue's delivery
+  limit does not count <code>nack</code> requeues, so it will not stop this loop.</li>
+<li><strong>Dead-lettered messages vanish before anyone looks.</strong> <em>Detect:</em> the DLQ
+  count drops although nobody redrove it. <em>Cause:</em> DLQ retention shorter than
+  needed (for SQS standard queues, expiry counts from the original enqueue
+  time). <em>Fix:</em> give the DLQ a longer retention than the source and alarm as
+  soon as it is not empty.</li>
+<li><strong>The deduplication table becomes slow.</strong> <em>Detect:</em> insert latency on
+  <code>processed_messages</code> grows; the table has hundreds of millions of rows.
+  <em>Cause:</em> IDs are never cleaned up. <em>Fix:</em> delete rows older than the longest
+  possible redelivery window (or partition the table by date and drop old
+  partitions).</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>At-most-once / at-least-once / exactly-once:</strong> the number of times a
+  message may be delivered.</li>
+<li><strong>Effectively once:</strong> at-least-once delivery combined with idempotent
+  processing.</li>
+<li><strong>Acknowledgement (ack) / negative acknowledgement (nack):</strong> success /
+  failure signal from consumer to broker.</li>
+<li><strong>Redelivery:</strong> the broker delivering a message again because it was not
+  acknowledged.</li>
+<li><strong>Visibility timeout / ack deadline:</strong> how long a received message stays
+  hidden while a consumer works on it.</li>
+<li><strong>Offset commit:</strong> a Kafka consumer group recording how far it has read.</li>
+<li><strong>Message group / ordering key / partition key:</strong> the key within which
+  order is guaranteed.</li>
+<li><strong>Poison message:</strong> a message that fails every time it is processed.</li>
+<li><strong>Dead-letter queue (DLQ):</strong> where failed messages go after limited
+  attempts.</li>
+<li><strong>Idempotent consumer:</strong> a consumer for which duplicates have no extra
+  effect.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>"Our broker guarantees exactly-once, so we don't need idempotency."</strong>
+  Consumer crashes and producer retries still create duplicates in your
+  side effects.</li>
+<li><strong>Acking on receipt</strong> (auto-ack) for important work, then losing messages
+  on deploys and crashes.</li>
+<li><strong>Dedup check and business write in separate transactions</strong>, leaving a
+  window where a crash marks a message processed but skips the work (or the
+  reverse).</li>
+<li><strong>Visibility timeout shorter than processing time</strong>, so two workers process
+  the same message concurrently.</li>
+<li><strong>Requeueing failures forever</strong> with no attempt limit or DLQ.</li>
+<li><strong>Assuming FIFO means globally ordered processing</strong> with many consumers.</li>
+<li><strong>Increasing partitions in Kafka</strong> without realizing that keys may move to
+  different partitions, breaking per-key order across the change.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Where in the producer-broker-consumer chain can a message be duplicated,
+   and where can it be lost?</li>
+<li>Why is exactly-once delivery to an arbitrary external side effect not
+   achievable in general? What do systems offer instead?</li>
+<li>How does an SQS visibility timeout lead to duplicate processing, and how
+   do you prevent it for long jobs?</li>
+<li>Kafka guarantees order within a partition. How do you make sure all
+   events for one order are processed in order?</li>
+<li>What is a poison message, and how should transient and permanent errors
+   be handled differently?</li>
+<li>Why must the deduplication record be written in the same transaction as
+   the business change?</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>RabbitMQ:</strong> <a href="https://www.rabbitmq.com/docs/confirms">Consumer Acknowledgements and Publisher Confirms</a>.</li>
+<li><strong>Apache Kafka:</strong> <a href="https://kafka.apache.org/documentation/#semantics">Message delivery semantics</a>.</li>
+<li><strong>AWS:</strong> <a href="https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-visibility-timeout.html">Amazon SQS visibility timeout</a>
+  and <a href="https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html">dead-letter queues</a>.</li>
+<li><strong>microservices.io:</strong> <a href="https://microservices.io/patterns/communication-style/idempotent-consumer.html">Idempotent Consumer pattern</a>.</li>
+<li><strong>AWS Builders' Library:</strong> <a href="https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/">Making retries safe with idempotent APIs</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../messaging-fundamentals/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Messaging Fundamentals">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Messaging Fundamentals</span>
+      </a>
+    
+    
+      <a href="../rabbitmq/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: RabbitMQ">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">RabbitMQ</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

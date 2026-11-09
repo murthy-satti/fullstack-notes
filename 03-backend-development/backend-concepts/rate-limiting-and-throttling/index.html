@@ -1,0 +1,3050 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../logging-and-monitoring/">
+      
+      
+        <link rel="next" href="../timeouts-retries-and-idempotency/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Rate Limiting and Throttling - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#rate-limiting-and-throttling" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Rate Limiting and Throttling
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../05-application-architecture/" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-ai-and-machine-learning/" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../06-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-devops-and-deployment/" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../08-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to Backend Development">
+          <span class="md-ellipsis">&larr; Back to Backend</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to Backend Development">
+                  <span class="md-ellipsis">&larr; Back to Backend</span>
+                </a>
+              
+            </div>
+          
+          
+            <label class="md-nav__title" for="__nav_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Backend Development
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_4" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Important Backend Concepts
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_4_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Important Backend Concepts
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../backend-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../client-server-and-request-lifecycle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Client-Server Model and Request Lifecycle
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../http-methods/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP in Depth
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../rest-apis/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Design
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../authentication-and-authorization/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_4_7" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_4_4_7" id="__nav_4_4_7_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reliability
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_4_7_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_4_4_7">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Reliability
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../error-handling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error Handling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../logging-and-monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging, Monitoring, and Tracing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rate Limiting and Throttling
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rate Limiting and Throttling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#identifying-the-client" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Identifying the client
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#algorithms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Algorithms
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Algorithms">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed-window" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed window
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sliding-window-log" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sliding window log
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sliding-window-counter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sliding window counter
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#token-bucket" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Token bucket
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#leaky-bucket" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Leaky bucket
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#comparison" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comparison
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#distributed-rate-limiting-with-redis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Distributed rate limiting with Redis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#responding-to-limited-requests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Responding to limited requests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rate-limiting-throttling-and-quotas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rate limiting, throttling, and quotas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#where-to-enforce" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where to enforce
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#client-side-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Client-side handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#express-rate-limit-with-a-shared-redis-store" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        express-rate-limit with a shared Redis store
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-token-bucket-in-plain-javascript-single-process" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A token bucket in plain JavaScript (single process)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../timeouts-retries-and-idempotency/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Timeouts, Retries, and Idempotency
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concurrency-and-race-conditions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concurrency and Race Conditions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../background-jobs-and-scheduling/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Patterns
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../05-application-architecture/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-ai-and-machine-learning/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI and Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../06-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-devops-and-deployment/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DevOps and Deployment
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../08-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#identifying-the-client" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Identifying the client
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#algorithms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Algorithms
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Algorithms">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed-window" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed window
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sliding-window-log" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sliding window log
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sliding-window-counter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sliding window counter
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#token-bucket" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Token bucket
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#leaky-bucket" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Leaky bucket
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#comparison" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comparison
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#distributed-rate-limiting-with-redis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Distributed rate limiting with Redis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#responding-to-limited-requests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Responding to limited requests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rate-limiting-throttling-and-quotas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rate limiting, throttling, and quotas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#where-to-enforce" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where to enforce
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#client-side-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Client-side handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#express-rate-limit-with-a-shared-redis-store" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        express-rate-limit with a shared Redis store
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-token-bucket-in-plain-javascript-single-process" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A token bucket in plain JavaScript (single process)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="rate-limiting-and-throttling">Rate Limiting and Throttling<a class="headerlink" href="#rate-limiting-and-throttling" title="Permanent link">&para;</a></h1>
+<p>Rate limiting caps how many requests a client may make in a period of time,
+such as 100 requests per minute per API key. Requests over the limit are
+rejected, usually with <code>429 Too Many Requests</code>, until the client's allowance
+recovers. Throttling is a close relative that slows or queues excess
+requests instead of rejecting them outright.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>Without limits, a single client can consume all of your capacity:</p>
+<ul>
+<li><strong>Abuse and brute force:</strong> attackers try thousands of passwords, coupon
+  codes, or OTPs per minute; scrapers download your whole catalog.</li>
+<li><strong>Overload protection:</strong> a buggy client stuck in a retry loop, or a
+  traffic spike, can take the service down for everyone.</li>
+<li><strong>Fairness:</strong> one heavy tenant should not degrade service for others.</li>
+<li><strong>Cost control:</strong> each request may call paid APIs (SMS, AI models, maps).</li>
+<li><strong>Commercial plans:</strong> free tiers get lower limits than paid tiers.</li>
+</ul>
+<p>Rate limiting is a standard part of API security (see
+<a href="../../../09-security-and-testing/api-security/">API security</a>) and of
+resilience in general.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>GitHub's REST API</strong> allows 5,000 requests per hour for authenticated
+  users and 60 per hour for unauthenticated requests. Responses carry
+  <code>x-ratelimit-remaining</code> and <code>x-ratelimit-reset</code>; over the limit, GitHub
+  answers 403 or 429 and asks clients not to retry before the reset time
+  (<a href="https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api">GitHub Docs: REST API rate limits</a>).</li>
+<li><strong>Stripe</strong> applies a global limit per account — 100 requests per second in
+  live mode — plus lower limits on some endpoints, and returns <code>429 Too Many
+  Requests</code> when they are exceeded
+  (<a href="https://docs.stripe.com/rate-limits">Stripe: rate limits</a>).</li>
+<li><strong>Amazon API Gateway</strong> throttles requests with the token bucket algorithm,
+  where a burst setting allows a short overrun of the steady rate
+  (<a href="https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-request-throttling.html">AWS: API Gateway throttling</a>).</li>
+<li><strong>Nginx</strong> limits request rates with its <code>limit_req</code> module using the
+  "leaky bucket" method
+  (<a href="https://nginx.org/en/docs/http/ngx_http_limit_req_module.html">nginx: ngx_http_limit_req_module</a>).</li>
+</ul>
+<p><strong>Popular tools and providers:</strong> <code>express-rate-limit</code> with
+<code>rate-limit-redis</code>, Nginx <code>limit_req</code>, API gateways such as Amazon API
+Gateway, Kong, and Envoy, and edge services such as Cloudflare rate limiting
+rules.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="identifying-the-client">Identifying the client<a class="headerlink" href="#identifying-the-client" title="Permanent link">&para;</a></h3>
+<p>A limit needs a <strong>key</strong> — who is being counted:</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Pros</th>
+<th>Pitfalls</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>IP address</td>
+<td>Works for anonymous traffic</td>
+<td>Many users behind one NAT or corporate proxy share an IP; attackers rotate IPs; IPv6 gives each user huge ranges</td>
+</tr>
+<tr>
+<td>User ID</td>
+<td>Accurate per person</td>
+<td>Only after authentication</td>
+</tr>
+<tr>
+<td>API key / client ID</td>
+<td>Natural for public APIs and plans</td>
+<td>Keys can be shared or leaked</td>
+</tr>
+<tr>
+<td>Combination</td>
+<td>e.g. per account <strong>and</strong> per IP for sign-in</td>
+<td>More state to track</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Behind a proxy or load balancer</strong>, the TCP connection comes from the proxy,
+so every request appears to have the proxy's IP. The real client IP is in a
+header such as <code>X-Forwarded-For</code>, but clients can forge that header. Only
+trust it from proxies you control: in Express, configure <code>trust proxy</code> to the
+exact number of proxy hops (or their addresses) rather than <code>true</code>. A wrong
+setting either rate-limits everyone as one client or lets attackers spoof any
+IP.</p>
+<p>For IPv6, limit by a prefix (such as <code>/64</code>) rather than a single address,
+since one user can easily control many addresses in their prefix.</p>
+<h3 id="algorithms">Algorithms<a class="headerlink" href="#algorithms" title="Permanent link">&para;</a></h3>
+<h4 id="fixed-window">Fixed window<a class="headerlink" href="#fixed-window" title="Permanent link">&para;</a></h4>
+<p>Count requests in fixed time buckets (for example, each calendar minute).
+Reset the counter at the start of each window.</p>
+<div class="highlight"><pre><span></span><code>limit = 5 per minute
+12:00:00 ─────────────── 12:01:00 ─────────────── 12:02:00
+  ✔ ✔ ✔ ✔ ✔ ✘ ✘            ✔ ✔ ...
+            count resets ──┘
+</code></pre></div>
+<ul>
+<li>Simple: one counter per key per window (Redis <code>INCR</code> + <code>EXPIRE</code>).</li>
+<li><strong>Boundary burst problem:</strong> a client can send 5 requests at 12:00:59 and 5
+  more at 12:01:00 — 10 requests in two seconds, double the intended rate.</li>
+</ul>
+<p><img alt="Two timelines with a limit of 5 per minute: in a fixed window, 5 requests at 12:00:59 and 5 at 12:01:00 are all allowed because the counter resets, while a sliding window still counts the previous 60 seconds and rejects the second 5 with 429." src="../fixed-vs-sliding-window.svg" /></p>
+<h4 id="sliding-window-log">Sliding window log<a class="headerlink" href="#sliding-window-log" title="Permanent link">&para;</a></h4>
+<p>Store the timestamp of every request. On each request, discard timestamps
+older than the window and count what remains.</p>
+<div class="highlight"><pre><span></span><code>window = 60 s, limit = 5
+now = 12:01:30 → keep timestamps after 12:00:30 → count them → allow if &lt; 5
+</code></pre></div>
+<ul>
+<li>Exact; no boundary burst.</li>
+<li>Memory grows with the limit (one entry per request per key); more
+  expensive at high limits.</li>
+</ul>
+<h4 id="sliding-window-counter">Sliding window counter<a class="headerlink" href="#sliding-window-counter" title="Permanent link">&para;</a></h4>
+<p>Approximate a sliding window using the current and previous fixed-window
+counts, weighted by how far into the current window you are:</p>
+<div class="highlight"><pre><span></span><code>estimate = current_count + previous_count × (1 − elapsed_fraction_of_current_window)
+
+previous minute: 8 requests, current minute: 3 requests, 25% into the minute
+estimate = 3 + 8 × 0.75 = 9
+</code></pre></div>
+<ul>
+<li>Cheap (two counters) and smooths out boundary bursts.</li>
+<li>Slightly approximate; good enough for most APIs.</li>
+</ul>
+<h4 id="token-bucket">Token bucket<a class="headerlink" href="#token-bucket" title="Permanent link">&para;</a></h4>
+<p>A bucket holds up to <code>capacity</code> tokens and refills at a steady rate. Each
+request takes one token; if the bucket is empty, the request is rejected.</p>
+<p><img alt="Token bucket flowchart: the bucket holds up to 10 tokens and refills one per second; each arriving request checks for a token, takes one and is handled with 200 OK, or gets 429 Too Many Requests with Retry-After when the bucket is empty." src="../token-bucket.svg" /></p>
+<ul>
+<li>Allows <strong>bursts</strong> up to the capacity, while enforcing an average rate.</li>
+<li>Very common in API gateways and cloud services.</li>
+<li>State per key: token count and last refill time.</li>
+</ul>
+<h4 id="leaky-bucket">Leaky bucket<a class="headerlink" href="#leaky-bucket" title="Permanent link">&para;</a></h4>
+<p>Requests enter a queue (the bucket) and are processed ("leak out") at a
+constant rate. If the queue is full, new requests are dropped.</p>
+<div class="highlight"><pre><span></span><code>incoming (bursty) ──► [ queue, size N ] ──► processed at fixed rate ──►
+                        full → reject
+</code></pre></div>
+<ul>
+<li>Produces a <strong>smooth, constant output rate</strong> — useful when protecting a
+  downstream system that cannot handle bursts.</li>
+<li>Adds latency (requests wait in the queue); this is throttling behavior.</li>
+</ul>
+<h4 id="comparison">Comparison<a class="headerlink" href="#comparison" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Algorithm</th>
+<th>Bursts</th>
+<th>Accuracy</th>
+<th>Memory</th>
+<th>Typical use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Fixed window</td>
+<td>Up to 2× at boundaries</td>
+<td>Low at edges</td>
+<td>Very low</td>
+<td>Simple limits, low stakes</td>
+</tr>
+<tr>
+<td>Sliding window log</td>
+<td>No</td>
+<td>Exact</td>
+<td>High</td>
+<td>Strict limits, low volume (e.g. sign-in)</td>
+</tr>
+<tr>
+<td>Sliding window counter</td>
+<td>Smoothed</td>
+<td>Approximate</td>
+<td>Low</td>
+<td>General API limits</td>
+</tr>
+<tr>
+<td>Token bucket</td>
+<td>Yes, up to capacity</td>
+<td>Good</td>
+<td>Low</td>
+<td>API gateways, public APIs</td>
+</tr>
+<tr>
+<td>Leaky bucket</td>
+<td>No (smoothed output)</td>
+<td>Good</td>
+<td>Queue size</td>
+<td>Protecting fragile downstreams</td>
+</tr>
+</tbody>
+</table>
+<h3 id="distributed-rate-limiting-with-redis">Distributed rate limiting with Redis<a class="headerlink" href="#distributed-rate-limiting-with-redis" title="Permanent link">&para;</a></h3>
+<p>With several app instances, an in-memory counter per instance is wrong: three
+instances each allowing 100 requests per minute allow 300 in total, and the
+count depends on which instance the load balancer picks. Keep the counters in
+a shared store, usually <a href="../../../05-application-architecture/redis/">Redis</a>.</p>
+<p><img alt="A load balancer spreads user42's requests across instances A, B, and C; each runs an atomic INCR on the same Redis key, so one shared count decides between next() and 429, whereas separate in-memory counters would allow 300 requests instead of 100." src="../distributed-rate-limit-redis.svg" /></p>
+<p>The operations must be <strong>atomic</strong>, or two instances can read the same count
+and both allow a request. A fixed window needs <code>INCR</code> (atomic) followed by
+setting an expiry when the key is new:</p>
+<div class="highlight"><pre><span></span><code>INCR    ratelimit:user42:202611071432     → returns the new count
+EXPIRE  ratelimit:user42:202611071432 60  → only when the count is 1
+</code></pre></div>
+<p>For token buckets and sliding windows, run the read-compute-write logic in a
+<strong>Lua script</strong>, which Redis executes atomically.</p>
+<p>Decide what happens if Redis is unavailable: <strong>fail open</strong> (allow requests,
+risking overload) or <strong>fail closed</strong> (reject, risking an outage). Sign-in
+limits often fail closed; general API limits often fail open with an alert.</p>
+<h3 id="responding-to-limited-requests">Responding to limited requests<a class="headerlink" href="#responding-to-limited-requests" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Status <strong><code>429 Too Many Requests</code></strong>.</li>
+<li><strong><code>Retry-After</code></strong> header: seconds to wait (or an HTTP date) before
+  retrying.</li>
+<li>Rate limit headers so clients can pace themselves. The IETF <code>RateLimit</code>
+  header fields specification (a draft in progress) uses <code>RateLimit-Policy</code>
+  and <code>RateLimit</code> fields describing the quota and what remains. Many APIs
+  still use the older non-standard <code>X-RateLimit-Limit</code>,
+  <code>X-RateLimit-Remaining</code>, and <code>X-RateLimit-Reset</code>.</li>
+<li>A clear error body: which limit was hit and when to retry.</li>
+</ul>
+<div class="highlight"><pre><span></span><code>HTTP/1.1 429 Too Many Requests
+Retry-After: 30
+Content-Type: application/problem+json
+
+{"type":"https://api.example.com/problems/rate-limited",
+ "title":"Too many requests","status":429,
+ "detail":"Limit of 100 requests per minute exceeded. Retry in 30 seconds."}
+</code></pre></div>
+<p><code>503 Service Unavailable</code> with <code>Retry-After</code> is used when the <strong>server as a
+whole</strong> is overloaded, not a specific client over its quota.</p>
+<h3 id="rate-limiting-throttling-and-quotas">Rate limiting, throttling, and quotas<a class="headerlink" href="#rate-limiting-throttling-and-quotas" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rate limiting</td>
+<td>Reject requests above a rate</td>
+<td>100 requests/min, extra get 429</td>
+</tr>
+<tr>
+<td>Throttling</td>
+<td>Slow down or queue excess requests</td>
+<td>Add delay after 5 failed sign-ins; process jobs at 10/s</td>
+</tr>
+<tr>
+<td>Quota</td>
+<td>A total allowance over a long period, often tied to billing</td>
+<td>10,000 API calls per month on the free plan</td>
+</tr>
+<tr>
+<td>Concurrency limit</td>
+<td>Maximum simultaneous in-flight requests</td>
+<td>At most 5 parallel exports per account</td>
+</tr>
+</tbody>
+</table>
+<p>The terms are often used loosely; be precise in API documentation.</p>
+<h3 id="where-to-enforce">Where to enforce<a class="headerlink" href="#where-to-enforce" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>Client ─► CDN / WAF ─► API gateway / load balancer ─► reverse proxy ─► app
+          (DDoS,        (per-key quotas,             (per-IP          (per-user,
+           bot rules)    plan limits)                 limits)          per-action,
+                                                                       business rules)
+</code></pre></div>
+<ul>
+<li><strong>Edge (CDN, WAF):</strong> absorbs volumetric attacks before they reach you.</li>
+<li><strong>API gateway:</strong> per-API-key and per-plan limits; central configuration.</li>
+<li><strong>Reverse proxy</strong> (for example, Nginx <code>limit_req</code>): cheap per-IP limits —
+  see <a href="../../../06-servers-and-infrastructure/nginx/">Nginx</a>.</li>
+<li><strong>Application:</strong> limits that need business context — per user, per
+  account, per action (password attempts, SMS sends, exports).</li>
+</ul>
+<p>Defense in depth: coarse limits at the edge, precise limits in the app.</p>
+<h3 id="client-side-handling">Client-side handling<a class="headerlink" href="#client-side-handling" title="Permanent link">&para;</a></h3>
+<p>Clients should treat <code>429</code> as a signal to slow down:</p>
+<ul>
+<li>Honor <code>Retry-After</code> when present.</li>
+<li>Otherwise retry with <strong>exponential backoff and jitter</strong>, with a maximum
+  number of attempts (see
+  <a href="../timeouts-retries-and-idempotency/">timeouts, retries, and idempotency</a>).</li>
+<li>Pace requests proactively using the remaining-quota headers.</li>
+<li>Never retry instantly in a tight loop — that makes overload worse.</li>
+</ul>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<p><strong>Use rate limiting when:</strong></p>
+<ul>
+<li>An endpoint is open to the internet, especially sign-in, sign-up,
+  password reset, OTP, and search.</li>
+<li>Requests cost money (SMS, email, AI calls) or are expensive (exports,
+  reports).</li>
+<li>Tenants or API keys must get a fair share, or plans have different limits.</li>
+</ul>
+<p><strong>Use something else when:</strong></p>
+<ul>
+<li>The problem is a sudden flood of traffic from many sources — that is a DDoS,
+  absorbed at the network edge (CDN or WAF), not in the app.</li>
+<li>The service is slow for everyone because it is under-provisioned —
+  limiting hides the problem; scale or cache instead.</li>
+<li>A downstream system needs a steady flow — queue the work and process it at
+  a fixed rate (throttling) instead of rejecting requests.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Problem</th>
+<th>Tool</th>
+<th>Response to the client</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Brute force on sign-in</td>
+<td>Per-account and per-IP limit</td>
+<td>429 with <code>Retry-After</code></td>
+</tr>
+<tr>
+<td>One API key overusing a shared API</td>
+<td>Token bucket per key</td>
+<td>429 with quota headers</td>
+</tr>
+<tr>
+<td>Free versus paid plan allowance</td>
+<td>Monthly quota</td>
+<td>429 or 402, with plan details</td>
+</tr>
+<tr>
+<td>Too many parallel exports per account</td>
+<td>Concurrency limit</td>
+<td>429 or 409 until one finishes</td>
+</tr>
+<tr>
+<td>Fragile downstream system</td>
+<td>Queue with a fixed processing rate (throttle)</td>
+<td>202 Accepted, processed later</td>
+</tr>
+<tr>
+<td>Whole service overloaded</td>
+<td>Load shedding at the gateway</td>
+<td>503 with <code>Retry-After</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="express-rate-limit-with-a-shared-redis-store">express-rate-limit with a shared Redis store<a class="headerlink" href="#express-rate-limit-with-a-shared-redis-store" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="nx">express</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"express"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">rateLimit</span><span class="p">,</span><span class="w"> </span><span class="nx">ipKeyGenerator</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"express-rate-limit"</span><span class="p">;</span><span class="w"> </span><span class="c1">// v8</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">RedisStore</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"rate-limit-redis"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">createClient</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"redis"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">redisClient</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">createClient</span><span class="p">({</span><span class="w"> </span><span class="nx">url</span><span class="o">:</span><span class="w"> </span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">REDIS_URL</span><span class="w"> </span><span class="p">});</span>
+<span class="k">await</span><span class="w"> </span><span class="nx">redisClient</span><span class="p">.</span><span class="nx">connect</span><span class="p">();</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">app</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">express</span><span class="p">();</span>
+
+<span class="c1">// Exactly one proxy (the load balancer) sits in front of the app</span>
+<span class="nx">app</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s2">"trust proxy"</span><span class="p">,</span><span class="w"> </span><span class="mf">1</span><span class="p">);</span>
+
+<span class="c1">// General API limit: 100 requests per minute per client</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">apiLimiter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">rateLimit</span><span class="p">({</span>
+<span class="w">  </span><span class="nx">windowMs</span><span class="o">:</span><span class="w"> </span><span class="mf">60</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">1000</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">limit</span><span class="o">:</span><span class="w"> </span><span class="mf">100</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">standardHeaders</span><span class="o">:</span><span class="w"> </span><span class="s2">"draft-8"</span><span class="p">,</span><span class="w"> </span><span class="c1">// RateLimit-Policy and RateLimit headers</span>
+<span class="w">  </span><span class="nx">legacyHeaders</span><span class="o">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">       </span><span class="c1">// no X-RateLimit-* headers</span>
+<span class="w">  </span><span class="nx">store</span><span class="o">:</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">RedisStore</span><span class="p">({</span>
+<span class="w">    </span><span class="nx">sendCommand</span><span class="o">:</span><span class="w"> </span><span class="p">(...</span><span class="nx">args</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">redisClient</span><span class="p">.</span><span class="nx">sendCommand</span><span class="p">(</span><span class="nx">args</span><span class="p">),</span>
+<span class="w">  </span><span class="p">}),</span>
+<span class="p">});</span>
+
+<span class="c1">// Strict limit for sign-in, keyed by email + IP</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">signInLimiter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">rateLimit</span><span class="p">({</span>
+<span class="w">  </span><span class="nx">windowMs</span><span class="o">:</span><span class="w"> </span><span class="mf">15</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">60</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">1000</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">limit</span><span class="o">:</span><span class="w"> </span><span class="mf">5</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">standardHeaders</span><span class="o">:</span><span class="w"> </span><span class="s2">"draft-8"</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">legacyHeaders</span><span class="o">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">  </span><span class="c1">// ipKeyGenerator groups IPv6 addresses by subnet so one user cannot</span>
+<span class="w">  </span><span class="c1">// rotate through addresses in their own range</span>
+<span class="w">  </span><span class="nx">keyGenerator</span><span class="o">:</span><span class="w"> </span><span class="p">(</span><span class="nx">request</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span>
+<span class="w">    </span><span class="sb">`</span><span class="si">${</span><span class="nb">String</span><span class="p">(</span><span class="nx">request</span><span class="p">.</span><span class="nx">body</span><span class="o">?</span><span class="p">.</span><span class="nx">email</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="s2">""</span><span class="p">).</span><span class="nx">toLowerCase</span><span class="p">()</span><span class="si">}</span><span class="sb">|</span><span class="si">${</span><span class="nx">ipKeyGenerator</span><span class="p">(</span><span class="nx">request</span><span class="p">.</span><span class="nx">ip</span><span class="p">)</span><span class="si">}</span><span class="sb">`</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">store</span><span class="o">:</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">RedisStore</span><span class="p">({</span>
+<span class="w">    </span><span class="nx">prefix</span><span class="o">:</span><span class="w"> </span><span class="s2">"signin:"</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">sendCommand</span><span class="o">:</span><span class="w"> </span><span class="p">(...</span><span class="nx">args</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">redisClient</span><span class="p">.</span><span class="nx">sendCommand</span><span class="p">(</span><span class="nx">args</span><span class="p">),</span>
+<span class="w">  </span><span class="p">}),</span>
+<span class="p">});</span>
+
+<span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="s2">"/api"</span><span class="p">,</span><span class="w"> </span><span class="nx">apiLimiter</span><span class="p">);</span>
+<span class="nx">app</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s2">"/api/sign-in"</span><span class="p">,</span><span class="w"> </span><span class="nx">express</span><span class="p">.</span><span class="nx">json</span><span class="p">(),</span><span class="w"> </span><span class="nx">signInLimiter</span><span class="p">,</span><span class="w"> </span><span class="nx">signInHandler</span><span class="p">);</span>
+</code></pre></div>
+<p>The default key is the client IP (with IPv6 grouped by subnet). Option names
+and header formats have changed across major versions of
+<code>express-rate-limit</code>, so check the documentation for the version you
+install.</p>
+<h3 id="a-token-bucket-in-plain-javascript-single-process">A token bucket in plain JavaScript (single process)<a class="headerlink" href="#a-token-bucket-in-plain-javascript-single-process" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// Illustrates the algorithm; use a shared store for multiple instances</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">buckets</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Map</span><span class="p">();</span>
+
+<span class="kd">function</span><span class="w"> </span><span class="nx">allowRequest</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span><span class="w"> </span><span class="nx">capacity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">10</span><span class="p">,</span><span class="w"> </span><span class="nx">refillPerSecond</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">now</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Date</span><span class="p">.</span><span class="nx">now</span><span class="p">();</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">bucket</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">buckets</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">key</span><span class="p">)</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">tokens</span><span class="o">:</span><span class="w"> </span><span class="nx">capacity</span><span class="p">,</span><span class="w"> </span><span class="nx">updatedAt</span><span class="o">:</span><span class="w"> </span><span class="nx">now</span><span class="w"> </span><span class="p">};</span>
+
+<span class="w">  </span><span class="c1">// Add tokens for the time elapsed since the last request</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">elapsedSeconds</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nx">now</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nx">bucket</span><span class="p">.</span><span class="nx">updatedAt</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1000</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">bucket</span><span class="p">.</span><span class="nx">tokens</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Math</span><span class="p">.</span><span class="nx">min</span><span class="p">(</span><span class="nx">capacity</span><span class="p">,</span><span class="w"> </span><span class="nx">bucket</span><span class="p">.</span><span class="nx">tokens</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nx">elapsedSeconds</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nx">refillPerSecond</span><span class="p">);</span>
+<span class="w">  </span><span class="nx">bucket</span><span class="p">.</span><span class="nx">updatedAt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">now</span><span class="p">;</span>
+
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">allowed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">bucket</span><span class="p">.</span><span class="nx">tokens</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mf">1</span><span class="p">;</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">allowed</span><span class="p">)</span><span class="w"> </span><span class="nx">bucket</span><span class="p">.</span><span class="nx">tokens</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="mf">1</span><span class="p">;</span>
+
+<span class="w">  </span><span class="nx">buckets</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span><span class="w"> </span><span class="nx">bucket</span><span class="p">);</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">allowed</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Choose keys deliberately: per user or API key when authenticated, per IP
+  (or IPv6 prefix) otherwise, and combinations for sign-in.</li>
+<li>Configure <code>trust proxy</code> precisely so the client IP is correct and cannot be
+  spoofed.</li>
+<li>Use a shared store for limits when running more than one instance, with
+  atomic operations.</li>
+<li>Apply stricter limits to expensive or sensitive actions (sign-in, OTP,
+  SMS, password reset, exports, AI calls).</li>
+<li>Return <code>429</code> with <code>Retry-After</code> and quota headers; document your limits.</li>
+<li>Layer limits: edge, gateway or proxy, and application.</li>
+<li>Monitor how often limits trigger; tune them from real traffic.</li>
+<li>Decide fail-open versus fail-closed behavior when the limiter's store is
+  down.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Every user is throttled at once.</strong> <em>Symptom:</em> 429s for everyone right
+  after an infrastructure change, such as adding a load balancer. <em>Detect:</em>
+  the limiter keys in logs all show the same IP — the proxy's;
+  <code>express-rate-limit</code> also logs a validation error
+  (<code>ERR_ERL_UNEXPECTED_X_FORWARDED_FOR</code>) when <code>X-Forwarded-For</code> arrives but
+  <code>trust proxy</code> is off. <em>Cause:</em> <code>trust proxy</code> is unset or counts the wrong
+  number of hops. <em>Fix:</em> set it to the exact number of proxies and check
+  <code>request.ip</code> in a test request.</li>
+<li><strong>Clients exceed the documented limit several times over.</strong> <em>Symptom:</em> a
+  client with a limit of 100 per minute makes about 300. <em>Detect:</em> request
+  counts per key summed across instances. <em>Cause:</em> each instance keeps its own
+  in-memory counter. <em>Fix:</em> use a shared store such as Redis.</li>
+<li><strong>A Redis outage takes the API down.</strong> <em>Symptom:</em> every request fails while
+  Redis is unreachable. <em>Detect:</em> store connection errors from the limiter.
+  <em>Cause:</em> the limiter blocks traffic when its store fails (the default in
+  <code>express-rate-limit</code>). <em>Fix:</em> choose deliberately — set <code>passOnStoreError:
+  true</code> to fail open for general limits, and keep failing closed for sign-in.</li>
+<li><strong>429s keep climbing after the spike ends.</strong> <em>Symptom:</em> the rejected rate
+  stays high even though real users have gone. <em>Detect:</em> the same clients
+  retry within milliseconds of each 429. <em>Cause:</em> clients ignore
+  <code>Retry-After</code> and retry without backoff. <em>Fix:</em> always send <code>Retry-After</code>,
+  document it, and use backoff with jitter in your SDKs.</li>
+<li><strong>A whole office is locked out of sign-in.</strong> <em>Symptom:</em> support tickets
+  from many users at one company. <em>Detect:</em> many accounts share one IP that
+  hits the per-IP limit. <em>Cause:</em> sign-in limited by IP only. <em>Fix:</em> key by
+  account and IP together, and give per-IP limits more headroom.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Rate limit:</strong> the maximum number of requests allowed per time window.</li>
+<li><strong>Throttling:</strong> slowing or queuing excess requests instead of rejecting.</li>
+<li><strong>Quota:</strong> a total allowance over a longer billing period.</li>
+<li><strong>Window:</strong> the time period over which requests are counted.</li>
+<li><strong>Token bucket:</strong> a bucket of tokens refilled at a fixed rate; requests
+  spend tokens.</li>
+<li><strong>Leaky bucket:</strong> a queue drained at a constant rate.</li>
+<li><strong>Burst:</strong> a short spike of requests above the average rate.</li>
+<li><strong>Fail open / fail closed:</strong> allow or deny traffic when the limiter cannot
+  decide.</li>
+<li><strong><code>Retry-After</code>:</strong> a response header telling the client when to retry.</li>
+<li><strong><code>X-Forwarded-For</code>:</strong> a header carrying the original client IP through
+  proxies.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Per-instance in-memory limits</strong> in a multi-instance deployment.</li>
+<li><strong>Trusting <code>X-Forwarded-For</code> from anyone</strong>, letting attackers pick their IP.</li>
+<li><strong>Not configuring <code>trust proxy</code></strong>, so every client shares the proxy's IP
+  and the whole site gets limited together.</li>
+<li><strong>Only limiting by IP</strong> for sign-in, which lets distributed attacks through
+  and blocks offices behind one NAT.</li>
+<li><strong>Returning <code>500</code> or <code>403</code></strong> instead of <code>429</code> for limited requests.</li>
+<li><strong>No <code>Retry-After</code></strong>, leaving clients to guess and retry aggressively.</li>
+<li><strong>Non-atomic read-then-write counters</strong> in Redis, which miscount under
+  concurrency.</li>
+<li><strong>"Rate limiting stops DDoS."</strong> It helps, but volumetric attacks must be
+  absorbed at the network edge.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Why is the fixed window algorithm vulnerable to bursts at window
+   boundaries?</li>
+<li>How does a token bucket allow bursts while enforcing an average rate?</li>
+<li>Why must distributed rate limiting use atomic operations in a shared
+   store?</li>
+<li>What can go wrong when an app behind a load balancer reads the client IP
+   incorrectly?</li>
+<li>Which headers should accompany a <code>429</code> response, and how should clients
+   react?</li>
+<li>Where in the request path would you enforce per-IP, per-API-key, and
+   per-action limits?</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429">MDN: 429 Too Many Requests</a></li>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After">MDN: Retry-After</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc6585">RFC 6585: Additional HTTP Status Codes (429)</a></li>
+<li><a href="https://expressjs.com/en/guide/behind-proxies.html">Express: Behind proxies (trust proxy)</a></li>
+<li><a href="https://api-security.owasp.org/">OWASP API Security Top 10</a></li>
+<li>Related notes: <a href="../../../09-security-and-testing/api-security/">API security</a>,
+  <a href="../../../06-servers-and-infrastructure/load-balancing/">Load balancing</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../logging-and-monitoring/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Logging, Monitoring, and Tracing">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Logging, Monitoring, and Tracing</span>
+      </a>
+    
+    
+      <a href="../timeouts-retries-and-idempotency/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: Timeouts, Retries, and Idempotency">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">Timeouts, Retries, and Idempotency</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

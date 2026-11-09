@@ -1,0 +1,2808 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../asynchronous-patterns/">
+      
+      
+        <link rel="next" href="../modules-commonjs-and-esm/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Events and EventEmitter - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#events-and-eventemitter" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Events and EventEmitter
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../05-application-architecture/" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-ai-and-machine-learning/" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../06-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-devops-and-deployment/" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../08-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to Backend Development">
+          <span class="md-ellipsis">&larr; Back to Backend</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to Backend Development">
+                  <span class="md-ellipsis">&larr; Back to Backend</span>
+                </a>
+              
+            </div>
+          
+          
+            <label class="md-nav__title" for="__nav_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Backend Development
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Node.js
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_4_2">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Node.js
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2_2" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_4_2_2" id="__nav_4_2_2_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runtime Foundations
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_2_2_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_4_2_2">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Runtime Foundations
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../runtime-and-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runtime and Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation-and-versions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installing Node.js and Managing Versions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../event-loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The Event Loop
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../asynchronous-patterns/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Asynchronous Programming
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Events and EventEmitter
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Events and EventEmitter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-observer-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The observer pattern
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#core-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core methods
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#listeners-run-synchronously-in-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Listeners run synchronously, in order
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-special-error-event" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The special error event
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#memory-leaks-and-the-max-listeners-warning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Memory leaks and the max-listeners warning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#promise-and-async-iterator-helpers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Promise and async-iterator helpers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#extending-eventemitter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Extending EventEmitter
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#eventtarget-in-nodejs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EventTarget in Node.js
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#where-nodejs-uses-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where Node.js uses events
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#decoupling-side-effects" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decoupling side effects
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#removing-a-listener-correctly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Removing a listener correctly
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#waiting-for-an-event-with-a-timeout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Waiting for an event with a timeout
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../modules-commonjs-and-esm/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modules and Packages
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../file-system-path-and-os/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Modules
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../worker-threads-child-processes-and-cluster/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scaling and Reliability
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../project-node-internals-lab/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project: Node Internals Lab
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../05-application-architecture/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-ai-and-machine-learning/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI and Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../06-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-devops-and-deployment/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DevOps and Deployment
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../08-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-observer-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The observer pattern
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#core-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core methods
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#listeners-run-synchronously-in-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Listeners run synchronously, in order
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-special-error-event" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The special error event
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#memory-leaks-and-the-max-listeners-warning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Memory leaks and the max-listeners warning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#promise-and-async-iterator-helpers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Promise and async-iterator helpers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#extending-eventemitter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Extending EventEmitter
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#eventtarget-in-nodejs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EventTarget in Node.js
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#where-nodejs-uses-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where Node.js uses events
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#decoupling-side-effects" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decoupling side effects
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#removing-a-listener-correctly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Removing a listener correctly
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#waiting-for-an-event-with-a-timeout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Waiting for an event with a timeout
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="events-and-eventemitter">Events and EventEmitter<a class="headerlink" href="#events-and-eventemitter" title="Permanent link">&para;</a></h1>
+<p>Many Node.js objects announce that something happened—a request arrived, a
+chunk of data is ready, a connection closed—by emitting named events. The
+<code>EventEmitter</code> class in <code>node:events</code> is the foundation for this. You
+register listener functions for an event name, and the emitter calls them
+when it emits that event.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>Servers, streams, sockets, child processes, and the <code>process</code> object itself
+are all event emitters. Using them correctly means knowing when listeners
+run, how errors are reported, and how to avoid memory leaks from listeners
+that are never removed. You can also use <code>EventEmitter</code> to decouple parts of
+your own application.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>node-redis</strong>, the official Redis client, reports connection problems
+  through an <code>error</code> event. Its README warns that you <strong>must</strong> listen to it:
+  without a listener, the error is thrown and the Node.js process exits. A
+  brief network blip can therefore crash an app that never added the
+  listener
+  (<a href="https://github.com/redis/node-redis">node-redis README</a>).</li>
+<li><strong>Mongoose</strong> connections inherit from <code>EventEmitter</code> and emit <code>connecting</code>,
+  <code>connected</code>, <code>disconnected</code>, and other events when connectivity to MongoDB
+  changes. Applications listen to these to log outages and report health
+  (<a href="https://mongoosejs.com/docs/connections.html">Mongoose docs: Connection events</a>).</li>
+<li><strong>BullMQ</strong> job workers emit <code>completed</code>, <code>progress</code>, and <code>failed</code> events.
+  Applications attach listeners for logging and metrics without touching the
+  job code
+  (<a href="https://docs.bullmq.io/guide/workers">BullMQ docs: Workers</a>).</li>
+</ul>
+<p>Popular tools and providers: <code>node:events</code> itself; client libraries for
+Redis, MongoDB, and queues that expose connection and job events; <code>ws</code> and
+Socket.IO for event-based real-time messaging.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="the-observer-pattern">The observer pattern<a class="headerlink" href="#the-observer-pattern" title="Permanent link">&para;</a></h3>
+<p><code>EventEmitter</code> implements the <strong>observer pattern</strong> (also called
+publish/subscribe within one process): one object emits events, and any
+number of listeners react to them without the emitter knowing who they are.</p>
+<p><img alt="Flowchart: emit(&quot;order:created&quot;, order) checks whether the name is &quot;error&quot; (handled by an error listener, or thrown and crashing the process if none), returns false when nothing listens, and otherwise runs sendConfirmationEmail, updateAnalytics and reserveStock synchronously in order before returning true." src="../emit-flow.svg" /></p>
+<h3 id="core-methods">Core methods<a class="headerlink" href="#core-methods" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>on(name, listener)</code> / <code>addListener</code></td>
+<td>Adds a listener that runs every time the event is emitted.</td>
+</tr>
+<tr>
+<td><code>once(name, listener)</code></td>
+<td>Adds a listener that runs once, then removes itself.</td>
+</tr>
+<tr>
+<td><code>off(name, listener)</code> / <code>removeListener</code></td>
+<td>Removes a specific listener (you need the same function reference).</td>
+</tr>
+<tr>
+<td><code>removeAllListeners([name])</code></td>
+<td>Removes all listeners, optionally for one event.</td>
+</tr>
+<tr>
+<td><code>emit(name, ...args)</code></td>
+<td>Calls each listener with <code>args</code>; returns <code>true</code> if there were listeners.</td>
+</tr>
+<tr>
+<td><code>prependListener(name, listener)</code></td>
+<td>Adds a listener to the <strong>front</strong> of the list.</td>
+</tr>
+<tr>
+<td><code>prependOnceListener(name, listener)</code></td>
+<td>Like <code>prependListener</code>, but runs once.</td>
+</tr>
+<tr>
+<td><code>listenerCount(name)</code></td>
+<td>Number of listeners for an event.</td>
+</tr>
+<tr>
+<td><code>eventNames()</code></td>
+<td>Names of events that have listeners.</td>
+</tr>
+<tr>
+<td><code>setMaxListeners(n)</code></td>
+<td>Changes the leak-warning threshold for this emitter.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="listeners-run-synchronously-in-order">Listeners run synchronously, in order<a class="headerlink" href="#listeners-run-synchronously-in-order" title="Permanent link">&para;</a></h3>
+<p><code>emit()</code> calls every listener <strong>synchronously</strong>, in the order they were
+added, before <code>emit()</code> returns. It does not schedule them for later.</p>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">EventEmitter</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:events"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">emitter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">EventEmitter</span><span class="p">();</span>
+<span class="nx">emitter</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">"ping"</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">"listener 1"</span><span class="p">));</span>
+<span class="nx">emitter</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">"ping"</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">"listener 2"</span><span class="p">));</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">"before emit"</span><span class="p">);</span>
+<span class="nx">emitter</span><span class="p">.</span><span class="nx">emit</span><span class="p">(</span><span class="s2">"ping"</span><span class="p">);</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">"after emit"</span><span class="p">);</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>before emit
+listener 1
+listener 2
+after emit
+</code></pre></div>
+<p>If a listener throws, the exception propagates out of <code>emit()</code> and later
+listeners do not run. A listener that needs to do slow work should start
+asynchronous work rather than block.</p>
+<p>Inside a regular <code>function</code> listener, <code>this</code> refers to the emitter. Arrow
+function listeners do not get their own <code>this</code>.</p>
+<h3 id="the-special-error-event">The special <code>error</code> event<a class="headerlink" href="#the-special-error-event" title="Permanent link">&para;</a></h3>
+<p>The event name <code>"error"</code> has special behavior. If an emitter emits <code>"error"</code>
+and <strong>no listener is registered</strong>, Node.js <strong>throws</strong> the error. In a server,
+that usually crashes the process.</p>
+<div class="highlight"><pre><span></span><code><span class="kd">const</span><span class="w"> </span><span class="nx">emitter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">EventEmitter</span><span class="p">();</span>
+<span class="nx">emitter</span><span class="p">.</span><span class="nx">emit</span><span class="p">(</span><span class="s2">"error"</span><span class="p">,</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="ne">Error</span><span class="p">(</span><span class="s2">"boom"</span><span class="p">));</span><span class="w"> </span><span class="c1">// throws the error itself</span>
+</code></pre></div>
+<p>Run as a script, Node.js prints <code>throw er; // Unhandled 'error' event</code>,
+then <code>Error: boom</code> with its stack trace, and exits with code 1.</p>
+<p>Always attach an <code>error</code> listener to emitters that can fail—streams,
+sockets, servers, and child processes:</p>
+<div class="highlight"><pre><span></span><code><span class="nx">emitter</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">"error"</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nx">error</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="s2">"Emitter failed:"</span><span class="p">,</span><span class="w"> </span><span class="nx">error</span><span class="p">.</span><span class="nx">message</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre></div>
+<h3 id="memory-leaks-and-the-max-listeners-warning">Memory leaks and the max-listeners warning<a class="headerlink" href="#memory-leaks-and-the-max-listeners-warning" title="Permanent link">&para;</a></h3>
+<p>Every listener is a reference that keeps its function (and anything it
+closes over) in memory as long as the emitter exists. Adding a listener on
+every request to a long-lived emitter, and never removing it, is a classic
+memory leak.</p>
+<p>To help catch this, Node.js prints a warning when more than <strong>10</strong> listeners
+are added for the same event on one emitter:</p>
+<div class="highlight"><pre><span></span><code>(node:24884) MaxListenersExceededWarning: Possible EventEmitter memory leak
+detected. 11 request listeners added to [EventEmitter]. MaxListeners is 10.
+Use emitter.setMaxListeners() to increase limit
+</code></pre></div>
+<p>The number after <code>node:</code> is the process ID. Run with <code>--trace-warnings</code> to
+also print the stack trace of the line that added the eleventh listener.</p>
+<p>The warning does not stop anything; it is a hint. If many listeners are
+legitimate, raise the limit with <code>emitter.setMaxListeners(n)</code>. If not, find
+where listeners are added and remove them with <code>off()</code> or use <code>once()</code>.</p>
+<p><img alt="Comparison: calling on() for every request piles up listeners on a long-lived emitter until MaxListenersExceededWarning appears and memory grows; using once(), or off() in request cleanup, keeps the listener count at zero or one." src="../listener-leak.svg" /></p>
+<h3 id="promise-and-async-iterator-helpers">Promise and async-iterator helpers<a class="headerlink" href="#promise-and-async-iterator-helpers" title="Permanent link">&para;</a></h3>
+<p><code>node:events</code> provides helpers that connect events to <code>async</code>/<code>await</code>:</p>
+<ul>
+<li><strong><code>events.once(emitter, name)</code></strong> returns a promise that fulfills with an
+  array of the event's arguments the next time it is emitted. It rejects if
+  the emitter emits <code>"error"</code> first.</li>
+<li><strong><code>events.on(emitter, name)</code></strong> returns an async iterator that yields each
+  emission's arguments.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">once</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:events"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">createServer</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:http"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">server</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">createServer</span><span class="p">((</span><span class="nx">req</span><span class="p">,</span><span class="w"> </span><span class="nx">res</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">res</span><span class="p">.</span><span class="nx">end</span><span class="p">(</span><span class="s2">"ok"</span><span class="p">));</span>
+<span class="nx">server</span><span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="mf">3000</span><span class="p">);</span>
+<span class="k">await</span><span class="w"> </span><span class="nx">once</span><span class="p">(</span><span class="nx">server</span><span class="p">,</span><span class="w"> </span><span class="s2">"listening"</span><span class="p">);</span><span class="w"> </span><span class="c1">// wait until the server is ready</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">"Server is listening"</span><span class="p">);</span>
+</code></pre></div>
+<p>Both accept an <code>AbortSignal</code> so you can stop waiting.</p>
+<h3 id="extending-eventemitter">Extending EventEmitter<a class="headerlink" href="#extending-eventemitter" title="Permanent link">&para;</a></h3>
+<p>Your own classes can extend <code>EventEmitter</code> to emit domain events:</p>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">EventEmitter</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:events"</span><span class="p">;</span>
+
+<span class="kd">class</span><span class="w"> </span><span class="nx">Job</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nx">EventEmitter</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">async</span><span class="w"> </span><span class="nx">run</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="nx">emit</span><span class="p">(</span><span class="s2">"start"</span><span class="p">);</span>
+<span class="w">    </span><span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">let</span><span class="w"> </span><span class="nx">percent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">25</span><span class="p">;</span><span class="w"> </span><span class="nx">percent</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mf">100</span><span class="p">;</span><span class="w"> </span><span class="nx">percent</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mf">25</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">await</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Promise</span><span class="p">((</span><span class="nx">resolve</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">setTimeout</span><span class="p">(</span><span class="nx">resolve</span><span class="p">,</span><span class="w"> </span><span class="mf">100</span><span class="p">));</span>
+<span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="nx">emit</span><span class="p">(</span><span class="s2">"progress"</span><span class="p">,</span><span class="w"> </span><span class="nx">percent</span><span class="p">);</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">      </span><span class="k">this</span><span class="p">.</span><span class="nx">emit</span><span class="p">(</span><span class="s2">"done"</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="nx">error</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">this</span><span class="p">.</span><span class="nx">emit</span><span class="p">(</span><span class="s2">"error"</span><span class="p">,</span><span class="w"> </span><span class="nx">error</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">job</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">Job</span><span class="p">();</span>
+<span class="nx">job</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">"progress"</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nx">percent</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`</span><span class="si">${</span><span class="nx">percent</span><span class="si">}</span><span class="sb">%`</span><span class="p">));</span>
+<span class="nx">job</span><span class="p">.</span><span class="nx">once</span><span class="p">(</span><span class="s2">"done"</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">"Job finished"</span><span class="p">));</span>
+<span class="nx">job</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">"error"</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nx">error</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="nx">error</span><span class="p">));</span>
+<span class="nx">job</span><span class="p">.</span><span class="nx">run</span><span class="p">();</span>
+</code></pre></div>
+<h3 id="eventtarget-in-nodejs">EventTarget in Node.js<a class="headerlink" href="#eventtarget-in-nodejs" title="Permanent link">&para;</a></h3>
+<p>Node.js also implements the web-standard <strong><code>EventTarget</code></strong> and <code>Event</code>
+classes used in browsers. APIs that follow web standards, such as
+<code>AbortSignal</code>, use <code>EventTarget</code> with <code>addEventListener</code>. The main
+differences: <code>EventTarget</code> listeners receive an <code>Event</code> object, there is no
+special <code>"error"</code> behavior, and adding the same listener twice has no
+effect. Node.js core modules mostly use <code>EventEmitter</code>.</p>
+<h3 id="where-nodejs-uses-events">Where Node.js uses events<a class="headerlink" href="#where-nodejs-uses-events" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Object</th>
+<th>Example events</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>http.Server</code></td>
+<td><code>request</code>, <code>connection</code>, <code>listening</code>, <code>close</code>, <code>error</code></td>
+</tr>
+<tr>
+<td><code>http.IncomingMessage</code> (request)</td>
+<td><code>data</code>, <code>end</code>, <code>close</code>, <code>error</code></td>
+</tr>
+<tr>
+<td><code>net.Socket</code></td>
+<td><code>connect</code>, <code>data</code>, <code>end</code>, <code>timeout</code>, <code>close</code>, <code>error</code></td>
+</tr>
+<tr>
+<td>Readable streams</td>
+<td><code>data</code>, <code>end</code>, <code>readable</code>, <code>close</code>, <code>error</code></td>
+</tr>
+<tr>
+<td>Writable streams</td>
+<td><code>drain</code>, <code>finish</code>, <code>close</code>, <code>error</code></td>
+</tr>
+<tr>
+<td><code>process</code></td>
+<td><code>exit</code>, <code>beforeExit</code>, <code>uncaughtException</code>, <code>unhandledRejection</code>, <code>SIGINT</code>, <code>SIGTERM</code>, <code>warning</code></td>
+</tr>
+<tr>
+<td><code>ChildProcess</code></td>
+<td><code>spawn</code>, <code>exit</code>, <code>close</code>, <code>error</code>, <code>message</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<p>Use <code>EventEmitter</code> when:</p>
+<ul>
+<li>Something happens <strong>many times</strong> and several independent parts may want
+  to react: connection state changes, progress updates, data arriving.</li>
+<li>You want to keep a module free of knowledge about who reacts to it, such
+  as audit logging or metrics on domain events within one process.</li>
+<li>You build a low-level object (a client, a parser) that follows Node.js
+  conventions.</li>
+</ul>
+<p>Do not use it when:</p>
+<ul>
+<li>There is exactly <strong>one result</strong>: return a promise instead.</li>
+<li>The work must happen <strong>reliably</strong> or on another server: use a message
+  queue or background job; in-memory events vanish on a crash.</li>
+<li>You need ordered, flow-controlled data: use a stream, which adds
+  backpressure on top of events.</li>
+<li>Code must also run in browsers: prefer <code>EventTarget</code>.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Need</th>
+<th>Use</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>One async result</td>
+<td>Promise / <code>async</code> function</td>
+<td>Settles once, works with <code>await</code> and <code>try</code>/<code>catch</code></td>
+</tr>
+<tr>
+<td>Many notifications, same process</td>
+<td><code>EventEmitter</code></td>
+<td>Any number of listeners, synchronous delivery</td>
+</tr>
+<tr>
+<td>A flow of data with backpressure</td>
+<td>Stream</td>
+<td>Pauses the producer when the consumer is slow</td>
+</tr>
+<tr>
+<td>Work that must not be lost</td>
+<td>Message queue or job queue</td>
+<td>Survives restarts; other servers can consume it</td>
+</tr>
+<tr>
+<td>Browser-compatible events</td>
+<td><code>EventTarget</code></td>
+<td>Web standard; same API in browsers</td>
+</tr>
+</tbody>
+</table>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="decoupling-side-effects">Decoupling side effects<a class="headerlink" href="#decoupling-side-effects" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">EventEmitter</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:events"</span><span class="p">;</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">appEvents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">EventEmitter</span><span class="p">();</span>
+
+<span class="c1">// orders.js</span>
+<span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">createOrder</span><span class="p">(</span><span class="nx">data</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">order</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">saveOrder</span><span class="p">(</span><span class="nx">data</span><span class="p">);</span>
+<span class="w">  </span><span class="nx">appEvents</span><span class="p">.</span><span class="nx">emit</span><span class="p">(</span><span class="s2">"order:created"</span><span class="p">,</span><span class="w"> </span><span class="nx">order</span><span class="p">);</span><span class="w"> </span><span class="c1">// the service doesn't know who listens</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">order</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c1">// listeners.js</span>
+<span class="nx">appEvents</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">"order:created"</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nx">order</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">sendConfirmationEmail</span><span class="p">(</span><span class="nx">order</span><span class="p">).</span><span class="k">catch</span><span class="p">((</span><span class="nx">error</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="s2">"Email failed"</span><span class="p">,</span><span class="w"> </span><span class="nx">error</span><span class="p">);</span><span class="w"> </span><span class="c1">// handle async errors inside the listener</span>
+<span class="w">  </span><span class="p">});</span>
+<span class="p">});</span>
+</code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">In-process events are not a message queue</p>
+<p>Events emitted this way live only in memory. If the process crashes
+before a listener finishes, the work is lost, and other server instances
+never see the event. For work that must happen reliably, use a
+<a href="../../../05-application-architecture/message-queues/">message queue</a> or
+<a href="../../backend-concepts/background-jobs-and-scheduling/">background jobs</a>.</p>
+</div>
+<h3 id="removing-a-listener-correctly">Removing a listener correctly<a class="headerlink" href="#removing-a-listener-correctly" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kd">function</span><span class="w"> </span><span class="nx">onData</span><span class="p">(</span><span class="nx">chunk</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">"received"</span><span class="p">,</span><span class="w"> </span><span class="nx">chunk</span><span class="p">.</span><span class="nx">length</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="nx">socket</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">"data"</span><span class="p">,</span><span class="w"> </span><span class="nx">onData</span><span class="p">);</span>
+<span class="c1">// later</span>
+<span class="nx">socket</span><span class="p">.</span><span class="nx">off</span><span class="p">(</span><span class="s2">"data"</span><span class="p">,</span><span class="w"> </span><span class="nx">onData</span><span class="p">);</span><span class="w"> </span><span class="c1">// works: same function reference</span>
+
+<span class="nx">socket</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">"data"</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nx">chunk</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">chunk</span><span class="p">.</span><span class="nx">length</span><span class="p">));</span>
+<span class="nx">socket</span><span class="p">.</span><span class="nx">off</span><span class="p">(</span><span class="s2">"data"</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nx">chunk</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">chunk</span><span class="p">.</span><span class="nx">length</span><span class="p">));</span><span class="w"> </span><span class="c1">// does nothing:</span>
+<span class="c1">// a new arrow function is a different reference</span>
+</code></pre></div>
+<h3 id="waiting-for-an-event-with-a-timeout">Waiting for an event with a timeout<a class="headerlink" href="#waiting-for-an-event-with-a-timeout" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">once</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:events"</span><span class="p">;</span>
+
+<span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="p">[</span><span class="nx">message</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">once</span><span class="p">(</span><span class="nx">worker</span><span class="p">,</span><span class="w"> </span><span class="s2">"message"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">signal</span><span class="o">:</span><span class="w"> </span><span class="nx">AbortSignal</span><span class="p">.</span><span class="nx">timeout</span><span class="p">(</span><span class="mf">5000</span><span class="p">),</span>
+<span class="w">  </span><span class="p">});</span>
+<span class="w">  </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">"Worker replied:"</span><span class="p">,</span><span class="w"> </span><span class="nx">message</span><span class="p">);</span>
+<span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="nx">error</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="s2">"No reply within 5 s or worker failed:"</span><span class="p">,</span><span class="w"> </span><span class="nx">error</span><span class="p">.</span><span class="nx">message</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>On timeout, <code>once()</code> rejects with an <code>AbortError</code> ("The operation was
+aborted"), not the <code>TimeoutError</code> that <code>fetch</code> uses. The timer behind
+<code>AbortSignal.timeout()</code> does not keep the process alive by itself. Here the
+worker keeps it alive, but in a script with nothing else running, Node.js
+can exit before the timeout ever fires.</p>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Always register an <code>error</code> listener on emitters that can fail.</li>
+<li>Use <code>once()</code> for one-time events such as <code>ready</code> or <code>listening</code>.</li>
+<li>Remove listeners you add for a temporary purpose, especially on
+  long-lived emitters; keep a reference to the function so you can.</li>
+<li>Handle errors inside async listeners; a rejected promise from a listener
+  is not caught by <code>emit()</code>.</li>
+<li>Use clear, namespaced event names such as <code>order:created</code>.</li>
+<li>Prefer <code>events.once()</code> with an <code>AbortSignal</code> over hand-written
+  promise wrappers.</li>
+<li>Use a queue, not in-memory events, for work that must survive restarts or
+  span multiple servers.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>A dependency hiccup crashes the process.</strong></li>
+<li><em>Symptom:</em> a short Redis or database network blip is followed by every
+    instance restarting.</li>
+<li><em>Detect:</em> crash logs show <code>Unhandled 'error' event</code> followed by an error
+    from the client library, such as a connection reset.</li>
+<li><em>Cause:</em> no <code>error</code> listener on the client, socket, or stream.</li>
+<li><em>Fix:</em> attach an <code>error</code> listener to every client and stream you create,
+    log the error, and let the library reconnect.</li>
+<li><strong>Memory grows with traffic.</strong></li>
+<li><em>Symptom:</em> heap usage rises steadily, and <code>MaxListenersExceededWarning</code>
+    appears in the logs.</li>
+<li><em>Detect:</em> <code>emitter.listenerCount(name)</code> reported in a metric keeps
+    rising, and heap snapshots show many copies of the same closure.</li>
+<li><em>Cause:</em> a listener added to a long-lived emitter (the process, a
+    database client) on every request and never removed.</li>
+<li><em>Fix:</em> use <code>once()</code>, or remove the listener with <code>off()</code> when the
+    request ends. Never "fix" it with <code>setMaxListeners(0)</code>.</li>
+<li><strong>One listener breaks a request.</strong></li>
+<li><em>Symptom:</em> a request fails with an error from analytics code,
+    unrelated to its own logic.</li>
+<li><em>Detect:</em> the stack trace shows the error thrown inside <code>emit()</code>.</li>
+<li><em>Cause:</em> listeners run synchronously; a throw in one propagates to the
+    code that called <code>emit()</code> and skips the remaining listeners.</li>
+<li><em>Fix:</em> wrap listener bodies in <code>try</code>/<code>catch</code>, and push slow or risky work
+    to a queue.</li>
+<li><strong>Side effects lost on deploy.</strong></li>
+<li><em>Symptom:</em> some customers never receive confirmation emails, usually
+    around deploys.</li>
+<li><em>Detect:</em> the count of <code>order:created</code> events in logs is higher than the
+    count of emails sent.</li>
+<li><em>Cause:</em> the email was triggered by an in-memory event, and the process
+    was stopped before the listener finished.</li>
+<li><em>Fix:</em> write the work to a durable queue (or an outbox table) in the same
+    flow that creates the order.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Event emitter:</strong> An object that emits named events and calls registered
+  listeners.</li>
+<li><strong>Listener (handler):</strong> A function called when an event is emitted.</li>
+<li><strong>Emit:</strong> To trigger an event and call its listeners with arguments.</li>
+<li><strong>Observer pattern:</strong> A design where subscribers react to events from a
+  subject without tight coupling.</li>
+<li><strong><code>error</code> event:</strong> A special event that throws if no listener exists.</li>
+<li><strong>MaxListenersExceededWarning:</strong> A warning that suggests a possible
+  listener leak.</li>
+<li><strong>EventTarget:</strong> The web-standard event interface, also available in
+  Node.js.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>"<code>emit()</code> is asynchronous."</strong> Listeners run synchronously before <code>emit()</code>
+  returns.</li>
+<li><strong>Forgetting the <code>error</code> listener</strong>, causing a crash on the first failure.</li>
+<li><strong>Adding listeners inside request handlers</strong> to a shared emitter without
+  removing them.</li>
+<li><strong>Trying to remove an anonymous function</strong> with <code>off()</code>.</li>
+<li><strong>Silencing the max-listeners warning</strong> with <code>setMaxListeners(0)</code> instead
+  of fixing the leak.</li>
+<li><strong>Using in-process events for durable work</strong> that must not be lost.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>What is the difference between <code>on</code>, <code>once</code>, and <code>prependListener</code>?</li>
+<li>Are listeners called synchronously or asynchronously? What happens if one
+   throws?</li>
+<li>Why is the <code>error</code> event special?</li>
+<li>What does the max-listeners warning tell you, and how should you respond?</li>
+<li>How do <code>events.once()</code> and <code>events.on()</code> help with async code?</li>
+<li>Why are in-process events unsuitable for work that must not be lost?</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://nodejs.org/api/events.html">Node.js API: Events</a></li>
+<li><a href="https://nodejs.org/en/learn/asynchronous-work/the-nodejs-event-emitter">Node.js: The Node.js event emitter</a></li>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/API/EventTarget">MDN: EventTarget</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../asynchronous-patterns/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Asynchronous Programming">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Asynchronous Programming</span>
+      </a>
+    
+    
+      <a href="../modules-commonjs-and-esm/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: CommonJS and ES Modules">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">CommonJS and ES Modules</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

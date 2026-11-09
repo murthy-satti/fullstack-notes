@@ -1,0 +1,2956 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../scalability-fundamentals/">
+      
+      
+        <link rel="next" href="../database-scaling/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Stateless Services and Autoscaling - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#stateless-services-and-autoscaling" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Stateless Services and Autoscaling
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-ai-and-machine-learning/" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../06-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-devops-and-deployment/" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../08-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to Application Architecture">
+          <span class="md-ellipsis">&larr; Back to Architecture</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to Application Architecture">
+                  <span class="md-ellipsis">&larr; Back to Architecture</span>
+                </a>
+              
+            </div>
+          
+          
+            <label class="md-nav__title" for="__nav_6">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Application Architecture
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_6" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_6_6" id="__nav_6_6_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scalability
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_6_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_6_6">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Scalability
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_6_2" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_6_6_2" id="__nav_6_6_2_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scaling the System
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_6_6_2_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_6_6_2">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Scaling the System
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../scalability-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scalability Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stateless Services and Autoscaling
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stateless Services and Autoscaling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Real-world usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#popular-tools-and-providers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Popular tools and providers
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#stateless-and-stateful-services" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stateless and stateful services
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#moving-state-out-of-the-application" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Moving state out of the application
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sticky-sessions-and-their-trade-offs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sticky sessions and their trade-offs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#horizontal-scaling-behind-a-load-balancer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Horizontal scaling behind a load balancer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#autoscaling-signals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Autoscaling signals
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scaling-policies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scaling policies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cooldowns-and-stabilization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cooldowns and stabilization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scale-in-protection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scale-in protection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kubernetes-horizontal-pod-autoscaler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kubernetes Horizontal Pod Autoscaler
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graceful-shutdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Graceful shutdown
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#readiness-liveness-and-warm-up" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Readiness, liveness, and warm-up
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#moving-express-sessions-into-redis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Moving Express sessions into Redis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#health-endpoints-and-graceful-shutdown-in-nodejs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Health endpoints and graceful shutdown in Node.js
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scaling-workers-by-queue-backlog" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scaling workers by queue backlog
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../database-scaling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Database Scaling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../availability-and-reliability/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Staying Available and Correct
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../performance-and-latency/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Measuring and Planning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-ai-and-machine-learning/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI and Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../06-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-devops-and-deployment/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DevOps and Deployment
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../08-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Real-world usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#popular-tools-and-providers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Popular tools and providers
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#stateless-and-stateful-services" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stateless and stateful services
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#moving-state-out-of-the-application" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Moving state out of the application
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sticky-sessions-and-their-trade-offs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sticky sessions and their trade-offs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#horizontal-scaling-behind-a-load-balancer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Horizontal scaling behind a load balancer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#autoscaling-signals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Autoscaling signals
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scaling-policies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scaling policies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cooldowns-and-stabilization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cooldowns and stabilization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scale-in-protection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scale-in protection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kubernetes-horizontal-pod-autoscaler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kubernetes Horizontal Pod Autoscaler
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graceful-shutdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Graceful shutdown
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#readiness-liveness-and-warm-up" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Readiness, liveness, and warm-up
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#moving-express-sessions-into-redis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Moving Express sessions into Redis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#health-endpoints-and-graceful-shutdown-in-nodejs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Health endpoints and graceful shutdown in Node.js
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scaling-workers-by-queue-backlog" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scaling workers by queue backlog
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="stateless-services-and-autoscaling">Stateless Services and Autoscaling<a class="headerlink" href="#stateless-services-and-autoscaling" title="Permanent link">&para;</a></h1>
+<p>A stateless service keeps no client-specific data in its own memory or
+disk between requests, so any instance can handle any request. That
+property is what makes horizontal scaling and <strong>autoscaling</strong>, adding and
+removing instances automatically as load changes, safe and simple. This
+lesson explains how to make services stateless and how autoscaling
+decides when to act.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>Traffic is rarely flat: it rises during the day, spikes during sales, and
+drops at night. Running enough servers for the peak all the time wastes
+money; running too few causes slow responses and errors at peak.
+Autoscaling solves this, but only if instances are interchangeable,
+start quickly, and can be removed without dropping requests. Hidden state
+in one instance (a session in memory, a file on local disk) breaks all of
+that.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Netflix: predictive plus reactive autoscaling.</strong> Netflix built Scryer
+  to forecast traffic and add capacity <em>before</em> it is needed, because
+  reactive scaling alone fell short: instance start-up took 10 to 45
+  minutes, and outages were sometimes followed by retry storms that hit a
+  fleet the autoscaler had just shrunk. Scryer runs "in tandem" with the
+  reactive Amazon Auto Scaling, which still catches surprises.
+  (<a href="https://netflixtechblog.com/scryer-netflixs-predictive-auto-scaling-engine-a3f8fc922270">Netflix Tech Blog, 2013</a>)</li>
+<li><strong>Kubernetes: the HPA algorithm in the open.</strong> The Horizontal Pod
+  Autoscaler documents its exact rule
+  (<code>ceil(currentReplicas × currentMetric / desiredMetric)</code>), a 10%
+  tolerance, a 300-second scale-down stabilization window and immediate
+  scale-up by default; the
+  <a href="#kubernetes-horizontal-pod-autoscaler">HPA section below</a> uses them.
+  (<a href="https://kubernetes.io/docs/concepts/workloads/autoscaling/horizontal-pod-autoscale/">Kubernetes docs</a>)</li>
+<li><strong>AWS Application Load Balancer: stickiness, slow start, draining.</strong>
+  ALB can pin clients with a load-balancer cookie (<code>AWSALB</code>) or your
+  application's cookie; can ramp traffic to new targets gradually (slow
+  start); and stops sending new requests to a deregistering target while
+  waiting up to 300 seconds (the default) for in-flight requests to
+  finish.
+  (<a href="https://docs.aws.amazon.com/elasticloadbalancing/latest/application/edit-target-group-attributes.html">AWS docs</a>)</li>
+<li><strong>Microsoft Azure Architecture Center: "Avoid instance stickiness".</strong>
+  Its scale-out design principle warns that stickiness "limits the
+  application's ability to scale out", for example because a high-volume
+  user's traffic is not spread across instances.
+  (<a href="https://learn.microsoft.com/en-us/azure/architecture/guide/design-principles/scale-out">Microsoft Learn</a>)</li>
+<li><strong>The Twelve-Factor App: stateless processes.</strong> "Twelve-factor
+  processes are stateless and share-nothing", and "sticky sessions are a
+  violation of twelve-factor and should never be used or relied upon".
+  (<a href="https://12factor.net/processes">12factor.net</a>)</li>
+</ul>
+<h3 id="popular-tools-and-providers">Popular tools and providers<a class="headerlink" href="#popular-tools-and-providers" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Need</th>
+<th>Common choices</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Autoscaling containers</td>
+<td>Kubernetes HPA; <a href="https://keda.sh/">KEDA</a> for event-driven scaling (queue length, Kafka lag, Redis lists) and scale-to-zero</td>
+</tr>
+<tr>
+<td>Autoscaling VMs</td>
+<td>Amazon EC2 Auto Scaling, Google Cloud managed instance groups, Azure Virtual Machine Scale Sets</td>
+</tr>
+<tr>
+<td>Autoscaling managed containers</td>
+<td>Amazon ECS service auto scaling, Google Cloud Run, Azure Container Apps</td>
+</tr>
+<tr>
+<td>Shared session storage</td>
+<td>Redis or Valkey (<code>connect-redis</code>), a database-backed store, or signed tokens</td>
+</tr>
+<tr>
+<td>Load balancing</td>
+<td>AWS ALB, Google Cloud Load Balancing, Azure Load Balancer / Application Gateway, NGINX, HAProxy, Envoy</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="stateless-and-stateful-services">Stateless and stateful services<a class="headerlink" href="#stateless-and-stateful-services" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Stateless service</th>
+<th>Stateful service</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Keeps per-client data between requests</td>
+<td>No</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Any instance can serve any request</td>
+<td>Yes</td>
+<td>No: the client must reach "its" instance</td>
+</tr>
+<tr>
+<td>Losing an instance</td>
+<td>Requests retry elsewhere; nothing lost</td>
+<td>Data or sessions on it are lost or must fail over</td>
+</tr>
+<tr>
+<td>Scaling</td>
+<td>Add or remove instances freely</td>
+<td>Needs partitioning, replication, or rebalancing</td>
+</tr>
+<tr>
+<td>Examples</td>
+<td>REST API servers, rendering services</td>
+<td>Databases, caches, WebSocket gateways, game servers</td>
+</tr>
+</tbody>
+</table>
+<p>Stateless does not mean the <strong>system</strong> has no state; it means state lives
+in dedicated services built to manage it (databases, caches, object
+storage), not in the application instances.</p>
+<h3 id="moving-state-out-of-the-application">Moving state out of the application<a class="headerlink" href="#moving-state-out-of-the-application" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>State</th>
+<th>Where it often starts (problem)</th>
+<th>Where it should live</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>User sessions</td>
+<td>Process memory (<code>express-session</code> default MemoryStore)</td>
+<td>Redis or a database session store, or signed tokens</td>
+</tr>
+<tr>
+<td>Uploaded files</td>
+<td>Local disk</td>
+<td>Object storage (S3 or similar); see <a href="../../../03-backend-development/backend-concepts/file-storage-and-uploads/">file storage and uploads</a></td>
+</tr>
+<tr>
+<td>Cached data</td>
+<td>Per-process <code>Map</code></td>
+<td>Redis (or keep a small local cache that is safe to lose)</td>
+</tr>
+<tr>
+<td>Background jobs</td>
+<td><code>setTimeout</code> or in-memory arrays</td>
+<td>A job queue; see <a href="../../../03-backend-development/backend-concepts/background-jobs-and-scheduling/">background jobs and scheduling</a></td>
+</tr>
+<tr>
+<td>Scheduled tasks</td>
+<td>Cron inside every instance (runs N times)</td>
+<td>One scheduler, or a lock so only one instance runs each job</td>
+</tr>
+<tr>
+<td>WebSocket subscriptions</td>
+<td>Connections in one instance</td>
+<td>Pub/sub (Redis, a broker) to fan messages out to all instances</td>
+</tr>
+<tr>
+<td>Rate-limit counters</td>
+<td>In-memory counters per instance</td>
+<td>Redis, so limits apply across instances</td>
+</tr>
+<tr>
+<td>Configuration</td>
+<td>Files edited on a server</td>
+<td>Environment variables or a config service</td>
+</tr>
+</tbody>
+</table>
+<p><img alt="Comparison: with sessions in each app's memory, POST /login stores session abc only in App 1, so the next GET /cart routed to App 2 finds no session and returns 401; with sessions in Redis, App 1 writes sess:abc and App 2 reads it, files go to object storage and records to the database, and any instance can serve the user." src="../sessions-memory-vs-redis.svg" /></p>
+<h3 id="sticky-sessions-and-their-trade-offs">Sticky sessions and their trade-offs<a class="headerlink" href="#sticky-sessions-and-their-trade-offs" title="Permanent link">&para;</a></h3>
+<p>A load balancer can use <strong>sticky sessions</strong> (session affinity), routing
+each client to the same instance, usually with a cookie. This lets a
+stateful app run on several instances without moving its state.</p>
+<table>
+<thead>
+<tr>
+<th>Benefit</th>
+<th>Cost</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Works with in-memory sessions or caches</td>
+<td>Uneven load: heavy users pile onto some instances</td>
+</tr>
+<tr>
+<td>Can improve local cache hit rates</td>
+<td>When an instance dies or is scaled in, its users lose their state</td>
+</tr>
+<tr>
+<td>Required by some protocols during a connection</td>
+<td>New instances receive traffic only from new clients, so scaling out helps slowly</td>
+</tr>
+<tr>
+<td></td>
+<td>Deployments and rebalancing become harder</td>
+</tr>
+</tbody>
+</table>
+<p>Treat stickiness as an optimization or a temporary workaround, not a
+correctness requirement. Long-lived connections (WebSockets) are
+naturally pinned to one instance for their lifetime, which is fine as
+long as reconnecting to another instance works.</p>
+<h3 id="horizontal-scaling-behind-a-load-balancer">Horizontal scaling behind a load balancer<a class="headerlink" href="#horizontal-scaling-behind-a-load-balancer" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>                    ┌─&gt; instance 1 ─┐
+clients ─&gt; load ────┼─&gt; instance 2 ─┼─&gt; shared data services
+          balancer  └─&gt; instance 3 ─┘
+              │ health checks every few seconds; unhealthy instances get no traffic
+</code></pre></div>
+<p>The load balancer spreads requests, checks health, and stops sending
+traffic to failed instances. Algorithms and setup are covered in
+<a href="../../../06-servers-and-infrastructure/load-balancing/">load balancing</a>.</p>
+<h3 id="autoscaling-signals">Autoscaling signals<a class="headerlink" href="#autoscaling-signals" title="Permanent link">&para;</a></h3>
+<p>An autoscaler watches a metric and adjusts the instance count.</p>
+<table>
+<thead>
+<tr>
+<th>Signal</th>
+<th>Good for</th>
+<th>Caveats</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CPU utilization</td>
+<td>CPU-bound services</td>
+<td>Misleading for I/O-bound Node.js services that wait on databases</td>
+</tr>
+<tr>
+<td>Request rate per instance</td>
+<td>Web and API tiers</td>
+<td>Needs a known per-instance capacity</td>
+</tr>
+<tr>
+<td>Latency (p95/p99)</td>
+<td>User-facing goals</td>
+<td>Reacts late; latency can rise from downstream causes that more instances will not fix</td>
+</tr>
+<tr>
+<td>Queue depth / backlog per worker</td>
+<td>Background workers</td>
+<td>Best signal for consumers: scale by "messages waiting per worker"</td>
+</tr>
+<tr>
+<td>Concurrent connections</td>
+<td>WebSocket gateways</td>
+<td>Connections are long-lived; scaling in disconnects users</td>
+</tr>
+<tr>
+<td>Memory</td>
+<td>Rarely a good scaling signal</td>
+<td>Usually indicates leaks or sizing, not load</td>
+</tr>
+<tr>
+<td>Schedule</td>
+<td>Predictable daily or weekly peaks</td>
+<td>Combine with a reactive policy for surprises</td>
+</tr>
+</tbody>
+</table>
+<h3 id="scaling-policies">Scaling policies<a class="headerlink" href="#scaling-policies" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Target tracking:</strong> keep a metric near a target, such as "average CPU
+  at 60%" or "1,000 requests per instance". The autoscaler computes how
+  many instances are needed. This is the usual default.</li>
+<li><strong>Step scaling:</strong> add or remove a set number of instances when a metric
+  crosses thresholds ("+2 if CPU &gt; 70%, +4 if &gt; 85%").</li>
+<li><strong>Scheduled scaling:</strong> set capacity for known times ("20 instances at
+  08:45 on weekdays").</li>
+<li><strong>Predictive scaling:</strong> some cloud providers forecast load from history
+  and scale ahead of it.</li>
+</ul>
+<p>Always set a <strong>minimum</strong> (enough for availability, usually at least two
+instances in different zones) and a <strong>maximum</strong> (to cap cost and protect
+downstream systems such as the database).</p>
+<p>One full turn of the loop, using target tracking:</p>
+<p><img alt="Flowchart: the autoscaler measures average CPU at 90% on 4 pods, computes ceil(4 × 90 / 60) = 6, applies the min 2 / max 20 limits and cooldown, adds 2 instances, waits for each to pass its readiness check before the load balancer routes to all 6, and the metric falls toward 60%. Scaling in waits a 300-second stabilization window, sends SIGTERM so readiness fails and requests drain, then removes the instance." src="../autoscaling-loop.svg" /></p>
+<h3 id="cooldowns-and-stabilization">Cooldowns and stabilization<a class="headerlink" href="#cooldowns-and-stabilization" title="Permanent link">&para;</a></h3>
+<p>New instances take time to start and to affect metrics. Without a pause,
+an autoscaler can overreact, adding far too many instances or flapping up
+and down.</p>
+<ul>
+<li><strong>Cooldown / warm-up period:</strong> after a scaling action, wait before
+  acting again or before counting new instances' metrics.</li>
+<li><strong>Stabilization window:</strong> use the highest recommendation over recent
+  minutes before scaling in, so a brief dip does not remove capacity.</li>
+<li>Scale <strong>out quickly</strong> and <strong>in slowly</strong>: under-capacity hurts users;
+  over-capacity only costs money for a few minutes.</li>
+</ul>
+<h3 id="scale-in-protection">Scale-in protection<a class="headerlink" href="#scale-in-protection" title="Permanent link">&para;</a></h3>
+<p>Removing an instance can interrupt work. Protect instances that are
+running long jobs, holding many connections, or acting as a leader. Cloud
+autoscaling groups offer instance-level scale-in protection, and
+Kubernetes lets you control scale-down behavior and disruption budgets.
+Workers should finish or hand back their current job when asked to stop.</p>
+<h3 id="kubernetes-horizontal-pod-autoscaler">Kubernetes Horizontal Pod Autoscaler<a class="headerlink" href="#kubernetes-horizontal-pod-autoscaler" title="Permanent link">&para;</a></h3>
+<p>In Kubernetes, the Horizontal Pod Autoscaler (HPA) adjusts the number of
+pod replicas of a Deployment from metrics. Its basic rule is:</p>
+<div class="highlight"><pre><span></span><code>desiredReplicas = ceil(currentReplicas × currentMetricValue / targetMetricValue)
+
+Example: 4 pods at 90% average CPU, target 60%
+         ceil(4 × 90 / 60) = ceil(6) = 6 pods
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">autoscaling/v2</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">HorizontalPodAutoscaler</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">api</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">scaleTargetRef</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">apps/v1</span>
+<span class="w">    </span><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Deployment</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">api</span>
+<span class="w">  </span><span class="nt">minReplicas</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<span class="w">  </span><span class="nt">maxReplicas</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span>
+<span class="w">  </span><span class="nt">metrics</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Resource</span>
+<span class="w">      </span><span class="nt">resource</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cpu</span>
+<span class="w">        </span><span class="nt">target</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Utilization</span>
+<span class="w">          </span><span class="nt">averageUtilization</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">60</span><span class="w">   </span><span class="c1"># percent of each pod's CPU request</span>
+<span class="w">  </span><span class="nt">behavior</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">scaleDown</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">stabilizationWindowSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">300</span><span class="w">  </span><span class="c1"># the default, shown explicitly</span>
+</code></pre></div>
+<p>Details that decide how the HPA behaves:</p>
+<ul>
+<li><strong>Tolerance.</strong> If <code>currentMetric / desiredMetric</code> is within 0.1 of 1.0
+  (10%, the default), the HPA does nothing. 63% CPU against a 60% target
+  is a ratio of 1.05, so no pods are added.</li>
+<li><strong>Default behaviour.</strong> Scale-down waits a 300-second stabilization
+  window and uses the highest recommendation in that window. Scale-up has
+  no window: it acts at once, adding at most 4 pods or 100% of the current
+  replicas (whichever is more) every 15 seconds.</li>
+<li><strong>Resource requests.</strong> CPU utilization is measured against each
+  container's CPU <strong>request</strong>. If a pod's containers have no request set,
+  utilization is undefined and the HPA takes no action for that metric.</li>
+<li><strong>Metrics sources.</strong> CPU and memory come from the <code>metrics.k8s.io</code> API,
+  usually provided by Metrics Server, which is installed separately.
+  Custom and external metrics (requests per second, queue length) need an
+  adapter for <code>custom.metrics.k8s.io</code> or <code>external.metrics.k8s.io</code>.</li>
+</ul>
+<h3 id="graceful-shutdown">Graceful shutdown<a class="headerlink" href="#graceful-shutdown" title="Permanent link">&para;</a></h3>
+<p>When an instance is removed, it should finish in-flight work instead of
+dropping it:</p>
+<div class="highlight"><pre><span></span><code>1. Orchestrator sends SIGTERM. At the same time it starts removing the
+   instance from load balancing, which takes a moment to reach every proxy
+2. Instance fails its readiness check but keeps serving for a short drain
+   delay (a few seconds), so late-routed requests are not refused
+3. Instance stops accepting new connections and closes idle keep-alive ones
+4. In-flight requests finish (with a time limit)
+5. Close database pools, flush logs, release locks
+6. Exit; the orchestrator force-kills after its grace period
+   (Kubernetes default: 30 seconds)
+</code></pre></div>
+<h3 id="readiness-liveness-and-warm-up">Readiness, liveness, and warm-up<a class="headerlink" href="#readiness-liveness-and-warm-up" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Readiness check:</strong> "Can this instance take traffic now?" It fails
+  while starting up (connecting to the database, loading config) and while
+  shutting down. Load balancers and Kubernetes route only to ready
+  instances.</li>
+<li><strong>Liveness check:</strong> "Is this instance stuck and in need of a restart?"
+  Keep it simple; it should not depend on the database, or a database
+  outage will restart every instance.</li>
+<li><strong>Warm-up:</strong> new instances may be slow at first (cold connection pools,
+  empty local caches, just-in-time compilation). Some load balancers can
+  ramp traffic to new targets gradually ("slow start").</li>
+</ul>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Make web and API tiers stateless almost always.</strong> It is what lets
+  you deploy, scale, and replace instances without logging users out.</li>
+<li><strong>Keep state where it belongs:</strong> databases, caches, queues, and object
+  storage are the stateful parts. Scale them with replication and
+  partitioning, not with a CPU-based autoscaler.</li>
+<li><strong>Autoscale when load varies</strong> (daily cycles, campaigns, batch
+  backlogs) and new instances start in seconds to a few minutes.</li>
+<li><strong>Prefer scheduled or predictive capacity</strong> when start-up is slow or
+  peaks are predictable, and keep a reactive policy for surprises.</li>
+<li><strong>Do not autoscale</strong> a service whose real limit is downstream (a
+  saturated database, a rate-limited third-party API): more instances
+  just add pressure there.</li>
+<li><strong>Fixed capacity is fine</strong> for small, steady internal services, where
+  two instances for availability are all you need.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Approach</th>
+<th>Use when</th>
+<th>Avoid when</th>
+<th>Scaling impact</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sticky sessions</td>
+<td>A legacy app keeps sessions in memory and cannot change yet; a protocol needs several requests to reach one instance</td>
+<td>You need even load, fast scale-in, or painless deploys</td>
+<td>New instances only get new clients; losing an instance loses its users' sessions</td>
+</tr>
+<tr>
+<td>Shared session store (Redis, database)</td>
+<td>Server-side sessions (revocable logins, carts) across many instances</td>
+<td>Adding one more stateful dependency is not justified for a tiny app</td>
+<td>Any instance serves any request; the store must be highly available</td>
+</tr>
+<tr>
+<td>Signed tokens (JWT, signed cookies)</td>
+<td>Short-lived, read-mostly identity data; many services verify the user</td>
+<td>You need instant revocation or large session data</td>
+<td>No shared lookup per request; revocation needs short expiry or a deny-list</td>
+</tr>
+</tbody>
+</table>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="moving-express-sessions-into-redis">Moving Express sessions into Redis<a class="headerlink" href="#moving-express-sessions-into-redis" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="nx">express</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"express"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="nx">session</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"express-session"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">RedisStore</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"connect-redis"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">createClient</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"redis"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">redisClient</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">createClient</span><span class="p">({</span><span class="w"> </span><span class="nx">url</span><span class="o">:</span><span class="w"> </span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">REDIS_URL</span><span class="w"> </span><span class="p">});</span>
+<span class="nx">redisClient</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">"error"</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nx">err</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="s2">"Redis client error"</span><span class="p">,</span><span class="w"> </span><span class="nx">err</span><span class="p">));</span><span class="w"> </span><span class="c1">// without a listener, an error crashes the process</span>
+<span class="k">await</span><span class="w"> </span><span class="nx">redisClient</span><span class="p">.</span><span class="nx">connect</span><span class="p">();</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">app</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">express</span><span class="p">();</span>
+<span class="nx">app</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s2">"trust proxy"</span><span class="p">,</span><span class="w"> </span><span class="mf">1</span><span class="p">);</span><span class="w"> </span><span class="c1">// behind a load balancer that terminates HTTPS</span>
+
+<span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">session</span><span class="p">({</span>
+<span class="w">  </span><span class="nx">store</span><span class="o">:</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">RedisStore</span><span class="p">({</span><span class="w"> </span><span class="nx">client</span><span class="o">:</span><span class="w"> </span><span class="nx">redisClient</span><span class="p">,</span><span class="w"> </span><span class="nx">prefix</span><span class="o">:</span><span class="w"> </span><span class="s2">"sess:"</span><span class="w"> </span><span class="p">}),</span>
+<span class="w">  </span><span class="nx">secret</span><span class="o">:</span><span class="w"> </span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">SESSION_SECRET</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">resave</span><span class="o">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">saveUninitialized</span><span class="o">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">cookie</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">httpOnly</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="nx">secure</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="nx">sameSite</span><span class="o">:</span><span class="w"> </span><span class="s2">"lax"</span><span class="p">,</span><span class="w"> </span><span class="nx">maxAge</span><span class="o">:</span><span class="w"> </span><span class="mf">8</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">60</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">60</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">1000</span><span class="w"> </span><span class="p">},</span>
+<span class="p">}));</span>
+</code></pre></div>
+<p>Any instance can now read any user's session, so sticky sessions are no
+longer needed. The import style above matches recent <code>connect-redis</code>
+versions; older versions export the store differently, so check the
+package documentation for the version you install.</p>
+<h3 id="health-endpoints-and-graceful-shutdown-in-nodejs">Health endpoints and graceful shutdown in Node.js<a class="headerlink" href="#health-endpoints-and-graceful-shutdown-in-nodejs" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="nx">express</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"express"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">app</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">express</span><span class="p">();</span>
+<span class="kd">let</span><span class="w"> </span><span class="nx">shuttingDown</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span>
+
+<span class="nx">app</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">"/health/live"</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nx">req</span><span class="p">,</span><span class="w"> </span><span class="nx">res</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">res</span><span class="p">.</span><span class="nx">sendStatus</span><span class="p">(</span><span class="mf">200</span><span class="p">));</span><span class="w">     </span><span class="c1">// process is running</span>
+<span class="nx">app</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">"/health/ready"</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nx">req</span><span class="p">,</span><span class="w"> </span><span class="nx">res</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">res</span><span class="p">.</span><span class="nx">sendStatus</span><span class="p">(</span><span class="nx">shuttingDown</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mf">503</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mf">200</span><span class="p">);</span><span class="w">                     </span><span class="c1">// stop new traffic during shutdown</span>
+<span class="p">});</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">server</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">app</span><span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">PORT</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="mf">3000</span><span class="p">);</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">DRAIN_DELAY_MS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">5</span><span class="nx">_000</span><span class="p">;</span><span class="w"> </span><span class="c1">// time for load balancers to stop routing here</span>
+
+<span class="nx">process</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">"SIGTERM"</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">shuttingDown</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w">                          </span><span class="c1">// readiness now returns 503</span>
+<span class="w">  </span><span class="nx">setTimeout</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">                            </span><span class="c1">// keep serving while routing updates spread</span>
+<span class="w">    </span><span class="nx">server</span><span class="p">.</span><span class="nx">close</span><span class="p">(</span><span class="k">async</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">                  </span><span class="c1">// stop accepting; wait for in-flight requests</span>
+<span class="w">      </span><span class="k">await</span><span class="w"> </span><span class="nx">db</span><span class="p">.</span><span class="nx">close</span><span class="p">();</span><span class="w">                         </span><span class="c1">// release connections</span>
+<span class="w">      </span><span class="nx">process</span><span class="p">.</span><span class="nx">exit</span><span class="p">(</span><span class="mf">0</span><span class="p">);</span>
+<span class="w">    </span><span class="p">});</span>
+<span class="w">    </span><span class="nx">server</span><span class="p">.</span><span class="nx">closeIdleConnections</span><span class="p">();</span><span class="w">              </span><span class="c1">// drop idle keep-alive sockets so close() can finish</span>
+<span class="w">  </span><span class="p">},</span><span class="w"> </span><span class="nx">DRAIN_DELAY_MS</span><span class="p">);</span>
+<span class="w">  </span><span class="nx">setTimeout</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">process</span><span class="p">.</span><span class="nx">exit</span><span class="p">(</span><span class="mf">1</span><span class="p">),</span><span class="w"> </span><span class="mf">25</span><span class="nx">_000</span><span class="p">).</span><span class="nx">unref</span><span class="p">();</span><span class="w"> </span><span class="c1">// hard stop before the grace period ends</span>
+<span class="p">});</span>
+</code></pre></div>
+<p>Here <code>db</code> stands for your database client or pool. The order matters:</p>
+<ol>
+<li>Readiness flips to 503 at once, but the server keeps accepting
+   requests for <code>DRAIN_DELAY_MS</code>. Load balancers take a moment to notice,
+   and closing the port immediately would refuse the requests they still
+   send.</li>
+<li><code>server.close()</code> then stops new connections and waits for in-flight
+   requests. Since Node.js 19 it also closes idle keep-alive connections
+   itself; the explicit <code>closeIdleConnections()</code> (added in 18.2) covers
+   Node 18.</li>
+<li>The 25-second timer is a safety net inside Kubernetes' default
+   30-second grace period, after which the process is killed anyway.</li>
+</ol>
+<p>In Kubernetes you can put the drain delay in a <code>preStop</code> hook instead; it
+runs before the container gets SIGTERM and counts against the same grace
+period. See <a href="../../../03-backend-development/express/production-and-performance/">running Express in production</a>
+for keep-alive connections and timeouts during shutdown.</p>
+<h3 id="scaling-workers-by-queue-backlog">Scaling workers by queue backlog<a class="headerlink" href="#scaling-workers-by-queue-backlog" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>Target: 100 waiting messages per worker
+Backlog: 2,400 messages  -&gt;  2,400 / 100 = 24 workers (capped at max 30)
+Backlog: 150 messages    -&gt;  2 workers (min)
+</code></pre></div>
+<p>Backlog per worker reacts to the actual amount of pending work, unlike
+CPU, which may stay low while workers wait on slow downstream APIs.</p>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Keep application instances stateless; move sessions, files, and jobs to
+  shared services.</li>
+<li>Avoid relying on sticky sessions for correctness.</li>
+<li>Choose a scaling metric that reflects real load for that service (queue
+  backlog for workers, requests or CPU for APIs).</li>
+<li>Set minimums for availability and maximums to protect cost and
+  downstream systems.</li>
+<li>Scale out quickly and in slowly, with cooldowns or stabilization
+  windows.</li>
+<li>Implement readiness checks, liveness checks, and graceful shutdown.</li>
+<li>Load-test scaling behavior: how long does it take for new capacity to
+  help?</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<p><strong>Users are logged out after a deploy or a scale-in</strong></p>
+<ul>
+<li><em>Symptom:</em> bursts of 401 responses or "please sign in again" right
+  after instances are replaced or removed.</li>
+<li><em>Detect:</em> overlay 401 counts on deploy and scaling events; log when a
+  request carries a session cookie that the server cannot find.</li>
+<li><em>Cause:</em> sessions live in process memory (the <code>express-session</code>
+  default MemoryStore), or sticky sessions pin users to instances that
+  were just removed.</li>
+<li><em>Fix:</em> move sessions to a shared store (Redis) or signed tokens, then
+  drop the dependency on stickiness.</li>
+</ul>
+<p><strong>502 or connection-refused errors during every rollout</strong></p>
+<ul>
+<li><em>Symptom:</em> a short spike of 502/503 at the load balancer each time pods
+  or instances are stopped.</li>
+<li><em>Detect:</em> load-balancer 5xx metrics (for ALB,
+  <code>HTTPCode_ELB_5XX_Count</code> and <code>HTTPCode_Target_5XX_Count</code>) lining up
+  with termination events.</li>
+<li><em>Cause:</em> the app closes its port on SIGTERM before the load balancer has
+  stopped routing to it; or the app closes idle keep-alive connections
+  sooner than the load balancer does, so it reuses a socket the app just
+  closed.</li>
+<li><em>Fix:</em> fail readiness, wait a drain delay, then close (the
+  <a href="#health-endpoints-and-graceful-shutdown-in-nodejs">example above</a>).
+  Set the app's keep-alive timeout above the load balancer's idle timeout,
+  as AWS recommends (ALB default: 60 seconds; Node's
+  <code>server.keepAliveTimeout</code> is documented as 5 seconds by default).</li>
+</ul>
+<p><strong>Replica count flaps up and down</strong></p>
+<ul>
+<li><em>Symptom:</em> instances are added and removed every few minutes; cold
+  caches and connection churn make latency worse.</li>
+<li><em>Detect:</em> a sawtooth in the replica graph; frequent scaling events in
+  <code>kubectl describe hpa</code> or the cloud's activity history.</li>
+<li><em>Cause:</em> a noisy metric, a target set too tightly, or a scale-down
+  window shortened far below the default.</li>
+<li><em>Fix:</em> keep or lengthen the scale-down stabilization window, add
+  scale-down policies (for example "at most 10% per minute"), and pick a
+  steadier metric.</li>
+</ul>
+<p><strong>Latency climbs but the autoscaler does nothing</strong></p>
+<ul>
+<li><em>Symptom:</em> p95 latency and queue time rise while the replica count stays
+  flat.</li>
+<li><em>Detect:</em> <code>kubectl get hpa</code> shows CPU far below target, or
+  <code>kubectl describe hpa</code> reports that it cannot compute the metric.</li>
+<li><em>Cause:</em> an I/O-bound Node.js service waits on the database, so CPU stays
+  low; or containers have no CPU request, so utilization cannot be
+  computed.</li>
+<li><em>Fix:</em> set resource requests; scale on requests per pod, concurrency, or
+  backlog through a metrics adapter or KEDA; check whether the real
+  bottleneck is downstream.</li>
+</ul>
+<p><strong>Scale-out takes the database down</strong></p>
+<ul>
+<li><em>Symptom:</em> during a spike, new instances fail to start or requests fail
+  with "too many connections" (PostgreSQL error <code>53300</code>,
+  <code>too_many_connections</code>).</li>
+<li><em>Detect:</em> database connection count at its limit while the replica count
+  rises.</li>
+<li><em>Cause:</em> every instance opens its own pool. 20 replicas × a pool of 20
+  is 400 connections, against PostgreSQL's typical default
+  <code>max_connections</code> of 100.</li>
+<li><em>Fix:</em> cap <code>maxReplicas</code> from the database budget, shrink pools, or put a
+  connection pooler (PgBouncer, RDS Proxy) in front; see
+  <a href="../database-scaling/">database scaling</a>.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Stateless service:</strong> A service that keeps no per-client data between
+  requests in its instances.</li>
+<li><strong>Sticky session (session affinity):</strong> Routing a client's requests to
+  the same instance.</li>
+<li><strong>Autoscaling:</strong> Automatically changing the number of instances based on
+  metrics or schedules.</li>
+<li><strong>Target tracking:</strong> A policy that keeps a metric near a target value.</li>
+<li><strong>Cooldown / stabilization window:</strong> A delay that prevents rapid,
+  repeated scaling actions.</li>
+<li><strong>Scale-in protection:</strong> Preventing specific instances from being
+  removed.</li>
+<li><strong>Readiness / liveness probe:</strong> Checks for "can receive traffic" and
+  "needs restarting".</li>
+<li><strong>Graceful shutdown:</strong> Finishing in-flight work before an instance
+  exits.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Using in-memory sessions and wondering why users are logged out after
+  scaling or deploys.</li>
+<li>Running cron jobs inside every instance, so they execute many times.</li>
+<li>Scaling an I/O-bound Node.js API on CPU, which stays low while latency
+  climbs.</li>
+<li>Setting no maximum, so a traffic spike scales the app until the database
+  collapses.</li>
+<li>Liveness checks that query the database, causing mass restarts during a
+  database outage.</li>
+<li>Exiting immediately on <code>SIGTERM</code> and dropping in-flight requests.</li>
+<li>Assuming autoscaling reacts instantly; new instances take minutes to
+  start and warm up.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>What does "stateless" mean for a service, and where does the state go?</li>
+<li>What are the drawbacks of sticky sessions?</li>
+<li>Which autoscaling signal would you use for a queue worker, and why?</li>
+<li>Calculate the HPA's desired replicas for 5 pods at 80% CPU with a 50%
+   target.</li>
+<li>Why should scale-in be slower than scale-out?</li>
+<li>What is the difference between readiness and liveness checks?</li>
+<li>Why does the shutdown example wait a few seconds before calling
+   <code>server.close()</code>, and what happens if it closes immediately?</li>
+<li>The HPA target is 60% CPU and pods average 64%. Does it scale? Why?</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://kubernetes.io/docs/concepts/workloads/autoscaling/horizontal-pod-autoscale/">Kubernetes: Horizontal Pod Autoscaling</a></li>
+<li><a href="https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination">Kubernetes: Pod termination</a></li>
+<li><a href="https://docs.aws.amazon.com/elasticloadbalancing/latest/application/edit-target-group-attributes.html">AWS: Application Load Balancer target group attributes</a></li>
+<li><a href="https://netflixtechblog.com/scryer-netflixs-predictive-auto-scaling-engine-a3f8fc922270">Netflix: Scryer, predictive auto scaling</a></li>
+<li><a href="https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/">Kubernetes: Liveness, readiness, and startup probes</a></li>
+<li><a href="https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-scaling-target-tracking.html">Amazon EC2 Auto Scaling: Target tracking scaling policies</a></li>
+<li><a href="https://12factor.net/processes">The Twelve-Factor App: Processes</a></li>
+<li>Related: <a href="../scalability-fundamentals/">scalability fundamentals</a>,
+  <a href="../../../06-servers-and-infrastructure/load-balancing/">load balancing</a>,
+  <a href="../../../07-devops-and-deployment/docker/">Docker</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../scalability-fundamentals/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Scalability Fundamentals">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Scalability Fundamentals</span>
+      </a>
+    
+    
+      <a href="../database-scaling/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: Database Scaling">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">Database Scaling</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

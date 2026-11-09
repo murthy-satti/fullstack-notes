@@ -1,0 +1,3027 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../rate-limiting-and-throttling/">
+      
+      
+        <link rel="next" href="../concurrency-and-race-conditions/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Timeouts, Retries, and Idempotency - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#timeouts-retries-and-idempotency" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Timeouts, Retries, and Idempotency
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../05-application-architecture/" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-ai-and-machine-learning/" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../06-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-devops-and-deployment/" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../08-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to Backend Development">
+          <span class="md-ellipsis">&larr; Back to Backend</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to Backend Development">
+                  <span class="md-ellipsis">&larr; Back to Backend</span>
+                </a>
+              
+            </div>
+          
+          
+            <label class="md-nav__title" for="__nav_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Backend Development
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_4" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Important Backend Concepts
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_4_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Important Backend Concepts
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../backend-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../client-server-and-request-lifecycle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Client-Server Model and Request Lifecycle
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../http-methods/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP in Depth
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../rest-apis/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Design
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../authentication-and-authorization/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_4_7" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_4_4_7" id="__nav_4_4_7_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reliability
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_4_7_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_4_4_7">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Reliability
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../error-handling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error Handling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../logging-and-monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging, Monitoring, and Tracing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rate-limiting-and-throttling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rate Limiting and Throttling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Timeouts, Retries, and Idempotency
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Timeouts, Retries, and Idempotency
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-calls-between-services-fail" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why calls between services fail
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#timeouts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timeouts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#which-failures-to-retry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Which failures to retry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exponential-backoff-with-jitter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exponential backoff with jitter
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#retry-storms-and-retry-budgets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Retry storms and retry budgets
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#idempotency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Idempotency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#idempotency-keys-for-post" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Idempotency keys for POST
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#circuit-breaker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Circuit breaker
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bulkheads" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bulkheads
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fallbacks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fallbacks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#at-least-once-delivery-and-deduplication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        At-least-once delivery and deduplication
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fetch-with-a-timeout-and-retries-with-full-jitter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fetch with a timeout and retries with full jitter
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#calling-a-payment-api-with-an-idempotency-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Calling a payment API with an idempotency key
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#server-side-idempotency-middleware-simplified" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Server-side idempotency middleware (simplified)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concurrency-and-race-conditions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concurrency and Race Conditions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../background-jobs-and-scheduling/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Patterns
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../05-application-architecture/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-ai-and-machine-learning/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI and Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../06-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-devops-and-deployment/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DevOps and Deployment
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../08-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-calls-between-services-fail" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why calls between services fail
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#timeouts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timeouts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#which-failures-to-retry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Which failures to retry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exponential-backoff-with-jitter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exponential backoff with jitter
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#retry-storms-and-retry-budgets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Retry storms and retry budgets
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#idempotency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Idempotency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#idempotency-keys-for-post" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Idempotency keys for POST
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#circuit-breaker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Circuit breaker
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bulkheads" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bulkheads
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fallbacks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fallbacks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#at-least-once-delivery-and-deduplication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        At-least-once delivery and deduplication
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fetch-with-a-timeout-and-retries-with-full-jitter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fetch with a timeout and retries with full jitter
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#calling-a-payment-api-with-an-idempotency-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Calling a payment API with an idempotency key
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#server-side-idempotency-middleware-simplified" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Server-side idempotency middleware (simplified)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="timeouts-retries-and-idempotency">Timeouts, Retries, and Idempotency<a class="headerlink" href="#timeouts-retries-and-idempotency" title="Permanent link">&para;</a></h1>
+<p>Every call a backend makes to another system — a database, a payment
+provider, another microservice — can be slow, fail, or fail halfway.
+Timeouts bound how long you wait, retries give transient failures a second
+chance, and idempotency makes it safe to repeat an operation without doing it
+twice. These three ideas, plus circuit breakers and bulkheads, are the core
+toolkit for building reliable distributed systems.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>Consider a checkout request that calls a payment API. The call times out.
+Did the card get charged? You do not know: the request may have been lost on
+the way, or the charge succeeded and the response was lost on the way back.</p>
+<ul>
+<li>If you <strong>do not retry</strong>, a temporary network glitch fails a customer's
+  order.</li>
+<li>If you <strong>retry blindly</strong>, you may charge the customer twice.</li>
+<li>If you <strong>never time out</strong>, one slow dependency ties up your server's
+  connections and threads until the whole service stops responding.</li>
+</ul>
+<p>Getting this right is the difference between a system that rides out
+everyday failures and one where every small outage cascades.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Stripe's <code>Idempotency-Key</code> header.</strong> Clients send a unique key (Stripe
+  suggests V4 UUIDs, up to 255 characters) so retries of a request are
+  recognized. Stripe compares the parameters of a repeated request with the
+  original and returns an error if they differ, and may prune keys once they
+  are at least 24 hours old
+  (<a href="https://docs.stripe.com/api/idempotent_requests">Stripe API: idempotent requests</a>).</li>
+<li><strong>The IETF Idempotency-Key draft</strong> standardizes the header: a retry that
+  arrives while the original is still processing should get <code>409</code>, and
+  reusing a key with a different payload should get <code>422</code>
+  (<a href="https://datatracker.ietf.org/doc/draft-ietf-httpapi-idempotency-key-header/">IETF draft: The Idempotency-Key HTTP header field</a>).</li>
+<li><strong>AWS SDKs.</strong> In standard retry mode the SDKs retry with exponential
+  backoff and jitter and keep a "retry quota" — a token bucket that stops
+  retries when too many requests are failing, which is a retry budget
+  (<a href="https://docs.aws.amazon.com/sdkref/latest/guide/feature-retry-behavior.html">AWS SDKs and Tools: retry behavior</a>).
+  Amazon explains the reasoning in
+  <a href="https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/">Timeouts, retries, and backoff with jitter</a>.</li>
+<li><strong>Circuit breakers at Netflix.</strong> Netflix's Hystrix library was built to
+  isolate calls to remote systems and stop cascading failures. It is now in
+  maintenance mode, and Netflix says it uses projects such as resilience4j
+  for new internal work
+  (<a href="https://github.com/Netflix/Hystrix">Netflix Hystrix on GitHub</a>).</li>
+</ul>
+<p><strong>Popular tools:</strong> resilience4j (Java), Polly (.NET), <code>opossum</code> and
+<code>cockatiel</code> (Node.js circuit breakers and retry policies), and service meshes
+such as Envoy and Istio, which add retries, timeouts, and outlier detection
+outside the application code.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="why-calls-between-services-fail">Why calls between services fail<a class="headerlink" href="#why-calls-between-services-fail" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Network problems: packet loss, connection resets, DNS failures.</li>
+<li>The remote service is overloaded, restarting, or being deployed.</li>
+<li>Rate limits (<code>429</code>).</li>
+<li>Slow queries or garbage collection pauses causing timeouts.</li>
+<li>Bugs and bad data causing errors.</li>
+</ul>
+<p>A remote call has <strong>three</strong> possible outcomes, not two: success, failure,
+and <strong>unknown</strong> (timeout or lost response). Reliable designs handle the
+unknown case explicitly.</p>
+<h3 id="timeouts">Timeouts<a class="headerlink" href="#timeouts" title="Permanent link">&para;</a></h3>
+<p>A timeout is the maximum time you are willing to wait. Without one, a
+request can hang indefinitely while holding resources (a socket, memory, a
+database connection, a user waiting).</p>
+<table>
+<thead>
+<tr>
+<th>Timeout type</th>
+<th>What it bounds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Connect timeout</td>
+<td>Establishing the TCP (and TLS) connection</td>
+</tr>
+<tr>
+<td>Read / response timeout</td>
+<td>Waiting for data after the request is sent</td>
+</tr>
+<tr>
+<td>Idle timeout</td>
+<td>Time with no activity on an open connection</td>
+</tr>
+<tr>
+<td>Total (deadline) timeout</td>
+<td>The whole operation, including retries</td>
+</tr>
+</tbody>
+</table>
+<p>Guidelines:</p>
+<ul>
+<li><strong>Always set timeouts</strong> on outbound HTTP calls, database queries, and
+  queue operations. Many clients default to no timeout or a very long one.</li>
+<li>Base values on the dependency's normal latency (for example, a little
+  above its p99), not on a guess like 30 seconds.</li>
+<li><strong>Propagate deadlines:</strong> if the incoming request must finish within 2
+  seconds, downstream calls should not each be allowed 5 seconds. Pass the
+  remaining time budget along.</li>
+<li>A timeout means "outcome unknown," not "operation failed." The remote side
+  may still complete the work.</li>
+</ul>
+<p>In Node.js, the built-in <code>fetch</code> supports cancellation through an
+<code>AbortSignal</code>; <code>AbortSignal.timeout(ms)</code> creates one that aborts
+automatically.</p>
+<h3 id="which-failures-to-retry">Which failures to retry<a class="headerlink" href="#which-failures-to-retry" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Retry</th>
+<th>Do not retry</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Network errors (connection reset, refused, DNS temporary failure)</td>
+<td><code>400 Bad Request</code>, <code>422</code> — the request is wrong</td>
+</tr>
+<tr>
+<td>Timeouts (if the operation is idempotent)</td>
+<td><code>401</code>, <code>403</code> — credentials or permissions will not change</td>
+</tr>
+<tr>
+<td><code>502 Bad Gateway</code>, <code>503 Service Unavailable</code>, <code>504 Gateway Timeout</code></td>
+<td><code>404 Not Found</code>, <code>409 Conflict</code> (usually)</td>
+</tr>
+<tr>
+<td><code>429 Too Many Requests</code> — after the <code>Retry-After</code> delay</td>
+<td><code>501 Not Implemented</code></td>
+</tr>
+<tr>
+<td>Database deadlocks and serialization failures</td>
+<td>Errors caused by bugs in your own code</td>
+</tr>
+</tbody>
+</table>
+<p><code>500</code> is ambiguous: retry at most once or twice, because it often indicates a
+bug that will repeat.</p>
+<p><strong>Only retry operations that are safe to repeat</strong> — idempotent ones, or ones
+protected by an idempotency key (see below).</p>
+<h3 id="exponential-backoff-with-jitter">Exponential backoff with jitter<a class="headerlink" href="#exponential-backoff-with-jitter" title="Permanent link">&para;</a></h3>
+<p>Retrying immediately, at fixed intervals, hammers a struggling service at
+exactly the moment it needs relief. <strong>Exponential backoff</strong> increases the
+delay after each attempt:</p>
+<div class="highlight"><pre><span></span><code>delay = min(maxDelay, baseDelay × 2^attempt)
+
+base = 100 ms → 100, 200, 400, 800, 1600 ms ... capped at maxDelay
+</code></pre></div>
+<p>If thousands of clients failed at the same moment, they would all retry at
+the same moments too, creating synchronized waves. <strong>Jitter</strong> adds
+randomness to spread them out. A common choice is "full jitter":</p>
+<div class="highlight"><pre><span></span><code>delay = random(0, min(maxDelay, baseDelay × 2^attempt))
+</code></pre></div>
+<p>Also limit the <strong>number of attempts</strong> (for example, 3–5) and the <strong>total
+time</strong>.</p>
+<p><img alt="Timeline of four attempts with full jitter: after each failure the client sleeps a random time up to 100, 200, then 400 ms before the fourth attempt succeeds; below, a flowchart retries only retryable failures while attempts remain, otherwise returning the error or giving up." src="../retry-backoff-jitter.svg" /></p>
+<h3 id="retry-storms-and-retry-budgets">Retry storms and retry budgets<a class="headerlink" href="#retry-storms-and-retry-budgets" title="Permanent link">&para;</a></h3>
+<p>Retries multiply load. If each of three layers retries 3 times, one failing
+request at the bottom can become 3 × 3 × 3 = 27 attempts. During an outage,
+retries can keep a recovering service down.</p>
+<p>Defenses:</p>
+<ul>
+<li>Retry at <strong>one layer</strong> only (usually closest to the failure, or at the
+  edge), not at every layer.</li>
+<li>Use a <strong>retry budget</strong>: allow retries only while they are a small fraction
+  (for example, 10%) of total requests.</li>
+<li>Combine retries with a <strong>circuit breaker</strong> that stops calling a dependency
+  that is clearly down.</li>
+<li>Honor <code>Retry-After</code> from the server.</li>
+</ul>
+<h3 id="idempotency">Idempotency<a class="headerlink" href="#idempotency" title="Permanent link">&para;</a></h3>
+<p>An operation is <strong>idempotent</strong> if doing it once or many times has the same
+effect on the server's state.</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Safe (no state change)</th>
+<th>Idempotent</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET</code>, <code>HEAD</code>, <code>OPTIONS</code></td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>PUT</code> (replace resource with this)</td>
+<td>No</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td>No</td>
+<td>Yes (second delete changes nothing; may return <code>404</code>)</td>
+</tr>
+<tr>
+<td><code>POST</code> (create, charge, send)</td>
+<td>No</td>
+<td><strong>No</strong></td>
+</tr>
+<tr>
+<td><code>PATCH</code></td>
+<td>No</td>
+<td>Depends on the patch (<code>set x = 5</code> yes, <code>x += 1</code> no)</td>
+</tr>
+</tbody>
+</table>
+<p>See <a href="../http-methods/">HTTP methods</a>. Idempotency is about the <strong>effect</strong>, not
+the response: a repeated <code>DELETE</code> may return <code>404</code> instead of <code>204</code>, and
+that is fine.</p>
+<h3 id="idempotency-keys-for-post">Idempotency keys for POST<a class="headerlink" href="#idempotency-keys-for-post" title="Permanent link">&para;</a></h3>
+<p>To make a non-idempotent operation safe to retry, the client generates a
+unique key (such as a UUID) for each <strong>logical operation</strong> and sends it with
+every attempt, commonly in an <code>Idempotency-Key</code> header (used by Stripe and
+others, and described in an IETF draft).</p>
+<div class="highlight"><pre><span></span><code>POST /payments
+Idempotency-Key: 6f1d4a2e-9b3c-4f8e-a1d7-2c5e8b0f9a13
+{ "orderId": "812", "amount": 4999 }
+</code></pre></div>
+<p>Server behavior:</p>
+<ol>
+<li>Look up the key (scoped to the client or account).</li>
+<li><strong>Not seen before:</strong> record the key as "in progress," perform the
+   operation, store the response (status and body) with the key, return it.</li>
+<li><strong>Seen and completed:</strong> return the stored response without performing the
+   operation again.</li>
+<li><strong>Seen and still in progress</strong> (a concurrent duplicate): return <code>409
+   Conflict</code> (or wait), so the operation does not run twice in parallel.</li>
+<li><strong>Same key, different request body:</strong> reject with an error
+   (<code>422</code>), because the client is misusing the key.</li>
+<li>Expire keys after a reasonable period (for example, 24 hours).</li>
+</ol>
+<p><img alt="Flowchart: a POST with an Idempotency-Key claims the key atomically; a new key performs the charge once, stores the response, and returns 201; an existing key with a different body gets 422, a finished duplicate gets the stored response with no second charge, and a duplicate still running gets 409 Conflict." src="../idempotency-key-flow.svg" /></p>
+<p>The "record as in progress" step must be <strong>atomic</strong> — for example, an insert
+into a table with a unique constraint on the key, or Redis <code>SET key value NX</code>
+— so two concurrent attempts cannot both start. See
+<a href="../concurrency-and-race-conditions/">concurrency and race conditions</a>.</p>
+<h3 id="circuit-breaker">Circuit breaker<a class="headerlink" href="#circuit-breaker" title="Permanent link">&para;</a></h3>
+<p>A circuit breaker wraps calls to a dependency and stops calling it when it is
+clearly failing, giving it time to recover and making your service fail fast
+instead of waiting on timeouts.</p>
+<p><img alt="Circuit breaker state machine: closed passes calls and counts failures; too many failures open it so calls fail immediately; after a cooldown it becomes half-open and allows trial calls, closing again if they succeed and reopening if one fails." src="../circuit-breaker-states.svg" /></p>
+<ul>
+<li><strong>Closed:</strong> normal operation; failures are counted.</li>
+<li><strong>Open:</strong> after too many failures (for example, 50% of the last 20 calls),
+  calls fail immediately without touching the dependency.</li>
+<li><strong>Half-open:</strong> after a cooldown, a few trial calls are allowed. Success
+  closes the circuit; failure opens it again.</li>
+</ul>
+<h3 id="bulkheads">Bulkheads<a class="headerlink" href="#bulkheads" title="Permanent link">&para;</a></h3>
+<p>Named after ship compartments that stop one leak from sinking the whole
+ship: <strong>isolate resources per dependency</strong> so one slow dependency cannot
+exhaust everything. Examples: a separate connection pool or concurrency limit
+for the reporting database, a maximum number of in-flight calls to the
+recommendations service, separate worker pools for slow and fast jobs.</p>
+<h3 id="fallbacks">Fallbacks<a class="headerlink" href="#fallbacks" title="Permanent link">&para;</a></h3>
+<p>When a call fails or the circuit is open, a <strong>fallback</strong> may still give the
+user something useful: cached data, a default value, a simplified response,
+or a queued request to process later. Fallbacks must be honest — showing
+stale prices is fine for a product list, not for a payment amount.</p>
+<h3 id="at-least-once-delivery-and-deduplication">At-least-once delivery and deduplication<a class="headerlink" href="#at-least-once-delivery-and-deduplication" title="Permanent link">&para;</a></h3>
+<p>Message queues and webhook systems usually guarantee <strong>at-least-once</strong>
+delivery: a message may be delivered more than once (for example, if a
+consumer crashes after processing but before acknowledging). "Exactly once"
+across systems is achieved in practice as <strong>at-least-once delivery plus
+idempotent processing</strong>:</p>
+<ul>
+<li>Give each message or event a unique ID.</li>
+<li>Record processed IDs (with a unique constraint) in the same transaction as
+  the side effect, when possible.</li>
+<li>Skip messages whose IDs were already processed.</li>
+</ul>
+<p>See <a href="../background-jobs-and-scheduling/">background jobs and scheduling</a> and
+<a href="../../../05-application-architecture/message-queues/">message queues</a>.</p>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<p><strong>Always</strong> set timeouts on outbound calls. The other tools depend on the
+operation and the dependency.</p>
+<p><strong>Retry when:</strong></p>
+<ul>
+<li>The failure is transient (network error, 502, 503, 504, 429).</li>
+<li>The operation is idempotent, or protected by an idempotency key.</li>
+<li>There is time left in the caller's deadline.</li>
+</ul>
+<p><strong>Do not retry when:</strong></p>
+<ul>
+<li>The error is a client error (400, 401, 403, 404, 422) or a bug.</li>
+<li>A user is waiting and the retry would push past an acceptable response
+  time — fail fast and let the client decide.</li>
+<li>Another layer (a client SDK, a service mesh) already retries the same call.</li>
+</ul>
+<p><strong>Add a circuit breaker when</strong> a dependency is called often and can fail for
+minutes at a time. It adds little for rarely called dependencies, because
+there is not enough traffic to judge their health.</p>
+<table>
+<thead>
+<tr>
+<th>Situation</th>
+<th>Tool</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Any network call</td>
+<td>Timeout (per attempt plus an overall deadline)</td>
+</tr>
+<tr>
+<td>Occasional network blips on a <code>GET</code></td>
+<td>Retries with backoff and jitter</td>
+</tr>
+<tr>
+<td>Charging a card or sending a message</td>
+<td>Idempotency key, then retries</td>
+</tr>
+<tr>
+<td>A dependency is down for minutes</td>
+<td>Circuit breaker plus a fallback</td>
+</tr>
+<tr>
+<td>One slow dependency starves the others</td>
+<td>Bulkhead (separate pool or concurrency limit)</td>
+</tr>
+<tr>
+<td>Queue or webhook consumers</td>
+<td>Deduplicate by message ID</td>
+</tr>
+</tbody>
+</table>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="fetch-with-a-timeout-and-retries-with-full-jitter">fetch with a timeout and retries with full jitter<a class="headerlink" href="#fetch-with-a-timeout-and-retries-with-full-jitter" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kd">const</span><span class="w"> </span><span class="nx">RETRYABLE_STATUS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Set</span><span class="p">([</span><span class="mf">429</span><span class="p">,</span><span class="w"> </span><span class="mf">502</span><span class="p">,</span><span class="w"> </span><span class="mf">503</span><span class="p">,</span><span class="w"> </span><span class="mf">504</span><span class="p">]);</span>
+
+<span class="kd">function</span><span class="w"> </span><span class="nx">sleep</span><span class="p">(</span><span class="nx">ms</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Promise</span><span class="p">((</span><span class="nx">resolve</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">setTimeout</span><span class="p">(</span><span class="nx">resolve</span><span class="p">,</span><span class="w"> </span><span class="nx">ms</span><span class="p">));</span>
+<span class="p">}</span>
+
+<span class="kd">function</span><span class="w"> </span><span class="nx">backoffDelay</span><span class="p">(</span><span class="nx">attempt</span><span class="p">,</span><span class="w"> </span><span class="nx">baseMs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">200</span><span class="p">,</span><span class="w"> </span><span class="nx">maxMs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">5000</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">exponential</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Math</span><span class="p">.</span><span class="nx">min</span><span class="p">(</span><span class="nx">maxMs</span><span class="p">,</span><span class="w"> </span><span class="nx">baseMs</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="o">**</span><span class="w"> </span><span class="nx">attempt</span><span class="p">);</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nb">Math</span><span class="p">.</span><span class="nx">random</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nx">exponential</span><span class="p">;</span><span class="w"> </span><span class="c1">// full jitter</span>
+<span class="p">}</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">fetchWithRetry</span><span class="p">(</span><span class="nx">url</span><span class="p">,</span><span class="w"> </span><span class="nx">options</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="nx">maxAttempts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">4</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">let</span><span class="w"> </span><span class="nx">attempt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0</span><span class="p">;</span><span class="w"> </span><span class="nx">attempt</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="nx">maxAttempts</span><span class="p">;</span><span class="w"> </span><span class="nx">attempt</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mf">1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="kd">const</span><span class="w"> </span><span class="nx">response</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">fetch</span><span class="p">(</span><span class="nx">url</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="p">...</span><span class="nx">options</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">signal</span><span class="o">:</span><span class="w"> </span><span class="nx">AbortSignal</span><span class="p">.</span><span class="nx">timeout</span><span class="p">(</span><span class="mf">2000</span><span class="p">),</span><span class="w"> </span><span class="c1">// per-attempt timeout</span>
+<span class="w">      </span><span class="p">});</span>
+
+<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">RETRYABLE_STATUS</span><span class="p">.</span><span class="nx">has</span><span class="p">(</span><span class="nx">response</span><span class="p">.</span><span class="nx">status</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nx">response</span><span class="p">;</span><span class="w"> </span><span class="c1">// success or a non-retryable error</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">attempt</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="nx">maxAttempts</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nx">response</span><span class="p">;</span><span class="w"> </span><span class="c1">// out of attempts: let the caller handle it</span>
+<span class="w">      </span><span class="p">}</span>
+
+<span class="w">      </span><span class="c1">// Release the connection: Node's fetch needs unread bodies cancelled</span>
+<span class="w">      </span><span class="k">await</span><span class="w"> </span><span class="nx">response</span><span class="p">.</span><span class="nx">body</span><span class="o">?</span><span class="p">.</span><span class="nx">cancel</span><span class="p">();</span>
+
+<span class="w">      </span><span class="c1">// Honor Retry-After (seconds) when the server provides it</span>
+<span class="w">      </span><span class="kd">const</span><span class="w"> </span><span class="nx">retryAfter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Number</span><span class="p">(</span><span class="nx">response</span><span class="p">.</span><span class="nx">headers</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">"retry-after"</span><span class="p">));</span>
+<span class="w">      </span><span class="k">await</span><span class="w"> </span><span class="nx">sleep</span><span class="p">(</span><span class="nx">retryAfter</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">0</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="nx">retryAfter</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">1000</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="nx">backoffDelay</span><span class="p">(</span><span class="nx">attempt</span><span class="p">));</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="nx">error</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="c1">// Network error or timeout (error.name === "TimeoutError")</span>
+<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">attempt</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="nx">maxAttempts</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">1</span><span class="p">)</span><span class="w"> </span><span class="k">throw</span><span class="w"> </span><span class="nx">error</span><span class="p">;</span>
+<span class="w">      </span><span class="k">await</span><span class="w"> </span><span class="nx">sleep</span><span class="p">(</span><span class="nx">backoffDelay</span><span class="p">(</span><span class="nx">attempt</span><span class="p">));</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Use this only for idempotent requests, or send an idempotency key with
+non-idempotent ones.</p>
+<h3 id="calling-a-payment-api-with-an-idempotency-key">Calling a payment API with an idempotency key<a class="headerlink" href="#calling-a-payment-api-with-an-idempotency-key" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">randomUUID</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:crypto"</span><span class="p">;</span>
+
+<span class="c1">// One key per logical operation, reused for every retry of that operation</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">idempotencyKey</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">randomUUID</span><span class="p">();</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">response</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">fetchWithRetry</span><span class="p">(</span><span class="s2">"https://payments.example.com/charges"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">method</span><span class="o">:</span><span class="w"> </span><span class="s2">"POST"</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">headers</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="s2">"content-type"</span><span class="o">:</span><span class="w"> </span><span class="s2">"application/json"</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"idempotency-key"</span><span class="o">:</span><span class="w"> </span><span class="nx">idempotencyKey</span><span class="p">,</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nx">body</span><span class="o">:</span><span class="w"> </span><span class="nb">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">({</span><span class="w"> </span><span class="nx">orderId</span><span class="o">:</span><span class="w"> </span><span class="s2">"812"</span><span class="p">,</span><span class="w"> </span><span class="nx">amount</span><span class="o">:</span><span class="w"> </span><span class="mf">4999</span><span class="w"> </span><span class="p">}),</span>
+<span class="p">});</span>
+</code></pre></div>
+<h3 id="server-side-idempotency-middleware-simplified">Server-side idempotency middleware (simplified)<a class="headerlink" href="#server-side-idempotency-middleware-simplified" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// Assumes a collection with a unique index on { accountId, key }</span>
+<span class="k">export</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">idempotent</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="nx">request</span><span class="p">,</span><span class="w"> </span><span class="nx">response</span><span class="p">,</span><span class="w"> </span><span class="nx">next</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">request</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">"idempotency-key"</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">key</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="nx">next</span><span class="p">();</span><span class="w"> </span><span class="c1">// or require it for this endpoint</span>
+
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">scope</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">accountId</span><span class="o">:</span><span class="w"> </span><span class="nx">request</span><span class="p">.</span><span class="nx">user</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span><span class="w"> </span><span class="nx">key</span><span class="w"> </span><span class="p">};</span>
+<span class="w">    </span><span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="c1">// Atomic claim: fails with a duplicate-key error if the key exists</span>
+<span class="w">      </span><span class="k">await</span><span class="w"> </span><span class="nx">db</span><span class="p">.</span><span class="nx">idempotency</span><span class="p">.</span><span class="nx">insertOne</span><span class="p">({</span><span class="w"> </span><span class="p">...</span><span class="nx">scope</span><span class="p">,</span><span class="w"> </span><span class="nx">status</span><span class="o">:</span><span class="w"> </span><span class="s2">"in_progress"</span><span class="p">,</span><span class="w"> </span><span class="nx">createdAt</span><span class="o">:</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Date</span><span class="p">()</span><span class="w"> </span><span class="p">});</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="nx">error</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">error</span><span class="p">.</span><span class="nx">code</span><span class="w"> </span><span class="o">!==</span><span class="w"> </span><span class="mf">11000</span><span class="p">)</span><span class="w"> </span><span class="k">throw</span><span class="w"> </span><span class="nx">error</span><span class="p">;</span>
+<span class="w">      </span><span class="kd">const</span><span class="w"> </span><span class="nx">existing</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">db</span><span class="p">.</span><span class="nx">idempotency</span><span class="p">.</span><span class="nx">findOne</span><span class="p">(</span><span class="nx">scope</span><span class="p">);</span>
+<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">existing</span><span class="o">?</span><span class="p">.</span><span class="nx">status</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">"completed"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nx">response</span><span class="p">.</span><span class="nx">status</span><span class="p">(</span><span class="nx">existing</span><span class="p">.</span><span class="nx">statusCode</span><span class="p">).</span><span class="nx">json</span><span class="p">(</span><span class="nx">existing</span><span class="p">.</span><span class="nx">body</span><span class="p">);</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="nx">response</span><span class="p">.</span><span class="nx">status</span><span class="p">(</span><span class="mf">409</span><span class="p">).</span><span class="nx">json</span><span class="p">({</span><span class="w"> </span><span class="nx">error</span><span class="o">:</span><span class="w"> </span><span class="s2">"Request already in progress"</span><span class="w"> </span><span class="p">});</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// Capture the response so repeats can replay it</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">originalJson</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">response</span><span class="p">.</span><span class="nx">json</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="nx">response</span><span class="p">);</span>
+<span class="w">    </span><span class="nx">response</span><span class="p">.</span><span class="nx">json</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nx">body</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">db</span><span class="p">.</span><span class="nx">idempotency</span>
+<span class="w">        </span><span class="p">.</span><span class="nx">updateOne</span><span class="p">(</span><span class="nx">scope</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">$set</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">status</span><span class="o">:</span><span class="w"> </span><span class="s2">"completed"</span><span class="p">,</span><span class="w"> </span><span class="nx">statusCode</span><span class="o">:</span><span class="w"> </span><span class="nx">response</span><span class="p">.</span><span class="nx">statusCode</span><span class="p">,</span><span class="w"> </span><span class="nx">body</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">})</span>
+<span class="w">        </span><span class="p">.</span><span class="k">catch</span><span class="p">((</span><span class="nx">error</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">request</span><span class="p">.</span><span class="nx">log</span><span class="p">.</span><span class="nx">error</span><span class="p">({</span><span class="w"> </span><span class="nx">err</span><span class="o">:</span><span class="w"> </span><span class="nx">error</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="s2">"idempotency save failed"</span><span class="p">));</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="nx">originalJson</span><span class="p">(</span><span class="nx">body</span><span class="p">);</span>
+<span class="w">    </span><span class="p">};</span>
+<span class="w">    </span><span class="nx">next</span><span class="p">();</span>
+<span class="w">  </span><span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>A production version also compares a hash of the request body, deletes the
+"in progress" record if the handler fails before responding, and expires old
+keys with a TTL index.</p>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Set explicit timeouts on every outbound call; propagate deadlines.</li>
+<li>Treat timeouts as "unknown outcome," not as definite failure.</li>
+<li>Retry only transient failures and only idempotent (or key-protected)
+  operations.</li>
+<li>Use exponential backoff with jitter, a maximum attempt count, and a total
+  time limit.</li>
+<li>Retry at one layer; use retry budgets to avoid retry storms.</li>
+<li>Honor <code>Retry-After</code>.</li>
+<li>Require idempotency keys for operations that move money or send messages.</li>
+<li>Add circuit breakers and bulkheads around critical dependencies.</li>
+<li>Design consumers of queues and webhooks to deduplicate by message ID.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>A recovering dependency is knocked down again.</strong> <em>Symptom:</em> a service
+  comes back after an outage and immediately falls over. <em>Detect:</em> requests
+  to the dependency run at several times the incoming user traffic, and retry
+  counters spike. <em>Cause:</em> retries at several layers, without jitter or a
+  budget, all firing at once. <em>Fix:</em> retry at one layer, add jitter and a
+  retry budget, and open a circuit breaker while the dependency is down.</li>
+<li><strong>Customers are charged twice.</strong> <em>Symptom:</em> support reports duplicate
+  charges after a period of payment timeouts. <em>Detect:</em> two successful
+  payments for one order ID. <em>Cause:</em> a <code>POST</code> was retried without an
+  idempotency key, or a new key was generated for each attempt. <em>Fix:</em>
+  generate one key per logical operation, store it with the order before the
+  first attempt, and reuse it for every retry.</li>
+<li><strong>Everything slows down because one dependency hangs.</strong> <em>Symptom:</em> latency
+  climbs on all endpoints, not just the ones that call the slow dependency.
+  <em>Detect:</em> many open sockets to one host and connection-pool wait times
+  rising. <em>Cause:</em> no timeout on outbound calls — undici, which powers Node's
+  <code>fetch</code>, waits up to 300 seconds by default for response headers. <em>Fix:</em>
+  set a timeout on every call, and use a bulkhead so one dependency cannot
+  take all connections.</li>
+<li><strong>Work runs twice after the client gives up.</strong> <em>Symptom:</em> duplicate
+  records appear even though the client saw a timeout. <em>Detect:</em> server logs
+  show requests completing after the caller's deadline. <em>Cause:</em> the caller
+  timed out and retried, but the server kept processing the first attempt.
+  <em>Fix:</em> propagate deadlines and cancel downstream work with an <code>AbortSignal</code>,
+  and make the operation idempotent.</li>
+<li><strong>An idempotency key is stuck "in progress".</strong> <em>Symptom:</em> retries of one
+  operation keep getting <code>409</code> long after the first attempt. <em>Detect:</em>
+  idempotency records in <code>in_progress</code> that are older than the longest
+  request. <em>Cause:</em> the process crashed before marking the record completed.
+  <em>Fix:</em> expire in-progress claims after a timeout, and clear the claim when
+  the handler fails before responding.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Timeout:</strong> the maximum time to wait for an operation.</li>
+<li><strong>Deadline:</strong> an absolute time by which the whole operation must finish.</li>
+<li><strong>Transient failure:</strong> a failure likely to succeed on retry.</li>
+<li><strong>Exponential backoff:</strong> increasing delays between retries.</li>
+<li><strong>Jitter:</strong> randomness added to delays to avoid synchronized retries.</li>
+<li><strong>Retry storm:</strong> retries amplifying load during an outage.</li>
+<li><strong>Retry budget:</strong> a cap on retries as a fraction of total traffic.</li>
+<li><strong>Idempotent:</strong> having the same effect whether performed once or many
+  times.</li>
+<li><strong>Idempotency key:</strong> a client-supplied unique key that lets the server
+  recognize repeats of one operation.</li>
+<li><strong>Circuit breaker:</strong> a component that stops calls to a failing dependency.</li>
+<li><strong>Bulkhead:</strong> isolating resources so one failure cannot exhaust them all.</li>
+<li><strong>Fallback:</strong> an alternative response when the primary path fails.</li>
+<li><strong>At-least-once delivery:</strong> a guarantee that messages arrive, possibly more
+  than once.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>No timeouts</strong>, or relying on very long defaults.</li>
+<li><strong>Assuming a timeout means the operation did not happen.</strong></li>
+<li><strong>Retrying <code>POST</code> requests without an idempotency key</strong>, causing duplicate
+  orders or charges.</li>
+<li><strong>Retrying <code>4xx</code> errors</strong> that will never succeed.</li>
+<li><strong>Fixed-interval retries without jitter</strong>, causing thundering herds.</li>
+<li><strong>Retries at every layer</strong>, multiplying load.</li>
+<li><strong>Non-atomic idempotency checks</strong> that let two concurrent duplicates both
+  run.</li>
+<li><strong>"Exactly-once delivery solves it."</strong> In practice, use at-least-once
+  delivery with idempotent processing.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Why are there three possible outcomes of a remote call, and how does that
+   affect retry design?</li>
+<li>Which HTTP status codes are generally retryable, and which are not?</li>
+<li>Write the formula for exponential backoff with full jitter and explain why
+   jitter helps.</li>
+<li>How does an idempotency key make a <code>POST</code> safe to retry? What must the
+   server do with concurrent duplicates?</li>
+<li>Describe the three states of a circuit breaker and the transitions
+   between them.</li>
+<li>Why is "exactly once" usually implemented as at-least-once delivery plus
+   deduplication?</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal/timeout_static">MDN: AbortSignal.timeout()</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc9110#name-idempotent-methods">RFC 9110: HTTP Semantics — idempotent methods</a></li>
+<li><a href="https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/">AWS Builders' Library: Timeouts, retries, and backoff with jitter</a></li>
+<li><a href="https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/">AWS Builders' Library: Making retries safe with idempotent APIs</a></li>
+<li><a href="https://docs.stripe.com/api/idempotent_requests">Stripe API: Idempotent requests</a></li>
+<li>Related notes: <a href="../../../05-application-architecture/scalability/">Scalability</a>,
+  <a href="../error-handling/">Error handling</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../rate-limiting-and-throttling/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Rate Limiting and Throttling">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Rate Limiting and Throttling</span>
+      </a>
+    
+    
+      <a href="../concurrency-and-race-conditions/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: Concurrency and Race Conditions">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">Concurrency and Race Conditions</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

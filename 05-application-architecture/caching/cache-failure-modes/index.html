@@ -1,0 +1,2565 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../eviction-policies/">
+      
+      
+        <link rel="next" href="../http-and-cdn-caching/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Cache Failure Modes - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#cache-failure-modes" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Cache Failure Modes
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-ai-and-machine-learning/" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../06-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-devops-and-deployment/" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../08-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to Application Architecture">
+          <span class="md-ellipsis">&larr; Back to Architecture</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to Application Architecture">
+                  <span class="md-ellipsis">&larr; Back to Architecture</span>
+                </a>
+              
+            </div>
+          
+          
+            <label class="md-nav__title" for="__nav_6">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Application Architecture
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_3" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_6_3" id="__nav_6_3_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Caching
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_3_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_6_3">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Caching
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cache-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cache Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../caching-strategies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Caching Strategies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../invalidation-and-expiration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Invalidation and Expiration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../eviction-policies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Eviction Policies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cache Failure Modes
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cache Failure Modes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cache-stampede-thundering-herd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cache stampede (thundering herd)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cache-penetration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cache penetration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cache-avalanche" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cache avalanche
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hot-keys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hot keys
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#big-keys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Big keys
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stale-reads-and-inconsistency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stale reads and inconsistency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-cache-as-a-single-point-of-failure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The cache as a single point of failure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cold-starts-and-warming" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cold starts and warming
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#single-flight-request-coalescing-in-nodejs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Single-flight request coalescing in Node.js
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-distributed-lock-for-recomputation-across-instances" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A distributed lock for recomputation across instances
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#database-fallback-with-a-concurrency-limit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Database fallback with a concurrency limit
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../http-and-cdn-caching/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP and CDN Caching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-ai-and-machine-learning/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI and Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../06-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-devops-and-deployment/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DevOps and Deployment
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../08-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cache-stampede-thundering-herd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cache stampede (thundering herd)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cache-penetration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cache penetration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cache-avalanche" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cache avalanche
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hot-keys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hot keys
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#big-keys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Big keys
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stale-reads-and-inconsistency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stale reads and inconsistency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-cache-as-a-single-point-of-failure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The cache as a single point of failure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cold-starts-and-warming" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cold starts and warming
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#single-flight-request-coalescing-in-nodejs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Single-flight request coalescing in Node.js
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-distributed-lock-for-recomputation-across-instances" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A distributed lock for recomputation across instances
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#database-fallback-with-a-concurrency-limit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Database fallback with a concurrency limit
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="cache-failure-modes">Cache Failure Modes<a class="headerlink" href="#cache-failure-modes" title="Permanent link">&para;</a></h1>
+<p>Caches make systems faster, but they also create new ways to fail. Popular
+keys expiring at once can flood the database; requests for data that does
+not exist can bypass the cache entirely; one oversized or extremely hot
+key can overload a cache node; and a cache outage can take down the
+database behind it. This lesson names each failure mode and the standard
+defenses.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>Once a system depends on a high hit ratio, the database is sized for the
+traffic that <strong>misses</strong>, not for all traffic. If the cache suddenly stops
+absorbing load, the database receives many times more queries than it can
+handle and the whole system can collapse. Most large caching incidents
+come from a handful of well-known patterns, so learning them is one of the
+highest-value topics in caching.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Facebook: leases against thundering herds.</strong> In the
+  <a href="https://www.usenix.org/system/files/conference/nsdi13/nsdi13-final170_update.pdf">Scaling Memcache at Facebook</a>
+  paper, each memcached server hands out a lease token for a key at most
+  once every 10 seconds by default. Other clients that miss within that
+  window are told to wait briefly; by the time they retry, the lease holder
+  has usually filled the cache within milliseconds.</li>
+<li><strong>Facebook: Gutter for cache server failures.</strong> The same paper describes
+  <em>Gutter</em>, a small pool of machines (about 1% of the memcached servers in a
+  cluster) that takes over for failed servers. Clients that get no response
+  retry against Gutter, which keeps a failed cache server from turning into
+  a flood of database queries.</li>
+<li><strong>Cloudflare: request collapsing.</strong> Cloudflare's
+  <a href="https://developers.cloudflare.com/cache/concepts/default-cache-behavior/">default cache behavior</a>
+  includes a cache lock: only the first request for an uncached asset is
+  forwarded to the origin from a given location, and the other requests
+  wait for it, which is single-flight at the CDN.</li>
+<li><strong>Cloudflare: Tiered Cache.</strong> With
+  <a href="https://developers.cloudflare.com/cache/how-to/tiered-cache/">Tiered Cache</a>,
+  lower-tier data centers ask an upper-tier data center before contacting
+  the origin, reducing origin requests when many edge locations miss at
+  once.</li>
+</ul>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="cache-stampede-thundering-herd">Cache stampede (thundering herd)<a class="headerlink" href="#cache-stampede-thundering-herd" title="Permanent link">&para;</a></h3>
+<p>When a popular key expires, every request that arrives before it is
+reloaded misses at the same time and runs the same expensive query.</p>
+<p><img alt="Comparison: when product:hot expires, requests 1 to 500 all miss and each sends the same SELECT, so the database gets 500 identical queries at once; with single-flight, request 1 starts one in-flight load, requests 2 to 500 await the same promise, the database runs 1 SELECT, and the value is stored with a jittered TTL for all 500." src="../stampede-vs-single-flight.svg" /></p>
+<p>Defenses:</p>
+<table>
+<thead>
+<tr>
+<th>Technique</th>
+<th>How it works</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Request coalescing (single-flight)</td>
+<td>Within one process, concurrent misses for the same key share one in-flight load</td>
+</tr>
+<tr>
+<td>Distributed lock</td>
+<td>Across instances, only the request that acquires a lock reloads; others wait briefly or serve stale data</td>
+</tr>
+<tr>
+<td>Stale-while-revalidate</td>
+<td>Keep serving the old value while one request refreshes it</td>
+</tr>
+<tr>
+<td>Probabilistic early expiration</td>
+<td>Each read has a small, rising chance of refreshing before expiry, so one request refreshes early</td>
+</tr>
+<tr>
+<td>Refresh-ahead</td>
+<td>A background job refreshes known hot keys before they expire</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Probabilistic early expiration</strong> (called XFetch in the VLDB 2015 paper
+<a href="https://www.vldb.org/pvldb/vol8/p886-vattani.pdf">Optimal Probabilistic Cache Stampede Prevention</a>)
+recomputes when:</p>
+<div class="highlight"><pre><span></span><code>now − delta × beta × ln(random()) ≥ expiry
+
+delta  = how long the recomputation takes
+beta   = tuning factor (1 by default; &gt; 1 refreshes earlier)
+random() returns (0, 1], so −ln(random()) is a positive, usually small number
+</code></pre></div>
+<p>As expiry approaches, the chance that some request decides to refresh
+grows, so one request usually refreshes the value before it actually
+expires and the others keep reading the cached copy.</p>
+<h3 id="cache-penetration">Cache penetration<a class="headerlink" href="#cache-penetration" title="Permanent link">&para;</a></h3>
+<p>Requests for keys that <strong>do not exist</strong> in the database are never cached
+(there is nothing to store), so every such request goes to the database.
+Attackers can exploit this by requesting random ids.</p>
+<div class="highlight"><pre><span></span><code>GET /products/999999991  -&gt; cache miss -&gt; DB: not found -&gt; nothing cached
+GET /products/999999992  -&gt; cache miss -&gt; DB: not found -&gt; nothing cached
+... every request reaches the database
+</code></pre></div>
+<p>Defenses:</p>
+<ul>
+<li><strong>Negative caching:</strong> cache "not found" results too, with a short TTL
+  (for example 30–60 seconds), so repeated lookups are absorbed.</li>
+<li><strong>Bloom filter:</strong> a compact probabilistic set of all existing ids. If
+  the filter says an id is absent, it is definitely absent and the
+  database is skipped. It can occasionally say "maybe present" for a
+  missing id (a false positive), but never "absent" for an existing one.</li>
+<li><strong>Input validation:</strong> reject malformed ids before any lookup.</li>
+<li><strong>Rate limiting</strong> per client for expensive lookups; see
+  <a href="../../../03-backend-development/backend-concepts/rate-limiting-and-throttling/">rate limiting and throttling</a>.</li>
+</ul>
+<p><img alt="Flowchart: a malformed id gets 400 before any lookup; a Bloom filter answering &quot;definitely not&quot; returns 404 without touching the database; a cache hit returns the product or a cached null; only real misses reach the database, where a found row is cached for 300 s and a missing one is cached as null for 30 s before returning 404." src="../penetration-defenses.svg" /></p>
+<h3 id="cache-avalanche">Cache avalanche<a class="headerlink" href="#cache-avalanche" title="Permanent link">&para;</a></h3>
+<p>Many keys expire at the same moment, or the cache restarts empty, and
+the database receives a flood of misses for <strong>different</strong> keys.</p>
+<p>Common causes: a bulk job sets thousands of keys with the same TTL, or a
+deploy flushes the cache.</p>
+<p><img alt="Chart: 10,000 keys set at once with EX 300 all expire at 300 s, producing 10,000 misses in one second; with TTL jitter of 300 s ± 10%, expirations spread between 270 and 330 s at about 170 misses per second." src="../avalanche-ttl-jitter.svg" /></p>
+<p>Defenses:</p>
+<ul>
+<li><strong>TTL jitter:</strong> add a random spread, for example <code>300 s ± 10%</code>, so
+  expirations are spread out.</li>
+<li><strong>Warm-up:</strong> preload the most important keys before sending traffic to
+  a new or restarted cache.</li>
+<li><strong>Gradual traffic shift</strong> to new cache nodes.</li>
+<li><strong>Load shedding and limits</strong> on the database path (see the fallback
+  section below).</li>
+</ul>
+<h3 id="hot-keys">Hot keys<a class="headerlink" href="#hot-keys" title="Permanent link">&para;</a></h3>
+<p>A single key receives a huge share of traffic (a celebrity profile, a
+flash-sale product). In a clustered cache, one key lives on one node, so
+that node's CPU or network becomes the bottleneck while the others are
+idle.</p>
+<p>Defenses:</p>
+<ul>
+<li>A small <strong>in-process cache</strong> with a very short TTL (even 1–5 seconds)
+  in front of the distributed cache absorbs most reads of the hot key.</li>
+<li><strong>Key replication:</strong> store copies under <code>product:7#1</code> … <code>product:7#8</code>
+  (which hash to different nodes) and read a random copy; writes must
+  update or delete all copies.</li>
+<li>Read replicas of the cache node holding the hot key.</li>
+<li>Detect them: <code>redis-cli --hotkeys</code> works when an LFU eviction policy is
+  configured; client-side metrics per key prefix also help.</li>
+</ul>
+<h3 id="big-keys">Big keys<a class="headerlink" href="#big-keys" title="Permanent link">&para;</a></h3>
+<p>Very large values (multi-megabyte JSON documents, or collections with
+millions of members) cause trouble:</p>
+<ul>
+<li>Redis executes commands one at a time, so reading, writing, or deleting
+  a huge key blocks other clients.</li>
+<li>Transferring large values uses network bandwidth and increases latency.</li>
+<li>Uneven memory use across cluster nodes.</li>
+</ul>
+<p>Defenses: keep values small, split large collections into several keys,
+cache only the fields needed, compress large blobs, use <code>UNLINK</code> (which
+frees memory in the background) instead of <code>DEL</code> for big keys, and find
+offenders with <code>redis-cli --bigkeys</code> or <code>MEMORY USAGE key</code>.</p>
+<h3 id="stale-reads-and-inconsistency">Stale reads and inconsistency<a class="headerlink" href="#stale-reads-and-inconsistency" title="Permanent link">&para;</a></h3>
+<p>Cached data can disagree with the database because of races between
+reads and writes, missed invalidations, or replication lag in the cache
+itself. Symptoms are "I saved it but still see the old value" bugs.
+Defenses are covered in <a href="../invalidation-and-expiration/">invalidation and expiration</a>:
+correct write ordering, deleting instead of updating, versioning, short
+TTLs, and reading the database for decisions that must be correct.</p>
+<h3 id="the-cache-as-a-single-point-of-failure">The cache as a single point of failure<a class="headerlink" href="#the-cache-as-a-single-point-of-failure" title="Permanent link">&para;</a></h3>
+<p>If the cache is down or slow, a naive application either fails every
+request or sends all traffic to the database, which then collapses.</p>
+<div class="highlight"><pre><span></span><code>Normal:  1,000 req/s ── 95% hits ──&gt; cache;   50 req/s ──&gt; database
+Outage:  1,000 req/s ──────────────────────────────────────&gt; database (20× load)
+</code></pre></div>
+<p>Defenses:</p>
+<ul>
+<li><strong>Short timeouts</strong> on cache calls (a few milliseconds to tens of
+  milliseconds). A slow cache must not slow every request.</li>
+<li><strong>Treat cache errors as misses</strong>, but <strong>limit concurrent database
+  fallbacks</strong> (a semaphore or bulkhead), and shed load or serve degraded
+  responses beyond that limit.</li>
+<li><strong>Circuit breaker:</strong> after repeated cache failures, skip the cache for a
+  short period instead of waiting on timeouts. See
+  <a href="../../../03-backend-development/backend-concepts/timeouts-retries-and-idempotency/">timeouts, retries, and idempotency</a>.</li>
+<li><strong>High availability</strong> for the cache itself: replicas and automatic
+  failover; see <a href="../../redis/persistence-and-high-availability/">persistence and high availability</a>.</li>
+<li><strong>Capacity planning</strong> that knows how much traffic the database can take
+  without the cache.</li>
+</ul>
+<h3 id="cold-starts-and-warming">Cold starts and warming<a class="headerlink" href="#cold-starts-and-warming" title="Permanent link">&para;</a></h3>
+<p>A new or flushed cache starts with a 0% hit ratio. Until it fills, every
+request misses. Warm it by preloading the top keys (from access logs or
+yesterday's most-read items), by shifting traffic gradually, or by
+replaying recent read traffic against it before going live.</p>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Defense</th>
+<th>Use when</th>
+<th>Do not use when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Single-flight (per process)</td>
+<td>Any cache with concurrent misses; cheap and always worth it</td>
+<td>Not a defense across instances on its own</td>
+</tr>
+<tr>
+<td>Distributed lock</td>
+<td>Expensive recomputation must run once across many instances</td>
+<td>You need a correctness guarantee (locks can expire mid-work)</td>
+</tr>
+<tr>
+<td>Stale-while-revalidate</td>
+<td>Slightly old data is acceptable during refresh</td>
+<td>Data must be current on every read</td>
+</tr>
+<tr>
+<td>Probabilistic early expiration</td>
+<td>Hot keys with predictable recomputation time</td>
+<td>Cold keys; it adds work without benefit</td>
+</tr>
+<tr>
+<td>Negative caching</td>
+<td>Lookups for missing ids are common or abusable</td>
+<td>"Not found" can change to "found" and must show immediately</td>
+</tr>
+<tr>
+<td>Bloom filter</td>
+<td>Huge id space with frequent probes for missing ids</td>
+<td>Small datasets, or ids created faster than the filter is rebuilt</td>
+</tr>
+<tr>
+<td>TTL jitter</td>
+<td>Many keys are written at the same time</td>
+<td>Never harmful; use it by default for bulk loads</td>
+</tr>
+<tr>
+<td>Local cache for hot keys</td>
+<td>One key dominates traffic</td>
+<td>The value must change everywhere instantly</td>
+</tr>
+</tbody>
+</table>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="single-flight-request-coalescing-in-nodejs">Single-flight request coalescing in Node.js<a class="headerlink" href="#single-flight-request-coalescing-in-nodejs" title="Permanent link">&para;</a></h3>
+<p>Cache the <strong>promise</strong> of an in-flight load so concurrent callers in the
+same process await the same database query.</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// singleFlight.js</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">inFlight</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Map</span><span class="p">();</span><span class="w"> </span><span class="c1">// key -&gt; Promise</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">singleFlight</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span><span class="w"> </span><span class="nx">load</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">existing</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">inFlight</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">key</span><span class="p">);</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">existing</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="nx">existing</span><span class="p">;</span><span class="w">               </span><span class="c1">// join the running load</span>
+
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">promise</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">load</span><span class="p">().</span><span class="k">finally</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">inFlight</span><span class="p">.</span><span class="ow">delete</span><span class="p">(</span><span class="nx">key</span><span class="p">));</span>
+<span class="w">  </span><span class="nx">inFlight</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span><span class="w"> </span><span class="nx">promise</span><span class="p">);</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">promise</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">singleFlight</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"./singleFlight.js"</span><span class="p">;</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">getProduct</span><span class="p">(</span><span class="nx">id</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sb">`product:</span><span class="si">${</span><span class="nx">id</span><span class="si">}</span><span class="sb">`</span><span class="p">;</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">cached</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">redis</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">key</span><span class="p">);</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">cached</span><span class="w"> </span><span class="o">!==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="nb">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">cached</span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// 500 concurrent misses in this process -&gt; 1 database query</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">singleFlight</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">product</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">db</span><span class="p">.</span><span class="nx">products</span><span class="p">.</span><span class="nx">findById</span><span class="p">(</span><span class="nx">id</span><span class="p">);</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">ttl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">300</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">Math</span><span class="p">.</span><span class="nx">floor</span><span class="p">(</span><span class="nb">Math</span><span class="p">.</span><span class="nx">random</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">60</span><span class="p">);</span><span class="w">  </span><span class="c1">// TTL jitter</span>
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="nx">redis</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span><span class="w"> </span><span class="nb">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">product</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="kc">null</span><span class="p">),</span><span class="w"> </span><span class="s2">"EX"</span><span class="p">,</span><span class="w"> </span><span class="nx">product</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="nx">ttl</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mf">30</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nx">product</span><span class="p">;</span>
+<span class="w">  </span><span class="p">});</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>This version also stores <code>null</code> for missing products with a 30-second
+TTL (negative caching). Callers must then treat a cached <code>null</code> as "not
+found" rather than as a miss.</p>
+<h3 id="a-distributed-lock-for-recomputation-across-instances">A distributed lock for recomputation across instances<a class="headerlink" href="#a-distributed-lock-for-recomputation-across-instances" title="Permanent link">&para;</a></h3>
+<p>Single-flight works per process. With many instances, a short Redis lock
+lets one instance recompute while others serve the stale copy.</p>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">randomUUID</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:crypto"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">RELEASE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sb">`</span>
+<span class="sb">if redis.call("GET", KEYS[1]) == ARGV[1] then</span>
+<span class="sb">  return redis.call("DEL", KEYS[1])</span>
+<span class="sb">end</span>
+<span class="sb">return 0</span>
+<span class="sb">`</span><span class="p">;</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">refreshWithLock</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span><span class="w"> </span><span class="nx">load</span><span class="p">,</span><span class="w"> </span><span class="nx">ttlSeconds</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">lockKey</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sb">`lock:</span><span class="si">${</span><span class="nx">key</span><span class="si">}</span><span class="sb">`</span><span class="p">;</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">token</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">randomUUID</span><span class="p">();</span>
+
+<span class="w">  </span><span class="c1">// NX: only if absent; PX: lock expires so a crash cannot hold it forever</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">acquired</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">redis</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nx">lockKey</span><span class="p">,</span><span class="w"> </span><span class="nx">token</span><span class="p">,</span><span class="w"> </span><span class="s2">"PX"</span><span class="p">,</span><span class="w"> </span><span class="mf">5000</span><span class="p">,</span><span class="w"> </span><span class="s2">"NX"</span><span class="p">);</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">acquired</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w"> </span><span class="c1">// someone else is refreshing; caller serves stale data</span>
+
+<span class="w">  </span><span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">load</span><span class="p">();</span>
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="nx">redis</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span><span class="w"> </span><span class="nb">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">value</span><span class="p">),</span><span class="w"> </span><span class="s2">"EX"</span><span class="p">,</span><span class="w"> </span><span class="nx">ttlSeconds</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nx">value</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span><span class="w"> </span><span class="k">finally</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Delete the lock only if we still own it</span>
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="nx">redis</span><span class="p">.</span><span class="nb">eval</span><span class="p">(</span><span class="nx">RELEASE</span><span class="p">,</span><span class="w"> </span><span class="mf">1</span><span class="p">,</span><span class="w"> </span><span class="nx">lockKey</span><span class="p">,</span><span class="w"> </span><span class="nx">token</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>A lock like this is fine for avoiding duplicate work. It is <strong>not</strong> a
+correctness guarantee for critical sections, because a lock can expire
+while its holder is still working.</p>
+<h3 id="database-fallback-with-a-concurrency-limit">Database fallback with a concurrency limit<a class="headerlink" href="#database-fallback-with-a-concurrency-limit" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// Allow at most 20 concurrent database fallbacks per instance</span>
+<span class="kd">let</span><span class="w"> </span><span class="nx">active</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0</span><span class="p">;</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">MAX_FALLBACKS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">20</span><span class="p">;</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">getWithFallback</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span><span class="w"> </span><span class="nx">load</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">cached</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">withTimeout</span><span class="p">(</span><span class="nx">redis</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">key</span><span class="p">),</span><span class="w"> </span><span class="mf">25</span><span class="p">);</span><span class="w"> </span><span class="c1">// 25 ms budget</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">cached</span><span class="w"> </span><span class="o">!==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="nb">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">cached</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// cache down or slow: fall through to the limited fallback</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">active</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="nx">MAX_FALLBACKS</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="ne">Error</span><span class="p">(</span><span class="s2">"Service busy, please retry"</span><span class="p">);</span>
+<span class="w">    </span><span class="nx">error</span><span class="p">.</span><span class="nx">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">503</span><span class="p">;</span>
+<span class="w">    </span><span class="k">throw</span><span class="w"> </span><span class="nx">error</span><span class="p">;</span><span class="w">                     </span><span class="c1">// shed load instead of overloading the DB</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="nx">active</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mf">1</span><span class="p">;</span>
+<span class="w">  </span><span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">load</span><span class="p">();</span>
+<span class="w">  </span><span class="p">}</span><span class="w"> </span><span class="k">finally</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">active</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="mf">1</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">function</span><span class="w"> </span><span class="nx">withTimeout</span><span class="p">(</span><span class="nx">promise</span><span class="p">,</span><span class="w"> </span><span class="nx">ms</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nb">Promise</span><span class="p">.</span><span class="nx">race</span><span class="p">([</span>
+<span class="w">    </span><span class="nx">promise</span><span class="p">,</span>
+<span class="w">    </span><span class="ow">new</span><span class="w"> </span><span class="nb">Promise</span><span class="p">((</span><span class="nx">_</span><span class="p">,</span><span class="w"> </span><span class="nx">reject</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">setTimeout</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">reject</span><span class="p">(</span><span class="ow">new</span><span class="w"> </span><span class="ne">Error</span><span class="p">(</span><span class="s2">"timeout"</span><span class="p">)),</span><span class="w"> </span><span class="nx">ms</span><span class="p">)),</span>
+<span class="w">  </span><span class="p">]);</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Coalesce concurrent misses per process, and use stale-while-revalidate
+  or locks for expensive hot keys.</li>
+<li>Add jitter to TTLs, especially for bulk-loaded keys.</li>
+<li>Cache negative results briefly and validate ids early.</li>
+<li>Keep values small; split or trim big keys.</li>
+<li>Give cache calls short timeouts and treat failures as misses, with a
+  cap on database fallbacks.</li>
+<li>Run the cache with replicas and automatic failover when the system
+  depends on it.</li>
+<li>Load-test the "cache down" and "cache cold" scenarios, not only the
+  happy path.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Database CPU spikes on a regular rhythm.</strong>
+  <em>Detect:</em> database load jumps every few minutes, matching a hot key's
+  TTL, with many identical queries in the slow-query log. <em>Cause:</em> a cache
+  stampede on expiry. <em>Fix:</em> single-flight per process, a lock or
+  stale-while-revalidate across instances, and TTL jitter.</li>
+<li><strong>Database load rises while the hit ratio falls, with many <code>404</code>s.</strong>
+  <em>Detect:</em> access logs show requests for random or sequential ids that do
+  not exist, often from a few clients. <em>Cause:</em> cache penetration. <em>Fix:</em>
+  validate ids, cache "not found" briefly, rate-limit the clients, and add
+  a Bloom filter for very large id spaces.</li>
+<li><strong>A flood of misses after a deploy or cache restart.</strong>
+  <em>Detect:</em> misses for many different keys at once and a sharp database
+  spike right after the cache restarted or a bulk job ran. <em>Cause:</em> an
+  avalanche from identical TTLs or an empty cache. <em>Fix:</em> jitter TTLs, warm
+  the cache, and shift traffic gradually.</li>
+<li><strong>One cache node at 100% CPU while the others idle.</strong>
+  <em>Detect:</em> per-node metrics in the cluster are uneven, and
+  <code>redis-cli --hotkeys</code> (which requires an LFU <code>maxmemory-policy</code>) or
+  per-key client metrics point to one key. <em>Cause:</em> a hot key. <em>Fix:</em> a
+  short-TTL local cache in front of it, or several replicated copies of the
+  key.</li>
+<li><strong>Every request slows down when the cache is unhealthy.</strong>
+  <em>Detect:</em> p99 latency equals the cache client's timeout; logs show cache
+  timeouts. <em>Cause:</em> long default client timeouts and unlimited database
+  fallbacks. <em>Fix:</em> short cache timeouts, a circuit breaker, and a cap on
+  concurrent fallbacks.</li>
+<li><strong>Redis freezes briefly when cleaning up.</strong>
+  <em>Detect:</em> latency spikes coincide with <code>DEL</code> of large keys in
+  <code>SLOWLOG</code>. <em>Cause:</em> deleting a big key synchronously. <em>Fix:</em> use
+  <code>UNLINK</code>, which reclaims memory in another thread, and split big keys.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Cache stampede / thundering herd:</strong> Many simultaneous misses for the
+  same key overwhelming the source.</li>
+<li><strong>Request coalescing (single-flight):</strong> Sharing one in-flight load among
+  concurrent requests for the same key.</li>
+<li><strong>Cache penetration:</strong> Requests for nonexistent data that always bypass
+  the cache.</li>
+<li><strong>Negative caching:</strong> Caching "not found" results.</li>
+<li><strong>Bloom filter:</strong> A space-efficient probabilistic set with possible
+  false positives and no false negatives.</li>
+<li><strong>Cache avalanche:</strong> Many keys expiring or disappearing at once.</li>
+<li><strong>TTL jitter:</strong> Randomizing TTLs to spread expirations.</li>
+<li><strong>Hot key / big key:</strong> A key with extreme traffic, or with an oversized
+  value.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Assuming the database can absorb the full load if the cache fails.</li>
+<li>Setting identical TTLs on thousands of keys loaded together.</li>
+<li>Not caching "not found", letting random-id requests hammer the
+  database.</li>
+<li>Waiting on a slow cache with the default (long) client timeout.</li>
+<li>Using a cache lock as if it guaranteed mutual exclusion for critical
+  business logic.</li>
+<li>Deleting a multi-million-member key with <code>DEL</code> during peak traffic.</li>
+<li>Forgetting that single-flight in one process does not coordinate other
+  instances.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>What causes a cache stampede, and name three ways to prevent it.</li>
+<li>How does negative caching defend against cache penetration, and what
+   does a Bloom filter add?</li>
+<li>What is the difference between a cache stampede and a cache avalanche?</li>
+<li>How would you handle a single extremely hot key in a Redis cluster?</li>
+<li>Why do big keys hurt Redis in particular?</li>
+<li>How should an application behave when the cache is unavailable?</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://aws.amazon.com/builders-library/caching-challenges-and-strategies/">AWS Builders' Library: Caching challenges and strategies</a></li>
+<li><a href="https://aws.amazon.com/builders-library/using-load-shedding-to-avoid-overload/">AWS Builders' Library: Using load shedding to avoid overload</a></li>
+<li><a href="https://redis.io/docs/latest/commands/unlink/">Redis: <code>UNLINK</code> command</a></li>
+<li><a href="https://redis.io/docs/latest/commands/set/">Redis: <code>SET</code> command (NX and PX options)</a></li>
+<li>Related: <a href="../eviction-policies/">eviction policies</a>,
+  <a href="../../redis/redis-as-a-cache/">Redis as a cache</a>,
+  <a href="../../scalability/availability-and-reliability/">availability and reliability</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../eviction-policies/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Eviction Policies">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Eviction Policies</span>
+      </a>
+    
+    
+      <a href="../http-and-cdn-caching/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: HTTP and CDN Caching">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">HTTP and CDN Caching</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,3033 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../timeouts-retries-and-idempotency/">
+      
+      
+        <link rel="next" href="../background-jobs-and-scheduling/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Concurrency and Race Conditions - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#concurrency-and-race-conditions" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Concurrency and Race Conditions
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../05-application-architecture/" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-ai-and-machine-learning/" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../06-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-devops-and-deployment/" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../08-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to Backend Development">
+          <span class="md-ellipsis">&larr; Back to Backend</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to Backend Development">
+                  <span class="md-ellipsis">&larr; Back to Backend</span>
+                </a>
+              
+            </div>
+          
+          
+            <label class="md-nav__title" for="__nav_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Backend Development
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_4" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Important Backend Concepts
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_4_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Important Backend Concepts
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../backend-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../client-server-and-request-lifecycle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Client-Server Model and Request Lifecycle
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../http-methods/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP in Depth
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../rest-apis/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Design
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../authentication-and-authorization/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_4_7" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_4_4_7" id="__nav_4_4_7_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reliability
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_4_7_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_4_4_7">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Reliability
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../error-handling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error Handling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../logging-and-monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging, Monitoring, and Tracing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rate-limiting-and-throttling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rate Limiting and Throttling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../timeouts-retries-and-idempotency/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Timeouts, Retries, and Idempotency
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concurrency and Race Conditions
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concurrency and Race Conditions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-a-race-condition-is" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What a race condition is
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lost-update-step-by-step" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lost update, step by step
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-single-threaded-nodejs-still-has-races" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why single-threaded Node.js still has races
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#defense-1-atomic-database-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Defense 1: atomic database operations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#defense-2-unique-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Defense 2: unique constraints
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#defense-3-optimistic-concurrency-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Defense 3: optimistic concurrency control
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#defense-4-pessimistic-locking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Defense 4: pessimistic locking
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#defense-5-transactions-and-isolation-levels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Defense 5: transactions and isolation levels
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#defense-6-distributed-locks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Defense 6: distributed locks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#defense-7-serialize-work-through-a-queue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Defense 7: serialize work through a queue
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#choosing-a-defense" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Choosing a defense
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#booking-a-seat-safely-with-a-unique-index-mongodb" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Booking a seat safely with a unique index (MongoDB)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optimistic-update-with-a-version-field" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Optimistic update with a version field
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#transfer-with-row-locks-in-postgresql-node-postgres" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Transfer with row locks in PostgreSQL (node-postgres)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#testing-for-races" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing for races
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../background-jobs-and-scheduling/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Patterns
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../05-application-architecture/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-ai-and-machine-learning/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI and Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../06-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-devops-and-deployment/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DevOps and Deployment
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../08-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-a-race-condition-is" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What a race condition is
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lost-update-step-by-step" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lost update, step by step
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-single-threaded-nodejs-still-has-races" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why single-threaded Node.js still has races
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#defense-1-atomic-database-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Defense 1: atomic database operations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#defense-2-unique-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Defense 2: unique constraints
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#defense-3-optimistic-concurrency-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Defense 3: optimistic concurrency control
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#defense-4-pessimistic-locking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Defense 4: pessimistic locking
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#defense-5-transactions-and-isolation-levels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Defense 5: transactions and isolation levels
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#defense-6-distributed-locks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Defense 6: distributed locks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#defense-7-serialize-work-through-a-queue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Defense 7: serialize work through a queue
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#choosing-a-defense" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Choosing a defense
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#booking-a-seat-safely-with-a-unique-index-mongodb" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Booking a seat safely with a unique index (MongoDB)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optimistic-update-with-a-version-field" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Optimistic update with a version field
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#transfer-with-row-locks-in-postgresql-node-postgres" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Transfer with row locks in PostgreSQL (node-postgres)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#testing-for-races" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing for races
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="concurrency-and-race-conditions">Concurrency and Race Conditions<a class="headerlink" href="#concurrency-and-race-conditions" title="Permanent link">&para;</a></h1>
+<p>A backend handles many requests at the same time. When two of them read and
+change the same data concurrently, the result can depend on the exact timing
+of their steps — a <strong>race condition</strong>. Race conditions cause lost updates,
+double bookings, and money appearing or disappearing, and they are hard to
+find because they only happen under specific timing.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>Race conditions rarely show up in local testing, where one developer clicks
+one button at a time. In production, they appear as:</p>
+<ul>
+<li>A product with 1 unit in stock sold to two customers.</li>
+<li>A seat or appointment slot booked twice.</li>
+<li>A balance withdrawn twice, or a coupon redeemed more than its limit.</li>
+<li>A counter (likes, views) that ends up lower than the real number.</li>
+<li>One user's edit silently overwriting another's.</li>
+</ul>
+<p>These bugs damage trust and money, and they are often exploited
+deliberately: attackers send many requests in parallel to redeem a gift card
+several times. Knowing the standard defenses lets you design them out from
+the start.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Kubernetes.</strong> Every object has a <code>resourceVersion</code>. When a client updates
+  an object using a stale version, the API server detects the lost update and
+  returns <code>409 Conflict</code> — optimistic concurrency built into the platform
+  (<a href="https://kubernetes.io/docs/reference/using-api/api-concepts/">Kubernetes: API concepts</a>).</li>
+<li><strong>Amazon DynamoDB.</strong> Writes are unconditional by default, but conditional
+  writes succeed only if the item's attributes still meet the expected
+  conditions, checked against the most recent version of the item
+  (<a href="https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/WorkingWithItems.html">DynamoDB: working with items</a>).</li>
+<li><strong>Elasticsearch.</strong> Because replication requests can arrive out of order,
+  Elasticsearch uses optimistic concurrency control (<code>if_seq_no</code> and
+  <code>if_primary_term</code>) so an older version of a document never overwrites a
+  newer one
+  (<a href="https://www.elastic.co/docs/reference/elasticsearch/rest-apis/optimistic-concurrency-control">Elasticsearch: optimistic concurrency control</a>).</li>
+<li><strong>Database defaults differ.</strong> PostgreSQL's default isolation level is Read
+  Committed, and its Read Uncommitted behaves like Read Committed
+  (<a href="https://www.postgresql.org/docs/current/transaction-iso.html">PostgreSQL: transaction isolation</a>);
+  MySQL's InnoDB defaults to Repeatable Read
+  (<a href="https://dev.mysql.com/doc/refman/8.4/en/innodb-transaction-isolation-levels.html">MySQL: InnoDB isolation levels</a>).
+  The same code can therefore behave differently on the two databases.</li>
+</ul>
+<p><strong>Popular tools:</strong> database features (unique indexes, conditional updates,
+<code>SELECT ... FOR UPDATE</code>, serializable isolation), Redis <code>SET NX</code> for locks,
+and partitioned queues (for example, Kafka partitions keyed by entity) for
+per-entity ordering.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="what-a-race-condition-is">What a race condition is<a class="headerlink" href="#what-a-race-condition-is" title="Permanent link">&para;</a></h3>
+<p>A race condition happens when the correctness of an operation depends on the
+relative timing of concurrent operations on shared state. Classic shapes:</p>
+<ul>
+<li><strong>Lost update:</strong> two requests read the same value, each computes a new
+  value, and the second write overwrites the first.</li>
+<li><strong>Check-then-act:</strong> a request checks a condition ("seat is free"), then
+  acts on it ("book seat"), but another request changes the condition in
+  between.</li>
+<li><strong>Double spend:</strong> two requests both verify a balance is sufficient, then
+  both deduct.</li>
+</ul>
+<h3 id="lost-update-step-by-step">Lost update, step by step<a class="headerlink" href="#lost-update-step-by-step" title="Permanent link">&para;</a></h3>
+<p><img alt="Sequence diagram of a lost update: with stock at 1, requests A and B both read 1, both decide to sell, and both write stock = 0, so B's write overwrites A's and two items are sold although only one existed." src="../lost-update-race.svg" /></p>
+<p>Each request is correct on its own; together they are wrong.</p>
+<h3 id="why-single-threaded-nodejs-still-has-races">Why single-threaded Node.js still has races<a class="headerlink" href="#why-single-threaded-nodejs-still-has-races" title="Permanent link">&para;</a></h3>
+<p>Node runs your JavaScript on one thread, so two lines of JavaScript never
+run at literally the same instant. Races still happen because:</p>
+<ol>
+<li><strong>Interleaving at <code>await</code>:</strong> while one request awaits a database read,
+   the event loop runs other requests. Everything between a read and a write
+   that spans an <code>await</code> can interleave with other requests.</li>
+<li><strong>Multiple processes:</strong> production runs several Node processes or
+   containers behind a load balancer. They share the database, not memory.</li>
+<li><strong>The database is concurrent:</strong> it processes queries from many
+   connections at once.</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="c1">// Race: the await between read and write lets other requests interleave</span>
+<span class="nx">app</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s2">"/api/products/:id/buy"</span><span class="p">,</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="nx">request</span><span class="p">,</span><span class="w"> </span><span class="nx">response</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">product</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">db</span><span class="p">.</span><span class="nx">products</span><span class="p">.</span><span class="nx">findOne</span><span class="p">({</span><span class="w"> </span><span class="nx">_id</span><span class="o">:</span><span class="w"> </span><span class="nx">request</span><span class="p">.</span><span class="nx">params</span><span class="p">.</span><span class="nx">id</span><span class="w"> </span><span class="p">});</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">product</span><span class="p">.</span><span class="nx">stock</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mf">1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nx">response</span><span class="p">.</span><span class="nx">status</span><span class="p">(</span><span class="mf">409</span><span class="p">).</span><span class="nx">json</span><span class="p">({</span><span class="w"> </span><span class="nx">error</span><span class="o">:</span><span class="w"> </span><span class="s2">"Out of stock"</span><span class="w"> </span><span class="p">});</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="c1">// Another request may have bought the last item while we awaited</span>
+<span class="w">  </span><span class="k">await</span><span class="w"> </span><span class="nx">db</span><span class="p">.</span><span class="nx">products</span><span class="p">.</span><span class="nx">updateOne</span><span class="p">(</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nx">_id</span><span class="o">:</span><span class="w"> </span><span class="nx">product</span><span class="p">.</span><span class="nx">_id</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nx">$set</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">stock</span><span class="o">:</span><span class="w"> </span><span class="nx">product</span><span class="p">.</span><span class="nx">stock</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+<span class="w">  </span><span class="p">);</span>
+<span class="w">  </span><span class="nx">response</span><span class="p">.</span><span class="nx">status</span><span class="p">(</span><span class="mf">201</span><span class="p">).</span><span class="nx">json</span><span class="p">({</span><span class="w"> </span><span class="nx">ok</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">});</span>
+<span class="p">});</span>
+</code></pre></div>
+<p>In-process locks (a JavaScript <code>Map</code> of "busy" flags) only protect one
+process; they do not help across instances.</p>
+<h3 id="defense-1-atomic-database-operations">Defense 1: atomic database operations<a class="headerlink" href="#defense-1-atomic-database-operations" title="Permanent link">&para;</a></h3>
+<p>Let the database perform the check and the change as a <strong>single atomic
+operation</strong>, so no other request can slip in between.</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// MongoDB: conditional update — only decrements if stock is still &gt;= 1</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">db</span><span class="p">.</span><span class="nx">products</span><span class="p">.</span><span class="nx">updateOne</span><span class="p">(</span>
+<span class="w">  </span><span class="p">{</span><span class="w"> </span><span class="nx">_id</span><span class="o">:</span><span class="w"> </span><span class="nx">productId</span><span class="p">,</span><span class="w"> </span><span class="nx">stock</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">$gte</span><span class="o">:</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="p">{</span><span class="w"> </span><span class="nx">$inc</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">stock</span><span class="o">:</span><span class="w"> </span><span class="o">-</span><span class="mf">1</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+<span class="p">);</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">result</span><span class="p">.</span><span class="nx">modifiedCount</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="mf">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="c1">// Either the product does not exist or it is out of stock</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1">-- SQL: the condition and the change happen in one statement</span>
+<span class="k">UPDATE</span><span class="w"> </span><span class="n">products</span><span class="w"> </span><span class="k">SET</span><span class="w"> </span><span class="n">stock</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stock</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">$</span><span class="mi">1</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">stock</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="c1">-- check the affected row count: 0 means out of stock</span>
+</code></pre></div>
+<p>Note the difference between <code>SET stock = stock - 1</code> (computed by the
+database from the current value) and <code>SET stock = 0</code> computed in application
+code from a stale read. Prefer operators like <code>$inc</code>, <code>$push</code>,
+<code>$addToSet</code>, and <code>findOneAndUpdate</code> that work on the current value.</p>
+<p><img alt="Sequence diagram: requests A and B both send UPDATE SET stock = stock - 1 WHERE stock &gt;= 1; the database applies them one at a time, A's update changes one row and returns 201 Created, and B's finds stock 0, changes nothing, and returns 409 Out of stock." src="../atomic-conditional-update.svg" /></p>
+<h3 id="defense-2-unique-constraints">Defense 2: unique constraints<a class="headerlink" href="#defense-2-unique-constraints" title="Permanent link">&para;</a></h3>
+<p>Many "only one" rules can be enforced by a <strong>unique index</strong>, which the
+database guarantees even under concurrency:</p>
+<ul>
+<li>One account per email: unique index on <code>email</code>.</li>
+<li>One booking per seat per show: unique index on <code>(showId, seatId)</code>.</li>
+<li>One vote per user per poll: unique index on <code>(pollId, userId)</code>.</li>
+<li>One processing of each webhook event: unique index on <code>eventId</code>.</li>
+</ul>
+<p>Insert, and treat the duplicate-key error (MongoDB <code>11000</code>, PostgreSQL
+<code>23505</code>) as "already exists" — usually a <code>409 Conflict</code>. Checking first with
+a <code>find</code> and then inserting is a check-then-act race; the constraint is the
+real guarantee.</p>
+<h3 id="defense-3-optimistic-concurrency-control">Defense 3: optimistic concurrency control<a class="headerlink" href="#defense-3-optimistic-concurrency-control" title="Permanent link">&para;</a></h3>
+<p>Assume conflicts are rare. Each record carries a <strong>version</strong> number (or a
+last-modified timestamp). An update succeeds only if the version is unchanged
+since it was read, and increments it.</p>
+<p><img alt="Sequence diagram: writers A and B both read version 3; A's update WHERE version = 3 changes one row and the document becomes version 4; B's update WHERE version = 3 changes zero rows and gets a conflict (409, or 412 over HTTP); B re-reads and succeeds with WHERE version = 4." src="../optimistic-concurrency.svg" /></p>
+<p>On conflict, return <code>409 Conflict</code> (or reload and retry if the change can be
+reapplied automatically).</p>
+<p>Over HTTP, the same idea uses <strong>ETags</strong> and <strong>conditional requests</strong>:</p>
+<div class="highlight"><pre><span></span><code>GET /api/documents/7
+→ 200 OK, ETag: "v3"
+
+PUT /api/documents/7
+If-Match: "v3"
+→ 200 OK, ETag: "v4"                (version still matched)
+→ 412 Precondition Failed           (someone changed it; reload first)
+</code></pre></div>
+<p>This prevents the "last write wins" problem when two people edit the same
+document. See <a href="../http-headers/">HTTP headers</a> and
+<a href="../http-status-codes/">HTTP status codes</a>.</p>
+<h3 id="defense-4-pessimistic-locking">Defense 4: pessimistic locking<a class="headerlink" href="#defense-4-pessimistic-locking" title="Permanent link">&para;</a></h3>
+<p>Assume conflicts are likely, and lock the row while working on it:</p>
+<div class="highlight"><pre><span></span><code><span class="k">BEGIN</span><span class="p">;</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="n">balance</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">accounts</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">$</span><span class="mi">1</span><span class="w"> </span><span class="k">FOR</span><span class="w"> </span><span class="k">UPDATE</span><span class="p">;</span><span class="w">  </span><span class="c1">-- locks the row</span>
+<span class="c1">-- other transactions trying to lock this row wait here</span>
+<span class="k">UPDATE</span><span class="w"> </span><span class="n">accounts</span><span class="w"> </span><span class="k">SET</span><span class="w"> </span><span class="n">balance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">balance</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="err">$</span><span class="mi">2</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">$</span><span class="mi">1</span><span class="p">;</span>
+<span class="k">COMMIT</span><span class="p">;</span><span class="w">                                                  </span><span class="c1">-- releases the lock</span>
+</code></pre></div>
+<ul>
+<li>Simple to reason about: only one transaction works on the row at a time.</li>
+<li>Costs throughput (others wait), and can cause <strong>deadlocks</strong> if
+  transactions lock rows in different orders. Databases detect deadlocks and
+  abort one transaction, which you should retry.</li>
+<li>Keep locked sections short; never hold a lock while calling an external
+  API.</li>
+</ul>
+<p>MongoDB has no <code>SELECT ... FOR UPDATE</code>; use atomic conditional updates,
+optimistic versioning, or multi-document transactions.</p>
+<h3 id="defense-5-transactions-and-isolation-levels">Defense 5: transactions and isolation levels<a class="headerlink" href="#defense-5-transactions-and-isolation-levels" title="Permanent link">&para;</a></h3>
+<p>A <strong>transaction</strong> groups operations so they all succeed or all fail
+(atomicity) and controls how concurrent transactions see each other's
+changes (isolation). Isolation levels trade safety for concurrency:</p>
+<table>
+<thead>
+<tr>
+<th>Isolation level</th>
+<th>Dirty read</th>
+<th>Non-repeatable read</th>
+<th>Phantom read</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Read uncommitted</td>
+<td>Possible</td>
+<td>Possible</td>
+<td>Possible</td>
+<td>Rarely used; PostgreSQL treats it as read committed</td>
+</tr>
+<tr>
+<td>Read committed</td>
+<td>Prevented</td>
+<td>Possible</td>
+<td>Possible</td>
+<td>Default in PostgreSQL and many databases</td>
+</tr>
+<tr>
+<td>Repeatable read</td>
+<td>Prevented</td>
+<td>Prevented</td>
+<td>Possible (standard); prevented in PostgreSQL's implementation</td>
+<td>MySQL InnoDB default</td>
+</tr>
+<tr>
+<td>Serializable</td>
+<td>Prevented</td>
+<td>Prevented</td>
+<td>Prevented</td>
+<td>Behaves as if transactions ran one at a time; may abort with serialization errors you must retry</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Dirty read:</strong> reading another transaction's uncommitted change.</li>
+<li><strong>Non-repeatable read:</strong> reading the same row twice in a transaction and
+  getting different values because another transaction committed in between.</li>
+<li><strong>Phantom read:</strong> re-running a query and getting new rows that another
+  transaction inserted.</li>
+<li><strong>Lost update</strong> and <strong>write skew</strong> (two transactions each read an overlapping
+  set, then write different rows, together violating a rule like "at least
+  one doctor on call") can still occur below serializable in some databases.</li>
+</ul>
+<p>A transaction at the default level does <strong>not</strong> automatically prevent the
+lost-update example above. Combine transactions with atomic updates,
+<code>FOR UPDATE</code>, version checks, or the serializable level. See
+<a href="../../../04-databases/mongodb/transactions/">MongoDB transactions</a> and
+<a href="../../../04-databases/database-fundamentals/">database fundamentals</a>.</p>
+<h3 id="defense-6-distributed-locks">Defense 6: distributed locks<a class="headerlink" href="#defense-6-distributed-locks" title="Permanent link">&para;</a></h3>
+<p>Sometimes the shared resource is not a single database row — for example,
+"only one instance should regenerate this report" or "only one sync job per
+account." A <strong>distributed lock</strong> in Redis can coordinate instances:</p>
+<div class="highlight"><pre><span></span><code>SET lock:report:42 &lt;unique-token&gt; NX PX 30000
+  NX  → only set if the key does not exist (acquire)
+  PX  → expire after 30 s so a crashed holder does not block forever
+Release: delete the key only if it still holds your token (atomic Lua script)
+</code></pre></div>
+<p>Caveats:</p>
+<ul>
+<li>If the holder pauses (GC, slow network) longer than the expiry, the lock
+  expires and a second holder starts — <strong>two holders at once</strong>. Locks with
+  expiry are best for efficiency (avoiding duplicate work), not as the only
+  protection for correctness.</li>
+<li>For correctness, use <strong>fencing tokens</strong>: a number that increases with each
+  lock acquisition, which the protected resource checks and rejects if it is
+  older than one already seen.</li>
+<li>Prefer database constraints and atomic operations when the data lives in a
+  database.</li>
+</ul>
+<h3 id="defense-7-serialize-work-through-a-queue">Defense 7: serialize work through a queue<a class="headerlink" href="#defense-7-serialize-work-through-a-queue" title="Permanent link">&para;</a></h3>
+<p>If operations on one entity must happen one at a time, send them through a
+queue partitioned by that entity (for example, all events for <code>account 42</code>
+go to the same partition or a single-concurrency job group). One consumer
+processes them in order, so there is nothing to race. This is common for
+ledgers, inventory, and per-user sync jobs. See
+<a href="../background-jobs-and-scheduling/">background jobs and scheduling</a>.</p>
+<h3 id="choosing-a-defense">Choosing a defense<a class="headerlink" href="#choosing-a-defense" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Situation</th>
+<th>Usual choice</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Increment, decrement, conditional change of one record</td>
+<td>Atomic update with a condition</td>
+</tr>
+<tr>
+<td>"Only one of X may exist"</td>
+<td>Unique constraint</td>
+</tr>
+<tr>
+<td>Users editing the same document</td>
+<td>Optimistic concurrency (version / ETag + If-Match)</td>
+</tr>
+<tr>
+<td>Money transfer between rows, high contention</td>
+<td>Transaction with <code>FOR UPDATE</code> (lock in a consistent order)</td>
+</tr>
+<tr>
+<td>Multi-row invariant (write skew)</td>
+<td>Serializable transaction with retry, or redesign</td>
+</tr>
+<tr>
+<td>Duplicate job runs across instances</td>
+<td>Distributed lock (plus idempotent job)</td>
+</tr>
+<tr>
+<td>Strict ordering per entity</td>
+<td>Partitioned queue</td>
+</tr>
+<tr>
+<td>Retried client requests</td>
+<td><a href="../timeouts-retries-and-idempotency/">Idempotency keys</a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<p><strong>Use a concurrency defense whenever:</strong></p>
+<ul>
+<li>Two requests can change the same record — stock, balances, seats, quotas,
+  counters, documents.</li>
+<li>A rule depends on "check, then act" (unique email, one vote per user,
+  coupon limits).</li>
+</ul>
+<p><strong>You may not need one when:</strong></p>
+<ul>
+<li>Data is append-only (logs, events) and never updated in place.</li>
+<li>Each record has a single writer, such as a user editing a private draft
+  that nothing else changes.</li>
+</ul>
+<p><strong>Optimistic or pessimistic?</strong></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Optimistic (version check)</th>
+<th>Pessimistic (<code>FOR UPDATE</code>)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Best when</td>
+<td>Conflicts are rare</td>
+<td>Conflicts are frequent on the same rows</td>
+</tr>
+<tr>
+<td>Cost without conflicts</td>
+<td>Almost none</td>
+<td>Every transaction takes a lock</td>
+</tr>
+<tr>
+<td>On conflict</td>
+<td>Reject (409 / 412) and retry or reload</td>
+<td>Wait for the lock</td>
+</tr>
+<tr>
+<td>Good for</td>
+<td>Users editing documents, settings, profiles</td>
+<td>Balances, inventory under heavy contention</td>
+</tr>
+<tr>
+<td>Risk</td>
+<td>Many retries under high contention</td>
+<td>Deadlocks and lock waits</td>
+</tr>
+</tbody>
+</table>
+<p>Avoid distributed locks when the data lives in one database — a constraint
+or conditional update is simpler and correct.</p>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="booking-a-seat-safely-with-a-unique-index-mongodb">Booking a seat safely with a unique index (MongoDB)<a class="headerlink" href="#booking-a-seat-safely-with-a-unique-index-mongodb" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// One-time setup: the database enforces one booking per seat per show</span>
+<span class="k">await</span><span class="w"> </span><span class="nx">db</span><span class="p">.</span><span class="nx">bookings</span><span class="p">.</span><span class="nx">createIndex</span><span class="p">({</span><span class="w"> </span><span class="nx">showId</span><span class="o">:</span><span class="w"> </span><span class="mf">1</span><span class="p">,</span><span class="w"> </span><span class="nx">seatId</span><span class="o">:</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">unique</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">});</span>
+
+<span class="nx">app</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s2">"/api/shows/:showId/seats/:seatId/book"</span><span class="p">,</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="nx">request</span><span class="p">,</span><span class="w"> </span><span class="nx">response</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="nx">db</span><span class="p">.</span><span class="nx">bookings</span><span class="p">.</span><span class="nx">insertOne</span><span class="p">({</span>
+<span class="w">      </span><span class="nx">showId</span><span class="o">:</span><span class="w"> </span><span class="nx">request</span><span class="p">.</span><span class="nx">params</span><span class="p">.</span><span class="nx">showId</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">seatId</span><span class="o">:</span><span class="w"> </span><span class="nx">request</span><span class="p">.</span><span class="nx">params</span><span class="p">.</span><span class="nx">seatId</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">userId</span><span class="o">:</span><span class="w"> </span><span class="nx">request</span><span class="p">.</span><span class="nx">user</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">createdAt</span><span class="o">:</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Date</span><span class="p">(),</span>
+<span class="w">    </span><span class="p">});</span>
+<span class="w">    </span><span class="nx">response</span><span class="p">.</span><span class="nx">status</span><span class="p">(</span><span class="mf">201</span><span class="p">).</span><span class="nx">json</span><span class="p">({</span><span class="w"> </span><span class="nx">booked</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">});</span>
+<span class="w">  </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="nx">error</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">error</span><span class="p">.</span><span class="nx">code</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="mf">11000</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="nx">response</span><span class="p">.</span><span class="nx">status</span><span class="p">(</span><span class="mf">409</span><span class="p">).</span><span class="nx">json</span><span class="p">({</span><span class="w"> </span><span class="nx">error</span><span class="o">:</span><span class="w"> </span><span class="s2">"Seat already booked"</span><span class="w"> </span><span class="p">});</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">throw</span><span class="w"> </span><span class="nx">error</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">});</span>
+</code></pre></div>
+<h3 id="optimistic-update-with-a-version-field">Optimistic update with a version field<a class="headerlink" href="#optimistic-update-with-a-version-field" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">renameDocument</span><span class="p">(</span><span class="nx">id</span><span class="p">,</span><span class="w"> </span><span class="nx">expectedVersion</span><span class="p">,</span><span class="w"> </span><span class="nx">title</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">db</span><span class="p">.</span><span class="nx">documents</span><span class="p">.</span><span class="nx">updateOne</span><span class="p">(</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nx">_id</span><span class="o">:</span><span class="w"> </span><span class="nx">id</span><span class="p">,</span><span class="w"> </span><span class="nx">version</span><span class="o">:</span><span class="w"> </span><span class="nx">expectedVersion</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nx">$set</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">title</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="nx">$inc</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">version</span><span class="o">:</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+<span class="w">  </span><span class="p">);</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">result</span><span class="p">.</span><span class="nx">matchedCount</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="mf">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">throw</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">ConflictError</span><span class="p">(</span><span class="s2">"The document was changed by someone else. Reload and try again."</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="transfer-with-row-locks-in-postgresql-node-postgres">Transfer with row locks in PostgreSQL (node-postgres)<a class="headerlink" href="#transfer-with-row-locks-in-postgresql-node-postgres" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">transfer</span><span class="p">(</span><span class="nx">pool</span><span class="p">,</span><span class="w"> </span><span class="nx">fromId</span><span class="p">,</span><span class="w"> </span><span class="nx">toId</span><span class="p">,</span><span class="w"> </span><span class="nx">amount</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">client</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">pool</span><span class="p">.</span><span class="nx">connect</span><span class="p">();</span>
+<span class="w">  </span><span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="nx">client</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s2">"BEGIN"</span><span class="p">);</span>
+<span class="w">    </span><span class="c1">// Lock both rows in a consistent order to avoid deadlocks</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="p">[</span><span class="nx">firstId</span><span class="p">,</span><span class="w"> </span><span class="nx">secondId</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">fromId</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="nx">toId</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="p">[</span><span class="nx">fromId</span><span class="p">,</span><span class="w"> </span><span class="nx">toId</span><span class="p">]</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="nx">toId</span><span class="p">,</span><span class="w"> </span><span class="nx">fromId</span><span class="p">];</span>
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="nx">client</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s2">"SELECT id FROM accounts WHERE id IN ($1, $2) ORDER BY id FOR UPDATE"</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="nx">firstId</span><span class="p">,</span><span class="w"> </span><span class="nx">secondId</span><span class="p">]);</span>
+
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">debit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">client</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span>
+<span class="w">      </span><span class="s2">"UPDATE accounts SET balance = balance - $1 WHERE id = $2 AND balance &gt;= $1"</span><span class="p">,</span>
+<span class="w">      </span><span class="p">[</span><span class="nx">amount</span><span class="p">,</span><span class="w"> </span><span class="nx">fromId</span><span class="p">]</span>
+<span class="w">    </span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">debit</span><span class="p">.</span><span class="nx">rowCount</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="mf">0</span><span class="p">)</span><span class="w"> </span><span class="k">throw</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">ConflictError</span><span class="p">(</span><span class="s2">"Insufficient funds"</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="nx">client</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s2">"UPDATE accounts SET balance = balance + $1 WHERE id = $2"</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="nx">amount</span><span class="p">,</span><span class="w"> </span><span class="nx">toId</span><span class="p">]);</span>
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="nx">client</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s2">"COMMIT"</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="nx">error</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="nx">client</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s2">"ROLLBACK"</span><span class="p">);</span>
+<span class="w">    </span><span class="k">throw</span><span class="w"> </span><span class="nx">error</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span><span class="w"> </span><span class="k">finally</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">client</span><span class="p">.</span><span class="nx">release</span><span class="p">();</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="testing-for-races">Testing for races<a class="headerlink" href="#testing-for-races" title="Permanent link">&para;</a></h3>
+<p>Fire concurrent requests in a test to prove the defense works:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// 20 parallel purchases of a product with stock = 1 → exactly one success</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">results</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nb">Promise</span><span class="p">.</span><span class="nx">all</span><span class="p">(</span>
+<span class="w">  </span><span class="nb">Array</span><span class="p">.</span><span class="kr">from</span><span class="p">({</span><span class="w"> </span><span class="nx">length</span><span class="o">:</span><span class="w"> </span><span class="mf">20</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">request</span><span class="p">(</span><span class="nx">app</span><span class="p">).</span><span class="nx">post</span><span class="p">(</span><span class="s2">"/api/products/p1/buy"</span><span class="p">))</span>
+<span class="p">);</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">successes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">results</span><span class="p">.</span><span class="nx">filter</span><span class="p">((</span><span class="nx">r</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">r</span><span class="p">.</span><span class="nx">status</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="mf">201</span><span class="p">).</span><span class="nx">length</span><span class="p">;</span>
+<span class="nx">assert</span><span class="p">.</span><span class="nx">equal</span><span class="p">(</span><span class="nx">successes</span><span class="p">,</span><span class="w"> </span><span class="mf">1</span><span class="p">);</span>
+</code></pre></div>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Assume every read-modify-write that spans an <code>await</code> can race.</li>
+<li>Push checks and changes into one atomic database operation where possible.</li>
+<li>Enforce uniqueness with database constraints, not prior lookups.</li>
+<li>Use version fields or ETags with <code>If-Match</code> for user-edited resources.</li>
+<li>Keep transactions and locks short; lock rows in a consistent order; retry
+  deadlocks and serialization failures.</li>
+<li>Do not call external services while holding locks or open transactions.</li>
+<li>Treat distributed locks as an efficiency tool; add fencing or idempotency
+  for correctness.</li>
+<li>Write concurrency tests for critical flows (stock, bookings, payments).</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>A flash sale oversells.</strong> <em>Symptom:</em> more orders than units, or stock
+  below zero. <em>Detect:</em> a reconciliation check comparing orders with
+  inventory, or an alert on negative stock. <em>Cause:</em> read-then-write in
+  application code under parallel requests. <em>Fix:</em> a conditional atomic
+  update (<code>stock &gt;= 1</code>), plus a database <code>CHECK (stock &gt;= 0)</code> as a final
+  guard.</li>
+<li><strong>Intermittent "deadlock detected" errors.</strong> <em>Symptom:</em> a small share of
+  transfers fail with a 500. <em>Detect:</em> PostgreSQL error code <code>40P01</code>
+  (<code>deadlock_detected</code>) in logs. <em>Cause:</em> two code paths lock the same rows in
+  different orders. <em>Fix:</em> always lock in a consistent order (for example, by
+  ID), keep transactions short, and retry the aborted transaction.</li>
+<li><strong>Serialization failures after raising isolation.</strong> <em>Symptom:</em> errors rise
+  after switching a flow to Serializable. <em>Detect:</em> error code <code>40001</code>
+  (<code>serialization_failure</code>). <em>Cause:</em> expected behavior — the database aborts
+  transactions that would break serializability. <em>Fix:</em> wrap the transaction
+  in a retry loop with backoff, and keep the transaction's reads and writes
+  small.</li>
+<li><strong>A scheduled job runs twice.</strong> <em>Symptom:</em> customers receive two copies of
+  a report. <em>Detect:</em> logs show two instances holding the same lock. <em>Cause:</em>
+  the job ran longer than the lock's expiry, so a second instance acquired
+  it. <em>Fix:</em> extend the lock while working, use fencing tokens, and make the
+  job idempotent.</li>
+<li><strong>One hot row slows everything.</strong> <em>Symptom:</em> p99 latency spikes on
+  endpoints that update a shared counter. <em>Detect:</em> <code>pg_stat_activity</code> shows
+  many sessions waiting with <code>wait_event_type = 'Lock'</code>. <em>Cause:</em> every
+  request updates the same row. <em>Fix:</em> shard the counter across several rows,
+  batch increments, or aggregate asynchronously.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Concurrency:</strong> multiple operations in progress during overlapping time.</li>
+<li><strong>Race condition:</strong> a bug where the outcome depends on timing.</li>
+<li><strong>Critical section:</strong> code that must not run concurrently on the same data.</li>
+<li><strong>Lost update:</strong> one write overwriting another based on stale data.</li>
+<li><strong>Check-then-act:</strong> acting on a condition that may have changed since it
+  was checked.</li>
+<li><strong>Atomic operation:</strong> an operation that happens completely or not at all,
+  with no visible intermediate state.</li>
+<li><strong>Optimistic concurrency control:</strong> detect conflicts at write time with a
+  version check.</li>
+<li><strong>Pessimistic locking:</strong> lock data before changing it so others wait.</li>
+<li><strong>Isolation level:</strong> how much concurrent transactions are shielded from
+  each other.</li>
+<li><strong>Deadlock:</strong> two transactions each waiting for a lock the other holds.</li>
+<li><strong>Write skew:</strong> concurrent transactions each making a valid change that
+  together break an invariant.</li>
+<li><strong>Distributed lock:</strong> a lock coordinated across processes, often in Redis.</li>
+<li><strong>Fencing token:</strong> an increasing number used to reject stale lock holders.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>"Node is single-threaded, so there are no race conditions."</strong>
+  Interleaving at <code>await</code> and multiple instances still cause them.</li>
+<li><strong>Read, compute in JavaScript, then write the result</strong>, instead of using
+  atomic operators.</li>
+<li><strong>Checking for duplicates with <code>find</code> before <code>insert</code></strong> without a unique
+  index.</li>
+<li><strong>"Wrapping it in a transaction fixes it."</strong> Default isolation levels still
+  allow lost updates and write skew.</li>
+<li><strong>In-memory locks</strong> in a multi-instance deployment.</li>
+<li><strong>Trusting a Redis lock with expiry for strict correctness.</strong></li>
+<li><strong>Long transactions</strong> that hold locks while waiting on network calls.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Show, step by step, how two concurrent purchases can sell the last item
+   twice.</li>
+<li>Why can races occur in Node.js even though JavaScript runs on one thread?</li>
+<li>How do a conditional atomic update and a unique index each prevent a race?</li>
+<li>Explain optimistic concurrency with a version field, and how ETags and
+   <code>If-Match</code> apply it over HTTP.</li>
+<li>Which anomalies does each isolation level prevent?</li>
+<li>What is the risk of using a Redis lock with an expiry, and how do fencing
+   tokens help?</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://www.postgresql.org/docs/current/transaction-iso.html">PostgreSQL: Transaction isolation</a></li>
+<li><a href="https://www.postgresql.org/docs/current/explicit-locking.html">PostgreSQL: Explicit locking</a></li>
+<li><a href="https://www.mongodb.com/docs/manual/core/write-operations-atomicity/">MongoDB: Atomicity and transactions</a></li>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/If-Match">MDN: If-Match header</a></li>
+<li><a href="https://redis.io/docs/latest/develop/use/patterns/distributed-locks/">Redis: Distributed locks</a></li>
+<li>Related notes: <a href="../../../04-databases/mongodb/transactions/">MongoDB transactions</a>,
+  <a href="../timeouts-retries-and-idempotency/">Timeouts, retries, and idempotency</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../timeouts-retries-and-idempotency/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Timeouts, Retries, and Idempotency">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Timeouts, Retries, and Idempotency</span>
+      </a>
+    
+    
+      <a href="../background-jobs-and-scheduling/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: Background Jobs and Scheduling">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">Background Jobs and Scheduling</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

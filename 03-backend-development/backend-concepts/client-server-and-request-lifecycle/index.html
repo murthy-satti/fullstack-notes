@@ -1,0 +1,2742 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../backend-fundamentals/">
+      
+      
+        <link rel="next" href="../http-methods/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Client-Server Model and Request Lifecycle - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#client-server-model-and-request-lifecycle" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Client-Server Model and Request Lifecycle
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../05-application-architecture/" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-ai-and-machine-learning/" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../06-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-devops-and-deployment/" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../08-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to Backend Development">
+          <span class="md-ellipsis">&larr; Back to Backend</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to Backend Development">
+                  <span class="md-ellipsis">&larr; Back to Backend</span>
+                </a>
+              
+            </div>
+          
+          
+            <label class="md-nav__title" for="__nav_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Backend Development
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_4" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Important Backend Concepts
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_4_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Important Backend Concepts
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../backend-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Client-Server Model and Request Lifecycle
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Client-Server Model and Request Lifecycle
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-client-server-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The client-server model
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-full-journey-of-one-request" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The full journey of one request
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#each-hop-in-detail" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Each hop in detail
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#where-latency-comes-from" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where latency comes from
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#http-versions-in-brief" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HTTP versions in brief
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keep-alive-and-connection-reuse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Keep-alive and connection reuse
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#where-failures-surface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where failures surface
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#statelessness-and-how-state-is-carried" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Statelessness and how state is carried
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#watch-a-request-with-curl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Watch a request with curl
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-raw-request-and-response" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The raw request and response
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tracing-the-request-through-express" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tracing the request through Express
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../http-methods/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP in Depth
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../rest-apis/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Design
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../authentication-and-authorization/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../error-handling/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reliability
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../background-jobs-and-scheduling/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Patterns
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../05-application-architecture/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-ai-and-machine-learning/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI and Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../06-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-devops-and-deployment/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DevOps and Deployment
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../08-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-client-server-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The client-server model
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-full-journey-of-one-request" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The full journey of one request
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#each-hop-in-detail" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Each hop in detail
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#where-latency-comes-from" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where latency comes from
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#http-versions-in-brief" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HTTP versions in brief
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keep-alive-and-connection-reuse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Keep-alive and connection reuse
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#where-failures-surface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where failures surface
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#statelessness-and-how-state-is-carried" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Statelessness and how state is carried
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#watch-a-request-with-curl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Watch a request with curl
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-raw-request-and-response" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The raw request and response
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tracing-the-request-through-express" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tracing the request through Express
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="client-server-model-and-request-lifecycle">Client-Server Model and Request Lifecycle<a class="headerlink" href="#client-server-model-and-request-lifecycle" title="Permanent link">&para;</a></h1>
+<p>In the client-server model, a client asks for something and a server answers.
+A single click in a browser sets off a chain of steps: name lookup, network
+connections, encryption, proxies, your application code, and the database.
+This page follows one request through every hop and back.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>When a request is slow or fails, the cause can sit at any hop: DNS, TLS, a
+load balancer, your code, or the database. Knowing the full path lets you:</p>
+<ul>
+<li>Read an error and know <em>which layer</em> produced it (a <code>502</code> from a proxy is
+  not the same problem as a <code>500</code> from your code).</li>
+<li>Find where latency comes from instead of guessing.</li>
+<li>Decide where a concern belongs: TLS at the proxy, authentication in
+  middleware, business rules in a service.</li>
+<li>Understand why HTTP is called stateless and how logins still work.</li>
+</ul>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<p>Every hop in this page has a timeout or limit set by the platform in front
+of your app. Three well-documented examples:</p>
+<ul>
+<li><strong>AWS Application Load Balancer.</strong> The
+  <a href="https://docs.aws.amazon.com/elasticloadbalancing/latest/application/application-load-balancers.html">load balancer attributes</a>
+  list a default idle timeout of 60 seconds, and AWS
+  <a href="https://docs.aws.amazon.com/elasticloadbalancing/latest/application/edit-load-balancer-attributes.html">recommends</a>
+  configuring your application's idle (keep-alive) timeout to be larger than
+  the load balancer's. Otherwise, the app can close a connection the load
+  balancer is about to reuse, which is the source of the classic
+  intermittent <code>502</code>.</li>
+<li><strong>Cloudflare.</strong> When Cloudflare connects to your origin but gets no HTTP
+  response within its default 125-second proxy read timeout, it returns its
+  own <a href="https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-5xx-errors/error-524/">Error 524</a>.
+  The status code comes from the CDN, not from your application.</li>
+<li><strong>Heroku.</strong> The Heroku router
+  <a href="https://devcenter.heroku.com/articles/request-timeout">terminates a request after 30 seconds</a>,
+  returns an error page, and logs an <code>H12</code> error, even if your app is still
+  working on it. The countdown starts after the router has sent the whole
+  request to the app.</li>
+</ul>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="the-client-server-model">The client-server model<a class="headerlink" href="#the-client-server-model" title="Permanent link">&para;</a></h3>
+<ul>
+<li>A <strong>client</strong> initiates communication: a browser, a mobile app, a CLI, or
+  another server calling your API.</li>
+<li>A <strong>server</strong> listens on an address and port and responds to requests.</li>
+<li>The roles describe <em>who starts the conversation</em>, not the hardware. Your
+  backend is a server to the browser and a client to the payment provider it
+  calls.</li>
+</ul>
+<p>HTTP follows a request-response pattern: the client sends one request, the
+server sends one response. The server does not push data on its own over
+plain HTTP; for that, see <a href="../real-time-communication/">real-time communication</a>.</p>
+<h3 id="the-full-journey-of-one-request">The full journey of one request<a class="headerlink" href="#the-full-journey-of-one-request" title="Permanent link">&para;</a></h3>
+<p>Suppose a user opens <code>https://shop.example/orders</code> and the page calls
+<code>GET https://api.shop.example/api/orders?page=1</code>.</p>
+<p><img alt="Diagram: the browser parses the URL, resolves DNS, completes TCP and TLS handshakes, and sends the request; an optional CDN returns a fresh cached copy or passes it on to a load balancer, which terminates TLS and forwards to an app server where middleware, router, controller, and service run; the service checks the cache and then the database, and the response travels back to the browser." src="../request-journey.svg" /></p>
+<h3 id="each-hop-in-detail">Each hop in detail<a class="headerlink" href="#each-hop-in-detail" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>URL parsing.</strong> The browser splits the URL into scheme, host, port
+   (default <code>443</code> for HTTPS), path, and query string.</li>
+<li><strong>DNS resolution.</strong> The host name is turned into an IP address. Results
+   are cached by the browser, the operating system, and resolvers, so this
+   is often instant on repeat visits. See <a href="../../../01-networking-and-protocols/dns/">DNS</a>.</li>
+<li><strong>TCP connection.</strong> For HTTP/1.1 and HTTP/2, the client opens a TCP
+   connection with a three-way handshake. That costs one network round trip
+   before any data flows. See <a href="../../../01-networking-and-protocols/tcp-and-udp/">TCP and UDP</a>.</li>
+<li><strong>TLS handshake.</strong> For HTTPS, client and server agree on encryption keys
+   and the client verifies the server's certificate. TLS 1.3 needs one more
+   round trip on a new connection. See <a href="../../../01-networking-and-protocols/tls-and-ssl/">TLS and SSL</a>.</li>
+<li><strong>HTTP request.</strong> The client sends the method, target, headers, and an
+   optional body. See <a href="../http-methods/">HTTP methods</a> and
+   <a href="../http-headers/">HTTP headers</a>.</li>
+<li><strong>CDN or edge cache.</strong> If a CDN sits in front and holds a fresh cached
+   copy, it answers without touching your servers. API responses are often
+   not cached, but static files and public data can be. See
+   <a href="../../../06-servers-and-infrastructure/cdn/">CDN</a>.</li>
+<li><strong>Load balancer or reverse proxy.</strong> It usually terminates TLS, chooses a
+   healthy backend instance, enforces limits (body size, timeouts), and
+   forwards the request over the internal network. It adds headers such as
+   <code>X-Forwarded-For</code> so the app knows the real client IP. See
+   <a href="../../../06-servers-and-infrastructure/load-balancing/">load balancing</a>.</li>
+<li><strong>Application middleware.</strong> Code that runs for many routes: assigning a
+   request ID, logging, parsing the body, CORS, rate limiting, and checking
+   the session or token. See <a href="../../express/middleware/">middleware</a>.</li>
+<li><strong>Routing.</strong> The framework matches the method and path to a handler.</li>
+<li><strong>Controller.</strong> Reads parameters, validates input, and calls a service.</li>
+<li><strong>Service.</strong> Applies business rules and decides what data is needed.</li>
+<li><strong>Cache and database.</strong> The service checks a cache, and on a miss
+    queries the database. This is very often the slowest step.</li>
+<li><strong>Response.</strong> The app sets a status code, headers, and a body. It travels
+    back through the proxy and CDN to the client.</li>
+<li><strong>Client handling.</strong> The browser checks the status, parses the body, and
+    updates the page. For a document, it may then request more resources.</li>
+</ol>
+<h3 id="where-latency-comes-from">Where latency comes from<a class="headerlink" href="#where-latency-comes-from" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Hop</th>
+<th>What adds time</th>
+<th>How to reduce it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DNS</td>
+<td>Uncached lookups, slow resolvers</td>
+<td>DNS caching, sensible TTLs</td>
+</tr>
+<tr>
+<td>TCP + TLS</td>
+<td>Round trips on each new connection, distance to server</td>
+<td>Connection reuse (keep-alive), HTTP/2, TLS 1.3, servers or CDN near users</td>
+</tr>
+<tr>
+<td>Proxy / load balancer</td>
+<td>Extra hop, queueing under load</td>
+<td>Keep it close to the app; scale it</td>
+</tr>
+<tr>
+<td>Middleware</td>
+<td>Expensive work on every request</td>
+<td>Keep middleware cheap; scope it to routes that need it</td>
+</tr>
+<tr>
+<td>Business logic</td>
+<td>CPU-heavy work blocking the event loop</td>
+<td>Move heavy work to workers or queues</td>
+</tr>
+<tr>
+<td>Database</td>
+<td>Missing indexes, too many queries, large results</td>
+<td>Indexes, pagination, caching, fewer round trips</td>
+</tr>
+<tr>
+<td>External APIs</td>
+<td>Slow third parties</td>
+<td>Timeouts, caching, asynchronous processing</td>
+</tr>
+<tr>
+<td>Response size</td>
+<td>Large JSON bodies</td>
+<td>Pagination, field selection, compression</td>
+</tr>
+</tbody>
+</table>
+<p>A useful habit: measure each step (with logs, timing headers, or tracing)
+before optimizing. See <a href="../logging-and-monitoring/">logging and monitoring</a>.</p>
+<h3 id="http-versions-in-brief">HTTP versions in brief<a class="headerlink" href="#http-versions-in-brief" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Version</th>
+<th>Transport</th>
+<th>What changes for you</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HTTP/1.1</td>
+<td>TCP</td>
+<td>One request at a time per connection; browsers open several connections</td>
+</tr>
+<tr>
+<td>HTTP/2</td>
+<td>TCP</td>
+<td>Many requests multiplexed over one connection; compressed headers</td>
+</tr>
+<tr>
+<td>HTTP/3</td>
+<td>QUIC over UDP</td>
+<td>Faster connection setup; one lost packet does not stall every stream</td>
+</tr>
+</tbody>
+</table>
+<p>Your application code uses the same methods, headers, and status codes in
+every version. The proxy or CDN often speaks HTTP/2 or HTTP/3 to browsers and
+HTTP/1.1 to your app. See <a href="../../../01-networking-and-protocols/http-and-https/">HTTP and HTTPS</a>
+and <a href="../../../01-networking-and-protocols/quic-and-http3/">QUIC and HTTP/3</a>.</p>
+<h3 id="keep-alive-and-connection-reuse">Keep-alive and connection reuse<a class="headerlink" href="#keep-alive-and-connection-reuse" title="Permanent link">&para;</a></h3>
+<p>Opening a TCP and TLS connection is expensive. HTTP/1.1 keeps connections
+open by default (persistent connections) so later requests skip the
+handshakes. HTTP/2 goes further and sends many requests over one connection
+at the same time.</p>
+<p><img alt="Timeline: without keep-alive, each of three GET requests is preceded by its own TCP and TLS handshake; with keep-alive, one TCP and one TLS handshake are followed by all three requests, saving two TCP and two TLS handshakes." src="../keep-alive-connection-reuse.svg" /></p>
+<p>On the server side, keep-alive has a timeout: an idle connection is closed
+after a while. A classic bug happens when the app server's keep-alive
+timeout is <em>shorter</em> than the load balancer's: the balancer reuses a
+connection the app just closed, and some requests fail with <code>502</code>. Node.js
+closes idle keep-alive connections after 5 seconds by default (responses
+carry <code>Keep-Alive: timeout=5</code>), while load balancers often wait much longer;
+AWS Application Load Balancers default to 60 seconds. Set the app's
+keep-alive timeout longer than the proxy's idle timeout. See
+<a href="../../express/production-and-performance/">running Express in production</a>.</p>
+<p>Your backend is also a client. Reuse connections when it calls databases
+(connection pools) and other APIs (HTTP agents with keep-alive).</p>
+<h3 id="where-failures-surface">Where failures surface<a class="headerlink" href="#where-failures-surface" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>What you see</th>
+<th>Usually produced by</th>
+<th>Typical cause</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Browser network error, no status</td>
+<td>Client, DNS, or network</td>
+<td>DNS failure, TLS error, server unreachable, CORS block</td>
+</tr>
+<tr>
+<td><code>500 Internal Server Error</code></td>
+<td>Your application</td>
+<td>Unhandled exception, bug, failed dependency not mapped to another code</td>
+</tr>
+<tr>
+<td><code>502 Bad Gateway</code></td>
+<td>Proxy or load balancer</td>
+<td>App crashed, closed the connection, or returned an invalid response</td>
+</tr>
+<tr>
+<td><code>503 Service Unavailable</code></td>
+<td>Proxy or the app itself</td>
+<td>No healthy instances, overload, maintenance</td>
+</tr>
+<tr>
+<td><code>504 Gateway Timeout</code></td>
+<td>Proxy or load balancer</td>
+<td>App took longer than the proxy's timeout</td>
+</tr>
+<tr>
+<td><code>4xx</code> codes</td>
+<td>Your application (sometimes the proxy)</td>
+<td>Bad input, missing auth, not found, rate limited</td>
+</tr>
+</tbody>
+</table>
+<p><img alt="Sequence diagram: when the app throws, it writes 500 and the proxy passes it through; when the app crashes or resets the connection, the proxy writes 502; when no healthy instance exists, the proxy writes 503; when the app is still working at the proxy's timeout, the proxy writes 504." src="../error-origins-500-vs-502-504.svg" /></p>
+<p>The first question when debugging is "which layer returned this?" Response
+headers (such as <code>Server</code> or a request-ID header) and proxy logs usually tell
+you. See <a href="../http-status-codes/">HTTP status codes</a>.</p>
+<h3 id="statelessness-and-how-state-is-carried">Statelessness and how state is carried<a class="headerlink" href="#statelessness-and-how-state-is-carried" title="Permanent link">&para;</a></h3>
+<p>HTTP is <strong>stateless</strong>: each request is understood on its own, and the
+protocol does not remember earlier requests. Applications still need to know
+who is logged in and what is in a cart, so state travels in one of these
+ways:</p>
+<ul>
+<li><strong>Cookies.</strong> The server sets a cookie (often a session ID); the browser
+  sends it back automatically on later requests to that site.</li>
+<li><strong>Tokens.</strong> The client stores a token (for example a JWT) and sends it in
+  the <code>Authorization</code> header.</li>
+<li><strong>Server-side storage.</strong> The session ID or token points to data held in a
+  database or cache such as Redis.</li>
+<li><strong>The URL.</strong> Query parameters carry non-sensitive state such as the page
+  number or filters.</li>
+</ul>
+<p>See <a href="../sessions-cookies-and-jwt/">sessions, cookies, and JWT</a>.</p>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<p>The lifecycle is always there; the choices are which layers to put in front
+of your app and where each concern lives.</p>
+<p>Put a <strong>CDN</strong> in front when:</p>
+<ul>
+<li>You serve static assets or public, cacheable responses to users far from
+  your servers.</li>
+<li>You want edge protection (TLS, DDoS filtering) without running it
+  yourself.</li>
+</ul>
+<p>Do not rely on a CDN for personalized API responses; they must not be
+cached publicly, so the CDN only adds a hop for them.</p>
+<p>Put a <strong>reverse proxy or load balancer</strong> in front when:</p>
+<ul>
+<li>You run more than one app instance, or want zero-downtime deploys.</li>
+<li>You want TLS termination, request size limits, and timeouts in one place.</li>
+</ul>
+<p>Talking <strong>directly</strong> to a single app process is fine for local development
+and internal tools, but it leaves TLS, health checks, and failover to you.</p>
+<table>
+<thead>
+<tr>
+<th>Concern</th>
+<th>Best place</th>
+<th>Why not elsewhere</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TLS termination</td>
+<td>Load balancer or proxy</td>
+<td>One place to manage certificates; apps stay simple</td>
+</tr>
+<tr>
+<td>Static files</td>
+<td>CDN or proxy</td>
+<td>Node.js processes are better spent on dynamic work</td>
+</tr>
+<tr>
+<td>Authentication and authorization</td>
+<td>App middleware</td>
+<td>Needs your user data and business rules</td>
+</tr>
+<tr>
+<td>Rate limiting</td>
+<td>Gateway or app (shared store)</td>
+<td>Proxy limits are coarse; app limits know the user</td>
+</tr>
+<tr>
+<td>Business rules</td>
+<td>Service layer</td>
+<td>Must be tested and reused independently of HTTP</td>
+</tr>
+<tr>
+<td>Request IDs</td>
+<td>Edge, propagated by every layer</td>
+<td>One ID must follow the request end to end</td>
+</tr>
+</tbody>
+</table>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="watch-a-request-with-curl">Watch a request with curl<a class="headerlink" href="#watch-a-request-with-curl" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-v<span class="w"> </span>https://api.example.com/health
+</code></pre></div>
+<p><code>-v</code> prints the steps: the resolved IP, the TCP connection, the TLS
+handshake, the request headers sent (<code>&gt;</code> lines), and the response headers
+received (<code>&lt;</code> lines). Use an endpoint you are allowed to call.</p>
+<p>Time each phase:</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-o<span class="w"> </span>/dev/null<span class="w"> </span>-s<span class="w"> </span>-w<span class="w"> </span><span class="s2">"dns=%{time_namelookup} connect=%{time_connect} tls=%{time_appconnect} first_byte=%{time_starttransfer} total=%{time_total}\n"</span><span class="w"> </span>https://api.example.com/health
+</code></pre></div>
+<p>If <code>first_byte</code> is much larger than <code>tls</code>, the time is being spent on the
+server, not on the network.</p>
+<h3 id="the-raw-request-and-response">The raw request and response<a class="headerlink" href="#the-raw-request-and-response" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>GET /api/orders?page=1 HTTP/1.1
+Host: api.shop.example
+Accept: application/json
+Authorization: Bearer eyJhbGciOi...
+X-Request-Id: 7f3c9a2e
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+Cache-Control: private, no-cache
+X-Request-Id: 7f3c9a2e
+
+{"data":[{"id":"ord_1","total":4999}],"page":1,"hasMore":false}
+</code></pre></div>
+<h3 id="tracing-the-request-through-express">Tracing the request through Express<a class="headerlink" href="#tracing-the-request-through-express" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="nx">express</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"express"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">randomUUID</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:crypto"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">app</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">express</span><span class="p">();</span>
+
+<span class="c1">// Middleware: give every request an ID and time it</span>
+<span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">((</span><span class="nx">req</span><span class="p">,</span><span class="w"> </span><span class="nx">res</span><span class="p">,</span><span class="w"> </span><span class="nx">next</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">req</span><span class="p">.</span><span class="nx">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">req</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">"X-Request-Id"</span><span class="p">)</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="nx">randomUUID</span><span class="p">();</span>
+<span class="w">  </span><span class="nx">res</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s2">"X-Request-Id"</span><span class="p">,</span><span class="w"> </span><span class="nx">req</span><span class="p">.</span><span class="nx">id</span><span class="p">);</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">start</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">performance</span><span class="p">.</span><span class="nx">now</span><span class="p">();</span>
+<span class="w">  </span><span class="nx">res</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">"finish"</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">ms</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nx">performance</span><span class="p">.</span><span class="nx">now</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nx">start</span><span class="p">).</span><span class="nx">toFixed</span><span class="p">(</span><span class="mf">1</span><span class="p">);</span>
+<span class="w">    </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`</span><span class="si">${</span><span class="nx">req</span><span class="p">.</span><span class="nx">id</span><span class="si">}</span><span class="sb"> </span><span class="si">${</span><span class="nx">req</span><span class="p">.</span><span class="nx">method</span><span class="si">}</span><span class="sb"> </span><span class="si">${</span><span class="nx">req</span><span class="p">.</span><span class="nx">originalUrl</span><span class="si">}</span><span class="sb"> </span><span class="si">${</span><span class="nx">res</span><span class="p">.</span><span class="nx">statusCode</span><span class="si">}</span><span class="sb"> </span><span class="si">${</span><span class="nx">ms</span><span class="si">}</span><span class="sb">ms`</span><span class="p">);</span>
+<span class="w">  </span><span class="p">});</span>
+<span class="w">  </span><span class="nx">next</span><span class="p">();</span>
+<span class="p">});</span>
+
+<span class="c1">// Router + controller</span>
+<span class="nx">app</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">"/api/orders"</span><span class="p">,</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="nx">req</span><span class="p">,</span><span class="w"> </span><span class="nx">res</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">page</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Number</span><span class="p">(</span><span class="nx">req</span><span class="p">.</span><span class="nx">query</span><span class="p">.</span><span class="nx">page</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="mf">1</span><span class="p">);</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">orders</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">findOrdersForPage</span><span class="p">(</span><span class="nx">page</span><span class="p">);</span><span class="w"> </span><span class="c1">// service + data access</span>
+<span class="w">  </span><span class="nx">res</span><span class="p">.</span><span class="nx">json</span><span class="p">({</span><span class="w"> </span><span class="nx">data</span><span class="o">:</span><span class="w"> </span><span class="nx">orders</span><span class="p">,</span><span class="w"> </span><span class="nx">page</span><span class="w"> </span><span class="p">});</span>
+<span class="p">});</span>
+
+<span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">findOrdersForPage</span><span class="p">(</span><span class="nx">page</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="p">[{</span><span class="w"> </span><span class="nx">id</span><span class="o">:</span><span class="w"> </span><span class="s2">"ord_1"</span><span class="p">,</span><span class="w"> </span><span class="nx">total</span><span class="o">:</span><span class="w"> </span><span class="mf">4999</span><span class="w"> </span><span class="p">}];</span><span class="w"> </span><span class="c1">// stands in for a database query</span>
+<span class="p">}</span>
+
+<span class="nx">app</span><span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="mf">3000</span><span class="p">);</span>
+</code></pre></div>
+<p>The <code>finish</code> event fires once the response is sent, so the log line shows
+the final status and the total time spent inside the app.</p>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Propagate a request ID</strong> from the edge through every service and log
+  line so one request can be traced end to end.</li>
+<li><strong>Set timeouts at every layer</strong>, and make each inner timeout shorter than
+  the outer one (database &lt; app &lt; proxy &lt; client).</li>
+<li><strong>Reuse connections</strong> with keep-alive and connection pools.</li>
+<li><strong>Configure trust in proxy headers</strong> correctly so the app sees the real
+  client IP and protocol. See <a href="../../express/request-object/">the request object</a>.</li>
+<li><strong>Cache where it is safe:</strong> static assets at the CDN, expensive reads in a
+  cache, and HTTP caching headers for public data.</li>
+<li><strong>Keep middleware cheap</strong> and run expensive checks only on routes that need
+  them.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Intermittent <code>502</code> errors with no app errors.</strong>
+  <em>Symptom:</em> about one request in a few thousand fails with <code>502</code>, often the
+  first request after an idle period. <em>Detect:</em> the load balancer's logs show
+  it generated the <code>502</code>, while the app logged no error for that request.
+  <em>Cause:</em> the app's keep-alive timeout (5 seconds by default in Node.js) is
+  shorter than the load balancer's idle timeout. <em>Fix:</em> raise
+  <code>server.keepAliveTimeout</code> above the load balancer's idle timeout, as AWS
+  recommends for its load balancers.</li>
+<li><strong><code>504</code>, <code>524</code>, or <code>H12</code> on slow endpoints.</strong>
+  <em>Symptom:</em> large exports or reports fail, small ones work. <em>Detect:</em> the
+  error is produced by the proxy or platform (Cloudflare <code>524</code>, Heroku <code>H12</code>,
+  a load balancer <code>504</code>) at a fixed duration. <em>Cause:</em> the request outlives
+  the proxy's timeout. <em>Fix:</em> make the work asynchronous (<code>202</code> plus a status
+  URL), or speed it up; raising timeouts only hides the problem.</li>
+<li><strong>Every request appears to come from one IP.</strong>
+  <em>Symptom:</em> rate limiting blocks all users at once, and logs show the same
+  client IP for everyone. <em>Detect:</em> the logged IP is the load balancer's
+  private address. <em>Cause:</em> the app reads the socket address, not the
+  forwarded header. <em>Fix:</em> configure trusted proxies (Express <code>trust proxy</code>)
+  for exactly the proxies you run.</li>
+<li><strong>High latency on backend-to-backend calls.</strong>
+  <em>Symptom:</em> a call that takes 20 ms inside the data center takes 100 ms or
+  more from your app. <em>Detect:</em> tracing shows time in connection setup and
+  TLS handshakes on every call. <em>Cause:</em> a new connection per request.
+  <em>Fix:</em> reuse one HTTP client or agent with keep-alive, and use database
+  connection pools.</li>
+<li><strong>Timeouts that do not nest.</strong>
+  <em>Symptom:</em> clients retry while the server is still working, multiplying
+  load during an incident. <em>Detect:</em> duplicate request IDs or repeated
+  identical requests in logs during slowdowns. <em>Cause:</em> the client's timeout
+  is shorter than the server's work, or inner timeouts are longer than outer
+  ones. <em>Fix:</em> order timeouts database &lt; app &lt; proxy &lt; client, and make
+  retried operations idempotent.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Client:</strong> the side that initiates a request.</li>
+<li><strong>Server:</strong> the side that listens and responds.</li>
+<li><strong>Round trip (RTT):</strong> the time for a message to reach the other side and a
+  reply to come back.</li>
+<li><strong>DNS resolution:</strong> converting a host name to an IP address.</li>
+<li><strong>TLS termination:</strong> decrypting HTTPS at a proxy and forwarding plain HTTP
+  internally.</li>
+<li><strong>Reverse proxy:</strong> a server that sits in front of application servers and
+  forwards requests to them.</li>
+<li><strong>Upstream:</strong> the server a proxy forwards to (your app, from the proxy's
+  point of view).</li>
+<li><strong>Keep-alive:</strong> reusing an open connection for more than one request.</li>
+<li><strong>Stateless protocol:</strong> each request is interpreted without memory of
+  earlier ones.</li>
+<li><strong>Latency:</strong> the delay before a response arrives.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>"HTTP keeps me logged in."</strong> HTTP is stateless; cookies or tokens carry
+  the login on every request.</li>
+<li><strong>Treating every <code>5xx</code> as an app bug.</strong> <code>502</code> and <code>504</code> usually come from a
+  proxy that could not get a good, timely answer from the app.</li>
+<li><strong>Ignoring connection setup cost.</strong> Opening a new TLS connection for every
+  backend-to-backend call adds round trips; use keep-alive agents and pools.</li>
+<li><strong>App keep-alive shorter than the load balancer's idle timeout</strong>, causing
+  intermittent <code>502</code> errors.</li>
+<li><strong>Trusting <code>X-Forwarded-For</code> from anyone.</strong> Only trust it when it is set by
+  your own proxy.</li>
+<li><strong>Optimizing code first</strong> when the time is actually spent in a missing
+  database index or a slow external call.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>List the steps between typing a URL and your Express handler running.</li>
+<li>Which hops add round trips on a brand-new HTTPS connection, and how does
+   keep-alive help?</li>
+<li>A user sees <code>504 Gateway Timeout</code>. Which component produced it, and what
+   are the likely causes?</li>
+<li>If HTTP is stateless, how does a server know which user sent a request?</li>
+<li>Why should the app's keep-alive timeout be longer than the load
+   balancer's idle timeout?</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>MDN:</strong> <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview">An overview of HTTP</a>
+  covers the client-server model, requests, and responses.</li>
+<li><strong>MDN:</strong> <a href="https://developer.mozilla.org/en-US/docs/Learn/Server-side/First_steps/Client-Server_overview">Client-server overview</a>
+  explains what happens when a browser talks to a web server.</li>
+<li><strong>RFC 9110:</strong> <a href="https://www.rfc-editor.org/rfc/rfc9110">HTTP Semantics</a>
+  defines the request-response semantics shared by every HTTP version.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../backend-fundamentals/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Backend Fundamentals">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Backend Fundamentals</span>
+      </a>
+    
+    
+      <a href="../http-methods/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: HTTP Methods">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">HTTP Methods</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

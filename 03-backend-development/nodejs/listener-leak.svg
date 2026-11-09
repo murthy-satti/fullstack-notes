@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="430" viewBox="0 0 780 430" role="img" aria-labelledby="ll-title ll-desc">
+  <title id="ll-title">How a listener added per request leaks, and how to fix it</title>
+  <desc id="ll-desc">Left: each request calls on("update", fn) on a long-lived emitter and never removes it, so listeners from request 1, 2, 3 up to 11 accumulate; Node.js prints MaxListenersExceededWarning and memory keeps growing. Right: each request adds once("update", fn). If the event fires before the request ends, fn runs once and once removes it; otherwise the request cleanup calls off("update", fn). Either way the listener count stays at zero or one.</desc>
+  <defs>
+    <marker id="ll-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#40566b"/>
+    </marker>
+  </defs>
+  <rect width="780" height="430" rx="14" fill="#f5f7fb"/>
+  <g font-family="Arial, sans-serif" text-anchor="middle">
+    <rect x="16" y="16" width="366" height="372" rx="10" fill="none" stroke="#b5473a" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <rect x="398" y="16" width="366" height="372" rx="10" fill="none" stroke="#53845b" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <text x="199" y="42" font-size="14" font-weight="700" fill="#6b241c">Leak: on() in every request</text>
+    <text x="581" y="42" font-size="14" font-weight="700" fill="#294a2e">Fixed: once() or off()</text>
+
+    <rect x="40" y="60" width="318" height="40" rx="8" fill="#eef1f5" stroke="#8a96a3" stroke-width="2"/>
+    <text x="199" y="85" font-size="14" font-weight="700" fill="#36424e">long-lived emitter (never freed)</text>
+    <text x="210" y="122" font-size="11.5" font-style="italic" fill="#40566b" text-anchor="start">each request: on("update", fn)</text>
+    <g font-size="12" fill="#263e5a">
+      <rect x="80" y="132" width="240" height="24" rx="6" fill="#e5efff" stroke="#4774aa" stroke-width="1.5"/>
+      <text x="200" y="149">listener from request 1</text>
+      <rect x="80" y="162" width="240" height="24" rx="6" fill="#e5efff" stroke="#4774aa" stroke-width="1.5"/>
+      <text x="200" y="179">listener from request 2</text>
+      <rect x="80" y="192" width="240" height="24" rx="6" fill="#e5efff" stroke="#4774aa" stroke-width="1.5"/>
+      <text x="200" y="209">listener from request 3</text>
+    </g>
+    <text x="200" y="236" font-size="16" font-weight="700" fill="#4774aa">⋮</text>
+    <rect x="80" y="246" width="240" height="24" rx="6" fill="#fde8e6" stroke="#b5473a" stroke-width="1.5"/>
+    <text x="200" y="263" font-size="12" font-weight="700" fill="#6b241c">listener from request 11</text>
+    <rect x="40" y="296" width="318" height="48" rx="8" fill="#fde8e6" stroke="#b5473a" stroke-width="2"/>
+    <text x="199" y="316" font-size="14" font-weight="700" fill="#6b241c">MaxListenersExceededWarning</text>
+    <text x="199" y="333" font-size="11.5" fill="#6b241c">and memory keeps growing</text>
+
+    <rect x="420" y="60" width="322" height="44" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="581" y="79" font-size="14" font-weight="700" fill="#263e5a">request adds a listener</text>
+    <text x="581" y="96" font-size="11.5" fill="#263e5a">emitter.once("update", fn)</text>
+
+    <path d="M581 124 681 156 581 188 481 156z" fill="#eef1f5" stroke="#8a96a3" stroke-width="2"/>
+    <text x="581" y="153" font-size="12" font-weight="700" fill="#36424e">event fires before</text>
+    <text x="581" y="167" font-size="12" font-weight="700" fill="#36424e">the request ends?</text>
+
+    <rect x="414" y="214" width="160" height="48" rx="8" fill="#fff0d9" stroke="#bd7a20" stroke-width="2"/>
+    <text x="494" y="234" font-size="14" font-weight="700" fill="#66400f">fn runs once</text>
+    <text x="494" y="251" font-size="11.5" fill="#66400f">once() removes it</text>
+    <rect x="620" y="214" width="138" height="48" rx="8" fill="#fff0d9" stroke="#bd7a20" stroke-width="2"/>
+    <text x="689" y="234" font-size="14" font-weight="700" fill="#66400f">cleanup: off()</text>
+    <text x="689" y="251" font-size="11.5" fill="#66400f">removes fn</text>
+
+    <rect x="420" y="296" width="322" height="48" rx="8" fill="#e8f5e9" stroke="#53845b" stroke-width="2"/>
+    <text x="581" y="316" font-size="14" font-weight="700" fill="#294a2e">listener count stays at 0 or 1</text>
+    <text x="581" y="333" font-size="11.5" fill="#294a2e">nothing accumulates</text>
+
+    <g fill="none" stroke="#40566b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M200 100V130" marker-end="url(#ll-arrow)"/>
+      <path d="M200 270V294" marker-end="url(#ll-arrow)"/>
+      <path d="M581 104V122" marker-end="url(#ll-arrow)"/>
+      <path d="M481 156H494V212" marker-end="url(#ll-arrow)"/>
+      <path d="M681 156H689V212" marker-end="url(#ll-arrow)"/>
+      <path d="M494 262V294" marker-end="url(#ll-arrow)"/>
+      <path d="M689 262V294" marker-end="url(#ll-arrow)"/>
+    </g>
+    <g font-size="12" font-weight="700" fill="#40566b">
+      <text x="456" y="150">yes</text>
+      <text x="704" y="150">no</text>
+    </g>
+    <text x="390" y="414" font-size="13" fill="#40566b">A listener added per request must be removed, or the emitter keeps every one alive.</text>
+  </g>
+</svg>

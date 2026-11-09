@@ -1,0 +1,2733 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../availability-and-reliability/">
+      
+      
+        <link rel="next" href="../performance-and-latency/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Consistency and the CAP Theorem - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#consistency-and-the-cap-theorem" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Consistency and the CAP Theorem
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-ai-and-machine-learning/" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../06-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-devops-and-deployment/" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../08-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to Application Architecture">
+          <span class="md-ellipsis">&larr; Back to Architecture</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to Application Architecture">
+                  <span class="md-ellipsis">&larr; Back to Architecture</span>
+                </a>
+              
+            </div>
+          
+          
+            <label class="md-nav__title" for="__nav_6">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Application Architecture
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_6" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_6_6" id="__nav_6_6_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scalability
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_6_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_6_6">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Scalability
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../scalability-fundamentals/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scaling the System
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_6_3" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_6_6_3" id="__nav_6_6_3_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Staying Available and Correct
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_6_6_3_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_6_6_3">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Staying Available and Correct
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../availability-and-reliability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Availability and Reliability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Consistency and the CAP Theorem
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Consistency and the CAP Theorem
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#consistency-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consistency models
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#replication-lag-in-practice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Replication lag in practice
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-cap-theorem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The CAP theorem
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pacelc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PACELC
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quorum-reads-and-writes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quorum reads and writes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#conflict-resolution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conflict resolution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#consensus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consensus
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#choosing-per-feature" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Choosing per feature
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#read-your-writes-with-a-replica-router" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Read-your-writes with a replica router
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tunable-consistency-in-mongodb" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tunable consistency in MongoDB
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quorum-check" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quorum check
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../performance-and-latency/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Measuring and Planning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-ai-and-machine-learning/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI and Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../06-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-devops-and-deployment/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DevOps and Deployment
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../08-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#consistency-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consistency models
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#replication-lag-in-practice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Replication lag in practice
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-cap-theorem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The CAP theorem
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pacelc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PACELC
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quorum-reads-and-writes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quorum reads and writes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#conflict-resolution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conflict resolution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#consensus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consensus
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#choosing-per-feature" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Choosing per feature
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#read-your-writes-with-a-replica-router" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Read-your-writes with a replica router
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tunable-consistency-in-mongodb" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tunable consistency in MongoDB
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quorum-check" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quorum check
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="consistency-and-the-cap-theorem">Consistency and the CAP Theorem<a class="headerlink" href="#consistency-and-the-cap-theorem" title="Permanent link">&para;</a></h1>
+<p>As soon as data is copied to more than one machine (for availability, for
+read scaling, or to be near users), the copies can disagree for a while. A
+<strong>consistency model</strong> describes what a reader may see while that happens.
+The <strong>CAP theorem</strong> explains a hard limit: when the network splits, a
+replicated system must choose between staying consistent and staying
+available. This page explains the models, the theorem, and how to choose per
+feature.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Replication lag causes real bugs:</strong> a user changes their name, refreshes,
+  and sees the old one; a comment appears before the post it replies to.</li>
+<li><strong>Some data must never be inconsistent</strong> (a bank balance, the last seat on
+  a flight, a unique username), while some can be slightly stale (a like
+  count, a product's review summary). Using the strongest model everywhere
+  wastes latency and availability; using the weakest everywhere causes
+  correctness bugs.</li>
+<li><strong>Databases expose these choices as settings</strong> (read and write concerns,
+  consistency levels, read preferences). You need the concepts to configure
+  them correctly.</li>
+<li><strong>CAP is a staple of system design interviews</strong> and is often stated wrongly.</li>
+</ul>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Amazon's always-writeable shopping cart.</strong> Amazon's CTO described Dynamo,
+  the internal store behind services such as the shopping cart: customers
+  must be able to view and add items to their cart even if disks fail,
+  network routes flap, or data centers are destroyed, so the cart service
+  must always be able to read and write. Dynamo sacrifices consistency under
+  certain failure scenarios and uses object versioning with
+  application-assisted conflict resolution
+  (<a href="https://www.allthingsdistributed.com/2007/10/amazons_dynamo.html">All Things Distributed</a>).</li>
+<li><strong>DynamoDB's per-request choice.</strong> DynamoDB reads are eventually consistent
+  by default; setting <code>ConsistentRead</code> returns the most up-to-date data for
+  tables and local secondary indexes, while global secondary indexes and
+  streams are always eventually consistent
+  (<a href="https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadConsistency.html">DynamoDB documentation</a>).</li>
+<li><strong>Amazon S3's strong consistency.</strong> S3 provides strong read-after-write
+  consistency for <code>PUT</code> and <code>DELETE</code> of objects in all AWS Regions, so a read
+  after a successful write returns the new object
+  (<a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html">Amazon S3 documentation</a>).</li>
+<li><strong>Google Spanner's external consistency.</strong> Spanner provides external
+  consistency, which Google describes as stronger than linearizability: the
+  system behaves as if all transactions ran one after another. Timestamps
+  from its TrueTime clock service also allow consistent reads across a whole
+  database, even across regions, without blocking writes
+  (<a href="https://cloud.google.com/spanner/docs/true-time-external-consistency">Spanner documentation</a>).</li>
+<li><strong>Figma's multiplayer editing.</strong> Figma's real-time collaboration was
+  informed by CRDTs. Its server defines the order of events, and when two
+  people change the same property of the same object, the last value sent to
+  the server wins, similar to a last-writer-wins register
+  (<a href="https://www.figma.com/blog/how-figmas-multiplayer-technology-works/">Figma blog</a>).</li>
+</ul>
+<p><strong>Popular tools and providers:</strong> strongly consistent distributed databases
+such as Google Spanner and CockroachDB; consensus stores such as etcd and
+ZooKeeper; tunable-consistency stores such as Apache Cassandra, Amazon
+DynamoDB, and MongoDB; CRDT libraries such as Automerge and Yjs for
+collaborative apps.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="consistency-models">Consistency models<a class="headerlink" href="#consistency-models" title="Permanent link">&para;</a></h3>
+<p>From strongest to weakest:</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Guarantee</th>
+<th>Example of what it rules out</th>
+<th>Cost</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Linearizable (strong)</td>
+<td>Every operation appears to happen at a single instant between its start and end; once a write completes, every later read sees it</td>
+<td>Reading an old value after someone else's write finished</td>
+<td>Coordination on every write and read; higher latency; unavailable during partitions</td>
+</tr>
+<tr>
+<td>Sequential</td>
+<td>All clients see all operations in the same order, consistent with each client's own order (but not necessarily real time)</td>
+<td>Two clients seeing two writes in different orders</td>
+<td>Coordination, slightly less than linearizable</td>
+</tr>
+<tr>
+<td>Causal</td>
+<td>Operations that are causally related (a reply after the message it answers) are seen in that order by everyone; unrelated ones may appear in any order</td>
+<td>Seeing a reply before the original message</td>
+<td>Tracking dependencies; can stay available during partitions</td>
+</tr>
+<tr>
+<td>Read-your-writes</td>
+<td>A client always sees its own previous writes</td>
+<td>A user not seeing the profile change they just saved</td>
+<td>Route the user's reads carefully</td>
+</tr>
+<tr>
+<td>Monotonic reads</td>
+<td>Once a client has seen a value, it never sees an older one later</td>
+<td>A refresh showing a newer comment list, then an older one</td>
+<td>Stick a client to one replica, or track versions</td>
+</tr>
+<tr>
+<td>Eventual</td>
+<td>If writes stop, all replicas eventually converge to the same value</td>
+<td>Nothing in the short term; only guarantees convergence</td>
+<td>Cheapest, fastest, most available</td>
+</tr>
+</tbody>
+</table>
+<p>Read-your-writes and monotonic reads are <strong>session guarantees</strong>: they are
+about what one client sees, and are often enough to make an eventually
+consistent system feel correct to users.</p>
+<div class="admonition note">
+<p class="admonition-title">Two different C's</p>
+<p>The "C" in ACID means a transaction keeps the database's rules and
+constraints valid. The "C" in CAP means linearizability across replicas.
+They are unrelated.</p>
+</div>
+<h3 id="replication-lag-in-practice">Replication lag in practice<a class="headerlink" href="#replication-lag-in-practice" title="Permanent link">&para;</a></h3>
+<p>With a primary and asynchronous read replicas, writes reach replicas after a
+delay: usually milliseconds, sometimes seconds or minutes under load.</p>
+<div class="highlight"><pre><span></span><code>t=0 ms   user saves name "Ana Li"   -&gt; primary: "Ana Li"
+t=5 ms   user's page reloads         -&gt; reads replica 2: still "Ana"   (read-your-writes broken)
+t=40 ms  replica 2 catches up        -&gt; "Ana Li"
+</code></pre></div>
+<p>Other anomalies:</p>
+<ul>
+<li><strong>Monotonic reads broken:</strong> the first refresh hits a caught-up replica
+  (5 comments), the second hits a lagging one (3 comments).</li>
+<li><strong>Causality broken:</strong> a reply is replicated to a region before the question
+  it answers.</li>
+</ul>
+<p>Common fixes:</p>
+<ul>
+<li><strong>Read from the primary for a short time after a user writes</strong> (for
+  example, mark the session for a few seconds), or always for the user's own
+  data.</li>
+<li><strong>Pin a session to one replica</strong> (monotonic reads).</li>
+<li><strong>Track versions:</strong> the client remembers the version or timestamp of its
+  last write, and the server reads from a replica that has caught up to it
+  (or waits).</li>
+<li><strong>Causally consistent sessions,</strong> offered by some databases (MongoDB
+  provides them with majority read and write concerns).</li>
+</ul>
+<h3 id="the-cap-theorem">The CAP theorem<a class="headerlink" href="#the-cap-theorem" title="Permanent link">&para;</a></h3>
+<p>The CAP theorem (conjectured by Eric Brewer in 2000, proved by Seth Gilbert
+and Nancy Lynch in 2002) concerns a replicated data store and three
+properties:</p>
+<ul>
+<li><strong>C, consistency:</strong> linearizability; every read returns the most recent
+  completed write.</li>
+<li><strong>A, availability:</strong> every request received by a non-failing node gets a
+  non-error response.</li>
+<li><strong>P, partition tolerance:</strong> the system keeps operating even though the
+  network drops or delays messages between nodes.</li>
+</ul>
+<p>Stated precisely: <strong>when a network partition happens, a system must choose
+between consistency and availability.</strong></p>
+<p><img alt="A partition blocks replication between replica 1 in region A and replica 2 in region B. Client 1 withdraws $80 at replica 1, leaving $20; client 2 then reads from replica 2, which still holds $100. The CP system refuses the read with an error or timeout until the partition heals; the AP system answers $100, which is stale, and the replicas reconcile later." src="../cap-partition-cp-vs-ap.svg" /></p>
+<p>Key points:</p>
+<ul>
+<li><strong>Partitions are not optional</strong> in a distributed system; networks fail. So
+  the real choice is between <strong>CP</strong> (consistent, may refuse requests during
+  partitions) and <strong>AP</strong> (available, may return stale or conflicting data
+  during partitions).</li>
+<li><strong>"CA" is not a real option</strong> for a distributed system; it only describes a
+  single node, which avoids partitions by not being distributed.</li>
+<li>The choice applies <strong>only during a partition</strong>. When the network is
+  healthy, a system can be both consistent and available.</li>
+<li>Real systems are rarely purely one or the other: many are <strong>tunable</strong> per
+  operation, and the CAP definitions are narrow (linearizability, and
+  availability at every non-failing node).</li>
+</ul>
+<p>Typical examples:</p>
+<table>
+<thead>
+<tr>
+<th>Leaning</th>
+<th>Behavior during a partition</th>
+<th>Examples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CP</td>
+<td>The minority side stops accepting writes (and often reads)</td>
+<td>Consensus systems such as etcd and ZooKeeper; MongoDB replica sets (only a majority can elect a primary); databases using synchronous replication</td>
+</tr>
+<tr>
+<td>AP</td>
+<td>All sides keep serving; conflicts resolved later</td>
+<td>Dynamo-style stores such as Cassandra or Riak at low consistency levels; DNS; caches</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pacelc">PACELC<a class="headerlink" href="#pacelc" title="Permanent link">&para;</a></h3>
+<p>CAP says nothing about normal operation. PACELC (proposed by Daniel Abadi)
+extends it:</p>
+<div class="highlight"><pre><span></span><code>if there is a Partition (P):
+    choose Availability (A) or Consistency (C)
+Else (E), in normal operation:
+    choose lower Latency (L) or Consistency (C)
+</code></pre></div>
+<p>The "else" part is the everyday trade-off: waiting for replicas to confirm a
+write (or reading from several of them) gives consistency but adds latency,
+especially across regions. Dynamo-style stores lean <strong>PA/EL</strong> by default;
+systems built on synchronous replication and consensus lean <strong>PC/EC</strong>.</p>
+<h3 id="quorum-reads-and-writes">Quorum reads and writes<a class="headerlink" href="#quorum-reads-and-writes" title="Permanent link">&para;</a></h3>
+<p>Leaderless and quorum-based systems keep <strong>N</strong> copies of each item. A write
+waits for <strong>W</strong> replicas to acknowledge; a read queries <strong>R</strong> replicas and
+takes the newest value.</p>
+<p><img alt="With three replicas, a write of v2 succeeds after replicas A and B acknowledge, while slow replica C still holds v1. A reader queries B and C, receives v2 and v1, compares versions, and returns v2, because replica B is in both the write set and the read set." src="../quorum-n3-w2-r2.svg" /></p>
+<div class="highlight"><pre><span></span><code>If R + W &gt; N, every read set overlaps every write set in at least one replica,
+so a read sees at least one copy of the latest successful write.
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>N</th>
+<th>W</th>
+<th>R</th>
+<th>R + W &gt; N?</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3</td>
+<td>2</td>
+<td>2</td>
+<td>Yes (4 &gt; 3)</td>
+<td>Balanced; tolerates one node down for both reads and writes</td>
+</tr>
+<tr>
+<td>3</td>
+<td>3</td>
+<td>1</td>
+<td>Yes (4 &gt; 3)</td>
+<td>Fast reads; writes fail if any replica is down</td>
+</tr>
+<tr>
+<td>3</td>
+<td>1</td>
+<td>3</td>
+<td>Yes (4 &gt; 3)</td>
+<td>Fast writes; reads fail if any replica is down</td>
+</tr>
+<tr>
+<td>3</td>
+<td>1</td>
+<td>1</td>
+<td>No (2 is not greater than 3)</td>
+<td>Fastest and most available; reads may be stale (eventual)</td>
+</tr>
+</tbody>
+</table>
+<p>Cassandra exposes this as consistency levels per query, such as <code>ONE</code>,
+<code>QUORUM</code> (a majority of replicas), <code>LOCAL_QUORUM</code> (a majority within the
+local data center), and <code>ALL</code>.</p>
+<p>Caveats: quorums do not by themselves give linearizability. Concurrent
+writes, writes that partly succeed and then fail, and "sloppy" quorums that
+accept writes on substitute nodes during failures can all still produce
+anomalies.</p>
+<h3 id="conflict-resolution">Conflict resolution<a class="headerlink" href="#conflict-resolution" title="Permanent link">&para;</a></h3>
+<p>When replicas accept writes independently (AP systems, multi-leader or
+offline-first setups), the same item can be changed in two places. The
+system must merge the versions:</p>
+<ul>
+<li><strong>Last-write-wins (LWW):</strong> keep the version with the latest timestamp.
+  Simple, but clocks on different machines drift, and the "losing" write is
+  silently discarded.</li>
+<li><strong>Version vectors / vector clocks:</strong> each replica tracks a counter per
+  replica, which lets the system detect whether two versions are ordered or
+  truly concurrent. Concurrent versions ("siblings") are kept and merged by
+  the application or the user.</li>
+<li><strong>CRDTs (conflict-free replicated data types):</strong> data structures such as
+  counters, sets, and sequences designed so that concurrent updates always
+  merge to the same result in any order. Used in collaborative editors and
+  some databases.</li>
+<li><strong>Application-level merge:</strong> business rules decide, for example "union of
+  shopping cart items" or "flag for manual review".</li>
+</ul>
+<p>The best conflict is the one you avoid: route all writes for an item to one
+place (a single leader or a home region per user) when you can.</p>
+<h3 id="consensus">Consensus<a class="headerlink" href="#consensus" title="Permanent link">&para;</a></h3>
+<p>Strong consistency across replicas relies on <strong>consensus algorithms</strong> such as
+Raft and Paxos. A majority of nodes must agree on each change, so a cluster
+of 2f + 1 nodes tolerates f failures (3 nodes tolerate 1, 5 tolerate 2). A
+minority partition cannot make progress, which is exactly the CP choice.
+etcd, ZooKeeper, Kafka's KRaft controllers, and RabbitMQ quorum queues use
+this approach.</p>
+<h3 id="choosing-per-feature">Choosing per feature<a class="headerlink" href="#choosing-per-feature" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Needs</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Account balance, payments, inventory decrements</td>
+<td>Strong (or serialized through one leader/transaction)</td>
+<td>A stale read allows overspending or overselling</td>
+</tr>
+<tr>
+<td>Unique usernames or emails</td>
+<td>Strong uniqueness check</td>
+<td>Two users must not claim the same name</td>
+</tr>
+<tr>
+<td>A user editing their own profile or settings</td>
+<td>Read-your-writes</td>
+<td>They must see their own change; others can lag</td>
+</tr>
+<tr>
+<td>Comments and chat</td>
+<td>Causal</td>
+<td>Replies must not appear before what they answer</td>
+</tr>
+<tr>
+<td>Social feeds, like and view counts</td>
+<td>Eventual</td>
+<td>Slight staleness is invisible and cheap</td>
+</tr>
+<tr>
+<td>Product catalog, search index</td>
+<td>Eventual (seconds to minutes)</td>
+<td>Updated in the background</td>
+</tr>
+<tr>
+<td>Analytics dashboards</td>
+<td>Eventual (minutes or more)</td>
+<td>Approximate and delayed is fine</td>
+</tr>
+</tbody>
+</table>
+<p>One system often mixes models: strong consistency for the order and payment,
+eventual consistency for the "recently viewed" list on the same page.</p>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Use when</th>
+<th>Avoid when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Strong (linearizable, or one leader + transactions)</td>
+<td>Money, inventory, bookings, uniqueness, permissions changes that must apply immediately</td>
+<td>Data is read globally at high volume and slight staleness is harmless; cross-region writes make every request slow</td>
+</tr>
+<tr>
+<td>Session guarantees (read-your-writes, monotonic reads)</td>
+<td>Users editing their own data on top of replicas or caches</td>
+<td>Other users must also see the change immediately (needs strong)</td>
+</tr>
+<tr>
+<td>Causal</td>
+<td>Comments, chat, collaborative content where replies must follow what they answer</td>
+<td>Simple key-value data with no relationships between writes</td>
+</tr>
+<tr>
+<td>Eventual</td>
+<td>Feeds, counters, analytics, search indexes, caches, recommendations</td>
+<td>A stale read can cause loss, overselling, security problems, or duplicates</td>
+</tr>
+</tbody>
+</table>
+<p>Strong consistency is not free: it adds latency (waiting for a majority or a
+leader), reduces availability during partitions, and makes multi-region
+writes slow. Eventual consistency is not free either: you must handle
+staleness in the UI and resolve conflicts. Choose per feature, and default to
+the weakest model that is still correct for the business.</p>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="read-your-writes-with-a-replica-router">Read-your-writes with a replica router<a class="headerlink" href="#read-your-writes-with-a-replica-router" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// After a user writes, send their reads to the primary for a short window</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">STICKY_MS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">5</span><span class="nx">_000</span><span class="p">;</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">lastWriteAt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Map</span><span class="p">();</span><span class="w"> </span><span class="c1">// userId -&gt; timestamp (use Redis when running many instances)</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">recordWrite</span><span class="p">(</span><span class="nx">userId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">lastWriteAt</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nx">userId</span><span class="p">,</span><span class="w"> </span><span class="nb">Date</span><span class="p">.</span><span class="nx">now</span><span class="p">());</span>
+<span class="p">}</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">poolForRead</span><span class="p">(</span><span class="nx">userId</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">primary</span><span class="p">,</span><span class="w"> </span><span class="nx">replica</span><span class="w"> </span><span class="p">})</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">wroteRecently</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Date</span><span class="p">.</span><span class="nx">now</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="nx">lastWriteAt</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">userId</span><span class="p">)</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="mf">0</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="nx">STICKY_MS</span><span class="p">;</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">wroteRecently</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="nx">primary</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="nx">replica</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c1">// In a handler</span>
+<span class="nx">app</span><span class="p">.</span><span class="nx">patch</span><span class="p">(</span><span class="s2">"/api/me"</span><span class="p">,</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="nx">req</span><span class="p">,</span><span class="w"> </span><span class="nx">res</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">pools</span><span class="p">.</span><span class="nx">primary</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s2">"UPDATE users SET name = $1 WHERE id = $2 RETURNING *"</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="nx">req</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span><span class="w"> </span><span class="nx">req</span><span class="p">.</span><span class="nx">user</span><span class="p">.</span><span class="nx">id</span><span class="p">]);</span>
+<span class="w">  </span><span class="nx">recordWrite</span><span class="p">(</span><span class="nx">req</span><span class="p">.</span><span class="nx">user</span><span class="p">.</span><span class="nx">id</span><span class="p">);</span>
+<span class="w">  </span><span class="nx">res</span><span class="p">.</span><span class="nx">json</span><span class="p">(</span><span class="nx">user</span><span class="p">.</span><span class="nx">rows</span><span class="p">[</span><span class="mf">0</span><span class="p">]);</span>
+<span class="p">});</span>
+
+<span class="nx">app</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">"/api/me"</span><span class="p">,</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="nx">req</span><span class="p">,</span><span class="w"> </span><span class="nx">res</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">pool</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">poolForRead</span><span class="p">(</span><span class="nx">req</span><span class="p">.</span><span class="nx">user</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span><span class="w"> </span><span class="nx">pools</span><span class="p">);</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">pool</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s2">"SELECT * FROM users WHERE id = $1"</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="nx">req</span><span class="p">.</span><span class="nx">user</span><span class="p">.</span><span class="nx">id</span><span class="p">]);</span>
+<span class="w">  </span><span class="nx">res</span><span class="p">.</span><span class="nx">json</span><span class="p">(</span><span class="nx">user</span><span class="p">.</span><span class="nx">rows</span><span class="p">[</span><span class="mf">0</span><span class="p">]);</span>
+<span class="p">});</span>
+</code></pre></div>
+<h3 id="tunable-consistency-in-mongodb">Tunable consistency in MongoDB<a class="headerlink" href="#tunable-consistency-in-mongodb" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">MongoClient</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"mongodb"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">client</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">MongoClient</span><span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">MONGODB_URI</span><span class="p">);</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">orders</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">client</span><span class="p">.</span><span class="nx">db</span><span class="p">(</span><span class="s2">"shop"</span><span class="p">).</span><span class="nx">collection</span><span class="p">(</span><span class="s2">"orders"</span><span class="p">);</span>
+
+<span class="c1">// Acknowledged only after a majority of replica set members have the write</span>
+<span class="k">await</span><span class="w"> </span><span class="nx">orders</span><span class="p">.</span><span class="nx">insertOne</span><span class="p">({</span><span class="w"> </span><span class="nx">_id</span><span class="o">:</span><span class="w"> </span><span class="s2">"ord_901"</span><span class="p">,</span><span class="w"> </span><span class="nx">status</span><span class="o">:</span><span class="w"> </span><span class="s2">"paid"</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">writeConcern</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">w</span><span class="o">:</span><span class="w"> </span><span class="s2">"majority"</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">});</span>
+
+<span class="c1">// Read only data that a majority has acknowledged (it cannot be rolled back)</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">doc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">orders</span><span class="p">.</span><span class="nx">findOne</span><span class="p">({</span><span class="w"> </span><span class="nx">_id</span><span class="o">:</span><span class="w"> </span><span class="s2">"ord_901"</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">readConcern</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">level</span><span class="o">:</span><span class="w"> </span><span class="s2">"majority"</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">});</span>
+
+<span class="c1">// Causally consistent session: this session's reads observe its own earlier writes,</span>
+<span class="c1">// even when reading from secondaries</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">session</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">client</span><span class="p">.</span><span class="nx">startSession</span><span class="p">({</span><span class="w"> </span><span class="nx">causalConsistency</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">});</span>
+<span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">await</span><span class="w"> </span><span class="nx">orders</span><span class="p">.</span><span class="nx">updateOne</span><span class="p">({</span><span class="w"> </span><span class="nx">_id</span><span class="o">:</span><span class="w"> </span><span class="s2">"ord_901"</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">$set</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">status</span><span class="o">:</span><span class="w"> </span><span class="s2">"shipped"</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nx">session</span><span class="p">,</span><span class="w"> </span><span class="nx">writeConcern</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">w</span><span class="o">:</span><span class="w"> </span><span class="s2">"majority"</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">});</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">fresh</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">orders</span><span class="p">.</span><span class="nx">findOne</span><span class="p">({</span><span class="w"> </span><span class="nx">_id</span><span class="o">:</span><span class="w"> </span><span class="s2">"ord_901"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nx">session</span><span class="p">,</span><span class="w"> </span><span class="nx">readConcern</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">level</span><span class="o">:</span><span class="w"> </span><span class="s2">"majority"</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="nx">readPreference</span><span class="o">:</span><span class="w"> </span><span class="s2">"secondary"</span><span class="w"> </span><span class="p">});</span>
+<span class="w">  </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">fresh</span><span class="p">.</span><span class="nx">status</span><span class="p">);</span><span class="w"> </span><span class="c1">// "shipped"</span>
+<span class="p">}</span><span class="w"> </span><span class="k">finally</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">await</span><span class="w"> </span><span class="nx">session</span><span class="p">.</span><span class="nx">endSession</span><span class="p">();</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>See <a href="../../../04-databases/mongodb/read-write-concerns/">MongoDB read and write concerns</a>.</p>
+<h3 id="quorum-check">Quorum check<a class="headerlink" href="#quorum-check" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kd">function</span><span class="w"> </span><span class="nx">quorumInfo</span><span class="p">(</span><span class="nx">n</span><span class="p">,</span><span class="w"> </span><span class="nx">w</span><span class="p">,</span><span class="w"> </span><span class="nx">r</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">overlapping</span><span class="o">:</span><span class="w"> </span><span class="nx">r</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nx">w</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="nx">n</span><span class="p">,</span><span class="w"> </span><span class="c1">// reads see the latest successful write</span>
+<span class="w">    </span><span class="nx">writeToleratesDown</span><span class="o">:</span><span class="w"> </span><span class="nx">n</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nx">w</span><span class="p">,</span><span class="w"> </span><span class="c1">// replicas that can be down while writes succeed</span>
+<span class="w">    </span><span class="nx">readToleratesDown</span><span class="o">:</span><span class="w"> </span><span class="nx">n</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nx">r</span><span class="p">,</span>
+<span class="w">  </span><span class="p">};</span>
+<span class="p">}</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">quorumInfo</span><span class="p">(</span><span class="mf">3</span><span class="p">,</span><span class="w"> </span><span class="mf">2</span><span class="p">,</span><span class="w"> </span><span class="mf">2</span><span class="p">));</span><span class="w"> </span><span class="c1">// { overlapping: true, writeToleratesDown: 1, readToleratesDown: 1 }</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">quorumInfo</span><span class="p">(</span><span class="mf">5</span><span class="p">,</span><span class="w"> </span><span class="mf">3</span><span class="p">,</span><span class="w"> </span><span class="mf">3</span><span class="p">));</span><span class="w"> </span><span class="c1">// tolerates 2 down for both</span>
+</code></pre></div>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Decide consistency per feature</strong>, starting from what a stale read would
+  cost the business.</li>
+<li><strong>Give users read-your-writes</strong> on their own data even in eventually
+  consistent systems.</li>
+<li><strong>Use strong consistency (or one leader and a transaction)</strong> for money,
+  inventory, and uniqueness.</li>
+<li><strong>Prefer avoiding conflicts</strong> (single leader per item) over resolving them.</li>
+<li><strong>Measure replication lag</strong> and alert on it.</li>
+<li><strong>Use majority write concerns and quorums</strong> for data you cannot lose.</li>
+<li><strong>Be precise about CAP</strong>: it is a choice during partitions, not a menu of
+  "pick two".</li>
+<li><strong>Document the guarantees</strong> your API provides, so clients do not assume
+  more.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>"My change disappeared."</strong> <em>Detect:</em> support tickets right after edits;
+  the replica-lag metric (seconds behind the primary) is above zero when they
+  happen. <em>Cause:</em> reads routed to asynchronous replicas immediately after a
+  write. <em>Fix:</em> read-your-writes routing (primary for a window after writes, or
+  version tracking) or causally consistent sessions.</li>
+<li><strong>Replica lag spikes during batch jobs.</strong> <em>Detect:</em> lag alerts every night
+  at the same time; stale data in the morning. <em>Cause:</em> a large bulk update or
+  long transaction that replicas must replay. <em>Fix:</em> chunk and throttle batch
+  jobs, and avoid routing latency-sensitive reads to lagging replicas.</li>
+<li><strong>Updates silently revert.</strong> <em>Detect:</em> users report values jumping back;
+  NTP clock-offset alerts on some hosts. <em>Cause:</em> last-write-wins with skewed
+  clocks, so an older write with a later timestamp wins. <em>Fix:</em> conditional
+  updates with versions (compare-and-set), or a single writer per item.</li>
+<li><strong>Writes fail during a network incident.</strong> <em>Detect:</em> errors such as
+  "not writable primary" from MongoDB, or timeouts waiting for <code>w: "majority"</code>.
+  <em>Cause:</em> the primary lost contact with the majority, so the system chose
+  consistency. <em>Fix:</em> expected CP behavior; spread replicas across three zones
+  so a single failure keeps a majority, and use retryable writes.</li>
+<li><strong>Duplicate usernames appear.</strong> <em>Detect:</em> a reconciliation query finds two
+  accounts with the same name. <em>Cause:</em> "check, then insert" against a
+  replica or without a constraint. <em>Fix:</em> a unique index enforced on the
+  primary, and handle the duplicate-key error.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Consistency model:</strong> the rules about what values reads may return.</li>
+<li><strong>Linearizability:</strong> operations appear to take effect instantly, in real-time
+  order; the strongest single-object model.</li>
+<li><strong>Causal consistency:</strong> causally related operations are seen in order by
+  everyone.</li>
+<li><strong>Read-your-writes / monotonic reads:</strong> session guarantees about a client's
+  own view.</li>
+<li><strong>Eventual consistency:</strong> replicas converge if writes stop.</li>
+<li><strong>Replication lag:</strong> the delay before a replica reflects a write.</li>
+<li><strong>Network partition:</strong> nodes cannot communicate with each other.</li>
+<li><strong>CAP theorem:</strong> during a partition, choose consistency or availability.</li>
+<li><strong>PACELC:</strong> without a partition, choose latency or consistency.</li>
+<li><strong>Quorum:</strong> the number of replicas that must take part in a read or write.</li>
+<li><strong>Last-write-wins:</strong> keep the version with the latest timestamp.</li>
+<li><strong>Vector clock:</strong> per-replica counters for detecting concurrent updates.</li>
+<li><strong>CRDT:</strong> a data type whose concurrent updates always merge consistently.</li>
+<li><strong>Consensus:</strong> agreement among a majority of nodes (Raft, Paxos).</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>"Pick any two of C, A, and P."</strong> Partitions are a fact; the choice is C or
+  A during them.</li>
+<li><strong>Calling a single-node database "CA"</strong> as if it solved the distributed
+  problem.</li>
+<li><strong>Confusing ACID consistency with CAP consistency.</strong></li>
+<li><strong>"Eventual consistency means data might be wrong forever."</strong> It converges;
+  the question is how fast and what users see meanwhile.</li>
+<li><strong>Reading from replicas right after writing</strong> and treating the stale result
+  as a bug in the database.</li>
+<li><strong>Trusting last-write-wins with unsynchronized clocks</strong>, silently dropping
+  writes.</li>
+<li><strong>Assuming R + W &gt; N gives full linearizability</strong> in all failure cases.</li>
+<li><strong>Using one consistency level for everything.</strong></li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Order these from strongest to weakest: eventual, linearizable, causal,
+   read-your-writes. Give an anomaly that each stronger model prevents.</li>
+<li>State the CAP theorem precisely. Why is "CA" not a meaningful choice for a
+   distributed database?</li>
+<li>What does PACELC add to CAP?</li>
+<li>With N = 5, which values of W and R guarantee overlapping quorums while
+   tolerating two failed replicas for both reads and writes?</li>
+<li>A user updates their profile and the page shows the old data. Explain the
+   cause and two ways to fix it.</li>
+<li>Which consistency level would you choose for a wallet balance, a like
+   counter, and a chat thread, and why?</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Jepsen:</strong> <a href="https://jepsen.io/consistency">Consistency models</a>, a map of
+  models and their relationships.</li>
+<li><strong>Amazon:</strong> <a href="https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf">Dynamo: Amazon's Highly Available Key-value Store</a>,
+  the paper behind quorum-based, eventually consistent stores.</li>
+<li><strong>MongoDB:</strong> <a href="https://www.mongodb.com/docs/manual/reference/read-concern/">Read concern</a>
+  and <a href="https://www.mongodb.com/docs/manual/core/causal-consistency-read-write-concerns/">causal consistency</a>.</li>
+<li><strong>AWS:</strong> <a href="https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadConsistency.html">DynamoDB read consistency</a>.</li>
+<li><strong>Related:</strong> <a href="../database-scaling/">database scaling</a> and
+  <a href="../../../04-databases/mongodb/replication/">MongoDB replication</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../availability-and-reliability/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Availability and Reliability">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Availability and Reliability</span>
+      </a>
+    
+    
+      <a href="../performance-and-latency/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: Performance and Latency">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">Performance and Latency</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="520" viewBox="0 0 780 520" role="img" aria-labelledby="csr-title csr-desc">
+  <title id="csr-title">Redis Cluster: from key to hash slot to node, with a MOVED redirect</title>
+  <desc id="csr-desc">The key foo is hashed with CRC16 and taken modulo 16384, giving slot 12182. The 16,384 slots are split between three primaries: slots 0 to 5460 on node 7000, 5461 to 10922 on node 7001, and 10923 to 16383 on node 7002, so slot 12182 lives on node 7002. A client that sends SET foo bar to node 7000 gets the error MOVED 12182 127.0.0.1:7002, updates its slot map, resends SET foo bar to node 7002, and gets OK. Keys with the same hash tag, such as {user:42}:cart and {user:42}:orders, hash only user:42 and share a slot.</desc>
+  <defs>
+    <marker id="csr-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#40566b"/>
+    </marker>
+    <marker id="csr-err" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#b5473a"/>
+    </marker>
+    <marker id="csr-ret" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#60788d"/>
+    </marker>
+  </defs>
+  <rect width="780" height="520" rx="14" fill="#f5f7fb"/>
+  <g font-family="Arial, sans-serif" text-anchor="middle">
+    <rect x="60" y="20" width="140" height="40" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="130" y="45" font-size="14" font-weight="700" fill="#263e5a">key: foo</text>
+    <rect x="250" y="20" width="230" height="40" rx="8" fill="#eef1f5" stroke="#8a96a3" stroke-width="2"/>
+    <text x="365" y="45" font-size="14" font-weight="700" fill="#36424e">CRC16(key) mod 16384</text>
+    <rect x="530" y="20" width="140" height="40" rx="8" fill="#fff0d9" stroke="#bd7a20" stroke-width="2"/>
+    <text x="600" y="45" font-size="14" font-weight="700" fill="#66400f">slot 12182</text>
+
+    <rect x="60" y="96" width="227" height="30" fill="#e5efff" stroke="#4774aa" stroke-width="1.5"/>
+    <rect x="287" y="96" width="226" height="30" fill="#f0e9fb" stroke="#8062a8" stroke-width="1.5"/>
+    <rect x="513" y="96" width="227" height="30" fill="#e8f5e9" stroke="#53845b" stroke-width="1.5"/>
+    <g font-size="11.5" font-weight="700">
+      <text x="173" y="116" fill="#263e5a">slots 0-5460</text>
+      <text x="400" y="116" fill="#463365">slots 5461-10922</text>
+      <text x="626" y="116" fill="#294a2e">slots 10923-16383</text>
+    </g>
+    <path d="M566 88 572 80H560z" fill="#bd7a20"/>
+
+    <rect x="98" y="146" width="150" height="48" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="173" y="166" font-size="14" font-weight="700" fill="#263e5a">Primary :7000</text>
+    <text x="173" y="183" font-size="11.5" fill="#263e5a">+ its replica</text>
+    <rect x="325" y="146" width="150" height="48" rx="8" fill="#f0e9fb" stroke="#8062a8" stroke-width="2"/>
+    <text x="400" y="166" font-size="14" font-weight="700" fill="#463365">Primary :7001</text>
+    <text x="400" y="183" font-size="11.5" fill="#463365">+ its replica</text>
+    <rect x="551" y="146" width="150" height="48" rx="8" fill="#e8f5e9" stroke="#53845b" stroke-width="3"/>
+    <text x="626" y="166" font-size="14" font-weight="700" fill="#294a2e">Primary :7002</text>
+    <text x="626" y="183" font-size="11.5" fill="#294a2e">owns slot 12182</text>
+
+    <g fill="none" stroke="#40566b" stroke-width="2" stroke-linecap="round">
+      <path d="M200 40H248" marker-end="url(#csr-arrow)"/>
+      <path d="M480 40H528" marker-end="url(#csr-arrow)"/>
+      <path d="M600 60 568 78" marker-end="url(#csr-arrow)"/>
+      <path d="M173 126V144" marker-end="url(#csr-arrow)"/>
+      <path d="M400 126V144" marker-end="url(#csr-arrow)"/>
+      <path d="M626 126V144" marker-end="url(#csr-arrow)"/>
+    </g>
+
+    <path d="M20 218H760" stroke="#c3ccd7" stroke-width="1.5"/>
+    <text x="24" y="240" font-size="13" font-weight="700" fill="#8062a8" text-anchor="start">A client with a stale slot map</text>
+    <rect x="60" y="252" width="120" height="36" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="120" y="275" font-size="13" font-weight="700" fill="#263e5a">Client</text>
+    <rect x="340" y="252" width="120" height="36" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="400" y="275" font-size="13" font-weight="700" fill="#263e5a">Node :7000</text>
+    <rect x="600" y="252" width="120" height="36" rx="8" fill="#e8f5e9" stroke="#53845b" stroke-width="2"/>
+    <text x="660" y="275" font-size="13" font-weight="700" fill="#294a2e">Node :7002</text>
+    <g stroke="#8a96a3" stroke-width="1.5" stroke-dasharray="5 5">
+      <path d="M120 288V358M120 390V466M400 288V466M660 288V466"/>
+    </g>
+
+    <g text-anchor="start" font-size="12" font-weight="700" fill="#36424e">
+      <text x="132" y="310">1. SET foo bar</text>
+      <text x="132" y="342" fill="#b5473a">2. (error) MOVED 12182 127.0.0.1:7002</text>
+      <text x="132" y="416">3. SET foo bar, sent to :7002</text>
+      <text x="132" y="448" fill="#60788d">4. OK</text>
+    </g>
+    <g fill="none" stroke-width="2" stroke-linecap="round">
+      <path d="M120 318H398" stroke="#40566b" marker-end="url(#csr-arrow)"/>
+      <path d="M400 350H122" stroke="#b5473a" stroke-dasharray="6 4" marker-end="url(#csr-err)"/>
+      <path d="M120 424H658" stroke="#40566b" marker-end="url(#csr-arrow)"/>
+      <path d="M660 456H122" stroke="#60788d" stroke-dasharray="6 4" marker-end="url(#csr-ret)"/>
+    </g>
+    <rect x="40" y="358" width="200" height="32" rx="8" fill="#fff0d9" stroke="#bd7a20" stroke-width="2"/>
+    <text x="140" y="379" font-size="11.5" font-weight="700" fill="#66400f">update map: 12182 to :7002</text>
+
+    <text x="390" y="490" font-size="13" fill="#40566b">Hash tags: {user:42}:cart and {user:42}:orders hash only user:42, so they share a slot.</text>
+    <text x="390" y="508" font-size="11.5" fill="#40566b">Cluster-aware clients follow MOVED (and ASK during migrations) automatically.</text>
+  </g>
+</svg>

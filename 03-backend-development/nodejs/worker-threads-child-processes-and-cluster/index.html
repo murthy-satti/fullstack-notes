@@ -1,0 +1,2670 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../process-env-and-configuration/">
+      
+      
+        <link rel="next" href="../errors-debugging-and-performance/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Worker Threads, Child Processes, and Cluster - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#worker-threads-child-processes-and-cluster" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Worker Threads, Child Processes, and Cluster
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../05-application-architecture/" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-ai-and-machine-learning/" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../06-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-devops-and-deployment/" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../08-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to Backend Development">
+          <span class="md-ellipsis">&larr; Back to Backend</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to Backend Development">
+                  <span class="md-ellipsis">&larr; Back to Backend</span>
+                </a>
+              
+            </div>
+          
+          
+            <label class="md-nav__title" for="__nav_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Backend Development
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Node.js
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_4_2">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Node.js
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../runtime-and-architecture/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runtime Foundations
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../modules-commonjs-and-esm/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modules and Packages
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../file-system-path-and-os/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Modules
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2_5" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_4_2_5" id="__nav_4_2_5_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scaling and Reliability
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_2_5_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_4_2_5">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Scaling and Reliability
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Worker Threads, Child Processes, and Cluster
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Worker Threads, Child Processes, and Cluster
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-cpu-bound-problem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The CPU-bound problem
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worker-threads" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worker threads
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worker-pools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worker pools
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#child-processes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Child processes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-cluster-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The cluster module
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pm2-cluster-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PM2 cluster mode
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scaling-with-containers-instead" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scaling with containers instead
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#offloading-a-calculation-to-a-worker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Offloading a calculation to a worker
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#streaming-output-from-a-child-process" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Streaming output from a child process
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#running-a-command-and-capturing-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running a command and capturing output
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-cluster-with-automatic-restarts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A cluster with automatic restarts
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../errors-debugging-and-performance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Errors, Debugging, and Performance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../project-node-internals-lab/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project: Node Internals Lab
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../05-application-architecture/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-ai-and-machine-learning/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI and Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../06-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-devops-and-deployment/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DevOps and Deployment
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../08-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-cpu-bound-problem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The CPU-bound problem
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worker-threads" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worker threads
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worker-pools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worker pools
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#child-processes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Child processes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-cluster-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The cluster module
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pm2-cluster-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PM2 cluster mode
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scaling-with-containers-instead" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scaling with containers instead
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#offloading-a-calculation-to-a-worker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Offloading a calculation to a worker
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#streaming-output-from-a-child-process" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Streaming output from a child process
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#running-a-command-and-capturing-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running a command and capturing output
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-cluster-with-automatic-restarts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A cluster with automatic restarts
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="worker-threads-child-processes-and-cluster">Worker Threads, Child Processes, and Cluster<a class="headerlink" href="#worker-threads-child-processes-and-cluster" title="Permanent link">&para;</a></h1>
+<p>A Node.js process runs your JavaScript on one main thread, which uses one CPU
+core. To run CPU-heavy work without freezing the server, or to use every core
+on a machine, Node.js offers three tools: <strong>worker threads</strong> (more threads in
+the same process), <strong>child processes</strong> (separate programs), and the
+<strong>cluster</strong> module (several copies of your server sharing a port).</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>A single image resize, PDF render, or large calculation on the main thread
+blocks every other request (see <a href="../event-loop/">the event loop</a>). And a
+server on an 8-core machine that runs one Node.js process leaves seven cores
+idle. Choosing the right tool—and knowing when to scale with more containers
+instead—is a core backend skill. For the operating-system background, see
+<a href="../../../08-operating-systems-and-linux/processes-and-threads/">processes and threads</a>.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Heroku</strong> explains that Node.js is single-threaded, so it "can't
+  automatically take advantage of additional CPU cores". Apps must fork
+  multiple processes with the Cluster API, and Heroku recommends that all
+  Node.js apps support clustering, tuned through the <code>WEB_CONCURRENCY</code>
+  variable
+  (<a href="https://devcenter.heroku.com/articles/node-concurrency">Heroku Dev Center: Optimizing Node.js application concurrency</a>).</li>
+<li><strong>PM2</strong>'s cluster mode scales a networked Node.js app across all CPUs
+  "without any code modifications", using the Node.js cluster module
+  underneath. <code>pm2 reload</code> restarts the processes one at a time for a
+  zero-downtime reload
+  (<a href="https://pm2.keymetrics.io/docs/usage/cluster-mode/">PM2 docs: Cluster mode</a>).</li>
+<li><strong>Piscina</strong> is a widely used worker-thread pool for Node.js. Services use
+  it to run CPU-heavy tasks such as image or document processing in a fixed
+  set of reusable workers instead of on the main thread
+  (<a href="https://github.com/piscinajs/piscina">Piscina on GitHub</a>).</li>
+</ul>
+<p>Popular tools and providers: <code>node:worker_threads</code>, <code>node:child_process</code>,
+and <code>node:cluster</code>; Piscina for worker pools; PM2 and systemd for process
+management; Kubernetes and ECS for running one process per container.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="the-cpu-bound-problem">The CPU-bound problem<a class="headerlink" href="#the-cpu-bound-problem" title="Permanent link">&para;</a></h3>
+<p>Work is <strong>I/O-bound</strong> when it mostly waits (database queries, HTTP calls) and
+<strong>CPU-bound</strong> when it keeps the processor busy (hashing, compression, image
+processing, parsing huge files). Node.js handles I/O-bound work well on one
+thread. CPU-bound work must move somewhere else.</p>
+<p><img alt="Timeline: when request A resizes an image on the main thread for 2 seconds, requests B and C wait; when A hands the work to a worker with workerData, the main thread serves B, C and D while the worker resizes, then receives the result through postMessage and replies to A." src="../worker-offload-timeline.svg" /></p>
+<h3 id="worker-threads">Worker threads<a class="headerlink" href="#worker-threads" title="Permanent link">&para;</a></h3>
+<p>The <code>node:worker_threads</code> module runs JavaScript in additional threads
+<strong>inside the same process</strong>. Each worker has its own V8 instance, event
+loop, and memory heap, so a worker's long computation does not block the
+main thread.</p>
+<p>Key pieces:</p>
+<table>
+<thead>
+<tr>
+<th>API</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>new Worker(file, { workerData })</code></td>
+<td>Starts a worker running <code>file</code>, passing initial data.</td>
+</tr>
+<tr>
+<td><code>workerData</code> (in the worker)</td>
+<td>The data passed at creation.</td>
+</tr>
+<tr>
+<td><code>parentPort.postMessage(value)</code> (in the worker)</td>
+<td>Sends a message to the main thread.</td>
+</tr>
+<tr>
+<td><code>worker.postMessage(value)</code> / <code>worker.on("message")</code></td>
+<td>Two-way messaging from the main thread.</td>
+</tr>
+<tr>
+<td><code>worker.on("error")</code>, <code>worker.on("exit")</code></td>
+<td>Failure and termination events.</td>
+</tr>
+<tr>
+<td><code>isMainThread</code></td>
+<td><code>true</code> in the main thread.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>How data moves:</strong> messages are copied with the <strong>structured clone</strong>
+algorithm (similar to a deep copy). Large buffers can be <strong>transferred</strong>
+instead—ownership moves to the receiver with no copy—by listing them in the
+<code>transferList</code>. A transferred <code>ArrayBuffer</code> becomes unusable in the sender.</p>
+<p><strong>Shared memory:</strong> a <code>SharedArrayBuffer</code> can be read and written by several
+threads at once. Coordinating that safely requires <code>Atomics</code> operations.
+Shared memory is powerful but rarely needed in typical backends.</p>
+<p><strong>Costs:</strong> starting a worker takes time and memory, so creating one per
+request is wasteful. Keep a <strong>pool</strong> of long-lived workers instead.</p>
+<h3 id="worker-pools">Worker pools<a class="headerlink" href="#worker-pools" title="Permanent link">&para;</a></h3>
+<p>A pool starts a fixed number of workers (often equal to the number of CPU
+cores) and queues tasks for them. Libraries such as <strong>Piscina</strong> implement
+this:</p>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="nx">Piscina</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"piscina"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">pool</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">Piscina</span><span class="p">({</span>
+<span class="w">  </span><span class="nx">filename</span><span class="o">:</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">URL</span><span class="p">(</span><span class="s2">"./resize-worker.js"</span><span class="p">,</span><span class="w"> </span><span class="k">import</span><span class="p">.</span><span class="nx">meta</span><span class="p">.</span><span class="nx">url</span><span class="p">).</span><span class="nx">href</span><span class="p">,</span>
+<span class="p">});</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">thumbnail</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">pool</span><span class="p">.</span><span class="nx">run</span><span class="p">({</span><span class="w"> </span><span class="nx">path</span><span class="o">:</span><span class="w"> </span><span class="s2">"photo.jpg"</span><span class="p">,</span><span class="w"> </span><span class="nx">width</span><span class="o">:</span><span class="w"> </span><span class="mf">200</span><span class="w"> </span><span class="p">});</span>
+</code></pre></div>
+<p>The worker file exports a function that receives each task.</p>
+<h3 id="child-processes">Child processes<a class="headerlink" href="#child-processes" title="Permanent link">&para;</a></h3>
+<p>The <code>node:child_process</code> module starts <strong>separate operating-system
+processes</strong>. They can be any program: a shell command, Python, ImageMagick,
+<code>ffmpeg</code>, or another Node.js script.</p>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Shell?</th>
+<th>Output</th>
+<th>Typical use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>spawn(cmd, args)</code></td>
+<td>No (by default)</td>
+<td>Streams (<code>stdout</code>, <code>stderr</code>)</td>
+<td>Long-running commands or large output.</td>
+</tr>
+<tr>
+<td><code>execFile(file, args)</code></td>
+<td>No</td>
+<td>Buffered into a string</td>
+<td>Running a program with arguments and getting its output.</td>
+</tr>
+<tr>
+<td><code>exec(commandString)</code></td>
+<td><strong>Yes</strong></td>
+<td>Buffered (default <code>maxBuffer</code> is about 1 MB)</td>
+<td>Quick shell one-liners with <strong>trusted</strong> input only.</td>
+</tr>
+<tr>
+<td><code>fork(modulePath)</code></td>
+<td>No</td>
+<td>Streams + an IPC message channel</td>
+<td>Running another Node.js script and exchanging messages.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition warning">
+<p class="admonition-title">Shell injection</p>
+<p><code>exec</code> runs its string through a shell. If any part comes from a user,
+an input such as <code>photo.jpg; rm -rf /</code> runs a second command. Use
+<code>execFile</code> or <code>spawn</code> with an <strong>arguments array</strong>, which never invokes a
+shell:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// Dangerous</span>
+<span class="nx">exec</span><span class="p">(</span><span class="sb">`convert </span><span class="si">${</span><span class="nx">userFile</span><span class="si">}</span><span class="sb"> out.png`</span><span class="p">);</span>
+<span class="c1">// Safe: arguments are passed directly, not parsed by a shell</span>
+<span class="nx">execFile</span><span class="p">(</span><span class="s2">"convert"</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="nx">userFile</span><span class="p">,</span><span class="w"> </span><span class="s2">"out.png"</span><span class="p">]);</span>
+</code></pre></div>
+</div>
+<p>Child processes are heavier than worker threads (separate memory, startup
+cost), but they isolate crashes completely and can run non-JavaScript tools.</p>
+<h3 id="the-cluster-module">The cluster module<a class="headerlink" href="#the-cluster-module" title="Permanent link">&para;</a></h3>
+<p>The <code>node:cluster</code> module starts several copies of your server—<strong>workers</strong>—
+from one <strong>primary</strong> process. All workers share the same port, and incoming
+connections are distributed among them. The default is round-robin by the
+primary on every platform except Windows, where the operating system decides.
+In a quick test on Windows, four requests in a row all went to the same
+worker.</p>
+<p><img alt="Diagram: clients connect to port 3000, the primary process hands connections round-robin to four worker processes that each have their own memory and event loop; when worker 3 exits, cluster.on(&quot;exit&quot;) calls cluster.fork() to start a replacement, and all shared state lives in Redis or a database." src="../cluster-distribution.svg" /></p>
+<p>Each worker is a full Node.js process with its own memory. They <strong>do not
+share state</strong>: an in-memory cache, session store, or rate-limit counter in
+one worker is invisible to the others. Shared state must live in an external
+store such as <a href="../../../05-application-architecture/redis/">Redis</a> or a
+database.</p>
+<h3 id="pm2-cluster-mode">PM2 cluster mode<a class="headerlink" href="#pm2-cluster-mode" title="Permanent link">&para;</a></h3>
+<p>The PM2 process manager wraps the cluster module so you don't write the
+primary logic yourself:</p>
+<div class="highlight"><pre><span></span><code>pm2<span class="w"> </span>start<span class="w"> </span>src/server.js<span class="w"> </span>-i<span class="w"> </span>max<span class="w">   </span><span class="c1"># one process per CPU core</span>
+pm2<span class="w"> </span>reload<span class="w"> </span>all<span class="w">                   </span><span class="c1"># zero-downtime restart, one worker at a time</span>
+pm2<span class="w"> </span>logs
+</code></pre></div>
+<h3 id="scaling-with-containers-instead">Scaling with containers instead<a class="headerlink" href="#scaling-with-containers-instead" title="Permanent link">&para;</a></h3>
+<p>In containerized deployments, the common pattern is to run <strong>one Node.js
+process per container</strong> and run several containers behind a
+<a href="../../../06-servers-and-infrastructure/load-balancing/">load balancer</a>. The
+orchestrator (Kubernetes, ECS, and so on) handles restarts, health checks,
+and scaling. Using cluster inside each container is possible but usually
+unnecessary.</p>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<p>Do <strong>not</strong> reach for these tools when:</p>
+<ul>
+<li>The work is I/O-bound (database calls, HTTP requests): one Node.js thread
+  already handles it well, and workers add overhead.</li>
+<li>The task runs for a few milliseconds: starting a worker or a process costs
+  more than the work.</li>
+<li>You already scale with several containers behind a load balancer: running
+  cluster inside each container usually adds nothing.</li>
+<li>The heavy job does not need to finish during the request: put it on a job
+  queue instead.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Need</th>
+<th>Use</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CPU-heavy JavaScript (hashing, parsing, image work in JS) without blocking requests</td>
+<td><strong>Worker threads</strong> (with a pool)</td>
+<td>Same process, cheap messaging, main thread stays free.</td>
+</tr>
+<tr>
+<td>Run an external program (<code>ffmpeg</code>, <code>git</code>, a Python script)</td>
+<td><strong>Child process</strong> (<code>spawn</code>/<code>execFile</code>)</td>
+<td>Only option for non-Node programs; isolated.</td>
+</tr>
+<tr>
+<td>Run another Node.js script with message passing and full isolation</td>
+<td><strong><code>fork</code></strong></td>
+<td>Separate process with an IPC channel.</td>
+</tr>
+<tr>
+<td>Use all CPU cores for HTTP traffic on one machine or VM</td>
+<td><strong>Cluster</strong> or <strong>PM2 cluster mode</strong></td>
+<td>Several server processes on one port.</td>
+</tr>
+<tr>
+<td>Scale across machines, survive machine failure</td>
+<td><strong>More containers/instances behind a load balancer</strong></td>
+<td>Horizontal scaling; see <a href="../../../05-application-architecture/scalability/">scalability</a>.</td>
+</tr>
+<tr>
+<td>Long or heavy jobs that need not finish during the request</td>
+<td><strong>Background job queue</strong></td>
+<td>Retries and durability; see <a href="../../backend-concepts/background-jobs-and-scheduling/">background jobs</a>.</td>
+</tr>
+</tbody>
+</table>
+<p><img alt="Decision flowchart: run an external program with a child process; for CPU-heavy JavaScript use a worker thread pool if the client must wait for the result, or a job queue if not; for more HTTP throughput use cluster or PM2 on one machine, or more instances behind a load balancer across machines." src="../concurrency-choice.svg" /></p>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="offloading-a-calculation-to-a-worker">Offloading a calculation to a worker<a class="headerlink" href="#offloading-a-calculation-to-a-worker" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// fib-worker.js</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">parentPort</span><span class="p">,</span><span class="w"> </span><span class="nx">workerData</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:worker_threads"</span><span class="p">;</span>
+
+<span class="kd">function</span><span class="w"> </span><span class="nx">fibonacci</span><span class="p">(</span><span class="nx">n</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">n</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="nx">n</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="nx">fibonacci</span><span class="p">(</span><span class="nx">n</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">1</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nx">fibonacci</span><span class="p">(</span><span class="nx">n</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">2</span><span class="p">);</span><span class="w"> </span><span class="c1">// deliberately slow</span>
+<span class="p">}</span>
+
+<span class="nx">parentPort</span><span class="p">.</span><span class="nx">postMessage</span><span class="p">(</span><span class="nx">fibonacci</span><span class="p">(</span><span class="nx">workerData</span><span class="p">));</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1">// server.js</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">createServer</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:http"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Worker</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:worker_threads"</span><span class="p">;</span>
+
+<span class="kd">function</span><span class="w"> </span><span class="nx">runFibonacci</span><span class="p">(</span><span class="nx">n</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Promise</span><span class="p">((</span><span class="nx">resolve</span><span class="p">,</span><span class="w"> </span><span class="nx">reject</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">worker</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">Worker</span><span class="p">(</span><span class="ow">new</span><span class="w"> </span><span class="nx">URL</span><span class="p">(</span><span class="s2">"./fib-worker.js"</span><span class="p">,</span><span class="w"> </span><span class="k">import</span><span class="p">.</span><span class="nx">meta</span><span class="p">.</span><span class="nx">url</span><span class="p">),</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">workerData</span><span class="o">:</span><span class="w"> </span><span class="nx">n</span><span class="p">,</span>
+<span class="w">    </span><span class="p">});</span>
+<span class="w">    </span><span class="nx">worker</span><span class="p">.</span><span class="nx">once</span><span class="p">(</span><span class="s2">"message"</span><span class="p">,</span><span class="w"> </span><span class="nx">resolve</span><span class="p">);</span>
+<span class="w">    </span><span class="nx">worker</span><span class="p">.</span><span class="nx">once</span><span class="p">(</span><span class="s2">"error"</span><span class="p">,</span><span class="w"> </span><span class="nx">reject</span><span class="p">);</span>
+<span class="w">    </span><span class="nx">worker</span><span class="p">.</span><span class="nx">once</span><span class="p">(</span><span class="s2">"exit"</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nx">code</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">code</span><span class="w"> </span><span class="o">!==</span><span class="w"> </span><span class="mf">0</span><span class="p">)</span><span class="w"> </span><span class="nx">reject</span><span class="p">(</span><span class="ow">new</span><span class="w"> </span><span class="ne">Error</span><span class="p">(</span><span class="sb">`Worker exited with code </span><span class="si">${</span><span class="nx">code</span><span class="si">}</span><span class="sb">`</span><span class="p">));</span>
+<span class="w">    </span><span class="p">});</span>
+<span class="w">  </span><span class="p">});</span>
+<span class="p">}</span>
+
+<span class="nx">createServer</span><span class="p">(</span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="nx">request</span><span class="p">,</span><span class="w"> </span><span class="nx">response</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">request</span><span class="p">.</span><span class="nx">url</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">"/fib"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">runFibonacci</span><span class="p">(</span><span class="mf">42</span><span class="p">);</span><span class="w"> </span><span class="c1">// main thread stays free meanwhile</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nx">response</span><span class="p">.</span><span class="nx">end</span><span class="p">(</span><span class="sb">`fib(42) = </span><span class="si">${</span><span class="nx">result</span><span class="si">}</span><span class="sb">\n`</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="nx">response</span><span class="p">.</span><span class="nx">end</span><span class="p">(</span><span class="s2">"fast route still responds instantly\n"</span><span class="p">);</span>
+<span class="p">}).</span><span class="nx">listen</span><span class="p">(</span><span class="mf">3000</span><span class="p">);</span>
+</code></pre></div>
+<p>(This starts a new worker per request to keep the example short; use a pool
+in real services.)</p>
+<p>Tested on Node.js 22: while <code>/fib</code> computed for about 4.4 seconds, a request
+to <code>/</code> was answered in about 30 ms, and <code>/fib</code> then returned
+<code>fib(42) = 267914296</code>.</p>
+<h3 id="streaming-output-from-a-child-process">Streaming output from a child process<a class="headerlink" href="#streaming-output-from-a-child-process" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">spawn</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:child_process"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">child</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">spawn</span><span class="p">(</span><span class="s2">"ffmpeg"</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="s2">"-i"</span><span class="p">,</span><span class="w"> </span><span class="s2">"input.mov"</span><span class="p">,</span><span class="w"> </span><span class="s2">"-f"</span><span class="p">,</span><span class="w"> </span><span class="s2">"mp4"</span><span class="p">,</span><span class="w"> </span><span class="s2">"output.mp4"</span><span class="p">]);</span>
+
+<span class="nx">child</span><span class="p">.</span><span class="nx">stderr</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">"data"</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nx">chunk</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">process</span><span class="p">.</span><span class="nx">stdout</span><span class="p">.</span><span class="nx">write</span><span class="p">(</span><span class="nx">chunk</span><span class="p">));</span><span class="w"> </span><span class="c1">// ffmpeg logs to stderr</span>
+<span class="nx">child</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">"error"</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nx">error</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="s2">"Failed to start:"</span><span class="p">,</span><span class="w"> </span><span class="nx">error</span><span class="p">.</span><span class="nx">message</span><span class="p">));</span>
+<span class="nx">child</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">"close"</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nx">code</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`ffmpeg exited with </span><span class="si">${</span><span class="nx">code</span><span class="si">}</span><span class="sb">`</span><span class="p">));</span>
+</code></pre></div>
+<h3 id="running-a-command-and-capturing-output">Running a command and capturing output<a class="headerlink" href="#running-a-command-and-capturing-output" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">execFile</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:child_process"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">promisify</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:util"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">execFileAsync</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">promisify</span><span class="p">(</span><span class="nx">execFile</span><span class="p">);</span>
+<span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">stdout</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">execFileAsync</span><span class="p">(</span><span class="s2">"git"</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="s2">"rev-parse"</span><span class="p">,</span><span class="w"> </span><span class="s2">"--short"</span><span class="p">,</span><span class="w"> </span><span class="s2">"HEAD"</span><span class="p">]);</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`Deployed commit: </span><span class="si">${</span><span class="nx">stdout</span><span class="p">.</span><span class="nx">trim</span><span class="p">()</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
+</code></pre></div>
+<h3 id="a-cluster-with-automatic-restarts">A cluster with automatic restarts<a class="headerlink" href="#a-cluster-with-automatic-restarts" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="nx">cluster</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:cluster"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">availableParallelism</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:os"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">createServer</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:http"</span><span class="p">;</span>
+
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">cluster</span><span class="p">.</span><span class="nx">isPrimary</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">availableParallelism</span><span class="p">();</span>
+<span class="w">  </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`Primary </span><span class="si">${</span><span class="nx">process</span><span class="p">.</span><span class="nx">pid</span><span class="si">}</span><span class="sb"> starting </span><span class="si">${</span><span class="nx">count</span><span class="si">}</span><span class="sb"> workers`</span><span class="p">);</span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">let</span><span class="w"> </span><span class="nx">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0</span><span class="p">;</span><span class="w"> </span><span class="nx">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="nx">count</span><span class="p">;</span><span class="w"> </span><span class="nx">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="nx">cluster</span><span class="p">.</span><span class="nx">fork</span><span class="p">();</span>
+
+<span class="w">  </span><span class="nx">cluster</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">"exit"</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nx">worker</span><span class="p">,</span><span class="w"> </span><span class="nx">code</span><span class="p">,</span><span class="w"> </span><span class="nx">signal</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`Worker </span><span class="si">${</span><span class="nx">worker</span><span class="p">.</span><span class="nx">process</span><span class="p">.</span><span class="nx">pid</span><span class="si">}</span><span class="sb"> died (</span><span class="si">${</span><span class="nx">signal</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="nx">code</span><span class="si">}</span><span class="sb">); restarting`</span><span class="p">);</span>
+<span class="w">    </span><span class="nx">cluster</span><span class="p">.</span><span class="nx">fork</span><span class="p">();</span>
+<span class="w">  </span><span class="p">});</span>
+<span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">createServer</span><span class="p">((</span><span class="nx">request</span><span class="p">,</span><span class="w"> </span><span class="nx">response</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">response</span><span class="p">.</span><span class="nx">end</span><span class="p">(</span><span class="sb">`Handled by worker </span><span class="si">${</span><span class="nx">process</span><span class="p">.</span><span class="nx">pid</span><span class="si">}</span><span class="sb">\n`</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}).</span><span class="nx">listen</span><span class="p">(</span><span class="mf">3000</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Keep the main thread for I/O and coordination; move CPU-heavy work to a
+  worker pool sized near the number of cores.</li>
+<li>Never pass untrusted input to <code>exec</code>; use <code>execFile</code> or <code>spawn</code> with an
+  argument array.</li>
+<li>Always handle <code>error</code> and <code>exit</code> events for workers and child processes.</li>
+<li>Set limits on child processes: timeouts (<code>timeout</code> option or an
+  <code>AbortSignal</code>) and output size.</li>
+<li>Keep shared state (sessions, caches, counters) in an external store when
+  running multiple processes.</li>
+<li>In containers, prefer one process per container and scale horizontally.</li>
+<li>For heavy work that does not need an immediate answer, use a job queue
+  rather than doing it inside the request.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Memory blows up under load.</strong></li>
+<li><em>Symptom:</em> RSS jumps with traffic to one endpoint, and the process is
+    killed for running out of memory.</li>
+<li><em>Detect:</em> thread counts and memory rise together; each request creates a
+    <code>new Worker</code>.</li>
+<li><em>Cause:</em> a worker per request: each one has its own V8 isolate and heap.</li>
+<li><em>Fix:</em> use a fixed-size pool (Piscina) sized near the number of cores, and
+    queue the excess.</li>
+<li><strong>Users see each other's rate limits or sessions reset.</strong></li>
+<li><em>Symptom:</em> logins appear to be "forgotten" on some requests, or rate
+    limits allow far more traffic than configured.</li>
+<li><em>Detect:</em> the problem only appears with cluster, PM2 <code>-i</code>, or several
+    containers; the process ID in logs differs between requests.</li>
+<li><em>Cause:</em> sessions, caches, or counters kept in process memory are not
+    shared between processes.</li>
+<li><em>Fix:</em> move shared state to Redis or a database.</li>
+<li><strong>Command injection through a filename.</strong></li>
+<li><em>Symptom:</em> unexpected commands appear in process listings or audit logs
+    after an upload.</li>
+<li><em>Detect:</em> filenames with <code>;</code>, <code>&amp;&amp;</code>, or backticks in request logs.</li>
+<li><em>Cause:</em> <code>exec()</code> with user input in the command string.</li>
+<li><em>Fix:</em> use <code>execFile</code>/<code>spawn</code> with an arguments array, and validate
+    filenames.</li>
+<li><strong>A child process hangs or its output is cut off.</strong></li>
+<li><em>Symptom:</em> requests that call an external tool never finish, or <code>exec</code>
+    fails with <code>ERR_CHILD_PROCESS_STDIO_MAXBUFFER</code>.</li>
+<li><em>Detect:</em> child processes pile up in <code>ps</code>, or the error names
+    <code>maxBuffer</code>.</li>
+<li><em>Cause:</em> no timeout on the child, or output larger than <code>exec</code>'s 1 MB
+    default buffer.</li>
+<li><em>Fix:</em> set the <code>timeout</code> option or an <code>AbortSignal</code>, and use <code>spawn</code> to
+    stream large output.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>CPU-bound:</strong> Work limited by processor speed rather than waiting.</li>
+<li><strong>Worker thread:</strong> An additional JavaScript thread with its own event loop
+  inside the same process.</li>
+<li><strong>Structured clone:</strong> The algorithm used to copy messages between threads.</li>
+<li><strong>Transferable:</strong> An object (such as an <code>ArrayBuffer</code>) whose ownership can
+  move between threads without copying.</li>
+<li><strong>Worker pool:</strong> A fixed set of reusable workers that process queued
+  tasks.</li>
+<li><strong>Child process:</strong> A separate OS process started by your program.</li>
+<li><strong>IPC (inter-process communication):</strong> A channel for messages between
+  processes, provided by <code>fork</code>.</li>
+<li><strong>Cluster:</strong> A primary process plus worker processes sharing a server
+  port.</li>
+<li><strong>Horizontal scaling:</strong> Adding more instances rather than making one
+  bigger.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>"Worker threads make I/O faster."</strong> I/O is already non-blocking; workers
+  help with CPU work.</li>
+<li><strong>Creating a new worker for every request</strong> instead of using a pool.</li>
+<li><strong>Using <code>exec</code> with user input</strong>, enabling command injection.</li>
+<li><strong>Expecting cluster workers to share memory.</strong> Each is a separate process.</li>
+<li><strong>"Cluster is required to scale Node.js."</strong> Containers behind a load
+  balancer are often the better choice.</li>
+<li><strong>Ignoring worker or child <code>error</code> events</strong>, which can crash the process
+  or hide failures.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>What is the difference between I/O-bound and CPU-bound work, and why does
+   it matter in Node.js?</li>
+<li>How do worker threads communicate, and what does transferring a buffer
+   mean?</li>
+<li>Why is <code>exec</code> dangerous with user input, and what should you use instead?</li>
+<li>What does the cluster module do, and why can't workers share an
+   in-memory cache?</li>
+<li>When would you scale with containers instead of the cluster module?</li>
+<li>Which tool would you choose to run <code>ffmpeg</code>, and why?</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://nodejs.org/api/worker_threads.html">Node.js API: Worker threads</a></li>
+<li><a href="https://nodejs.org/api/child_process.html">Node.js API: Child processes</a></li>
+<li><a href="https://nodejs.org/api/cluster.html">Node.js API: Cluster</a></li>
+<li><a href="https://nodejs.org/en/learn/asynchronous-work/dont-block-the-event-loop">Node.js: Don't block the event loop (or the worker pool)</a></li>
+<li><a href="https://pm2.keymetrics.io/docs/usage/cluster-mode/">PM2 documentation: Cluster mode</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../process-env-and-configuration/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Process, Environment, and Configuration">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Process, Environment, and Configuration</span>
+      </a>
+    
+    
+      <a href="../errors-debugging-and-performance/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: Errors, Debugging, and Performance">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">Errors, Debugging, and Performance</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

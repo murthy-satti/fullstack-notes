@@ -1,0 +1,2763 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../transactions-pipelining-and-lua/">
+      
+      
+        <link rel="next" href="../interview-questions-and-answers/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Persistence and High Availability - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#persistence-and-high-availability" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Persistence and High Availability
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-ai-and-machine-learning/" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../06-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-devops-and-deployment/" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../08-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to Application Architecture">
+          <span class="md-ellipsis">&larr; Back to Architecture</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to Application Architecture">
+                  <span class="md-ellipsis">&larr; Back to Architecture</span>
+                </a>
+              
+            </div>
+          
+          
+            <label class="md-nav__title" for="__nav_6">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Application Architecture
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_4" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_6_4" id="__nav_6_4_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Redis
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_4_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_6_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Redis
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../redis-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Redis Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data-structures/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Structures
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../redis-as-a-cache/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Redis as a Cache
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../common-use-cases/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common Use Cases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pub-sub-and-streams/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pub/Sub and Streams
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../transactions-pipelining-and-lua/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Transactions, Pipelining, and Lua
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Persistence and High Availability
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Persistence and High Availability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rdb-snapshots" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RDB snapshots
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aof-append-only-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AOF (append-only file)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#choosing-persistence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Choosing persistence
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#replication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Replication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sentinel-automatic-failover" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sentinel: automatic failover
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#redis-cluster-sharding-plus-failover" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Redis Cluster: sharding plus failover
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sentinel-or-cluster" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sentinel or Cluster?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#backups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backups
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#managed-services" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Managed services
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#memory-limits-and-fragmentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Memory limits and fragmentation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#checking-and-changing-persistence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checking and changing persistence
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#replication-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Replication status
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hash-slots-and-redirects" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hash slots and redirects
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#connecting-to-redis-cluster-from-nodejs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connecting to Redis Cluster from Node.js
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-ai-and-machine-learning/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI and Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../06-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-devops-and-deployment/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DevOps and Deployment
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../08-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rdb-snapshots" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RDB snapshots
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aof-append-only-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AOF (append-only file)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#choosing-persistence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Choosing persistence
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#replication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Replication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sentinel-automatic-failover" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sentinel: automatic failover
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#redis-cluster-sharding-plus-failover" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Redis Cluster: sharding plus failover
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sentinel-or-cluster" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sentinel or Cluster?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#backups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backups
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#managed-services" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Managed services
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#memory-limits-and-fragmentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Memory limits and fragmentation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#checking-and-changing-persistence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checking and changing persistence
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#replication-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Replication status
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hash-slots-and-redirects" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hash slots and redirects
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#connecting-to-redis-cluster-from-nodejs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connecting to Redis Cluster from Node.js
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="persistence-and-high-availability">Persistence and High Availability<a class="headerlink" href="#persistence-and-high-availability" title="Permanent link">&para;</a></h1>
+<p>Redis keeps data in memory, but it can also write that data to disk and copy
+it to other servers. <strong>Persistence</strong> (RDB snapshots and the AOF log) decides
+how much data survives a restart. <strong>Replication</strong>, <strong>Sentinel</strong>, and <strong>Redis
+Cluster</strong> decide whether Redis keeps serving when a server fails and how it
+grows beyond one machine. This lesson explains each mechanism, the
+trade-offs, and how managed services package them.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>If Redis is only a cache, losing it means a slow minute while the cache
+warms up. If it holds sessions, queues, rate limits, or the only copy of some
+data, losing it can log out every user or drop jobs. The right configuration
+depends on what the data is worth, so you need to know exactly what each
+option protects against and what it costs. Related theory is in
+<a href="../../scalability/availability-and-reliability/">availability and reliability</a>
+and <a href="../../scalability/consistency-and-cap-theorem/">consistency and the CAP theorem</a>.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Mastodon</strong> calls Redis a critical part of an instance: by default one
+  Redis instance holds feeds and queues, so its failure takes the whole
+  server down. Its scaling guide adds Redis Sentinel: the application is
+  given the Sentinel addresses (<code>REDIS_SENTINELS</code>) and the primary's name
+  (<code>REDIS_SENTINEL_MASTER</code>) and asks Sentinel for the current primary, so it
+  follows failovers automatically
+  (<a href="https://docs.joinmastodon.org/admin/scaling/">Mastodon: Scaling up your server</a>).</li>
+<li><strong>GitLab</strong> runs separate Redis instances on GitLab.com and supports Redis
+  Cluster for its cache workloads. Because Cluster spreads keys over slots,
+  its developers must put hash tags in keys used together
+  (<code>project:{1}:set_a</code>), and a validator checks this in development and
+  tests (<a href="https://docs.gitlab.com/development/redis/">GitLab: Redis guidelines</a>).</li>
+<li><strong>Slack</strong> learned that an in-memory queue is only as durable as Redis:
+  after an outage, it put Kafka in front of its Redis job queue to provide
+  "a buffer against memory exhaustion and job loss"
+  (<a href="https://slack.engineering/scaling-slacks-job-queue/">Slack engineering</a>).</li>
+</ul>
+<p>Popular providers:
+<a href="https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/AutoFailover.html">Amazon ElastiCache</a>
+(Multi-AZ with automatic failover and replica promotion, plus scheduled
+backups), <a href="https://docs.aws.amazon.com/memorydb/latest/devguide/what-is-memorydb.html">Amazon MemoryDB</a>
+(a durable in-memory database with a Multi-AZ transactional log), and
+<a href="https://cloud.google.com/memorystore/docs/redis/memorystore-for-redis-overview">Google Cloud Memorystore for Redis</a>.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="rdb-snapshots">RDB snapshots<a class="headerlink" href="#rdb-snapshots" title="Permanent link">&para;</a></h3>
+<p>An <strong>RDB</strong> file is a compact, point-in-time snapshot of the whole dataset
+(<code>dump.rdb</code> by default).</p>
+<div class="highlight"><pre><span></span><code>Redis main process --fork()--&gt; child process writes snapshot to temp file
+       |                                   |
+   keeps serving clients            rename temp -&gt; dump.rdb when complete
+</code></pre></div>
+<ul>
+<li>Snapshots are taken automatically by <code>save &lt;seconds&gt; &lt;changes&gt;</code> rules (for
+  example "after 300 seconds if at least 100 keys changed"), or manually
+  with <code>BGSAVE</code>.</li>
+<li>The child process shares memory with the parent using <strong>copy-on-write</strong>:
+  pages are copied only when the parent modifies them. Under heavy writes, a
+  snapshot can temporarily need much more memory, so leave headroom.</li>
+<li>Restarting from an RDB file is fast.</li>
+<li><strong>Trade-off:</strong> everything written since the last snapshot is lost in a
+  crash, often minutes of data.</li>
+</ul>
+<h3 id="aof-append-only-file">AOF (append-only file)<a class="headerlink" href="#aof-append-only-file" title="Permanent link">&para;</a></h3>
+<p>The <strong>AOF</strong> logs every write command. On restart, Redis replays the log to
+rebuild the dataset.</p>
+<p>How often the log is flushed to disk with <code>fsync</code> is set by <code>appendfsync</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Durability</th>
+<th>Performance</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>always</code></td>
+<td>Every write is on disk before the reply: minimal loss</td>
+<td>Slowest</td>
+</tr>
+<tr>
+<td><code>everysec</code> (default when AOF is on)</td>
+<td>At most about one second of writes lost</td>
+<td>Good; the usual choice</td>
+</tr>
+<tr>
+<td><code>no</code></td>
+<td>The operating system decides when to flush (can be tens of seconds)</td>
+<td>Fastest</td>
+</tr>
+</tbody>
+</table>
+<p>The log grows forever unless compacted. <strong>AOF rewrite</strong> (automatic, or
+<code>BGREWRITEAOF</code>) writes the minimal set of commands that recreates the
+current data. Since Redis 7, the AOF is stored as several files (a base file
+plus incremental files, tracked by a manifest) in a dedicated directory, and
+the base can be written in compact RDB format.</p>
+<h3 id="choosing-persistence">Choosing persistence<a class="headerlink" href="#choosing-persistence" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Configuration</th>
+<th>What you lose in a crash</th>
+<th>Typical use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>No persistence</td>
+<td>Everything</td>
+<td>Pure cache that can be rebuilt</td>
+</tr>
+<tr>
+<td>RDB only</td>
+<td>Writes since the last snapshot</td>
+<td>Cache with faster warm-up; data where minutes of loss are acceptable</td>
+</tr>
+<tr>
+<td>AOF <code>everysec</code> (often plus RDB)</td>
+<td>About one second</td>
+<td>Sessions, queues, counters</td>
+</tr>
+<tr>
+<td>AOF <code>always</code></td>
+<td>Almost nothing (at a large throughput cost)</td>
+<td>Rarely used; consider a database instead</td>
+</tr>
+</tbody>
+</table>
+<p><img alt="Diagram: a write is applied in memory; RDB forks a child on a save rule or BGSAVE, which writes a temp file and renames it to dump.rdb, while AOF appends each command and fsyncs it according to appendfsync (always, everysec, or no); after a crash at 12:04, RDB alone loses every write since the 12:00 snapshot and AOF everysec loses about the last second." src="../rdb-vs-aof.svg" /></p>
+<p>When both are enabled, Redis loads the AOF on startup, because it is the
+more complete record. A common default for self-hosted Redis is RDB
+snapshots on and AOF off, so check your configuration rather than assuming.</p>
+<p>Persistence protects against a process restart on the same disk. It does
+not protect against losing the machine or the disk; that needs replicas and
+backups.</p>
+<h3 id="replication">Replication<a class="headerlink" href="#replication" title="Permanent link">&para;</a></h3>
+<p>A <strong>replica</strong> keeps a copy of a <strong>primary</strong>'s data:</p>
+<div class="highlight"><pre><span></span><code>            writes
+clients ----------&gt; PRIMARY ---- async replication stream ----&gt; REPLICA 1
+   \                                                    \-----&gt; REPLICA 2
+    \---- reads (optional, may be slightly stale) ---&gt; replicas
+</code></pre></div>
+<ol>
+<li>A replica connects with <code>REPLICAOF host port</code>.</li>
+<li>It receives a full snapshot, then a continuous stream of write commands.</li>
+<li>After a brief disconnect, it resumes from a <strong>replication backlog</strong>
+   (partial resynchronization) instead of copying everything again.</li>
+</ol>
+<p>Replication is <strong>asynchronous</strong>: the primary replies to the client before
+replicas confirm. If the primary dies, writes it acknowledged but had not
+yet sent are lost. Mitigations:</p>
+<ul>
+<li><code>WAIT numreplicas timeout</code> blocks until that many replicas have received
+  the preceding writes. It reduces, but does not eliminate, the loss window.</li>
+<li><code>min-replicas-to-write</code> and <code>min-replicas-max-lag</code> make a primary refuse
+  writes when it cannot reach enough replicas, limiting damage when it is
+  cut off from the rest of the system.</li>
+</ul>
+<p>Replicas are read-only by default and can serve read traffic, but reads may
+return slightly old data.</p>
+<h3 id="sentinel-automatic-failover">Sentinel: automatic failover<a class="headerlink" href="#sentinel-automatic-failover" title="Permanent link">&para;</a></h3>
+<p>Replication alone copies data; something must notice a failed primary and
+promote a replica. <strong>Redis Sentinel</strong> is a separate process (usually on port
+26379) that does this:</p>
+<p><img alt="Sequence diagram: three Sentinels with quorum 2 get no reply from the primary, agree it is down, and elect a leader, which promotes replica A with REPLICAOF NO ONE and points replica B at A; clients ask SENTINEL get-master-addr-by-name mymaster, receive A's address, and send traffic to A; the old primary becomes a replica of A when it returns." src="../sentinel-failover.svg" /></p>
+<ul>
+<li><strong>Monitoring:</strong> Sentinels ping the primary and replicas.</li>
+<li><strong>Quorum:</strong> a configured number of Sentinels must agree the primary is
+  unreachable before a failover starts, which avoids reacting to one
+  Sentinel's network problem.</li>
+<li><strong>Automatic failover:</strong> a replica is promoted and the others are
+  reconfigured.</li>
+<li><strong>Client discovery:</strong> applications connect to the Sentinels and ask for
+  the current primary (for example with
+  <code>SENTINEL get-master-addr-by-name mymaster</code>), so they follow failovers.</li>
+</ul>
+<p>Run at least three Sentinels on independent machines. Sentinel provides
+high availability for <strong>one</strong> primary's dataset; it does not shard data.</p>
+<h3 id="redis-cluster-sharding-plus-failover">Redis Cluster: sharding plus failover<a class="headerlink" href="#redis-cluster-sharding-plus-failover" title="Permanent link">&para;</a></h3>
+<p>When the dataset or write load is too big for one primary, <strong>Redis Cluster</strong>
+splits keys across several primaries, each with its own replicas.</p>
+<p><img alt="Diagram: the key foo hashes with CRC16 mod 16384 to slot 12182, which falls in the 10923-16383 range owned by node 7002; a client that sends SET foo bar to node 7000 gets MOVED 12182 127.0.0.1:7002, updates its slot map, resends to node 7002, and gets OK." src="../cluster-slot-routing.svg" /></p>
+<ul>
+<li>The key space is divided into <strong>16,384 hash slots</strong>. A key's slot is
+  <code>CRC16(key) mod 16384</code>, and each primary owns a range of slots.</li>
+<li><strong>Hash tags:</strong> if a key contains <code>{...}</code>, only the text inside the braces
+  is hashed, so <code>{user:42}:cart</code> and <code>{user:42}:orders</code> share a slot.</li>
+<li><strong>Multi-key limits:</strong> commands, transactions, and Lua scripts that touch
+  several keys work only if all keys are in the same slot; otherwise Redis
+  returns a <code>CROSSSLOT</code> error. Only database 0 exists.</li>
+<li><strong>Redirects:</strong> if a client sends a command to the wrong node, the node
+  replies <code>MOVED &lt;slot&gt; &lt;host:port&gt;</code> (the slot lives elsewhere; update your
+  slot map) or, while a slot is being migrated, <code>ASK &lt;slot&gt; &lt;host:port&gt;</code> (try
+  that node once, for this command only). Cluster-aware clients handle both.</li>
+<li><strong>Failover is built in:</strong> nodes gossip over a cluster bus, detect a failed
+  primary, and promote one of its replicas; Sentinel is not used.</li>
+<li><strong>Resharding:</strong> slots can be moved between nodes while the cluster is
+  running.</li>
+</ul>
+<p>A common minimum is three primaries, each with at least one replica. See
+<a href="../../scalability/database-scaling/">database scaling</a> for sharding in
+general; MongoDB uses related ideas in
+<a href="../../../04-databases/mongodb/replication/">replication</a> and
+<a href="../../../04-databases/mongodb/sharding/">sharding</a>.</p>
+<h3 id="sentinel-or-cluster">Sentinel or Cluster?<a class="headerlink" href="#sentinel-or-cluster" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Sentinel</th>
+<th>Cluster</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Purpose</td>
+<td>High availability for one dataset</td>
+<td>Sharding and high availability</td>
+</tr>
+<tr>
+<td>Write capacity</td>
+<td>One primary</td>
+<td>Several primaries</td>
+</tr>
+<tr>
+<td>Multi-key operations</td>
+<td>Unrestricted</td>
+<td>Same hash slot only</td>
+</tr>
+<tr>
+<td>Client requirements</td>
+<td>Sentinel-aware client</td>
+<td>Cluster-aware client</td>
+</tr>
+<tr>
+<td>Choose when</td>
+<td>Data fits on one server</td>
+<td>Data or writes exceed one server</td>
+</tr>
+</tbody>
+</table>
+<h3 id="backups">Backups<a class="headerlink" href="#backups" title="Permanent link">&para;</a></h3>
+<p>Persistence and replicas do not protect against mistakes: a <code>FLUSHALL</code> or a
+bad deploy is replicated instantly. Back up RDB files on a schedule (the
+current <code>dump.rdb</code> can be copied safely, because Redis writes a temporary
+file and renames it only when complete), store copies off the server, and
+test restores. Managed services offer automatic snapshots. See
+<a href="../../../07-devops-and-deployment/backups/">backups</a>.</p>
+<h3 id="managed-services">Managed services<a class="headerlink" href="#managed-services" title="Permanent link">&para;</a></h3>
+<p>Running replication, failover, patching, and backups yourself takes effort.
+Managed offerings handle them:</p>
+<ul>
+<li><strong>Amazon ElastiCache</strong> offers Valkey, Redis OSS, and Memcached engines,
+  with replication groups, Multi-AZ automatic failover, cluster mode for
+  sharding, and automatic backups. <strong>Amazon MemoryDB</strong> targets use as a
+  durable primary database. See <a href="../../../06-servers-and-infrastructure/aws/">AWS</a>.</li>
+<li>Other clouds provide similar services, such as Google Cloud Memorystore
+  and Azure Managed Redis (Microsoft is retiring Azure Cache for Redis in
+  its favor), and Redis Ltd. offers its own cloud service.</li>
+</ul>
+<p>Read the provider's documentation for exact failover times, durability
+guarantees, and supported commands; managed services restrict some
+administrative commands, so check the provider's list before relying on
+one.</p>
+<h3 id="memory-limits-and-fragmentation">Memory limits and fragmentation<a class="headerlink" href="#memory-limits-and-fragmentation" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Set <code>maxmemory</code> below the machine's RAM, leaving headroom for
+  copy-on-write during snapshots and rewrites, replication buffers, and
+  client buffers. Running out of RAM can get the process killed by the
+  operating system.</li>
+<li><strong>Fragmentation:</strong> the allocator may hold more memory than the data needs.
+  <code>INFO memory</code> reports <code>mem_fragmentation_ratio</code> (<code>used_memory_rss</code>
+  divided by <code>used_memory</code>), but that ratio also includes other process
+  overheads, so a high value only matters when <code>mem_fragmentation_bytes</code> is
+  large; <code>allocator_frag_ratio</code> is the true fragmentation metric. Redis can
+  defragment actively with <code>activedefrag yes</code>. A ratio below 1 (resident
+  memory smaller than used memory) hints that memory was swapped out, which
+  is very slow.</li>
+</ul>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<p>Choose each mechanism for what it protects against:</p>
+<ul>
+<li><strong>No persistence:</strong> a pure cache that can be rebuilt from the source.</li>
+<li><strong>RDB snapshots:</strong> faster restarts and simple backup files, when losing
+  the writes since the last snapshot is acceptable.</li>
+<li><strong>AOF <code>everysec</code> (often with RDB):</strong> sessions, queues, and counters where
+  losing about a second of writes is the most you can accept.</li>
+<li><strong>Replicas + Sentinel:</strong> keep one dataset available when a server fails.</li>
+<li><strong>Redis Cluster:</strong> the data or the write load no longer fits on one
+  primary.</li>
+</ul>
+<p>Do not rely on them when:</p>
+<ul>
+<li>Losing even acknowledged writes is unacceptable (payments, ledgers):
+  replication is asynchronous, so keep the record of truth in a database.</li>
+<li>You need protection from mistakes such as <code>FLUSHALL</code> or bad deploys:
+  persistence and replicas copy the mistake; only off-server backups help.</li>
+<li>Your application needs many multi-key operations on unrelated keys:
+  Cluster restricts them to one hash slot, so a single primary with
+  Sentinel may be simpler.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>RDB</th>
+<th>AOF <code>everysec</code></th>
+<th>RDB + AOF</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Writes lost in a crash</td>
+<td>Everything since the last snapshot</td>
+<td>About one second</td>
+<td>About one second (AOF is loaded on startup)</td>
+</tr>
+<tr>
+<td>Restart speed with a big dataset</td>
+<td>Fastest</td>
+<td>Slower (replays the log)</td>
+<td>AOF used; a compact RDB-format base makes it faster</td>
+</tr>
+<tr>
+<td>File size</td>
+<td>Compact</td>
+<td>Usually bigger</td>
+<td>Both kept</td>
+</tr>
+<tr>
+<td>Extra disk I/O</td>
+<td>Periodic snapshots</td>
+<td>Continuous appends and fsyncs</td>
+<td>Both</td>
+</tr>
+<tr>
+<td>Good for</td>
+<td>Caches, backups</td>
+<td>Sessions, queues</td>
+<td>Must-keep state that also needs backup files</td>
+</tr>
+</tbody>
+</table>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="checking-and-changing-persistence">Checking and changing persistence<a class="headerlink" href="#checking-and-changing-persistence" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>127.0.0.1:6379&gt; CONFIG GET save
+1) "save"
+2) "3600 1 300 100 60 10000"
+127.0.0.1:6379&gt; CONFIG GET appendonly
+1) "appendonly"
+2) "no"
+127.0.0.1:6379&gt; CONFIG SET appendonly yes
+OK
+127.0.0.1:6379&gt; BGSAVE
+Background saving started
+127.0.0.1:6379&gt; INFO persistence
+# Persistence
+rdb_last_bgsave_status:ok
+aof_enabled:1
+aof_last_bgrewrite_status:ok
+...
+</code></pre></div>
+<p>The equivalent <code>redis.conf</code> settings:</p>
+<div class="highlight"><pre><span></span><code>save 3600 1 300 100 60 10000
+appendonly yes
+appendfsync everysec
+</code></pre></div>
+<h3 id="replication-status">Replication status<a class="headerlink" href="#replication-status" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>127.0.0.1:6379&gt; INFO replication
+# Replication
+role:master
+connected_slaves:2
+slave0:ip=10.0.1.12,port=6379,state=online,offset=884213,lag=0
+slave1:ip=10.0.1.13,port=6379,state=online,offset=884213,lag=1
+...
+127.0.0.1:6379&gt; SET order:1001 "paid"
+OK
+127.0.0.1:6379&gt; WAIT 1 100        # wait up to 100 ms for 1 replica
+(integer) 2
+</code></pre></div>
+<p>(Redis output still uses the older words "master" and "slave" in some
+fields.)</p>
+<h3 id="hash-slots-and-redirects">Hash slots and redirects<a class="headerlink" href="#hash-slots-and-redirects" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>127.0.0.1:7000&gt; CLUSTER KEYSLOT somekey
+(integer) 11058
+127.0.0.1:7000&gt; CLUSTER KEYSLOT foo{hash_tag}
+(integer) 2515
+127.0.0.1:7000&gt; CLUSTER KEYSLOT bar{hash_tag}
+(integer) 2515                     # same tag, same slot
+
+$ redis-cli -p 7000
+127.0.0.1:7000&gt; SET foo bar
+(error) MOVED 12182 127.0.0.1:7002
+
+$ redis-cli -c -p 7000              # -c follows redirects
+127.0.0.1:7000&gt; SET foo bar
+-&gt; Redirected to slot [12182] located at 127.0.0.1:7002
+OK
+
+127.0.0.1:7002&gt; MSET user:1 a user:2 b
+(error) CROSSSLOT Keys in request don't hash to the same slot
+</code></pre></div>
+<h3 id="connecting-to-redis-cluster-from-nodejs">Connecting to Redis Cluster from Node.js<a class="headerlink" href="#connecting-to-redis-cluster-from-nodejs" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">createCluster</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"redis"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">cluster</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">createCluster</span><span class="p">({</span>
+<span class="w">  </span><span class="nx">rootNodes</span><span class="o">:</span><span class="w"> </span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">REDIS_CLUSTER_URLS</span><span class="p">.</span><span class="nx">split</span><span class="p">(</span><span class="s2">","</span><span class="p">).</span><span class="nx">map</span><span class="p">((</span><span class="nx">url</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">({</span><span class="w"> </span><span class="nx">url</span><span class="w"> </span><span class="p">})),</span>
+<span class="p">});</span>
+<span class="nx">cluster</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">"error"</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nx">err</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="s2">"Redis Cluster error"</span><span class="p">,</span><span class="w"> </span><span class="nx">err</span><span class="p">));</span>
+<span class="k">await</span><span class="w"> </span><span class="nx">cluster</span><span class="p">.</span><span class="nx">connect</span><span class="p">();</span><span class="w"> </span><span class="c1">// discovers all nodes and the slot map</span>
+
+<span class="k">await</span><span class="w"> </span><span class="nx">cluster</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s2">"user:42:name"</span><span class="p">,</span><span class="w"> </span><span class="s2">"Ada"</span><span class="p">);</span><span class="w">          </span><span class="c1">// routed to the right node</span>
+<span class="k">await</span><span class="w"> </span><span class="nx">cluster</span><span class="p">.</span><span class="nx">mGet</span><span class="p">([</span><span class="s2">"{user:42}:cart"</span><span class="p">,</span><span class="w"> </span><span class="s2">"{user:42}:orders"</span><span class="p">]);</span><span class="w"> </span><span class="c1">// same slot: allowed</span>
+</code></pre></div>
+<p>For Sentinel-managed deployments, use a client with Sentinel support (check
+your client's documentation) and give it the Sentinel addresses and the
+primary's name instead of a fixed host.</p>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Decide what losing Redis data would cost, then choose persistence to
+  match.</li>
+<li>Use AOF with <code>everysec</code> (often together with RDB) for sessions, queues,
+  and other state you must keep.</li>
+<li>Run replicas plus Sentinel, or Redis Cluster, when downtime matters; use at
+  least three Sentinels on separate machines.</li>
+<li>Remember that replication is asynchronous; never treat Redis as the only
+  copy of critical financial or legal records.</li>
+<li>Design keys with hash tags if you will use Cluster and need multi-key
+  operations.</li>
+<li>Take off-server backups and test restoring them.</li>
+<li>Leave memory headroom for forks and buffers; monitor fragmentation and
+  replication lag.</li>
+<li>Use a managed service unless you have the operational capacity to run
+  Redis yourself.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<p><strong>Writes are suddenly refused after a background save fails.</strong></p>
+<ul>
+<li><strong>Detect:</strong> <code>INFO persistence</code> shows <code>rdb_last_bgsave_status:err</code>; the
+  Redis log shows the fork or the save failing; clients get errors on every
+  write.</li>
+<li><strong>Cause:</strong> with <code>stop-writes-on-bgsave-error yes</code> (the default), Redis
+  stops accepting writes after a failed snapshot. Common reasons are a full
+  disk or <code>fork()</code> failing for lack of memory when the kernel's
+  <code>vm.overcommit_memory</code> is 0.</li>
+<li><strong>Fix:</strong> free disk space, set <code>vm.overcommit_memory = 1</code> as the Redis FAQ
+  recommends, and leave memory headroom for copy-on-write.</li>
+</ul>
+<p><strong>Latency spikes every time a snapshot or AOF rewrite starts.</strong></p>
+<ul>
+<li><strong>Detect:</strong> <code>latest_fork_usec</code> in <code>INFO stats</code> is large; <code>LATENCY DOCTOR</code>
+  reports fork-related events; spikes line up with <code>save</code> rules.</li>
+<li><strong>Cause:</strong> the fork itself runs on the main thread and takes longer for
+  large datasets; transparent huge pages make it worse.</li>
+<li><strong>Fix:</strong> disable transparent huge pages as the Redis latency guide says,
+  keep each instance's dataset moderate, and schedule snapshots away from
+  peaks.</li>
+</ul>
+<p><strong>Writes slow down while the disk is busy.</strong></p>
+<ul>
+<li><strong>Detect:</strong> <code>aof_delayed_fsync</code> in <code>INFO persistence</code> keeps increasing.</li>
+<li><strong>Cause:</strong> the disk cannot keep up with AOF fsyncs, often while a
+  snapshot or rewrite is also writing.</li>
+<li><strong>Fix:</strong> use faster local disks, keep <code>appendfsync everysec</code>, and consider
+  <code>no-appendfsync-on-rewrite yes</code> if a small extra loss window during
+  rewrites is acceptable.</li>
+</ul>
+<p><strong>Replicas keep re-copying the whole dataset.</strong></p>
+<ul>
+<li><strong>Detect:</strong> <code>sync_full</code> keeps rising in <code>INFO stats</code>; the replica's
+  <code>master_link_status</code> flips to <code>down</code>.</li>
+<li><strong>Cause:</strong> after a disconnect, the replica's position is no longer in the
+  primary's replication backlog (<code>repl-backlog-size</code>, 1 MB by default), or
+  the replica output buffer limit cuts the connection during the transfer.</li>
+<li><strong>Fix:</strong> raise <code>repl-backlog-size</code> and the
+  <code>client-output-buffer-limit replica</code> setting for large or busy datasets.</li>
+</ul>
+<p><strong>Recent writes are missing after a failover.</strong></p>
+<ul>
+<li><strong>Detect:</strong> data acknowledged just before the primary failed is absent
+  on the promoted replica.</li>
+<li><strong>Cause:</strong> replication is asynchronous, so the replica never received
+  those writes.</li>
+<li><strong>Fix:</strong> use <code>WAIT</code> for writes that matter, configure
+  <code>min-replicas-to-write</code> and <code>min-replicas-max-lag</code>, and keep critical
+  records in a database.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>RDB:</strong> A point-in-time snapshot file of the dataset.</li>
+<li><strong>AOF:</strong> The append-only file that logs write commands.</li>
+<li><strong>fsync:</strong> A system call that forces buffered data onto disk.</li>
+<li><strong>Copy-on-write:</strong> Sharing memory between processes until one modifies a
+  page.</li>
+<li><strong>Replica:</strong> A server that holds a copy of a primary's data.</li>
+<li><strong>Failover:</strong> Promoting a replica when the primary fails.</li>
+<li><strong>Quorum:</strong> The number of Sentinels that must agree before acting.</li>
+<li><strong>Hash slot:</strong> One of 16,384 buckets that keys are assigned to in Redis
+  Cluster.</li>
+<li><strong>MOVED / ASK:</strong> Redirect replies telling a client which node owns a slot.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>"Redis is in memory, so it cannot persist" or "it always persists."</strong>
+  Persistence is configurable, and the defaults vary.</li>
+<li><strong>"Replicas mean zero data loss."</strong> Asynchronous replication can lose
+  recently acknowledged writes during failover.</li>
+<li><strong>"Persistence is a backup."</strong> A deleted key is deleted in the AOF and
+  replicas too.</li>
+<li><strong>Running one or two Sentinels.</strong> Too few to form a reliable majority.</li>
+<li><strong>Using multi-key commands across slots in Cluster.</strong> They fail with
+  <code>CROSSSLOT</code>.</li>
+<li><strong>Setting <code>maxmemory</code> equal to the machine's RAM.</strong> Forks and buffers can
+  push the process out of memory.</li>
+<li><strong>Hard-coding the primary's address with Sentinel.</strong> The application does
+  not follow failovers.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Compare RDB snapshots and AOF in terms of data loss and performance.</li>
+<li>What does each <code>appendfsync</code> setting trade off?</li>
+<li>Why can a failover lose writes that clients saw as successful, and how
+   does <code>WAIT</code> help?</li>
+<li>What jobs does Sentinel perform, and why does it need a quorum?</li>
+<li>How does Redis Cluster decide which node stores a key, and what are hash
+   tags for?</li>
+<li>What is the difference between <code>MOVED</code> and <code>ASK</code> redirects?</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://redis.io/docs/latest/operate/oss_and_stack/management/persistence/">Redis documentation: Persistence</a></li>
+<li><a href="https://redis.io/docs/latest/operate/oss_and_stack/management/replication/">Redis documentation: Replication</a></li>
+<li><a href="https://redis.io/docs/latest/operate/oss_and_stack/management/sentinel/">Redis documentation: High availability with Sentinel</a></li>
+<li><a href="https://redis.io/docs/latest/operate/oss_and_stack/management/scaling/">Redis documentation: Scale with Redis Cluster</a></li>
+<li><a href="https://redis.io/docs/latest/commands/wait/">Redis command reference: WAIT</a></li>
+<li><a href="https://redis.io/docs/latest/commands/cluster-keyslot/">Redis command reference: CLUSTER KEYSLOT</a></li>
+<li><a href="https://docs.aws.amazon.com/elasticache/">Amazon ElastiCache documentation</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../transactions-pipelining-and-lua/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Transactions, Pipelining, and Lua">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Transactions, Pipelining, and Lua</span>
+      </a>
+    
+    
+      <a href="../interview-questions-and-answers/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: Interview Questions and Answers">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">Interview Questions and Answers</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

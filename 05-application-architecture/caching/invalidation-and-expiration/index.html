@@ -1,0 +1,2614 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../caching-strategies/">
+      
+      
+        <link rel="next" href="../eviction-policies/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Invalidation and Expiration - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#cache-invalidation-and-expiration" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Invalidation and Expiration
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-ai-and-machine-learning/" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../06-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-devops-and-deployment/" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../08-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to Application Architecture">
+          <span class="md-ellipsis">&larr; Back to Architecture</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to Application Architecture">
+                  <span class="md-ellipsis">&larr; Back to Architecture</span>
+                </a>
+              
+            </div>
+          
+          
+            <label class="md-nav__title" for="__nav_6">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Application Architecture
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_3" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_6_3" id="__nav_6_3_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Caching
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_3_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_6_3">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Caching
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cache-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cache Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../caching-strategies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Caching Strategies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Invalidation and Expiration
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Invalidation and Expiration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-invalidation-is-hard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why invalidation is hard
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#time-based-expiration-ttl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Time-based expiration (TTL)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explicit-invalidation-on-write" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Explicit invalidation on write
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-remaining-race-with-write-then-delete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The remaining race with write-then-delete
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#delayed-double-delete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Delayed double delete
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#versioned-keys-and-namespace-bumping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Versioned keys and namespace bumping
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#event-driven-invalidation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Event-driven invalidation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tag-based-invalidation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tag-based invalidation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stale-while-revalidate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stale-while-revalidate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#choosing-acceptable-staleness" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Choosing acceptable staleness
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#never-overwrite-a-newer-cached-version" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Never overwrite a newer cached version
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#event-driven-invalidation-with-mongodb-change-streams" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Event-driven invalidation with MongoDB change streams
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tagging-entries-when-caching-them" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tagging entries when caching them
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../eviction-policies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Eviction Policies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cache-failure-modes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cache Failure Modes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../http-and-cdn-caching/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP and CDN Caching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-ai-and-machine-learning/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI and Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../06-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-devops-and-deployment/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DevOps and Deployment
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../08-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-invalidation-is-hard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why invalidation is hard
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#time-based-expiration-ttl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Time-based expiration (TTL)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explicit-invalidation-on-write" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Explicit invalidation on write
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-remaining-race-with-write-then-delete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The remaining race with write-then-delete
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#delayed-double-delete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Delayed double delete
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#versioned-keys-and-namespace-bumping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Versioned keys and namespace bumping
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#event-driven-invalidation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Event-driven invalidation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tag-based-invalidation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tag-based invalidation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stale-while-revalidate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stale-while-revalidate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#choosing-acceptable-staleness" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Choosing acceptable staleness
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#never-overwrite-a-newer-cached-version" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Never overwrite a newer cached version
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#event-driven-invalidation-with-mongodb-change-streams" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Event-driven invalidation with MongoDB change streams
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tagging-entries-when-caching-them" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tagging entries when caching them
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="cache-invalidation-and-expiration">Cache Invalidation and Expiration<a class="headerlink" href="#cache-invalidation-and-expiration" title="Permanent link">&para;</a></h1>
+<p>Cache invalidation is the work of removing or replacing cached data once
+it no longer matches the source of truth. Expiration is the automatic
+version: an entry is discarded after a time limit. Together they decide
+how stale cached data can be, and they are the hardest part of caching to
+get right.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>A cache that is never invalidated eventually serves wrong data: an old
+price, a deleted product, a revoked permission. A cache that is
+invalidated too aggressively has a poor hit ratio and stops helping.
+Concurrency makes it worse: a write and a read happening at the same
+moment can leave an old value in the cache even when the code "deletes the
+key on every update". Understanding these failure modes lets you choose
+how much staleness each kind of data can tolerate and design accordingly.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Facebook: leases against stale sets.</strong> The
+  <a href="https://www.usenix.org/system/files/conference/nsdi13/nsdi13-final170_update.pdf">Scaling Memcache at Facebook</a>
+  paper introduces <em>leases</em> to solve "stale sets" (a client writing an
+  out-of-date value back into the cache because concurrent updates were
+  reordered). On a miss, memcached gives the client a 64-bit token bound to
+  the key; the client must present it when setting the value, and a delete
+  for that key invalidates the token, so the late write is rejected.</li>
+<li><strong>Facebook: invalidation from the commit log.</strong> The same paper describes
+  invalidation daemons (<code>mcsqueal</code>) on every database that inspect the SQL
+  statements the database commits, extract deletes, and broadcast them to
+  memcache. That is event-driven invalidation driven by committed changes
+  rather than by every code path.</li>
+<li><strong>Cloudflare cache tags.</strong> Cloudflare lets an origin add tags in a
+  <a href="https://developers.cloudflare.com/cache/how-to/purge-cache/purge-by-tags/"><code>Cache-Tag</code> response header</a>
+  and then purge every cached file with a given tag at once.</li>
+<li><strong>Fastly surrogate keys.</strong> Fastly's
+  <a href="https://www.fastly.com/documentation/guides/full-site-delivery/purging/working-with-surrogate-keys/"><code>Surrogate-Key</code> header</a>
+  "tags" content so that one key purge removes all related objects, the CDN
+  version of tag-based invalidation.</li>
+</ul>
+<p><strong>Popular tools:</strong> MongoDB change streams, Debezium for change data capture
+from relational databases, and CDN tag or surrogate-key purging.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="why-invalidation-is-hard">Why invalidation is hard<a class="headerlink" href="#why-invalidation-is-hard" title="Permanent link">&para;</a></h3>
+<ul>
+<li>The cache and the database are separate systems with no shared
+  transaction, so they can be updated in different orders or one update
+  can fail.</li>
+<li>Many app instances read and write at the same time.</li>
+<li>One database row can feed many cache entries (a product appears in its
+  own entry, in category lists, and in search results).</li>
+<li>Local in-process caches exist on every instance, each needing its own
+  invalidation.</li>
+</ul>
+<h3 id="time-based-expiration-ttl">Time-based expiration (TTL)<a class="headerlink" href="#time-based-expiration-ttl" title="Permanent link">&para;</a></h3>
+<p><strong>Absolute TTL</strong> expires an entry a fixed time after it was written,
+regardless of use. It bounds staleness: data is never older than the TTL.</p>
+<div class="highlight"><pre><span></span><code>SET product:42 {...} EX 300      # expires 300 s after being set
+</code></pre></div>
+<p><strong>Sliding TTL</strong> resets the timer every time the entry is read. Frequently
+used entries stay cached, but a constantly read entry may <strong>never</strong> expire
+and can become very stale. Sliding expiration suits sessions ("log out
+after 30 minutes of inactivity") better than data copies.</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// Sliding expiration in Redis: read and reset the TTL in one round trip</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">session</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">redis</span><span class="p">.</span><span class="nx">getex</span><span class="p">(</span><span class="sb">`session:</span><span class="si">${</span><span class="nx">id</span><span class="si">}</span><span class="sb">`</span><span class="p">,</span><span class="w"> </span><span class="s2">"EX"</span><span class="p">,</span><span class="w"> </span><span class="mf">1800</span><span class="p">);</span>
+</code></pre></div>
+<p>Choose TTLs per data type from how stale it may be, not one global value.</p>
+<h3 id="explicit-invalidation-on-write">Explicit invalidation on write<a class="headerlink" href="#explicit-invalidation-on-write" title="Permanent link">&para;</a></h3>
+<p>When the application changes data, it removes the cached copy so the next
+read loads fresh data.</p>
+<p><strong>Delete rather than update.</strong> Two writers updating the cache can finish
+in the wrong order:</p>
+<div class="highlight"><pre><span></span><code>Writer A: DB price=10 ............. cache SET price=10
+Writer B:      DB price=12 ── cache SET price=12
+Final: DB=12, cache=10  (A's cache write arrived last)
+</code></pre></div>
+<p>Deleting the key avoids this: whichever delete runs last, the next read
+loads the committed value from the database.</p>
+<p><strong>Order: write the database, then delete the cache.</strong> Deleting first
+opens a window in which a reader repopulates the cache with the old value
+before the database write commits:</p>
+<div class="highlight"><pre><span></span><code>Delete-then-write (wrong order):
+Writer: DEL key
+Reader:            miss -&gt; read DB (old) -&gt; SET key old
+Writer:                                     UPDATE DB new
+Result: cache holds old value until TTL
+</code></pre></div>
+<h3 id="the-remaining-race-with-write-then-delete">The remaining race with write-then-delete<a class="headerlink" href="#the-remaining-race-with-write-then-delete" title="Permanent link">&para;</a></h3>
+<p>Even the correct order has a narrow race when a read miss overlaps a
+write:</p>
+<p><img alt="Timeline: a reader misses and SELECTs the old price 10 while a writer runs UPDATE price 12 and DEL key; the reader's SET price 10 lands after the delete, so the cache holds a stale 10 until the TTL while the database holds 12. With delayed double delete the writer deletes, updates, waits about 500 ms, and deletes again, removing the stale value so the next read loads 12." src="../stale-race-timeline.svg" /></p>
+<p>It needs the reader's database read to start before the write and its
+cache write to land after the delete. It is rare but real at high
+traffic. Mitigations:</p>
+<table>
+<thead>
+<tr>
+<th>Mitigation</th>
+<th>Idea</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Short TTL</td>
+<td>Limits how long a stale value can survive</td>
+</tr>
+<tr>
+<td>Delayed double delete</td>
+<td>Delete, write the DB, wait a little (longer than a typical read), delete again</td>
+</tr>
+<tr>
+<td>Versioned values</td>
+<td>Store a version or <code>updatedAt</code>; never overwrite a newer cached version with an older one</td>
+</tr>
+<tr>
+<td>Leases</td>
+<td>The cache gives a token to the first reader after a miss; a delete invalidates the token so the late <code>SET</code> is rejected (used by large memcached deployments)</td>
+</tr>
+<tr>
+<td>Event-driven invalidation</td>
+<td>Delete after the database confirms the commit, via change events</td>
+</tr>
+</tbody>
+</table>
+<h3 id="delayed-double-delete">Delayed double delete<a class="headerlink" href="#delayed-double-delete" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">updatePrice</span><span class="p">(</span><span class="nx">productId</span><span class="p">,</span><span class="w"> </span><span class="nx">price</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">await</span><span class="w"> </span><span class="nx">redis</span><span class="p">.</span><span class="nx">del</span><span class="p">(</span><span class="sb">`product:</span><span class="si">${</span><span class="nx">productId</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span><span class="w">            </span><span class="c1">// 1. first delete</span>
+<span class="w">  </span><span class="k">await</span><span class="w"> </span><span class="nx">db</span><span class="p">.</span><span class="nx">products</span><span class="p">.</span><span class="nx">update</span><span class="p">(</span><span class="nx">productId</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">price</span><span class="w"> </span><span class="p">});</span><span class="w">     </span><span class="c1">// 2. write the DB</span>
+<span class="w">  </span><span class="nx">setTimeout</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">                                  </span><span class="c1">// 3. delete again later</span>
+<span class="w">    </span><span class="nx">redis</span><span class="p">.</span><span class="nx">del</span><span class="p">(</span><span class="sb">`product:</span><span class="si">${</span><span class="nx">productId</span><span class="si">}</span><span class="sb">`</span><span class="p">).</span><span class="k">catch</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{});</span>
+<span class="w">  </span><span class="p">},</span><span class="w"> </span><span class="mf">500</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>The second delete removes any stale value a concurrent reader wrote
+during the window. The delay must be longer than a typical
+read-and-populate. It reduces, but does not fully eliminate, the race,
+and the timer is lost if the process crashes, which is why a TTL is still
+needed.</p>
+<h3 id="versioned-keys-and-namespace-bumping">Versioned keys and namespace bumping<a class="headerlink" href="#versioned-keys-and-namespace-bumping" title="Permanent link">&para;</a></h3>
+<p>Instead of deleting entries, change the key so old entries are simply
+never read again and expire on their own.</p>
+<div class="highlight"><pre><span></span><code>Per-entity version:
+  user:42:profile:v{version}     version comes from the user row (updatedAt or a counter)
+
+Namespace bumping (invalidate a whole group at once):
+  catalog:ns            -&gt; 17           (a counter in Redis)
+  catalog:17:product:1
+  catalog:17:category:books
+  INCR catalog:ns       -&gt; 18           (all catalog:17:* entries are now orphaned)
+</code></pre></div>
+<p>Namespace bumping invalidates thousands of keys with one command, without
+scanning. Orphaned entries waste memory until their TTL expires, so they
+must have one. A schema version in the key (<code>:v2</code>) also lets a deploy that
+changes the cached data format start with fresh keys.</p>
+<h3 id="event-driven-invalidation">Event-driven invalidation<a class="headerlink" href="#event-driven-invalidation" title="Permanent link">&para;</a></h3>
+<p>Instead of every code path remembering to delete keys, a separate process
+watches the database's change log and invalidates after each committed
+change.</p>
+<p><img alt="Diagram: an API service, a background job, and an admin script all write to MongoDB; after each commit the change stream sends an update event for _id 42 to an invalidator running products.watch(), which saves the resume token, reads the tagged keys with SMEMBERS tag:product:42, and deletes product:42, the tag set, list:category:books, and search:abc from Redis." src="../event-driven-invalidation.svg" /></p>
+<ul>
+<li><strong>MongoDB change streams</strong> deliver insert, update, and delete events;
+  see <a href="../../../04-databases/mongodb/change-streams/">change streams</a>.</li>
+<li><strong>Change data capture (CDC)</strong> tools such as Debezium read the
+  PostgreSQL write-ahead log or the MySQL binary log and publish changes
+  to a message broker.</li>
+</ul>
+<p>Benefits: invalidation happens only after commit, catches writes from
+every service and script, and keeps business code simpler. Costs: more
+moving parts and a small delay between commit and invalidation.</p>
+<h3 id="tag-based-invalidation">Tag-based invalidation<a class="headerlink" href="#tag-based-invalidation" title="Permanent link">&para;</a></h3>
+<p>One change often affects many cached entries. Tags group keys so they can
+be invalidated together.</p>
+<div class="highlight"><pre><span></span><code>Cache entries                         Tag sets (Redis SETs)
+page:/books/42        ─┐              tag:product:42 = { page:/books/42,
+list:category:books    ├── tagged       list:category:books, search:abc }
+search:abc            ─┘
+</code></pre></div>
+<p>When product 42 changes, delete every key in <code>tag:product:42</code>, then the
+tag set itself. CDNs offer the same idea as surrogate keys or cache tags
+(see <a href="../http-and-cdn-caching/">HTTP and CDN caching</a>).</p>
+<h3 id="stale-while-revalidate">Stale-while-revalidate<a class="headerlink" href="#stale-while-revalidate" title="Permanent link">&para;</a></h3>
+<p>Serve the stale value immediately and refresh it in the background. Users
+get fast responses; the next reader gets fresh data.</p>
+<div class="highlight"><pre><span></span><code>fresh period  ┃ stale-but-usable period ┃ expired
+0 ─────── 60 s ┃ 60 s ──────────── 300 s ┃ (must reload before answering)
+   serve       ┃ serve stale + trigger   ┃
+               ┃ one background refresh  ┃
+</code></pre></div>
+<p>HTTP supports it with <code>Cache-Control: max-age=60, stale-while-revalidate=240</code>.
+Applications implement it by storing a "fresh until" time inside the value
+and a longer TTL on the key.</p>
+<h3 id="choosing-acceptable-staleness">Choosing acceptable staleness<a class="headerlink" href="#choosing-acceptable-staleness" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Data</th>
+<th>Acceptable staleness</th>
+<th>Approach</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Static assets with hashed filenames</td>
+<td>Forever (content never changes at that URL)</td>
+<td>Long TTL, <code>immutable</code></td>
+</tr>
+<tr>
+<td>Blog post, product description</td>
+<td>Minutes</td>
+<td>TTL + delete on write</td>
+</tr>
+<tr>
+<td>Product list, search results</td>
+<td>Seconds to minutes</td>
+<td>Short TTL, namespace bumping</td>
+</tr>
+<tr>
+<td>Prices shown in a catalog</td>
+<td>Seconds; recheck at checkout</td>
+<td>Short TTL; checkout reads the DB</td>
+</tr>
+<tr>
+<td>Permissions, revoked sessions</td>
+<td>Near zero</td>
+<td>Event-driven invalidation or no caching</td>
+</tr>
+<tr>
+<td>Account balance, stock used to accept orders</td>
+<td>None</td>
+<td>Read the source of truth</td>
+</tr>
+</tbody>
+</table>
+<p>Ask: "What harm does a stale value cause, and for how long is that
+acceptable?" Then pick the TTL and invalidation method that fits.</p>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>TTL only:</strong> use when a known amount of staleness is fine and writes are
+  frequent or come from systems you do not control. Avoid it when users
+  must see their own changes immediately.</li>
+<li><strong>Delete on write:</strong> use when your own code performs the writes. Avoid
+  relying on it alone when other services or scripts also write.</li>
+<li><strong>Versioned keys or namespace bumping:</strong> use to invalidate whole groups or
+  to change the cached format on deploy. Avoid it without TTLs; orphaned
+  keys then live forever.</li>
+<li><strong>Event-driven invalidation:</strong> use when many writers touch the same data
+  or invalidation must follow commits. Avoid it for small systems where
+  the extra moving parts cost more than occasional staleness.</li>
+<li><strong>Tags:</strong> use when one change affects many cached entries. Avoid huge
+  tag sets that are themselves expensive to read and delete.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Approach</th>
+<th>Staleness</th>
+<th>Complexity</th>
+<th>Catches writes from other services</th>
+<th>Best for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TTL only</td>
+<td>Up to the TTL</td>
+<td>Lowest</td>
+<td>Yes (eventually)</td>
+<td>Catalogs, public lists</td>
+</tr>
+<tr>
+<td>Delete on write</td>
+<td>Small race window</td>
+<td>Low</td>
+<td>No</td>
+<td>Entities your app owns</td>
+</tr>
+<tr>
+<td>Namespace bump</td>
+<td>Until the bump</td>
+<td>Low</td>
+<td>No</td>
+<td>Whole groups, deploys</td>
+</tr>
+<tr>
+<td>Event-driven (CDC)</td>
+<td>Commit + small lag</td>
+<td>High</td>
+<td>Yes</td>
+<td>Shared data, many writers</td>
+</tr>
+<tr>
+<td>Tags</td>
+<td>Small race window</td>
+<td>Medium</td>
+<td>Only if tagged writes run it</td>
+<td>Derived entries, CDN pages</td>
+</tr>
+</tbody>
+</table>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="never-overwrite-a-newer-cached-version">Never overwrite a newer cached version<a class="headerlink" href="#never-overwrite-a-newer-cached-version" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// Store a version with the value; refuse to write an older one.</span>
+<span class="c1">// Lua runs atomically inside Redis.</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">SET_IF_NEWER</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sb">`</span>
+<span class="sb">local current = redis.call("GET", KEYS[1])</span>
+<span class="sb">if current then</span>
+<span class="sb">  local decoded = cjson.decode(current)</span>
+<span class="sb">  if decoded.version &gt;= tonumber(ARGV[2]) then return 0 end</span>
+<span class="sb">end</span>
+<span class="sb">redis.call("SET", KEYS[1], ARGV[1], "EX", ARGV[3])</span>
+<span class="sb">return 1</span>
+<span class="sb">`</span><span class="p">;</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">cacheProduct</span><span class="p">(</span><span class="nx">product</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="c1">// product.version increments on every database update</span>
+<span class="w">  </span><span class="k">await</span><span class="w"> </span><span class="nx">redis</span><span class="p">.</span><span class="nb">eval</span><span class="p">(</span><span class="nx">SET_IF_NEWER</span><span class="p">,</span><span class="w"> </span><span class="mf">1</span><span class="p">,</span><span class="w"> </span><span class="sb">`product:</span><span class="si">${</span><span class="nx">product</span><span class="p">.</span><span class="nx">id</span><span class="si">}</span><span class="sb">`</span><span class="p">,</span>
+<span class="w">    </span><span class="nb">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">product</span><span class="p">),</span><span class="w"> </span><span class="nx">product</span><span class="p">.</span><span class="nx">version</span><span class="p">,</span><span class="w"> </span><span class="mf">300</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="event-driven-invalidation-with-mongodb-change-streams">Event-driven invalidation with MongoDB change streams<a class="headerlink" href="#event-driven-invalidation-with-mongodb-change-streams" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">MongoClient</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"mongodb"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="nx">Redis</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"ioredis"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">mongo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">MongoClient</span><span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">MONGODB_URI</span><span class="p">);</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">redis</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">Redis</span><span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">REDIS_URL</span><span class="p">);</span>
+<span class="k">await</span><span class="w"> </span><span class="nx">mongo</span><span class="p">.</span><span class="nx">connect</span><span class="p">();</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">products</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">mongo</span><span class="p">.</span><span class="nx">db</span><span class="p">(</span><span class="s2">"shop"</span><span class="p">).</span><span class="nx">collection</span><span class="p">(</span><span class="s2">"products"</span><span class="p">);</span>
+
+<span class="c1">// Change streams require a replica set or sharded cluster</span>
+<span class="k">for</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="nx">change</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="nx">products</span><span class="p">.</span><span class="nx">watch</span><span class="p">([],</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">fullDocument</span><span class="o">:</span><span class="w"> </span><span class="s2">"updateLookup"</span><span class="w"> </span><span class="p">}))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">change</span><span class="p">.</span><span class="nx">documentKey</span><span class="p">.</span><span class="nx">_id</span><span class="p">.</span><span class="nx">toString</span><span class="p">();</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">tagKey</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sb">`tag:product:</span><span class="si">${</span><span class="nx">id</span><span class="si">}</span><span class="sb">`</span><span class="p">;</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">keys</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">redis</span><span class="p">.</span><span class="nx">smembers</span><span class="p">(</span><span class="nx">tagKey</span><span class="p">);</span><span class="w">  </span><span class="c1">// every entry that used this product</span>
+<span class="w">  </span><span class="k">await</span><span class="w"> </span><span class="nx">redis</span><span class="p">.</span><span class="nx">del</span><span class="p">(</span><span class="sb">`product:</span><span class="si">${</span><span class="nx">id</span><span class="si">}</span><span class="sb">`</span><span class="p">,</span><span class="w"> </span><span class="nx">tagKey</span><span class="p">,</span><span class="w"> </span><span class="p">...</span><span class="nx">keys</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>A production invalidator also stores the stream's resume token so it can
+continue after a restart without missing changes.</p>
+<h3 id="tagging-entries-when-caching-them">Tagging entries when caching them<a class="headerlink" href="#tagging-entries-when-caching-them" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">cacheWithTags</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span><span class="w"> </span><span class="nx">value</span><span class="p">,</span><span class="w"> </span><span class="nx">ttlSeconds</span><span class="p">,</span><span class="w"> </span><span class="nx">tags</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">tx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">redis</span><span class="p">.</span><span class="nx">multi</span><span class="p">();</span>
+<span class="w">  </span><span class="nx">tx</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span><span class="w"> </span><span class="nb">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">value</span><span class="p">),</span><span class="w"> </span><span class="s2">"EX"</span><span class="p">,</span><span class="w"> </span><span class="nx">ttlSeconds</span><span class="p">);</span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="nx">tag</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="nx">tags</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">tx</span><span class="p">.</span><span class="nx">sadd</span><span class="p">(</span><span class="sb">`tag:</span><span class="si">${</span><span class="nx">tag</span><span class="si">}</span><span class="sb">`</span><span class="p">,</span><span class="w"> </span><span class="nx">key</span><span class="p">);</span>
+<span class="w">    </span><span class="nx">tx</span><span class="p">.</span><span class="nx">expire</span><span class="p">(</span><span class="sb">`tag:</span><span class="si">${</span><span class="nx">tag</span><span class="si">}</span><span class="sb">`</span><span class="p">,</span><span class="w"> </span><span class="nx">ttlSeconds</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">2</span><span class="p">);</span><span class="w"> </span><span class="c1">// tag sets must not live forever</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="k">await</span><span class="w"> </span><span class="nx">tx</span><span class="p">.</span><span class="nx">exec</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="k">await</span><span class="w"> </span><span class="nx">cacheWithTags</span><span class="p">(</span><span class="s2">"list:category:books"</span><span class="p">,</span><span class="w"> </span><span class="nx">books</span><span class="p">,</span><span class="w"> </span><span class="mf">120</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="s2">"product:42"</span><span class="p">,</span><span class="w"> </span><span class="s2">"product:43"</span><span class="p">]);</span>
+</code></pre></div>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Give every cache entry a TTL as a safety net.</li>
+<li>Write the database first, then delete the cache entry.</li>
+<li>Delete cached entries rather than overwriting them on writes.</li>
+<li>Use namespace versions for groups of keys and schema versions for format
+  changes.</li>
+<li>Prefer event-driven invalidation when many services or scripts write the
+  same data.</li>
+<li>Set staleness budgets per data type and write them down.</li>
+<li>Read the source of truth for decisions that must be correct (payments,
+  stock, authorization).</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>"I saved it, but I still see the old value."</strong>
+  <em>Detect:</em> sampling shows cached values that differ from the database for
+  recently updated rows, mostly under high traffic. <em>Cause:</em> the read/write
+  race, or a delete that ran before the commit. <em>Fix:</em> write then delete,
+  shorten the TTL, and add versioned writes or a delayed second delete.</li>
+<li><strong>A deleted product still shows in category pages.</strong>
+  <em>Detect:</em> the product's own key is gone, but list and search entries
+  still contain it. <em>Cause:</em> derived entries were not invalidated. <em>Fix:</em>
+  tag derived entries with the record's ID, or bump the list's namespace.</li>
+<li><strong>Redis stalls while invalidating.</strong>
+  <em>Detect:</em> latency spikes for all clients, and <code>SLOWLOG GET</code> shows <code>KEYS</code>
+  commands. <em>Cause:</em> pattern-based deletion with <code>KEYS</code> on a large
+  keyspace. <em>Fix:</em> use tags or namespaces, or iterate with <code>SCAN</code>.</li>
+<li><strong>Access still works after it was revoked.</strong>
+  <em>Detect:</em> audit logs show requests allowed after a role change.
+  <em>Cause:</em> permissions cached with a long TTL. <em>Fix:</em> invalidate on
+  permission change through events, and keep authorization caches very
+  short-lived.</li>
+<li><strong>Invalidations missed after the invalidator restarts.</strong>
+  <em>Detect:</em> stale entries cluster around the invalidator's restart time.
+  <em>Cause:</em> the change-stream consumer resumed from "now" instead of its last
+  position. <em>Fix:</em> persist the resume token after each processed event and
+  resume from it.</li>
+<li><strong>Memory keeps rising after namespace bumps.</strong>
+  <em>Detect:</em> <code>used_memory</code> grows and many keys belong to old namespace
+  versions. <em>Cause:</em> versioned keys without TTLs. <em>Fix:</em> always set TTLs on
+  versioned keys.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Invalidation:</strong> Removing or replacing cached data that may be stale.</li>
+<li><strong>Absolute TTL:</strong> Expiry a fixed time after the entry was written.</li>
+<li><strong>Sliding TTL:</strong> Expiry that resets on each access.</li>
+<li><strong>Delayed double delete:</strong> Deleting a key before and shortly after a
+  database write to remove values written by racing readers.</li>
+<li><strong>Namespace bumping:</strong> Changing a version number embedded in keys to
+  orphan a whole group of entries.</li>
+<li><strong>Change data capture (CDC):</strong> Reading a database's change log to
+  publish data changes as events.</li>
+<li><strong>Stale-while-revalidate:</strong> Serving a stale value while refreshing it in
+  the background.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Deleting the cache before writing the database.</li>
+<li>Updating cached values on write and suffering out-of-order overwrites.</li>
+<li>Forgetting derived entries (lists, search results) when one record
+  changes.</li>
+<li>Using sliding TTLs for data copies, so hot entries never refresh.</li>
+<li>Using <code>KEYS pattern*</code> to find entries to delete; it blocks Redis on
+  large datasets. Use tags, namespaces, or <code>SCAN</code>.</li>
+<li>Believing "delete on write" alone guarantees consistency.</li>
+<li>Caching authorization decisions for a long time, so revoked access
+  keeps working.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Why is "write the database, then delete the cache" better than the
+   reverse order?</li>
+<li>Describe the race that can still leave a stale value after
+   write-then-delete, and two ways to reduce it.</li>
+<li>When would you use a sliding TTL instead of an absolute one?</li>
+<li>How does namespace bumping invalidate many keys at once?</li>
+<li>What are the advantages of event-driven invalidation over invalidating
+   in application code?</li>
+<li>How would you decide the staleness budget for product prices?</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control">MDN: <code>Cache-Control</code> (including <code>stale-while-revalidate</code>)</a></li>
+<li><a href="https://redis.io/docs/latest/commands/getex/">Redis: <code>GETEX</code> command</a></li>
+<li><a href="https://www.mongodb.com/docs/manual/changeStreams/">MongoDB: Change streams</a></li>
+<li><a href="https://aws.amazon.com/builders-library/caching-challenges-and-strategies/">AWS Builders' Library: Caching challenges and strategies</a></li>
+<li>Related: <a href="../caching-strategies/">caching strategies</a>,
+  <a href="../cache-failure-modes/">cache failure modes</a>,
+  <a href="../../../03-backend-development/backend-concepts/concurrency-and-race-conditions/">concurrency and race conditions</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../caching-strategies/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Caching Strategies">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Caching Strategies</span>
+      </a>
+    
+    
+      <a href="../eviction-policies/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: Eviction Policies">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">Eviction Policies</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

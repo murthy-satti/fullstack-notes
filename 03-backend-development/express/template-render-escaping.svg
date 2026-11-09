@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="452" viewBox="0 0 780 452" role="img" aria-labelledby="tre-title tre-desc">
+  <title id="tre-title">How res.render builds HTML, and why escaped output matters</title>
+  <desc id="tre-desc">res.render merges app.locals, res.locals and the data object, compiles views/tasks.ejs (once in production thanks to the view cache, on every request in development), runs the template with the data, and sends 200 text/html. When a user-supplied title contains a script tag, the escaped tag &lt;%= title %&gt; turns it into harmless text on the page, while the raw tag &lt;%- title %&gt; inserts it as HTML so the script runs: cross-site scripting.</desc>
+  <defs>
+    <marker id="tre-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#40566b"/>
+    </marker>
+  </defs>
+  <rect width="780" height="452" rx="14" fill="#f5f7fb"/>
+  <g font-family="Arial, sans-serif" text-anchor="middle">
+    <text x="192" y="38" font-size="13" font-weight="700" fill="#40566b">res.render() pipeline</text>
+
+    <rect x="42" y="50" width="300" height="48" rx="8" fill="#fff0d9" stroke="#bd7a20" stroke-width="2"/>
+    <text x="192" y="70" font-size="14" font-weight="700" fill="#66400f">res.render("tasks", data)</text>
+    <text x="192" y="87" font-size="11.5" fill="#66400f">called in the route handler</text>
+    <rect x="42" y="118" width="300" height="62" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="192" y="138" font-size="14" font-weight="700" fill="#263e5a">Merge locals</text>
+    <text x="192" y="156" font-size="11.5" fill="#263e5a">app.locals, then res.locals,</text>
+    <text x="192" y="171" font-size="11.5" fill="#263e5a">then the data object</text>
+    <rect x="42" y="200" width="300" height="62" rx="8" fill="#eef1f5" stroke="#8a96a3" stroke-width="2"/>
+    <text x="192" y="220" font-size="14" font-weight="700" fill="#36424e">Compile views/tasks.ejs</text>
+    <text x="192" y="238" font-size="11.5" fill="#36424e">production: once (view cache)</text>
+    <text x="192" y="253" font-size="11.5" fill="#36424e">development: every request</text>
+    <rect x="42" y="282" width="300" height="48" rx="8" fill="#f0e9fb" stroke="#8062a8" stroke-width="2"/>
+    <text x="192" y="302" font-size="14" font-weight="700" fill="#463365">Run the template</text>
+    <text x="192" y="319" font-size="11.5" fill="#463365">&lt;%= %&gt; escapes each value</text>
+    <rect x="42" y="350" width="300" height="48" rx="8" fill="#e8f5e9" stroke="#53845b" stroke-width="2"/>
+    <text x="192" y="370" font-size="14" font-weight="700" fill="#294a2e">200 text/html</text>
+    <text x="192" y="387" font-size="11.5" fill="#294a2e">HTML sent to the browser</text>
+
+    <rect x="388" y="34" width="380" height="296" rx="10" fill="#faf7fe" stroke="#8062a8" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <text x="578" y="56" font-size="13" font-weight="700" fill="#463365">Inside "Run the template": user input</text>
+    <rect x="440" y="70" width="276" height="48" rx="8" fill="#eef1f5" stroke="#8a96a3" stroke-width="2"/>
+    <text x="578" y="90" font-size="14" font-weight="700" fill="#36424e">title typed by a user</text>
+    <text x="578" y="107" font-size="11.5" fill="#36424e">&lt;script&gt;steal()&lt;/script&gt;</text>
+
+    <rect x="400" y="168" width="170" height="62" rx="8" fill="#e8f5e9" stroke="#53845b" stroke-width="2"/>
+    <text x="485" y="188" font-size="14" font-weight="700" fill="#294a2e">&lt;%= title %&gt;</text>
+    <text x="485" y="206" font-size="11.5" fill="#294a2e">outputs &amp;lt;script&amp;gt;</text>
+    <text x="485" y="221" font-size="11.5" fill="#294a2e">escaped</text>
+    <rect x="586" y="168" width="170" height="62" rx="8" fill="#fde8e6" stroke="#b5473a" stroke-width="2"/>
+    <text x="671" y="188" font-size="14" font-weight="700" fill="#6b241c">&lt;%- title %&gt;</text>
+    <text x="671" y="206" font-size="11.5" fill="#6b241c">outputs &lt;script&gt;</text>
+    <text x="671" y="221" font-size="11.5" fill="#6b241c">raw HTML</text>
+
+    <rect x="400" y="266" width="170" height="48" rx="8" fill="#e8f5e9" stroke="#53845b" stroke-width="2"/>
+    <text x="485" y="286" font-size="14" font-weight="700" fill="#294a2e">Shown as text</text>
+    <text x="485" y="303" font-size="11.5" fill="#294a2e">safe: nothing runs</text>
+    <rect x="586" y="266" width="170" height="48" rx="8" fill="#fde8e6" stroke="#b5473a" stroke-width="2"/>
+    <text x="671" y="286" font-size="14" font-weight="700" fill="#6b241c">Script runs</text>
+    <text x="671" y="303" font-size="11.5" fill="#6b241c">XSS in the user's page</text>
+
+    <g fill="none" stroke="#40566b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M192 98V116" marker-end="url(#tre-arrow)"/>
+      <path d="M192 180V198" marker-end="url(#tre-arrow)"/>
+      <path d="M192 262V280" marker-end="url(#tre-arrow)"/>
+      <path d="M192 330V348" marker-end="url(#tre-arrow)"/>
+      <path d="M540 118 488 166" marker-end="url(#tre-arrow)"/>
+      <path d="M616 118 668 166" marker-end="url(#tre-arrow)"/>
+      <path d="M485 230V264" marker-end="url(#tre-arrow)"/>
+      <path d="M671 230V264" marker-end="url(#tre-arrow)"/>
+    </g>
+    <path d="M342 306H386" fill="none" stroke="#8062a8" stroke-width="1.5" stroke-dasharray="4 4"/>
+    <text x="390" y="432" font-size="13" fill="#40566b">Templates escape by default; use the raw tag only for HTML you generated or sanitized yourself.</text>
+  </g>
+</svg>

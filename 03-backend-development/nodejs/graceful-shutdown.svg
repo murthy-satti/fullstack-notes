@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="610" viewBox="0 0 780 610" role="img" aria-labelledby="gs-title gs-desc">
+  <title id="gs-title">Graceful shutdown after SIGTERM, with its safety net</title>
+  <desc id="gs-desc">When SIGTERM arrives, the handler ignores repeated signals, then starts an unref'd 20 second force-exit timer. It marks the instance not ready, calls server.close to stop accepting connections, lets in-flight requests finish, stops background work, closes database pools, flushes logs and sets exitCode to 0 so the process exits once the event loop is empty. If the steps hang, the timer calls process.exit(1) at 20 seconds, before the platform's grace period ends and it sends SIGKILL, which cannot be caught; Kubernetes waits 30 seconds by default.</desc>
+  <defs>
+    <marker id="gs-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#40566b"/>
+    </marker>
+  </defs>
+  <rect width="780" height="610" rx="14" fill="#f5f7fb"/>
+  <g font-family="Arial, sans-serif" text-anchor="middle">
+    <rect x="60" y="20" width="300" height="40" rx="20" fill="#eef1f5" stroke="#8a96a3" stroke-width="2"/>
+    <text x="210" y="45" font-size="14" font-weight="700" fill="#36424e">SIGTERM from Docker / Kubernetes</text>
+
+    <path d="M210 80 310 108 210 136 110 108z" fill="#eef1f5" stroke="#8a96a3" stroke-width="2"/>
+    <text x="210" y="105" font-size="12" font-weight="700" fill="#36424e">already shutting</text>
+    <text x="210" y="119" font-size="12" font-weight="700" fill="#36424e">down?</text>
+    <rect x="352" y="90" width="150" height="36" rx="8" fill="#eef1f5" stroke="#8a96a3" stroke-width="2"/>
+    <text x="427" y="113" font-size="12.5" font-weight="700" fill="#36424e">ignore the repeat</text>
+
+    <rect x="40" y="160" width="340" height="40" rx="8" fill="#f0e9fb" stroke="#8062a8" stroke-width="2"/>
+    <text x="210" y="185" font-size="13" font-weight="700" fill="#463365">start forceExit timer: 20 s, unref()</text>
+    <rect x="40" y="216" width="340" height="40" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="210" y="241" font-size="13" font-weight="700" fill="#263e5a">1. mark the instance "not ready"</text>
+    <rect x="40" y="272" width="340" height="40" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="210" y="297" font-size="13" font-weight="700" fill="#263e5a">2. server.close(): no new connections</text>
+    <rect x="40" y="328" width="340" height="40" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="210" y="353" font-size="13" font-weight="700" fill="#263e5a">3. in-flight requests finish</text>
+    <rect x="40" y="384" width="340" height="40" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="210" y="409" font-size="13" font-weight="700" fill="#263e5a">4. stop timers and queue consumers</text>
+    <rect x="40" y="440" width="340" height="40" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="210" y="465" font-size="13" font-weight="700" fill="#263e5a">5. db.close(): close pools and caches</text>
+    <rect x="40" y="496" width="340" height="48" rx="8" fill="#e8f5e9" stroke="#53845b" stroke-width="2"/>
+    <text x="210" y="516" font-size="13" font-weight="700" fill="#294a2e">6. flush logs, process.exitCode = 0</text>
+    <text x="210" y="533" font-size="11.5" fill="#294a2e">process exits when the event loop is empty</text>
+
+    <g fill="none" stroke="#40566b" stroke-width="2" stroke-linecap="round">
+      <path d="M210 60V78" marker-end="url(#gs-arrow)"/>
+      <path d="M310 108H350" marker-end="url(#gs-arrow)"/>
+      <path d="M210 136V158" marker-end="url(#gs-arrow)"/>
+      <path d="M210 200V214" marker-end="url(#gs-arrow)"/>
+      <path d="M210 256V270" marker-end="url(#gs-arrow)"/>
+      <path d="M210 312V326" marker-end="url(#gs-arrow)"/>
+      <path d="M210 368V382" marker-end="url(#gs-arrow)"/>
+      <path d="M210 424V438" marker-end="url(#gs-arrow)"/>
+      <path d="M210 480V494" marker-end="url(#gs-arrow)"/>
+    </g>
+    <g font-size="12" font-weight="700" fill="#40566b">
+      <text x="330" y="100">yes</text>
+      <text x="222" y="152" text-anchor="start">no</text>
+    </g>
+
+    <text x="640" y="40" font-size="12" font-weight="700" fill="#40566b">time since SIGTERM</text>
+    <path d="M560 56V548" stroke="#8a96a3" stroke-width="2"/>
+    <g fill="#40566b" font-size="12" font-weight="700" text-anchor="end">
+      <circle cx="560" cy="64" r="5"/>
+      <text x="550" y="68">0 s</text>
+      <circle cx="560" cy="330" r="5"/>
+      <text x="550" y="334">20 s</text>
+      <circle cx="560" cy="470" r="5"/>
+      <text x="550" y="474">30 s</text>
+    </g>
+    <text x="574" y="68" font-size="11.5" fill="#36424e" text-anchor="start">shutdown starts</text>
+    <rect x="574" y="306" width="186" height="48" rx="8" fill="#fde8e6" stroke="#b5473a" stroke-width="2"/>
+    <text x="667" y="326" font-size="13" font-weight="700" fill="#6b241c">forceExit fires</text>
+    <text x="667" y="343" font-size="11.5" fill="#6b241c">process.exit(1) if still busy</text>
+    <rect x="574" y="446" width="186" height="48" rx="8" fill="#fde8e6" stroke="#b5473a" stroke-width="2"/>
+    <text x="667" y="466" font-size="13" font-weight="700" fill="#6b241c">platform sends SIGKILL</text>
+    <text x="667" y="483" font-size="11.5" fill="#6b241c">cannot be caught</text>
+    <text x="667" y="512" font-size="11" fill="#40566b">Kubernetes default grace period</text>
+
+    <path d="M380 180H470V316H572" fill="none" stroke="#8062a8" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#gs-arrow)"/>
+    <text x="478" y="252" font-size="11.5" font-style="italic" fill="#463365" text-anchor="start">only if</text>
+    <text x="478" y="267" font-size="11.5" font-style="italic" fill="#463365" text-anchor="start">steps hang</text>
+
+    <text x="390" y="590" font-size="13" fill="#40566b">Keep the force-exit timeout shorter than the platform's grace period.</text>
+  </g>
+</svg>

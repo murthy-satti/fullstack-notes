@@ -1,0 +1,2616 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../cache-failure-modes/">
+      
+      
+        <link rel="next" href="../interview-questions-and-answers/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>HTTP and CDN Caching - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#http-and-cdn-caching" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              HTTP and CDN Caching
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-ai-and-machine-learning/" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../06-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-devops-and-deployment/" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../08-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to Application Architecture">
+          <span class="md-ellipsis">&larr; Back to Architecture</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to Application Architecture">
+                  <span class="md-ellipsis">&larr; Back to Architecture</span>
+                </a>
+              
+            </div>
+          
+          
+            <label class="md-nav__title" for="__nav_6">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Application Architecture
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_3" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_6_3" id="__nav_6_3_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Caching
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_3_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_6_3">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Caching
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cache-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cache Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../caching-strategies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Caching Strategies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../invalidation-and-expiration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Invalidation and Expiration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../eviction-policies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Eviction Policies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cache-failure-modes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cache Failure Modes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP and CDN Caching
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP and CDN Caching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#private-and-shared-caches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Private and shared caches
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cache-control-recap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cache-Control recap
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#freshness-and-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Freshness and validation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cdn-edge-caching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CDN edge caching
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cache-keys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cache keys
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#purging-and-invalidation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Purging and invalidation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#versioned-assets-and-immutable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Versioned assets and immutable
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#caching-api-responses-at-the-edge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Caching API responses at the edge
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-danger-of-caching-private-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The danger of caching private data
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#setting-cache-headers-in-express" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setting cache headers in Express
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#checking-what-a-cdn-did" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checking what a CDN did
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-ai-and-machine-learning/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI and Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../06-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-devops-and-deployment/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DevOps and Deployment
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../08-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#private-and-shared-caches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Private and shared caches
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cache-control-recap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cache-Control recap
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#freshness-and-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Freshness and validation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cdn-edge-caching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CDN edge caching
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cache-keys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cache keys
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#purging-and-invalidation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Purging and invalidation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#versioned-assets-and-immutable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Versioned assets and immutable
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#caching-api-responses-at-the-edge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Caching API responses at the edge
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-danger-of-caching-private-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The danger of caching private data
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#setting-cache-headers-in-express" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setting cache headers in Express
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#checking-what-a-cdn-did" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checking what a CDN did
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="http-and-cdn-caching">HTTP and CDN Caching<a class="headerlink" href="#http-and-cdn-caching" title="Permanent link">&para;</a></h1>
+<p>HTTP has caching built into the protocol. Browsers, reverse proxies, and
+content delivery networks (CDNs) can store responses and reuse them
+without contacting your servers, guided by headers your application sends.
+This lesson looks at HTTP caching from an architecture point of view:
+where responses are cached, how caches decide what is "the same request",
+how to change cached content safely, and how to avoid leaking private
+data.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>The fastest request is the one that never reaches your servers. A CDN
+can serve static assets and public pages from an edge location a few
+milliseconds from the user, absorbing most traffic and traffic spikes.
+But HTTP caches are outside your application's direct control: once a
+response is stored in thousands of browsers or edge servers, you cannot
+easily take it back. One wrong header can make a fix invisible for days,
+or serve one user's account page to everyone.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Cloudflare caches by file extension, not content type.</strong> Cloudflare's
+  <a href="https://developers.cloudflare.com/cache/concepts/default-cache-behavior/">default cache behavior</a>
+  page states that it caches based on file extension rather than MIME type
+  and does not cache HTML or JSON by default. API responses and pages are
+  therefore not cached at the edge unless you add rules.</li>
+<li><strong>Cloudflare documents web cache deception.</strong> Its
+  <a href="https://developers.cloudflare.com/cache/cache-security/cache-deception-armor/">Cache Deception Armor</a>
+  page describes a personalized page that the origin also serves at
+  <code>/newsfeed/foo.jpg</code>: because the path ends in <code>.jpg</code>, the CDN caches it,
+  and the attacker then receives the victim's cached content. Cloudflare
+  offers a cache rule that protects against this.</li>
+<li><strong>Amazon CloudFront makes the cache key explicit.</strong> A CloudFront
+  <a href="https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/controlling-the-cache-key.html">cache policy</a>
+  specifies which headers, cookies, and query strings are included in the
+  cache key, which determines whether a request is a cache hit.</li>
+<li><strong>CDNs purge by tag.</strong> Fastly's
+  <a href="https://www.fastly.com/documentation/guides/full-site-delivery/purging/working-with-surrogate-keys/"><code>Surrogate-Key</code></a>
+  header and Cloudflare's
+  <a href="https://developers.cloudflare.com/cache/how-to/purge-cache/purge-by-tags/"><code>Cache-Tag</code></a>
+  header both let you purge every object with a given tag in one request.</li>
+</ul>
+<p><strong>Popular providers:</strong> Cloudflare, Amazon CloudFront, Fastly, Akamai, and
+Google Cloud CDN; reverse-proxy caches such as Nginx and Varnish.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="private-and-shared-caches">Private and shared caches<a class="headerlink" href="#private-and-shared-caches" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>User A browser cache ─┐                                  ┌─&gt; origin (your app)
+(private: only A)     ├─&gt; CDN edge cache ─&gt; reverse proxy ┤
+User B browser cache ─┘   (shared: all     (shared)       └─&gt; database
+(private: only B)          users nearby)
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Cache</th>
+<th>Shared?</th>
+<th>Controlled by</th>
+<th>Can store personalized responses?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Browser (private) cache</td>
+<td>No, one user</td>
+<td><code>Cache-Control</code> from the origin</td>
+<td>Yes, if allowed (<code>private</code>)</td>
+</tr>
+<tr>
+<td>CDN edge cache</td>
+<td>Yes</td>
+<td><code>Cache-Control</code>, <code>s-maxage</code>, CDN rules</td>
+<td>Only if the cache key separates users (usually avoid)</td>
+</tr>
+<tr>
+<td>Reverse proxy cache</td>
+<td>Yes</td>
+<td>Proxy configuration and headers</td>
+<td>Same as CDN</td>
+</tr>
+</tbody>
+</table>
+<p>HTTP caching rules are defined in RFC 9111.</p>
+<h3 id="cache-control-recap">Cache-Control recap<a class="headerlink" href="#cache-control-recap" title="Permanent link">&para;</a></h3>
+<p>The <code>Cache-Control</code> response header tells caches whether and how long
+they may store a response. The directives are explained in detail in
+<a href="../../../03-backend-development/backend-concepts/http-headers/">HTTP headers</a>;
+the ones that matter most for architecture are:</p>
+<table>
+<thead>
+<tr>
+<th>Directive</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>max-age=N</code></td>
+<td>Fresh for N seconds in any cache</td>
+</tr>
+<tr>
+<td><code>s-maxage=N</code></td>
+<td>Overrides <code>max-age</code> for shared caches (CDN, proxy) only</td>
+</tr>
+<tr>
+<td><code>public</code></td>
+<td>Shared caches may store it, even in some cases they otherwise would not</td>
+</tr>
+<tr>
+<td><code>private</code></td>
+<td>Only the user's browser may store it</td>
+</tr>
+<tr>
+<td><code>no-cache</code></td>
+<td>May be stored, but must be revalidated with the origin before each use</td>
+</tr>
+<tr>
+<td><code>no-store</code></td>
+<td>Must not be stored anywhere</td>
+</tr>
+<tr>
+<td><code>immutable</code></td>
+<td>The content will never change while fresh; skip revalidation</td>
+</tr>
+<tr>
+<td><code>stale-while-revalidate=N</code></td>
+<td>May serve stale for N seconds while revalidating in the background</td>
+</tr>
+<tr>
+<td><code>stale-if-error=N</code></td>
+<td>May serve stale for N seconds if the origin errors</td>
+</tr>
+</tbody>
+</table>
+<p>Some CDNs also honor <code>CDN-Cache-Control</code> (RFC 9213), which targets CDN
+caches separately from browsers.</p>
+<h3 id="freshness-and-validation">Freshness and validation<a class="headerlink" href="#freshness-and-validation" title="Permanent link">&para;</a></h3>
+<p>A cached response is <strong>fresh</strong> until its age exceeds <code>max-age</code>; fresh
+responses are served without contacting the origin. A <strong>stale</strong> response
+can be <strong>revalidated</strong>: the cache asks the origin whether its copy is
+still current.</p>
+<div class="highlight"><pre><span></span><code>First request:
+  200 OK
+  ETag: "v7-a1b2"
+  Last-Modified: Thu, 05 Nov 2026 10:00:00 GMT
+  Cache-Control: max-age=60
+
+After 60 s (stale), the cache revalidates:
+  GET /api/catalog
+  If-None-Match: "v7-a1b2"
+  If-Modified-Since: Thu, 05 Nov 2026 10:00:00 GMT
+
+Origin, if unchanged:
+  304 Not Modified          (no body; the cache reuses its copy for another 60 s)
+Origin, if changed:
+  200 OK + new body + new ETag
+</code></pre></div>
+<ul>
+<li><code>ETag</code> is an identifier for a specific version of the content. Strong
+  ETags mean byte-identical; weak ETags (<code>W/"..."</code>) mean semantically
+  equivalent.</li>
+<li><code>Last-Modified</code> is a timestamp; less precise (one-second resolution)
+  but easy to produce.</li>
+<li>A <code>304</code> still costs a round trip, but saves bandwidth and often origin
+  work.</li>
+</ul>
+<p>The same rules at a CDN edge, for a fresh hit, a miss, and a stale copy:</p>
+<p><img alt="Sequence diagram: a fresh hit is answered by the CDN edge in about 10 ms; a miss is forwarded to the origin, which returns 200 with ETag &quot;v7-a1b2&quot; and max-age=60 and the edge stores a copy; after 60 s the edge revalidates with If-None-Match, the origin answers 304 Not Modified with no body, and the edge reuses its copy for another 60 s, or gets 200 with a new body if the content changed." src="../cdn-hit-miss-revalidate.svg" /></p>
+<h3 id="cdn-edge-caching">CDN edge caching<a class="headerlink" href="#cdn-edge-caching" title="Permanent link">&para;</a></h3>
+<p>A CDN runs servers in many locations (points of presence). DNS or anycast
+routing sends each user to a nearby edge, which serves cached responses or
+fetches from your origin on a miss. See
+<a href="../../../06-servers-and-infrastructure/cdn/">CDN</a> for how CDNs work as
+infrastructure.</p>
+<div class="highlight"><pre><span></span><code>User (Mumbai) ──&gt; Mumbai edge ── hit ──&gt; response in ~10 ms
+                       │ miss
+                       └──&gt; (origin shield) ──&gt; origin in another region (~150+ ms)
+</code></pre></div>
+<p>An <strong>origin shield</strong> (a mid-tier cache) makes edge misses go through one
+regional cache first, so a popular new object is fetched from the origin
+once rather than once per edge location.</p>
+<h3 id="cache-keys">Cache keys<a class="headerlink" href="#cache-keys" title="Permanent link">&para;</a></h3>
+<p>A shared cache decides whether two requests are "the same" by their
+<strong>cache key</strong>. By default this is usually the method, host, and full URL
+including the query string. CDNs let you customize it.</p>
+<table>
+<thead>
+<tr>
+<th>Key component</th>
+<th>Include it when</th>
+<th>Danger if mishandled</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Path</td>
+<td>Always</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Query string</td>
+<td>It changes the response (<code>?page=2</code>)</td>
+<td>Including tracking parameters (<code>utm_*</code>) fragments the cache; excluding real ones serves wrong data</td>
+</tr>
+<tr>
+<td>Specific headers (<code>Accept-Language</code>)</td>
+<td>The response varies by it</td>
+<td>Including high-variety headers (<code>User-Agent</code>) destroys the hit ratio</td>
+</tr>
+<tr>
+<td>Cookies</td>
+<td>Almost never on shared caches</td>
+<td>Keying on session cookies means one entry per user; ignoring them on personalized pages leaks data</td>
+</tr>
+<tr>
+<td>Device class, country</td>
+<td>The content differs</td>
+<td>Too many variants</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>Vary</code> response header tells caches which request headers the
+response depends on, for example <code>Vary: Accept-Encoding, Accept-Language</code>.
+Caches then store one variant per value of those headers. <code>Vary: Cookie</code>
+or <code>Vary: Authorization</code> effectively makes a response uncacheable for
+shared caches in practice.</p>
+<h3 id="purging-and-invalidation">Purging and invalidation<a class="headerlink" href="#purging-and-invalidation" title="Permanent link">&para;</a></h3>
+<p>When content changes, you can:</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>How</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Wait for expiry</td>
+<td>Short <code>s-maxage</code></td>
+<td>Simple; staleness bounded by the TTL</td>
+</tr>
+<tr>
+<td>Purge by URL</td>
+<td>CDN API call for specific URLs</td>
+<td>Must know every affected URL and variant</td>
+</tr>
+<tr>
+<td>Purge by tag (surrogate key)</td>
+<td>Responses carry tags; purge all with a tag</td>
+<td>Ideal for "product 42 changed" across many pages; support varies by CDN and plan</td>
+</tr>
+<tr>
+<td>Purge everything</td>
+<td>Clear the whole cache</td>
+<td>Causes an origin load spike (an avalanche)</td>
+</tr>
+<tr>
+<td>Change the URL</td>
+<td>Versioned filenames</td>
+<td>No purge needed; best for assets</td>
+</tr>
+</tbody>
+</table>
+<p>Purges propagate to edge locations quickly but not instantly, and they
+cannot reach browser caches. Anything a browser has cached with a long
+<code>max-age</code> stays there until it expires.</p>
+<h3 id="versioned-assets-and-immutable">Versioned assets and <code>immutable</code><a class="headerlink" href="#versioned-assets-and-immutable" title="Permanent link">&para;</a></h3>
+<p>Build tools put a content hash in asset filenames. The file at a given
+URL never changes, so it can be cached for a year; a new deploy produces
+new URLs.</p>
+<div class="highlight"><pre><span></span><code>index.html                 Cache-Control: no-cache          (always revalidate)
+  &lt;script src="/assets/app.3f9a1c2b.js"&gt;
+/assets/app.3f9a1c2b.js    Cache-Control: public, max-age=31536000, immutable
+/assets/logo.8d21e0aa.svg  Cache-Control: public, max-age=31536000, immutable
+</code></pre></div>
+<p>The HTML is revalidated on every visit so users pick up new asset URLs
+right after a deploy, while the large assets are served from cache.</p>
+<p><img alt="Comparison: before a deploy, revalidating index.html returns 304, the cached HTML references app.3f9a1c2b.js, and that immutable file comes from the browser cache with no request; after a deploy, revalidation returns 200 with new HTML referencing app.7c4e9d10.js, a new URL that is downloaded once and then cached for a year." src="../cache-busting-assets.svg" /></p>
+<h3 id="caching-api-responses-at-the-edge">Caching API responses at the edge<a class="headerlink" href="#caching-api-responses-at-the-edge" title="Permanent link">&para;</a></h3>
+<p>Public, non-personalized API responses can also be cached at the edge:</p>
+<div class="highlight"><pre><span></span><code>GET /api/v1/products?category=books&amp;page=1
+Cache-Control: public, s-maxage=60, max-age=0, stale-while-revalidate=300
+</code></pre></div>
+<ul>
+<li><code>s-maxage=60</code>: the CDN serves it for 60 seconds.</li>
+<li><code>max-age=0</code>: browsers revalidate each time, so the CDN controls
+  freshness and purges take effect for users.</li>
+<li><code>stale-while-revalidate=300</code>: the CDN can answer instantly with a
+  stale copy while refreshing.</li>
+</ul>
+<p>Only <code>GET</code> and <code>HEAD</code> responses are normally cached. Never cache responses
+that depend on who the user is.</p>
+<h3 id="the-danger-of-caching-private-data">The danger of caching private data<a class="headerlink" href="#the-danger-of-caching-private-data" title="Permanent link">&para;</a></h3>
+<p>Shared caches that store personalized responses cause serious data leaks:
+user A's account page, cached at the edge, is served to user B.</p>
+<p>Rules:</p>
+<ul>
+<li>Responses for signed-in users: <code>Cache-Control: private, no-store</code> (or
+  at least <code>private</code>) unless you have deliberately designed per-user
+  caching.</li>
+<li>Never let shared caches store responses carrying <code>Set-Cookie</code>.</li>
+<li>Do not rely on the CDN "probably" not caching something; set explicit
+  headers on every response.</li>
+<li>Beware <strong>web cache deception</strong>: a request such as
+  <code>/account/profile.css</code> that the app answers with the profile page, but
+  the CDN caches because the path "looks static". Cache by explicit rules
+  and content type, not file extension alone, and make the app return 404
+  for unexpected paths.</li>
+<li>Beware <strong>cache poisoning</strong>: unkeyed inputs (for example an
+  <code>X-Forwarded-Host</code> header used to build links) that change the response
+  can let an attacker store a malicious version for everyone.</li>
+</ul>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>CDN caching:</strong> use for static assets, public pages, and public,
+  non-personalized API responses with many repeat readers. Do not use it
+  for anything that depends on who the user is.</li>
+<li><strong>Browser caching:</strong> use long <code>max-age</code> only for versioned (hashed) URLs.
+  Keep it short or <code>no-cache</code> for HTML and API responses you might need to
+  change quickly.</li>
+<li><strong><code>no-store</code>:</strong> use for sensitive data (account pages, tokens, financial
+  or health records). Do not use it for public content; it throws away all
+  caching benefits.</li>
+<li><strong>Purging:</strong> prefer versioned URLs for assets and tags for content shown
+  on many pages. Avoid "purge everything" except in emergencies.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Response</th>
+<th>Cache-Control</th>
+<th>Where it is cached</th>
+<th>How changes reach users</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hashed static asset</td>
+<td><code>public, max-age=31536000, immutable</code></td>
+<td>Browser and CDN</td>
+<td>New URL on deploy</td>
+</tr>
+<tr>
+<td>HTML entry page</td>
+<td><code>no-cache</code></td>
+<td>Stored, revalidated each time</td>
+<td>Revalidation (<code>304</code>/<code>200</code>)</td>
+</tr>
+<tr>
+<td>Public API list</td>
+<td><code>public, s-maxage=60, max-age=0, stale-while-revalidate=300</code></td>
+<td>CDN</td>
+<td>Expiry or tag purge</td>
+</tr>
+<tr>
+<td>Signed-in user data</td>
+<td><code>private, no-store</code></td>
+<td>Nowhere</td>
+<td>Always fresh from the origin</td>
+</tr>
+</tbody>
+</table>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="setting-cache-headers-in-express">Setting cache headers in Express<a class="headerlink" href="#setting-cache-headers-in-express" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="nx">express</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"express"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">app</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">express</span><span class="p">();</span>
+
+<span class="c1">// Hashed build assets: cache for a year, never revalidate</span>
+<span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="s2">"/assets"</span><span class="p">,</span><span class="w"> </span><span class="nx">express</span><span class="p">.</span><span class="k">static</span><span class="p">(</span><span class="s2">"dist/assets"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">immutable</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">maxAge</span><span class="o">:</span><span class="w"> </span><span class="s2">"365d"</span><span class="p">,</span>
+<span class="p">}));</span>
+
+<span class="c1">// Public catalog API: CDN caches 60 s, browsers revalidate</span>
+<span class="nx">app</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">"/api/v1/products"</span><span class="p">,</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="nx">req</span><span class="p">,</span><span class="w"> </span><span class="nx">res</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">products</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">listProducts</span><span class="p">(</span><span class="nx">req</span><span class="p">.</span><span class="nx">query</span><span class="p">);</span>
+<span class="w">  </span><span class="nx">res</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s2">"Cache-Control"</span><span class="p">,</span><span class="w"> </span><span class="s2">"public, s-maxage=60, max-age=0, stale-while-revalidate=300"</span><span class="p">);</span>
+<span class="w">  </span><span class="nx">res</span><span class="p">.</span><span class="nx">json</span><span class="p">(</span><span class="nx">products</span><span class="p">);</span><span class="w"> </span><span class="c1">// Express adds a weak ETag and answers 304 when it matches</span>
+<span class="p">});</span>
+
+<span class="c1">// Personalized data: never stored by shared caches</span>
+<span class="nx">app</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">"/api/v1/me"</span><span class="p">,</span><span class="w"> </span><span class="nx">authenticate</span><span class="p">,</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="nx">req</span><span class="p">,</span><span class="w"> </span><span class="nx">res</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">res</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s2">"Cache-Control"</span><span class="p">,</span><span class="w"> </span><span class="s2">"private, no-store"</span><span class="p">);</span>
+<span class="w">  </span><span class="nx">res</span><span class="p">.</span><span class="nx">json</span><span class="p">(</span><span class="k">await</span><span class="w"> </span><span class="nx">getProfile</span><span class="p">(</span><span class="nx">req</span><span class="p">.</span><span class="nx">user</span><span class="p">.</span><span class="nx">id</span><span class="p">));</span>
+<span class="p">});</span>
+</code></pre></div>
+<h3 id="checking-what-a-cdn-did">Checking what a CDN did<a class="headerlink" href="#checking-what-a-cdn-did" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-sI<span class="w"> </span>https://www.example.com/api/v1/products?page<span class="o">=</span><span class="m">1</span>
+<span class="c1"># HTTP/2 200</span>
+<span class="c1"># cache-control: public, s-maxage=60, max-age=0, stale-while-revalidate=300</span>
+<span class="c1"># etag: W/"2f1-..."</span>
+<span class="c1"># age: 37              &lt;- seconds the response has been in a shared cache</span>
+</code></pre></div>
+<p>The <code>Age</code> header shows the response came from a cache. Most CDNs also add
+a vendor-specific header reporting <code>HIT</code> or <code>MISS</code>.</p>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Send an explicit <code>Cache-Control</code> header on every response.</li>
+<li>Use hashed filenames with <code>immutable</code> for static assets, and
+  <code>no-cache</code> for HTML entry points.</li>
+<li>Use <code>s-maxage</code> for CDN freshness and keep browser <code>max-age</code> short for
+  content you may need to purge.</li>
+<li>Keep cache keys minimal but complete: drop tracking parameters, keep
+  parameters that change the response.</li>
+<li>Mark personalized responses <code>private</code> or <code>no-store</code>.</li>
+<li>Prefer tag-based purging for content that appears on many URLs.</li>
+<li>Use <code>stale-while-revalidate</code> and <code>stale-if-error</code> to improve latency and
+  resilience.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>A fix is deployed, but users still see the bug.</strong>
+  <em>Detect:</em> responses for the HTML or API carry a large <code>Age</code> and a long
+  <code>max-age</code>, and a purge did not help for returning visitors. <em>Cause:</em> long
+  browser caching of content that changes. <em>Fix:</em> <code>no-cache</code> for HTML,
+  short <code>max-age</code> with <code>s-maxage</code> for APIs, and versioned asset URLs.</li>
+<li><strong>User A sees user B's account page.</strong>
+  <em>Detect:</em> CDN logs show cache hits on personalized URLs; the response
+  lacks <code>private</code> or <code>no-store</code>. <em>Cause:</em> a shared cache stored a
+  personalized response, or web cache deception. <em>Fix:</em> mark personalized
+  responses <code>private, no-store</code>, return <code>404</code> for unexpected paths, purge,
+  and enable the CDN's deception protection.</li>
+<li><strong>The CDN hit ratio is low.</strong>
+  <em>Detect:</em> CDN analytics show many distinct cache keys for the same page,
+  differing only by <code>utm_*</code> or other tracking parameters. <em>Cause:</em> tracking
+  parameters in the cache key. <em>Fix:</em> exclude them in the cache key policy
+  and keep only parameters that change the response.</li>
+<li><strong>The origin is overloaded right after a purge.</strong>
+  <em>Detect:</em> origin requests per second jump immediately after a "purge
+  everything". <em>Cause:</em> every edge location misses at once. <em>Fix:</em> purge by
+  URL or tag, and use an origin shield or tiered cache.</li>
+<li><strong>Conditional requests never return <code>304</code> in tests.</strong>
+  <em>Detect:</em> a Node.js <code>fetch()</code> with <code>If-None-Match</code> always gets <code>200</code>,
+  while <code>curl</code> gets <code>304</code>. <em>Cause:</em> <code>fetch()</code> adds <code>Cache-Control:
+  no-cache</code> and <code>Pragma: no-cache</code> to such requests, and Express then
+  treats the request as not fresh. <em>Fix:</em> test revalidation with <code>curl</code> or
+  the <code>http</code> module, not as a sign that ETags are broken.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Private cache:</strong> A cache for one user, such as the browser cache.</li>
+<li><strong>Shared cache:</strong> A cache serving many users, such as a CDN or proxy.</li>
+<li><strong>Fresh / stale:</strong> Whether a cached response is within its allowed
+  age.</li>
+<li><strong>Revalidation:</strong> Asking the origin whether a stale copy is still valid
+  (<code>If-None-Match</code>, <code>If-Modified-Since</code>).</li>
+<li><strong>ETag:</strong> An identifier for a specific version of a representation.</li>
+<li><strong>Cache key:</strong> The request properties a cache uses to identify stored
+  responses.</li>
+<li><strong>Purge:</strong> Explicitly removing content from a CDN.</li>
+<li><strong>Origin shield:</strong> A mid-tier cache between edge locations and the
+  origin.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Setting a long <code>max-age</code> on HTML or API responses and being unable to
+  roll out fixes.</li>
+<li>Thinking a CDN purge also clears browsers; it does not.</li>
+<li>Caching personalized responses at the edge.</li>
+<li>Using <code>no-cache</code> when you mean <code>no-store</code>; <code>no-cache</code> still allows
+  storage.</li>
+<li>Including tracking query parameters in the cache key and getting a low
+  hit ratio.</li>
+<li>Adding <code>Vary: User-Agent</code>, which creates thousands of variants.</li>
+<li>Purging everything after every deploy instead of versioning assets.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>What is the difference between a private and a shared cache, and which
+   directives target each?</li>
+<li>Walk through a revalidation with <code>ETag</code> and <code>If-None-Match</code>.</li>
+<li>Why do hashed asset filenames allow a one-year <code>max-age</code>?</li>
+<li>What should and should not be part of a CDN cache key?</li>
+<li>When would you use tag-based purging instead of URL purging?</li>
+<li>How can a CDN accidentally leak private data, and how do you prevent
+   it?</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching">MDN: HTTP caching</a></li>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control">MDN: <code>Cache-Control</code></a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc9111">RFC 9111: HTTP Caching</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc9213">RFC 9213: Targeted HTTP Cache Control</a></li>
+<li><a href="https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/ConfiguringCaching.html">Amazon CloudFront: Optimizing caching and availability</a></li>
+<li>Related: <a href="../../../06-servers-and-infrastructure/cdn/">CDN</a>,
+  <a href="../../../03-backend-development/backend-concepts/http-headers/">HTTP headers</a>,
+  <a href="../invalidation-and-expiration/">invalidation and expiration</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../cache-failure-modes/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Cache Failure Modes">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Cache Failure Modes</span>
+      </a>
+    
+    
+      <a href="../interview-questions-and-answers/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: Interview Questions and Answers">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">Interview Questions and Answers</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

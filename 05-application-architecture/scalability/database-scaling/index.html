@@ -1,0 +1,2936 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../stateless-services-and-autoscaling/">
+      
+      
+        <link rel="next" href="../availability-and-reliability/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Database Scaling - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#database-scaling" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Database Scaling
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-ai-and-machine-learning/" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../06-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-devops-and-deployment/" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../08-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to Application Architecture">
+          <span class="md-ellipsis">&larr; Back to Architecture</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to Application Architecture">
+                  <span class="md-ellipsis">&larr; Back to Architecture</span>
+                </a>
+              
+            </div>
+          
+          
+            <label class="md-nav__title" for="__nav_6">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Application Architecture
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_6" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_6_6" id="__nav_6_6_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scalability
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_6_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_6_6">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Scalability
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_6_2" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_6_6_2" id="__nav_6_6_2_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scaling the System
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_6_6_2_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_6_6_2">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Scaling the System
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../scalability-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scalability Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../stateless-services-and-autoscaling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stateless Services and Autoscaling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Database Scaling
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Database Scaling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Real-world usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#popular-tools-and-providers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Popular tools and providers
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-usual-order-of-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The usual order of steps
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-1-queries-and-indexes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1: queries and indexes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-caching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2: caching
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-connection-pooling-and-connection-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3: connection pooling and connection limits
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-read-replicas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4: read replicas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#primary-replica-compared-with-multi-primary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Primary-replica compared with multi-primary
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-5-scale-up" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 5: scale up
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-6-partitioning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 6: partitioning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-7-sharding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 7: sharding
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#denormalization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Denormalization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cqrs-read-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CQRS read models
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#routing-reads-and-writes-in-nodejs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Routing reads and writes in Node.js
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#range-partitioning-in-postgresql" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Range partitioning in PostgreSQL
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#application-level-shard-routing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Application-level shard routing
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../availability-and-reliability/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Staying Available and Correct
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../performance-and-latency/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Measuring and Planning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-ai-and-machine-learning/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI and Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../06-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-devops-and-deployment/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DevOps and Deployment
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../08-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Real-world usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#popular-tools-and-providers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Popular tools and providers
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-usual-order-of-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The usual order of steps
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-1-queries-and-indexes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1: queries and indexes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-caching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2: caching
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-connection-pooling-and-connection-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3: connection pooling and connection limits
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-read-replicas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4: read replicas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#primary-replica-compared-with-multi-primary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Primary-replica compared with multi-primary
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-5-scale-up" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 5: scale up
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-6-partitioning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 6: partitioning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-7-sharding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 7: sharding
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#denormalization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Denormalization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cqrs-read-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CQRS read models
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#routing-reads-and-writes-in-nodejs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Routing reads and writes in Node.js
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#range-partitioning-in-postgresql" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Range partitioning in PostgreSQL
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#application-level-shard-routing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Application-level shard routing
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="database-scaling">Database Scaling<a class="headerlink" href="#database-scaling" title="Permanent link">&para;</a></h1>
+<p>Application servers are easy to scale because they are stateless; the
+database is hard to scale because it <strong>is</strong> the state. Database scaling
+covers the techniques for handling more queries and more data: tuning,
+caching, connection pooling, read replicas, bigger machines,
+partitioning, sharding, denormalization, and separate read models. The
+order in which you apply them matters as much as the techniques
+themselves.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>In most growing systems the database becomes the first serious
+bottleneck. Adding app instances multiplies the queries and connections
+the database receives. Some scaling steps (an index, a cache) take an
+afternoon; others (sharding) change the data model, the queries, and
+operations forever. Knowing the cheap steps lets you postpone the
+expensive ones, and knowing the expensive ones lets you design so they
+remain possible.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>GitHub: replicas first, then split by domain.</strong> In 2019 GitHub's main
+  MySQL cluster, <code>mysql1</code>, answered about 950,000 queries/s, of which
+  900,000 went to replicas and only 50,000 to the primary: read replicas
+  were carrying the read load. To go further, GitHub grouped tables into
+  "schema domains", used SQL linters to block queries and transactions
+  that crossed domains, then moved domains (130 of its busiest tables in
+  one cutover) onto separate clusters. By 2021 those tables served 1.2
+  million queries/s, and the average load on each host had halved.
+  (<a href="https://github.blog/engineering/infrastructure/partitioning-githubs-relational-databases-scale/">GitHub Blog, 2021</a>)</li>
+<li><strong>Notion: application-level sharding with logical shards.</strong> When
+  Postgres VACUUM began to stall and transaction ID wraparound became a
+  risk, Notion sharded by workspace ID. It chose 480 logical shards (one
+  Postgres schema each, 15 per database) on 32 physical databases, sized
+  to stay under 500 GB per table and 10 TB per physical database. That is
+  the "many logical shards" pattern in the
+  <a href="#application-level-shard-routing">shard-routing example</a>.
+  (<a href="https://www.notion.com/blog/sharding-postgres-at-notion">Notion blog, 2021</a>)</li>
+<li><strong>Figma: vertical partitioning, then horizontal sharding.</strong> Moving
+  groups of tables to their own databases was "a relatively easy and very
+  impactful scaling lever". When single tables reached several terabytes
+  and billions of rows, and vacuums began to hurt reliability, Figma
+  looked at CockroachDB, TiDB, Spanner, and Vitess, then chose to build
+  horizontal sharding on its existing RDS Postgres to avoid a risky data
+  migration.
+  (<a href="https://www.figma.com/blog/how-figmas-databases-team-lived-to-tell-the-scale/">Figma blog, 2024</a>)</li>
+<li><strong>Shopify: shards isolated into pods.</strong> Shopify sharded in 2015, when
+  "it was no longer possible to continue buying a larger database server".
+  It then grouped shards into pods, each with fully isolated datastores
+  and no cross-pod requests, so one failing shard cannot take down the
+  platform.
+  (<a href="https://shopify.engineering/a-pods-architecture-to-allow-shopify-to-scale">Shopify Engineering</a>)</li>
+</ul>
+<h3 id="popular-tools-and-providers">Popular tools and providers<a class="headerlink" href="#popular-tools-and-providers" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Need</th>
+<th>Common choices</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Connection pooling</td>
+<td>PgBouncer, Amazon RDS Proxy, the driver's built-in pool</td>
+</tr>
+<tr>
+<td>Managed replicas and failover</td>
+<td>Amazon RDS and Aurora, Google Cloud SQL, Azure Database for PostgreSQL/MySQL, MongoDB Atlas</td>
+</tr>
+<tr>
+<td>Partitioning</td>
+<td>PostgreSQL declarative partitioning, MySQL partitioning</td>
+</tr>
+<tr>
+<td>Sharding</td>
+<td>MongoDB sharded clusters, Vitess (MySQL), Citus (PostgreSQL), application-level routing</td>
+</tr>
+<tr>
+<td>Distributed SQL (sharding built in)</td>
+<td>Google Spanner, CockroachDB, TiDB, YugabyteDB</td>
+</tr>
+<tr>
+<td>Read models and change feeds</td>
+<td>Debezium or MongoDB change streams into Elasticsearch/OpenSearch, Redis, or a reporting database</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="the-usual-order-of-steps">The usual order of steps<a class="headerlink" href="#the-usual-order-of-steps" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>1. Tune queries and indexes          cheapest; one missing index can be the whole problem
+2. Cache hot reads                   removes repeated reads
+3. Pool and limit connections        protects the database from app scale-out
+4. Add read replicas                 scales reads
+5. Scale up (bigger machine)         scales everything, simply, up to a limit
+6. Partition tables                  smaller indexes, easier maintenance
+7. Shard across machines             scales writes and data size; highest complexity
+</code></pre></div>
+<p>Steps 4 and 5 are often swapped; a larger machine is frequently the
+simplest next step. Sharding comes last because it is hard to undo.</p>
+<h3 id="step-1-queries-and-indexes">Step 1: queries and indexes<a class="headerlink" href="#step-1-queries-and-indexes" title="Permanent link">&para;</a></h3>
+<p>Most "the database is slow" problems are a missing index, an unbounded
+query, or an N+1 query pattern (one query per item in a list).</p>
+<ul>
+<li>Look at the slowest and most frequent queries (slow-query logs,
+  <code>EXPLAIN</code>, database monitoring).</li>
+<li>Add indexes that match filters and sort order; see
+  <a href="../../../04-databases/mongodb/indexes-and-performance/">MongoDB indexes and performance</a>.</li>
+<li>Fetch only needed fields and paginate.</li>
+<li>Batch N+1 queries into one query with <code>IN (...)</code> or <code>$in</code>.</li>
+</ul>
+<h3 id="step-2-caching">Step 2: caching<a class="headerlink" href="#step-2-caching" title="Permanent link">&para;</a></h3>
+<p>Caching hot, rarely changing reads (profiles, catalogs, configuration)
+can remove most read traffic. See <a href="../../caching/cache-fundamentals/">cache fundamentals</a>
+and <a href="../../caching/caching-strategies/">caching strategies</a>.</p>
+<h3 id="step-3-connection-pooling-and-connection-limits">Step 3: connection pooling and connection limits<a class="headerlink" href="#step-3-connection-pooling-and-connection-limits" title="Permanent link">&para;</a></h3>
+<p>Opening a database connection is expensive (network handshake, TLS,
+authentication, server memory per connection), so drivers keep a
+<strong>pool</strong> of open connections that requests borrow and return.</p>
+<p>The trap appears when you scale out the application:</p>
+<div class="highlight"><pre><span></span><code>Each app instance pool size: 20
+Instances: 4   -&gt; 80 connections     fine
+Instances: 30  -&gt; 600 connections    database may refuse connections
+                                     or slow down from memory and context switching
+</code></pre></div>
+<p>Databases have connection limits (PostgreSQL's default
+<code>max_connections</code> is typically 100, for example), and many connections
+can hurt performance even below the limit.</p>
+<p>Remedies:</p>
+<ul>
+<li>Size pools so <code>instances × pool size</code> stays within what the database
+  handles well, and keep autoscaling maximums consistent with that.</li>
+<li>Use a <strong>connection pooler / proxy</strong> between apps and the database, such
+  as PgBouncer for PostgreSQL or a managed proxy (for example Amazon RDS
+  Proxy), which multiplexes many client connections onto fewer database
+  connections.</li>
+<li>In serverless functions, create the client outside the handler so
+  warm invocations reuse it, and prefer a proxy.</li>
+</ul>
+<h3 id="step-4-read-replicas">Step 4: read replicas<a class="headerlink" href="#step-4-read-replicas" title="Permanent link">&para;</a></h3>
+<p>A replica is a copy of the database that continuously applies changes
+from the primary. Reads can go to replicas; writes go to the primary.</p>
+<p><img alt="Diagram: the app sends writes to the primary, which replicates asynchronously to two replicas with a lag of milliseconds to seconds, and lag-tolerant reads go to the replicas. Without a fix, a user saves &quot;Asha K&quot;, reloads, reads from a replica 200 ms behind, and sees the old name; with the fix, the user's reads go to the primary for 10 s after a write, so they see &quot;Asha K&quot; while other users still read replicas." src="../replicas-read-your-writes.svg" /></p>
+<p>Replication is usually <strong>asynchronous</strong>, so replicas lag behind by
+milliseconds to seconds (more under heavy load). That causes the classic
+bug:</p>
+<div class="highlight"><pre><span></span><code>1. User updates their display name   -&gt; write to primary
+2. Page reloads and reads the profile -&gt; read from a lagging replica
+3. User sees the OLD name and thinks the save failed
+</code></pre></div>
+<p>Guaranteeing <strong>read-your-writes</strong> consistency:</p>
+<table>
+<thead>
+<tr>
+<th>Technique</th>
+<th>How</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Read from the primary after a write</td>
+<td>For a short window (for example 5–10 s) after a user writes, route that user's reads to the primary</td>
+</tr>
+<tr>
+<td>Read the primary for the user's own data</td>
+<td>Profile and settings pages read the primary; public lists use replicas</td>
+</tr>
+<tr>
+<td>Track replication position</td>
+<td>Remember the write's log position and read from a replica that has applied it (or wait)</td>
+</tr>
+<tr>
+<td>Causal consistency sessions</td>
+<td>Some databases offer sessions that track causality. In MongoDB, a causally consistent session guarantees read-your-writes (and three related guarantees) in all situations only when reads use <code>"majority"</code> read concern and writes use <code>"majority"</code> write concern; see <a href="../../../04-databases/mongodb/read-write-concerns/">read and write concerns</a></td>
+</tr>
+</tbody>
+</table>
+<p>Replicas also provide failover: if the primary fails, a replica can be
+promoted. See <a href="../../../04-databases/mongodb/replication/">MongoDB replication</a>.</p>
+<h3 id="primary-replica-compared-with-multi-primary">Primary-replica compared with multi-primary<a class="headerlink" href="#primary-replica-compared-with-multi-primary" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Primary-replica (single leader)</th>
+<th>Multi-primary (multi-leader)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Writes accepted by</td>
+<td>One primary</td>
+<td>Several nodes</td>
+</tr>
+<tr>
+<td>Conflicts</td>
+<td>None (one writer)</td>
+<td>Concurrent writes to the same row on different nodes conflict</td>
+</tr>
+<tr>
+<td>Write scaling</td>
+<td>Limited to one node</td>
+<td>Spread across nodes</td>
+</tr>
+<tr>
+<td>Typical use</td>
+<td>Most applications</td>
+<td>Multi-region writes, offline-capable clients</td>
+</tr>
+<tr>
+<td>Complexity</td>
+<td>Low</td>
+<td>High: conflict detection and resolution (last-write-wins, merges, CRDTs)</td>
+</tr>
+</tbody>
+</table>
+<p>Most systems should stay single-primary and scale writes with
+partitioning or sharding when needed.</p>
+<h3 id="step-5-scale-up">Step 5: scale up<a class="headerlink" href="#step-5-scale-up" title="Permanent link">&para;</a></h3>
+<p>A larger instance (more CPU, RAM to hold the working set in memory,
+faster storage with more IOPS) improves everything without code changes.
+Managed databases make this a configuration change with a brief failover.
+Its limits are cost and the largest available machine, and it does not
+remove the single primary as a point of failure.</p>
+<h3 id="step-6-partitioning">Step 6: partitioning<a class="headerlink" href="#step-6-partitioning" title="Permanent link">&para;</a></h3>
+<p><strong>Partitioning</strong> splits one large table into smaller pieces, often still
+on the same server.</p>
+<ul>
+<li><strong>Horizontal partitioning</strong> splits <strong>rows</strong>: orders from 2025 in one
+  partition, 2026 in another.</li>
+<li><strong>Vertical partitioning</strong> splits <strong>columns or tables</strong>: rarely used,
+  large columns (descriptions, blobs) move to a separate table, or
+  unrelated features move to separate databases.</li>
+</ul>
+<p>Common partitioning schemes:</p>
+<table>
+<thead>
+<tr>
+<th>Scheme</th>
+<th>Rows assigned by</th>
+<th>Good for</th>
+<th>Watch out for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Range</td>
+<td>Ranges of a key (dates, ids)</td>
+<td>Time-series data; dropping old data by partition</td>
+<td>Recent ranges get all new writes (hot partition)</td>
+</tr>
+<tr>
+<td>Hash</td>
+<td>Hash of a key modulo N</td>
+<td>Even distribution</td>
+<td>Range queries touch every partition</td>
+</tr>
+<tr>
+<td>List</td>
+<td>Explicit values (region = "EU")</td>
+<td>Data grouped by category or region</td>
+<td>Uneven sizes</td>
+</tr>
+</tbody>
+</table>
+<p>PostgreSQL supports declarative range, list, and hash partitioning. Benefits
+include smaller indexes, faster maintenance, and cheap deletion of old
+data by dropping a partition. Queries that filter on the partition key
+skip irrelevant partitions (partition pruning).</p>
+<h3 id="step-7-sharding">Step 7: sharding<a class="headerlink" href="#step-7-sharding" title="Permanent link">&para;</a></h3>
+<p><strong>Sharding</strong> is horizontal partitioning across <strong>multiple database
+servers</strong>. Each shard holds a subset of the data and handles reads and
+writes for it, so total write capacity and storage grow with the number
+of shards.</p>
+<p><img alt="Diagram: a query with customerId 42 goes to the router, which computes hash(customerId) % 3 and sends it to shard 2 only; shard 2 also holds the huge tenant MegaCorp and carries 80% of the load, a hot shard. A query on email without the shard key is sent to all three shards and the results are merged and sorted, which is slower and harder to paginate." src="../sharding-router.svg" /></p>
+<p><strong>Choosing a shard key</strong> is the most important decision:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Why it matters</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>High cardinality</td>
+<td>Many distinct values allow spreading data across many shards</td>
+</tr>
+<tr>
+<td>Even frequency</td>
+<td>One very common value (one giant customer) creates a hot shard</td>
+</tr>
+<tr>
+<td>Not monotonically increasing for range sharding</td>
+<td>Timestamps or auto-increment ids send all new writes to the last shard</td>
+</tr>
+<tr>
+<td>Matches main queries</td>
+<td>Queries that include the shard key go to one shard; others must ask all shards</td>
+</tr>
+</tbody>
+</table>
+<p>Problems sharding introduces:</p>
+<ul>
+<li><strong>Hot shards:</strong> uneven load from a skewed key or a celebrity tenant.</li>
+<li><strong>Cross-shard queries:</strong> queries without the shard key become
+  <strong>scatter-gather</strong> (ask every shard, merge results), which is slower and
+  harder to paginate.</li>
+<li><strong>Cross-shard transactions:</strong> atomic updates across shards need
+  distributed transactions or careful design to avoid them.</li>
+<li><strong>Resharding:</strong> adding shards means moving data. Designs reduce the pain
+  with consistent hashing or by creating many small logical shards up
+  front and moving whole logical shards between servers.</li>
+<li><strong>Operations:</strong> backups, schema changes, and monitoring multiply by the
+  number of shards.</li>
+</ul>
+<p>Some databases shard natively (MongoDB sharded clusters; see
+<a href="../../../04-databases/mongodb/sharding/">MongoDB sharding</a>); others use
+extensions or middleware (for example Citus for PostgreSQL, Vitess for
+MySQL), or application-level routing.</p>
+<h3 id="denormalization">Denormalization<a class="headerlink" href="#denormalization" title="Permanent link">&para;</a></h3>
+<p>A normalized schema stores each fact once and joins at read time.
+<strong>Denormalization</strong> stores redundant copies (an order stores the
+customer's name; a post stores its comment count) so reads avoid joins or
+aggregations. It speeds up reads at the cost of extra writes and the risk
+of copies disagreeing. Update copies in the same transaction where
+possible, or asynchronously through events when slight lag is acceptable.
+See <a href="../../../04-databases/mongodb/data-modeling-and-validation/">data modeling and validation</a>.</p>
+<h3 id="cqrs-read-models">CQRS read models<a class="headerlink" href="#cqrs-read-models" title="Permanent link">&para;</a></h3>
+<p><strong>Command Query Responsibility Segregation (CQRS)</strong> separates the model
+that handles writes from models optimized for reads. Writes go to the
+primary database; change events update one or more <strong>read models</strong>
+shaped for specific queries (a search index, a precomputed dashboard
+table, a feed per user).</p>
+<div class="highlight"><pre><span></span><code>commands ──&gt; write model (normalized DB) ──events──&gt; projector ──&gt; read model(s)
+queries  &lt;────────────────────────────────────────────────────────┘
+                                         (search index, cache, reporting DB)
+</code></pre></div>
+<p>Read models scale independently and make complex queries cheap, but they
+are <strong>eventually consistent</strong> with the write model and add infrastructure.
+Use CQRS for parts of a system with very different read and write needs,
+not as a default. See <a href="../../software-architecture/event-driven-architecture/">event-driven architecture</a>.</p>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Always start with steps 1 to 3</strong> (queries and indexes, caching,
+  connection budgets). They are cheap and often make later steps
+  unnecessary.</li>
+<li><strong>Add read replicas</strong> when reads dominate and most of them can tolerate
+  a little staleness. Do not add them to fix slow writes or a missing
+  index.</li>
+<li><strong>Scale up</strong> when the working set no longer fits in memory or CPU is
+  saturated and a larger instance is available at an acceptable cost.</li>
+<li><strong>Partition a table</strong> (on one server) when it is huge and queries or
+  retention follow a natural key, usually time.</li>
+<li><strong>Shard</strong> only when write volume, data size, or maintenance on a single
+  primary cannot be fixed by the steps above. It changes queries,
+  transactions, and operations for good.</li>
+<li><strong>Do not use multi-primary</strong> just for write scaling; use it for
+  multi-region writes or offline clients, and only if you can resolve
+  conflicts.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Read replicas</th>
+<th>Partitioning (one server)</th>
+<th>Sharding (many servers)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Scales</td>
+<td>Reads</td>
+<td>Maintenance, index size, deletion of old data</td>
+<td>Writes, storage, and reads</td>
+</tr>
+<tr>
+<td>Write capacity</td>
+<td>Unchanged (one primary)</td>
+<td>Unchanged (one server)</td>
+<td>Grows with the number of shards</td>
+</tr>
+<tr>
+<td>Application changes</td>
+<td>Route reads; handle replica lag</td>
+<td>Usually none; queries should filter on the partition key</td>
+<td>Every query needs the shard key; cross-shard work is redesigned</td>
+</tr>
+<tr>
+<td>Consistency</td>
+<td>Replicas lag the primary</td>
+<td>Same as before</td>
+<td>Cross-shard transactions are hard</td>
+</tr>
+<tr>
+<td>Operational cost</td>
+<td>Low to medium</td>
+<td>Low</td>
+<td>High: per-shard backups, migrations, rebalancing</td>
+</tr>
+<tr>
+<td>Reversible?</td>
+<td>Yes, remove replicas</td>
+<td>Mostly</td>
+<td>Very hard</td>
+</tr>
+<tr>
+<td>Typical trigger</td>
+<td>Read-heavy load, many lag-tolerant reads</td>
+<td>Huge time-series or log tables; slow VACUUM</td>
+<td>Largest instance not enough; write or storage limits</td>
+</tr>
+</tbody>
+</table>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="routing-reads-and-writes-in-nodejs">Routing reads and writes in Node.js<a class="headerlink" href="#routing-reads-and-writes-in-nodejs" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="nx">pg</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"pg"</span><span class="p">;</span>
+
+<span class="c1">// Pools sized per instance: instances × max must fit the database's limits</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">primary</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">pg</span><span class="p">.</span><span class="nx">Pool</span><span class="p">({</span><span class="w"> </span><span class="nx">connectionString</span><span class="o">:</span><span class="w"> </span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">DB_PRIMARY_URL</span><span class="p">,</span><span class="w"> </span><span class="nx">max</span><span class="o">:</span><span class="w"> </span><span class="mf">10</span><span class="w"> </span><span class="p">});</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">replica</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">pg</span><span class="p">.</span><span class="nx">Pool</span><span class="p">({</span><span class="w"> </span><span class="nx">connectionString</span><span class="o">:</span><span class="w"> </span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">DB_REPLICA_URL</span><span class="p">,</span><span class="w"> </span><span class="nx">max</span><span class="o">:</span><span class="w"> </span><span class="mf">10</span><span class="w"> </span><span class="p">});</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">RECENT_WRITE_MS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">10</span><span class="nx">_000</span><span class="p">;</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">lastWriteAt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Map</span><span class="p">();</span><span class="w"> </span><span class="c1">// userId -&gt; timestamp (use Redis with many instances)</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">updateDisplayName</span><span class="p">(</span><span class="nx">userId</span><span class="p">,</span><span class="w"> </span><span class="nx">name</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">await</span><span class="w"> </span><span class="nx">primary</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s2">"UPDATE users SET display_name = $1 WHERE id = $2"</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="nx">name</span><span class="p">,</span><span class="w"> </span><span class="nx">userId</span><span class="p">]);</span>
+<span class="w">  </span><span class="nx">lastWriteAt</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nx">userId</span><span class="p">,</span><span class="w"> </span><span class="nb">Date</span><span class="p">.</span><span class="nx">now</span><span class="p">());</span>
+<span class="p">}</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">getProfile</span><span class="p">(</span><span class="nx">userId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="c1">// Read-your-writes: recent writers read from the primary</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">recentlyWrote</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Date</span><span class="p">.</span><span class="nx">now</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="nx">lastWriteAt</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">userId</span><span class="p">)</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="mf">0</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="nx">RECENT_WRITE_MS</span><span class="p">;</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">pool</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">recentlyWrote</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="nx">primary</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="nx">replica</span><span class="p">;</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">rows</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">pool</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s2">"SELECT id, display_name FROM users WHERE id = $1"</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="nx">userId</span><span class="p">]);</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">rows</span><span class="p">[</span><span class="mf">0</span><span class="p">]</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="range-partitioning-in-postgresql">Range partitioning in PostgreSQL<a class="headerlink" href="#range-partitioning-in-postgresql" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">orders</span><span class="w"> </span><span class="p">(</span>
+<span class="w">  </span><span class="n">id</span><span class="w">          </span><span class="nb">bigint</span><span class="w">      </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">  </span><span class="n">customer_id</span><span class="w"> </span><span class="nb">bigint</span><span class="w">      </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">  </span><span class="n">created_at</span><span class="w">  </span><span class="n">timestamptz</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">  </span><span class="n">total_cents</span><span class="w"> </span><span class="nb">integer</span><span class="w">     </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">  </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="n">created_at</span><span class="p">)</span><span class="w">          </span><span class="c1">-- the partition key must be in the primary key</span>
+<span class="p">)</span><span class="w"> </span><span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">RANGE</span><span class="w"> </span><span class="p">(</span><span class="n">created_at</span><span class="p">);</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">orders_2026</span><span class="w"> </span><span class="n">PARTITION</span><span class="w"> </span><span class="k">OF</span><span class="w"> </span><span class="n">orders</span>
+<span class="w">  </span><span class="k">FOR</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="p">(</span><span class="s1">'2026-01-01'</span><span class="p">)</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="p">(</span><span class="s1">'2027-01-01'</span><span class="p">);</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">orders_2027</span><span class="w"> </span><span class="n">PARTITION</span><span class="w"> </span><span class="k">OF</span><span class="w"> </span><span class="n">orders</span>
+<span class="w">  </span><span class="k">FOR</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="p">(</span><span class="s1">'2027-01-01'</span><span class="p">)</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="p">(</span><span class="s1">'2028-01-01'</span><span class="p">);</span>
+
+<span class="c1">-- Only orders_2026 is scanned (partition pruning)</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">orders</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">created_at</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="s1">'2026-11-01'</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">created_at</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="s1">'2026-12-01'</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="application-level-shard-routing">Application-level shard routing<a class="headerlink" href="#application-level-shard-routing" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">createHash</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:crypto"</span><span class="p">;</span>
+
+<span class="c1">// Many logical shards mapped onto fewer physical databases.</span>
+<span class="c1">// Moving a logical shard later only changes this map, not the hash.</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">LOGICAL_SHARDS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">256</span><span class="p">;</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">shardMap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">buildShardMap</span><span class="p">();</span><span class="w"> </span><span class="c1">// your code: logical shard number -&gt; connection pool</span>
+
+<span class="kd">function</span><span class="w"> </span><span class="nx">logicalShardFor</span><span class="p">(</span><span class="nx">customerId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">hash</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">createHash</span><span class="p">(</span><span class="s2">"sha256"</span><span class="p">).</span><span class="nx">update</span><span class="p">(</span><span class="nb">String</span><span class="p">(</span><span class="nx">customerId</span><span class="p">)).</span><span class="nx">digest</span><span class="p">();</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">hash</span><span class="p">.</span><span class="nx">readUInt32BE</span><span class="p">(</span><span class="mf">0</span><span class="p">)</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="nx">LOGICAL_SHARDS</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">poolForCustomer</span><span class="p">(</span><span class="nx">customerId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">shardMap</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">logicalShardFor</span><span class="p">(</span><span class="nx">customerId</span><span class="p">));</span>
+<span class="p">}</span>
+
+<span class="c1">// Every query for a customer's data includes the shard key</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">pool</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">poolForCustomer</span><span class="p">(</span><span class="nx">customerId</span><span class="p">);</span>
+<span class="k">await</span><span class="w"> </span><span class="nx">pool</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s2">"SELECT * FROM orders WHERE customer_id = $1"</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="nx">customerId</span><span class="p">]);</span>
+</code></pre></div>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Exhaust query tuning, indexing, and caching before adding
+  infrastructure.</li>
+<li>Budget database connections across all instances and use a pooler when
+  instance counts grow.</li>
+<li>Send reads to replicas only when they tolerate lag; read the primary
+  for read-your-writes cases.</li>
+<li>Prefer a single primary; avoid multi-primary unless you need
+  multi-region writes and can handle conflicts.</li>
+<li>Partition large, time-based tables early; it is cheap and simplifies
+  retention.</li>
+<li>Choose shard keys from your main access patterns, with high cardinality
+  and even distribution.</li>
+<li>Design for many logical shards from the start if sharding is likely.</li>
+<li>Denormalize or build read models only for proven slow reads.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<p><strong>"Too many connections" after a scale-out</strong></p>
+<ul>
+<li><em>Symptom:</em> new app instances fail health checks, or requests fail with
+  connection errors (PostgreSQL error <code>53300</code>, <code>too_many_connections</code>).</li>
+<li><em>Detect:</em> count connections (<code>SELECT count(*) FROM pg_stat_activity</code>)
+  against <code>max_connections</code>; alert at around 80% of the limit.</li>
+<li><em>Cause:</em> every instance opens its own pool: 30 instances × 20
+  connections is 600, against a default limit that is typically 100.</li>
+<li><em>Fix:</em> budget connections (<code>max instances × pool size</code> below the limit),
+  put PgBouncer or RDS Proxy in front, and set the autoscaler's maximum
+  from that budget.</li>
+</ul>
+<p><strong>Users say "my change didn't save"</strong></p>
+<ul>
+<li><em>Symptom:</em> a user edits a record, the page reloads, and the old value
+  appears; refreshing again "fixes" it.</li>
+<li><em>Detect:</em> replica lag. On PostgreSQL, <code>replay_lag</code> in
+  <code>pg_stat_replication</code> on the primary; on MongoDB,
+  <code>rs.printSecondaryReplicationInfo()</code>. Correlate lag spikes with the
+  complaints.</li>
+<li><em>Cause:</em> the read after the write went to an asynchronous replica that
+  had not applied it yet.</li>
+<li><em>Fix:</em> read-your-writes routing (the
+  <a href="#routing-reads-and-writes-in-nodejs">example above</a>), alerts on lag,
+  and taking replicas out of the read pool when they fall too far behind.</li>
+</ul>
+<p><strong>One shard is overloaded</strong></p>
+<ul>
+<li><em>Symptom:</em> one shard's CPU or storage is far above the others; slow
+  queries for one set of customers.</li>
+<li><em>Detect:</em> per-shard metrics (queries/s, CPU, size) and the busiest
+  shard-key values.</li>
+<li><em>Cause:</em> a skewed or monotonically increasing shard key, or one very
+  large tenant sharing a shard.</li>
+<li><em>Fix:</em> move logical shards between physical databases, give the large
+  tenant its own shard, or reshard with a better key (hashed, or a
+  compound key).</li>
+</ul>
+<p><strong>VACUUM cannot keep up on a huge table</strong></p>
+<ul>
+<li><em>Symptom:</em> disk keeps growing after deletes, queries slow down, and
+  autovacuum runs for hours.</li>
+<li><em>Detect:</em> <code>n_dead_tup</code> and <code>last_autovacuum</code> in <code>pg_stat_user_tables</code>;
+  table and index sizes trending up.</li>
+<li><em>Cause:</em> one very large, busy table; Notion and Figma both hit this
+  before sharding.</li>
+<li><em>Fix:</em> tune autovacuum for that table and partition it. Each partition
+  is a smaller table to vacuum, and dropping or detaching an old
+  partition "entirely avoid[s] the VACUUM overhead caused by a bulk
+  DELETE" (PostgreSQL docs). Archive cold data; shard if the primary is
+  still too busy.</li>
+</ul>
+<p><strong>A shard-key-less query slows every shard</strong></p>
+<ul>
+<li><em>Symptom:</em> one admin search or report makes all shards slower at once.</li>
+<li><em>Detect:</em> query logs or <code>EXPLAIN</code> show the query running on every
+  shard.</li>
+<li><em>Cause:</em> the query does not include the shard key, so it becomes
+  scatter-gather.</li>
+<li><em>Fix:</em> add the shard key to the query, keep a lookup table from the
+  searched field to the shard key, or serve the query from a read model
+  (search index, reporting database).</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Connection pool:</strong> A set of reusable open database connections.</li>
+<li><strong>Read replica:</strong> A copy of the database that serves reads and follows
+  the primary.</li>
+<li><strong>Replication lag:</strong> How far a replica is behind the primary.</li>
+<li><strong>Read-your-writes consistency:</strong> A guarantee that users see their own
+  recent writes.</li>
+<li><strong>Partitioning:</strong> Splitting a table into smaller pieces by a key.</li>
+<li><strong>Sharding:</strong> Partitioning data across multiple database servers.</li>
+<li><strong>Shard key:</strong> The field that determines which shard holds a record.</li>
+<li><strong>Hot shard:</strong> A shard receiving disproportionate load.</li>
+<li><strong>Scatter-gather query:</strong> A query sent to every shard with results
+  merged.</li>
+<li><strong>Denormalization:</strong> Storing redundant data to speed up reads.</li>
+<li><strong>CQRS:</strong> Separating write models from read-optimized models.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Sharding before fixing slow queries and missing indexes.</li>
+<li>Scaling app instances without considering total database connections.</li>
+<li>Sending every read to replicas and confusing users with stale data
+  after their own updates.</li>
+<li>Choosing a timestamp or auto-increment id as a range shard key, so all
+  writes hit one shard.</li>
+<li>Assuming replicas increase write capacity; they only scale reads.</li>
+<li>Thinking partitioning and sharding are the same; partitions can live on
+  one server.</li>
+<li>Adopting CQRS everywhere and paying for eventual consistency where it
+  was not needed.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>In what order would you apply database scaling techniques, and why is
+   sharding last?</li>
+<li>Why can scaling out the application overload the database, and how do
+   you prevent it?</li>
+<li>What is replication lag, and how can you provide read-your-writes
+   consistency?</li>
+<li>Compare range, hash, and list partitioning.</li>
+<li>What makes a good shard key, and what is a hot shard?</li>
+<li>What problem does CQRS solve, and what does it cost?</li>
+<li>GitHub's main cluster sent about 95% of its queries to replicas. What
+   does that tell you about its workload, and why did it still need to
+   partition?</li>
+<li>Why did Notion create 480 logical shards for only 32 physical
+   databases?</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://www.postgresql.org/docs/current/ddl-partitioning.html">PostgreSQL: Table partitioning</a></li>
+<li><a href="https://www.mongodb.com/docs/manual/sharding/">MongoDB: Sharding</a></li>
+<li><a href="https://www.mongodb.com/docs/manual/replication/">MongoDB: Replication</a></li>
+<li><a href="https://learn.microsoft.com/en-us/azure/architecture/best-practices/data-partitioning">Microsoft: Data partitioning guidance</a></li>
+<li><a href="https://learn.microsoft.com/en-us/azure/architecture/patterns/cqrs">Microsoft: CQRS pattern</a></li>
+<li><a href="https://martinfowler.com/bliki/CQRS.html">Martin Fowler: CQRS</a></li>
+<li><a href="https://www.mongodb.com/docs/manual/core/causal-consistency-read-write-concerns/">MongoDB: Causal consistency and read and write concerns</a></li>
+<li><a href="https://www.notion.com/blog/sharding-postgres-at-notion">Notion: Herding elephants, sharding Postgres</a></li>
+<li><a href="https://github.blog/engineering/infrastructure/partitioning-githubs-relational-databases-scale/">GitHub: Partitioning GitHub's relational databases</a></li>
+<li>Related: <a href="../../../04-databases/database-fundamentals/">database fundamentals</a>,
+  <a href="../../../04-databases/postgresql/">PostgreSQL</a>,
+  <a href="../consistency-and-cap-theorem/">consistency and CAP theorem</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../stateless-services-and-autoscaling/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Stateless Services and Autoscaling">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Stateless Services and Autoscaling</span>
+      </a>
+    
+    
+      <a href="../availability-and-reliability/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: Availability and Reliability">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">Availability and Reliability</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,3054 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../concurrency-and-race-conditions/">
+      
+      
+        <link rel="next" href="../real-time-communication/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Background Jobs and Scheduling - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#background-jobs-and-scheduling" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Background Jobs and Scheduling
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../05-application-architecture/" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-ai-and-machine-learning/" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../06-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-devops-and-deployment/" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../08-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to Backend Development">
+          <span class="md-ellipsis">&larr; Back to Backend</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to Backend Development">
+                  <span class="md-ellipsis">&larr; Back to Backend</span>
+                </a>
+              
+            </div>
+          
+          
+            <label class="md-nav__title" for="__nav_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Backend Development
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_4" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Important Backend Concepts
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_4_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Important Backend Concepts
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../backend-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../client-server-and-request-lifecycle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Client-Server Model and Request Lifecycle
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../http-methods/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP in Depth
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../rest-apis/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Design
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../authentication-and-authorization/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../error-handling/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reliability
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_4_8" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_4_4_8" id="__nav_4_4_8_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Patterns
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_4_8_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_4_4_8">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Architecture Patterns
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Background Jobs and Scheduling
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Background Jobs and Scheduling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-belongs-in-the-background" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What belongs in the background
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-job-queue-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The job queue model
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common tools
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#retries-and-backoff" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Retries and backoff
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dead-letter-queues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dead-letter queues
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#idempotent-jobs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Idempotent jobs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#delayed-and-repeatable-jobs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Delayed and repeatable jobs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cron-syntax" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cron syntax
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#node-cron-and-in-process-schedulers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        node-cron and in-process schedulers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#running-scheduled-jobs-exactly-once-across-instances" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running scheduled jobs exactly once across instances
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reporting-progress-to-clients" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reporting progress to clients
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#monitoring-queues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monitoring queues
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graceful-shutdown-for-workers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Graceful shutdown for workers
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-bullmq-queue-producer-and-worker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A BullMQ queue, producer, and worker
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-repeatable-job-instead-of-in-process-cron" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A repeatable job instead of in-process cron
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#node-cron-for-a-single-instance-app" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        node-cron for a single-instance app
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../real-time-communication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Real-Time Communication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../file-storage-and-uploads/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    File Storage and Uploads
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration-and-secrets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration, Environments, and Secrets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../05-application-architecture/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-ai-and-machine-learning/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI and Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../06-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-devops-and-deployment/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DevOps and Deployment
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../08-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-belongs-in-the-background" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What belongs in the background
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-job-queue-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The job queue model
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common tools
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#retries-and-backoff" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Retries and backoff
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dead-letter-queues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dead-letter queues
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#idempotent-jobs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Idempotent jobs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#delayed-and-repeatable-jobs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Delayed and repeatable jobs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cron-syntax" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cron syntax
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#node-cron-and-in-process-schedulers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        node-cron and in-process schedulers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#running-scheduled-jobs-exactly-once-across-instances" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running scheduled jobs exactly once across instances
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reporting-progress-to-clients" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reporting progress to clients
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#monitoring-queues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monitoring queues
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graceful-shutdown-for-workers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Graceful shutdown for workers
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-bullmq-queue-producer-and-worker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A BullMQ queue, producer, and worker
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-repeatable-job-instead-of-in-process-cron" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A repeatable job instead of in-process cron
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#node-cron-for-a-single-instance-app" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        node-cron for a single-instance app
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="background-jobs-and-scheduling">Background Jobs and Scheduling<a class="headerlink" href="#background-jobs-and-scheduling" title="Permanent link">&para;</a></h1>
+<p>Not every piece of work should happen while the user waits for an HTTP
+response. Sending emails, generating PDFs, resizing images, calling slow
+third-party APIs, and nightly cleanups are better done <strong>in the background</strong>
+by separate workers, either right away (a job queue) or at set times
+(scheduling). This keeps responses fast and makes slow or unreliable work
+retryable.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>If a sign-up handler sends a welcome email inline and the email provider
+takes 8 seconds or is down, the user waits 8 seconds or sees an error —
+even though their account was created fine. Doing heavy work inside requests
+also:</p>
+<ul>
+<li>Ties up server capacity, so fewer requests can be served.</li>
+<li>Hits proxy and client timeouts for long tasks (reports, exports, imports).</li>
+<li>Loses work when the process restarts mid-request.</li>
+<li>Makes retries hard: the user would have to resubmit.</li>
+</ul>
+<p>Background jobs move that work off the request path. The request records
+what needs to happen and returns quickly; workers do the work, retry
+failures, and report progress.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>GitHub webhooks.</strong> GitHub asks receivers to respond within 10 seconds
+  and suggests setting up a queue so the server can acknowledge the webhook
+  immediately and process the payload in the background
+  (<a href="https://docs.github.com/en/webhooks/using-webhooks/best-practices-for-using-webhooks">GitHub Docs: webhook best practices</a>).</li>
+<li><strong>Amazon SQS dead-letter queues.</strong> A redrive policy's <code>maxReceiveCount</code>
+  sets how many times a consumer can receive a message before SQS moves it to
+  a dead-letter queue for inspection
+  (<a href="https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html">Amazon SQS: dead-letter queues</a>).</li>
+<li><strong>Kubernetes CronJobs.</strong> A CronJob creates a Job approximately once per
+  scheduled time; in some circumstances two Jobs, or none, may be created, so
+  Kubernetes says those Jobs should be idempotent
+  (<a href="https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/">Kubernetes: CronJob</a>).</li>
+<li><strong>BullMQ job IDs for deduplication.</strong> BullMQ ignores a job added with an ID
+  that already exists, which is how producers avoid enqueueing the same work
+  twice
+  (<a href="https://docs.bullmq.io/guide/jobs/job-ids">BullMQ: job IDs</a>).</li>
+</ul>
+<p><strong>Popular tools and providers:</strong> BullMQ (Node.js on Redis), Amazon SQS,
+RabbitMQ, Google Cloud Tasks, Celery (Python), Sidekiq (Ruby), Temporal for
+long-running workflows, and schedulers such as Kubernetes CronJobs and Amazon
+EventBridge Scheduler.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="what-belongs-in-the-background">What belongs in the background<a class="headerlink" href="#what-belongs-in-the-background" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Good candidates</th>
+<th>Keep in the request</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sending emails, SMS, push notifications</td>
+<td>Validating input and saving the core record</td>
+</tr>
+<tr>
+<td>Generating PDFs, reports, exports</td>
+<td>Anything the response depends on</td>
+</tr>
+<tr>
+<td>Image and video processing</td>
+<td>Fast reads</td>
+</tr>
+<tr>
+<td>Calling slow or unreliable third-party APIs</td>
+<td>Checks that must block the action (payment authorization, permission)</td>
+</tr>
+<tr>
+<td>Webhook processing and fan-out</td>
+<td></td>
+</tr>
+<tr>
+<td>Search indexing, cache warming, analytics events</td>
+<td></td>
+</tr>
+<tr>
+<td>Scheduled cleanups, reminders, billing runs</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="the-job-queue-model">The job queue model<a class="headerlink" href="#the-job-queue-model" title="Permanent link">&para;</a></h3>
+<p><img alt="The client posts to the API, which saves the record, enqueues a job, and returns 202 with a Location; the broker delivers the job to a worker, which saves the result on success, sends it back to the queue after a backoff if attempts are left, or moves it to the dead-letter queue; the client polls the status URL." src="../job-queue-architecture.svg" /></p>
+<ul>
+<li><strong>Producer:</strong> the code that creates a job — usually your API, after saving
+  the main record.</li>
+<li><strong>Job:</strong> a small message describing the work: a type and the data needed
+  (IDs, not huge payloads), plus an ID.</li>
+<li><strong>Broker / queue:</strong> stores jobs durably until a worker takes them.</li>
+<li><strong>Worker:</strong> a separate process (often the same codebase started with a
+  different entry point) that takes jobs, performs them, and acknowledges
+  success or reports failure.</li>
+</ul>
+<p>Workers scale independently of the API: add more workers when the queue
+grows.</p>
+<h3 id="common-tools">Common tools<a class="headerlink" href="#common-tools" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BullMQ (Node.js, on Redis)</td>
+<td>Popular in Node; retries, backoff, delayed and repeatable jobs, priorities, rate limits, concurrency, job progress</td>
+</tr>
+<tr>
+<td>RabbitMQ</td>
+<td>General-purpose message broker; acknowledgments, routing, dead-letter exchanges</td>
+</tr>
+<tr>
+<td>Amazon SQS</td>
+<td>Managed queue; visibility timeouts, dead-letter queues, FIFO queues</td>
+</tr>
+<tr>
+<td>Kafka</td>
+<td>Event streaming log; great for high-volume event pipelines, less for simple task queues</td>
+</tr>
+<tr>
+<td>Database-backed queues (e.g. pg-boss, Agenda on MongoDB)</td>
+<td>No extra infrastructure; fine for moderate volume</td>
+</tr>
+</tbody>
+</table>
+<p>The broader trade-offs between brokers are covered in
+<a href="../../../05-application-architecture/message-queues/">message queues</a>.</p>
+<h3 id="retries-and-backoff">Retries and backoff<a class="headerlink" href="#retries-and-backoff" title="Permanent link">&para;</a></h3>
+<p>Jobs fail for transient reasons (network errors, rate limits, a dependency
+restarting). Configure:</p>
+<ul>
+<li>A <strong>maximum number of attempts</strong> (for example, 5).</li>
+<li><strong>Exponential backoff</strong> between attempts (for example, 1 s, 2 s, 4 s, 8 s)
+  so a struggling dependency gets breathing room.</li>
+<li><strong>Which errors are retryable:</strong> do not retry a job whose input is invalid;
+  fail it immediately.</li>
+</ul>
+<p>See <a href="../timeouts-retries-and-idempotency/">timeouts, retries, and idempotency</a>.</p>
+<h3 id="dead-letter-queues">Dead-letter queues<a class="headerlink" href="#dead-letter-queues" title="Permanent link">&para;</a></h3>
+<p>A job that fails all its attempts should not disappear. It moves to a
+<strong>dead-letter queue (DLQ)</strong> or a "failed" state, where engineers can inspect
+it, fix the cause, and replay it. Alert when the DLQ grows.</p>
+<p><img alt="Job state machine: a job is waiting, becomes active when a worker takes it, and is completed on success; if it throws with attempts left it is delayed for the backoff and returns to waiting, and if no attempts are left it ends as failed in the dead-letter queue." src="../job-state-machine.svg" /></p>
+<h3 id="idempotent-jobs">Idempotent jobs<a class="headerlink" href="#idempotent-jobs" title="Permanent link">&para;</a></h3>
+<p>Most queues deliver <strong>at least once</strong>: if a worker crashes after doing the
+work but before acknowledging, the job runs again. Therefore jobs must be
+<strong>idempotent</strong> — running them twice must not double the effect:</p>
+<ul>
+<li>Send the "order confirmation" email only if <code>order.confirmationSentAt</code> is
+  empty, and set it atomically.</li>
+<li>Use the job ID or a business key as an idempotency key when calling
+  payment or messaging APIs.</li>
+<li>Use unique constraints to prevent duplicate inserts.</li>
+</ul>
+<p>Also keep job payloads small: store IDs and load fresh data in the worker,
+so the job works on current state rather than a stale snapshot.</p>
+<h3 id="delayed-and-repeatable-jobs">Delayed and repeatable jobs<a class="headerlink" href="#delayed-and-repeatable-jobs" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Delayed job:</strong> run once, after a delay — "send a reminder 24 hours after
+  sign-up if the profile is incomplete."</li>
+<li><strong>Repeatable job:</strong> run on a schedule — every 5 minutes, or with a cron
+  expression.</li>
+</ul>
+<h3 id="cron-syntax">Cron syntax<a class="headerlink" href="#cron-syntax" title="Permanent link">&para;</a></h3>
+<p>Cron expressions describe schedules with five fields (some libraries add a
+sixth, leading field for seconds):</p>
+<div class="highlight"><pre><span></span><code>┌───────────── minute (0–59)
+│ ┌─────────── hour (0–23)
+│ │ ┌───────── day of month (1–31)
+│ │ │ ┌─────── month (1–12 or JAN–DEC)
+│ │ │ │ ┌───── day of week (0–7 or SUN–SAT; 0 and 7 are both Sunday)
+│ │ │ │ │
+* * * * *
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>*</code></td>
+<td>Every value</td>
+</tr>
+<tr>
+<td><code>,</code></td>
+<td>List: <code>1,15</code> = 1st and 15th</td>
+</tr>
+<tr>
+<td><code>-</code></td>
+<td>Range: <code>9-17</code> = 9 through 17</td>
+</tr>
+<tr>
+<td><code>/</code></td>
+<td>Step: <code>*/5</code> = every 5 units</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Expression</th>
+<th>Runs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>* * * * *</code></td>
+<td>Every minute</td>
+</tr>
+<tr>
+<td><code>*/15 * * * *</code></td>
+<td>Every 15 minutes</td>
+</tr>
+<tr>
+<td><code>0 * * * *</code></td>
+<td>At minute 0 of every hour</td>
+</tr>
+<tr>
+<td><code>0 2 * * *</code></td>
+<td>Every day at 02:00</td>
+</tr>
+<tr>
+<td><code>30 9 * * 1-5</code></td>
+<td>09:30 Monday to Friday</td>
+</tr>
+<tr>
+<td><code>0 0 1 * *</code></td>
+<td>Midnight on the first day of each month</td>
+</tr>
+<tr>
+<td><code>0 6 * * 0</code></td>
+<td>06:00 every Sunday</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Time zones matter.</strong> A job at <code>0 2 * * *</code> runs at 02:00 in the scheduler's
+time zone. Set the time zone explicitly (often UTC), and be careful around
+daylight-saving changes, when 02:00 may happen twice or not at all in local
+time.</p>
+<p><strong>Watch the day-of-month and day-of-week combination:</strong> in standard cron, if
+both are restricted (not <code>*</code>), the job runs when <strong>either</strong> matches.</p>
+<h3 id="node-cron-and-in-process-schedulers">node-cron and in-process schedulers<a class="headerlink" href="#node-cron-and-in-process-schedulers" title="Permanent link">&para;</a></h3>
+<p>Libraries such as <code>node-cron</code> run a function on a schedule inside your Node
+process. They are simple, but:</p>
+<ul>
+<li>If the app runs on <strong>three instances</strong>, the job runs <strong>three times</strong>.</li>
+<li>If the process is down at the scheduled time, the run is missed.</li>
+<li>Long jobs compete with request handling for the event loop.</li>
+</ul>
+<h3 id="running-scheduled-jobs-exactly-once-across-instances">Running scheduled jobs exactly once across instances<a class="headerlink" href="#running-scheduled-jobs-exactly-once-across-instances" title="Permanent link">&para;</a></h3>
+<p>Options, from simplest to most robust:</p>
+<ol>
+<li><strong>A dedicated scheduler process:</strong> run exactly one scheduler instance
+   (separate from the scaled API), which enqueues jobs for workers.</li>
+<li><strong>Queue-based repeatable jobs:</strong> BullMQ repeatable jobs (job schedulers)
+   are stored in Redis and produced once per interval regardless of how
+   many workers exist.</li>
+<li><strong>Distributed lock:</strong> each instance tries to acquire a lock (for example,
+   Redis <code>SET NX</code> with expiry) before running; only the winner runs. Make the
+   job idempotent anyway.</li>
+<li><strong>Platform schedulers:</strong> Kubernetes CronJobs, AWS EventBridge Scheduler,
+   cloud scheduler services that call an endpoint or start a task.</li>
+</ol>
+<p><img alt="At 02:00 the cron schedule fires on instances A, B, and C; each sends Redis SET NX for the same lock key, only instance B gets OK and runs the report while A and C get nil and skip, whereas without the lock the report would run three times." src="../scheduled-job-lock.svg" /></p>
+<h3 id="reporting-progress-to-clients">Reporting progress to clients<a class="headerlink" href="#reporting-progress-to-clients" title="Permanent link">&para;</a></h3>
+<p>For long tasks the user is waiting on (exports, imports):</p>
+<div class="highlight"><pre><span></span><code>POST /api/exports              → 202 Accepted
+                                 Location: /api/exports/exp_91
+                                 { "id": "exp_91", "status": "queued" }
+
+GET  /api/exports/exp_91       → 200 { "status": "processing", "progress": 40 }
+GET  /api/exports/exp_91       → 200 { "status": "completed",
+                                      "downloadUrl": "https://..." }
+</code></pre></div>
+<p>The client polls the status URL, or receives updates over SSE, WebSockets,
+or a notification (see
+<a href="../real-time-communication/">real-time communication</a>). Status is stored in
+the database or the job system.</p>
+<h3 id="monitoring-queues">Monitoring queues<a class="headerlink" href="#monitoring-queues" title="Permanent link">&para;</a></h3>
+<p>Track and alert on:</p>
+<ul>
+<li><strong>Queue depth</strong> (waiting jobs) and its trend — a growing backlog means
+  workers cannot keep up.</li>
+<li><strong>Job age / latency</strong> — how long the oldest job has been waiting.</li>
+<li><strong>Failure rate</strong> and <strong>DLQ size</strong>.</li>
+<li><strong>Processing duration</strong> per job type.</li>
+<li><strong>Stalled jobs</strong> — jobs whose worker died mid-processing.</li>
+</ul>
+<p>Dashboards such as Bull Board show BullMQ queues; cloud queues expose
+metrics in their consoles.</p>
+<h3 id="graceful-shutdown-for-workers">Graceful shutdown for workers<a class="headerlink" href="#graceful-shutdown-for-workers" title="Permanent link">&para;</a></h3>
+<p>When a worker receives <code>SIGTERM</code> (during deploys), it should stop taking new
+jobs, let current jobs finish (within a time limit), then exit. Jobs that
+cannot finish should be returned to the queue, not lost.</p>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<p><strong>Use a background job when:</strong></p>
+<ul>
+<li>The work takes more than a few hundred milliseconds and the response does
+  not depend on its result (emails, PDFs, image processing).</li>
+<li>The work calls an unreliable third party and should be retried.</li>
+<li>A webhook or event must be acknowledged quickly and processed later.</li>
+<li>Work must happen on a schedule (cleanups, reminders, billing runs).</li>
+</ul>
+<p><strong>Keep the work in the request when:</strong></p>
+<ul>
+<li>The response needs the result (a price, a permission decision, a payment
+  authorization).</li>
+<li>It is fast and reliable — a queue adds infrastructure and failure modes.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Need</th>
+<th>Good fit</th>
+<th>Avoid</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Send an email after sign-up</td>
+<td>Job queue with retries</td>
+<td>Inline call in the request</td>
+</tr>
+<tr>
+<td>Process a webhook</td>
+<td>Acknowledge with 2xx, then queue</td>
+<td>Doing the work before responding</td>
+</tr>
+<tr>
+<td>Nightly cleanup on one server</td>
+<td><code>node-cron</code></td>
+<td><code>node-cron</code> on a scaled app</td>
+</tr>
+<tr>
+<td>Nightly cleanup on a scaled app</td>
+<td>Queue job scheduler or platform cron</td>
+<td>One schedule per instance</td>
+</tr>
+<tr>
+<td>Long multi-step workflow (days, human steps)</td>
+<td>Workflow engine such as Temporal</td>
+<td>A chain of ad hoc jobs</td>
+</tr>
+<tr>
+<td>Strict per-customer order</td>
+<td>Partitioned queue or single-concurrency group</td>
+<td>Many parallel workers on one queue</td>
+</tr>
+</tbody>
+</table>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="a-bullmq-queue-producer-and-worker">A BullMQ queue, producer, and worker<a class="headerlink" href="#a-bullmq-queue-producer-and-worker" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// queue.js — shared connection settings</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Queue</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"bullmq"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="nx">IORedis</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"ioredis"</span><span class="p">;</span>
+
+<span class="c1">// BullMQ workers require maxRetriesPerRequest: null on their connection</span>
+<span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">connection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">IORedis</span><span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">REDIS_URL</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">maxRetriesPerRequest</span><span class="o">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="p">});</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">emailQueue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">Queue</span><span class="p">(</span><span class="s2">"emails"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">connection</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">defaultJobOptions</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">attempts</span><span class="o">:</span><span class="w"> </span><span class="mf">5</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">backoff</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">type</span><span class="o">:</span><span class="w"> </span><span class="s2">"exponential"</span><span class="p">,</span><span class="w"> </span><span class="nx">delay</span><span class="o">:</span><span class="w"> </span><span class="mf">1000</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="c1">// 1 s, 2 s, 4 s, ...</span>
+<span class="w">    </span><span class="nx">removeOnComplete</span><span class="o">:</span><span class="w"> </span><span class="mf">1000</span><span class="p">,</span><span class="w"> </span><span class="c1">// keep the last 1000 completed jobs</span>
+<span class="w">    </span><span class="nx">removeOnFail</span><span class="o">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">    </span><span class="c1">// keep failed jobs for inspection</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="p">});</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1">// api.js — producer: respond fast, enqueue the slow work</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">emailQueue</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"./queue.js"</span><span class="p">;</span>
+
+<span class="nx">app</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s2">"/api/users"</span><span class="p">,</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="nx">request</span><span class="p">,</span><span class="w"> </span><span class="nx">response</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">createUser</span><span class="p">(</span><span class="nx">request</span><span class="p">.</span><span class="nx">validated</span><span class="p">.</span><span class="nx">body</span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// jobId makes the enqueue idempotent: a job with an existing ID is ignored.</span>
+<span class="w">  </span><span class="c1">// BullMQ rejects custom IDs containing ":", so use another separator.</span>
+<span class="w">  </span><span class="k">await</span><span class="w"> </span><span class="nx">emailQueue</span><span class="p">.</span><span class="nx">add</span><span class="p">(</span>
+<span class="w">    </span><span class="s2">"welcome-email"</span><span class="p">,</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nx">userId</span><span class="o">:</span><span class="w"> </span><span class="nx">user</span><span class="p">.</span><span class="nx">id</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nx">jobId</span><span class="o">:</span><span class="w"> </span><span class="sb">`welcome-email-</span><span class="si">${</span><span class="nx">user</span><span class="p">.</span><span class="nx">id</span><span class="si">}</span><span class="sb">`</span><span class="w"> </span><span class="p">}</span>
+<span class="w">  </span><span class="p">);</span>
+
+<span class="w">  </span><span class="nx">response</span><span class="p">.</span><span class="nx">status</span><span class="p">(</span><span class="mf">201</span><span class="p">).</span><span class="nx">json</span><span class="p">({</span><span class="w"> </span><span class="nx">id</span><span class="o">:</span><span class="w"> </span><span class="nx">user</span><span class="p">.</span><span class="nx">id</span><span class="w"> </span><span class="p">});</span>
+<span class="p">});</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1">// worker.js — a separate process: node worker.js</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Worker</span><span class="p">,</span><span class="w"> </span><span class="nx">UnrecoverableError</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"bullmq"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">connection</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"./queue.js"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">worker</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">Worker</span><span class="p">(</span>
+<span class="w">  </span><span class="s2">"emails"</span><span class="p">,</span>
+<span class="w">  </span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="nx">job</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">users</span><span class="p">.</span><span class="nx">findById</span><span class="p">(</span><span class="nx">job</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">userId</span><span class="p">);</span><span class="w"> </span><span class="c1">// load fresh data</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">user</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="c1">// Retrying will not help; fail permanently</span>
+<span class="w">      </span><span class="k">throw</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">UnrecoverableError</span><span class="p">(</span><span class="s2">"User no longer exists"</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">user</span><span class="p">.</span><span class="nx">welcomeEmailSentAt</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="p">;</span><span class="w"> </span><span class="c1">// idempotent: already done</span>
+
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="nx">emailProvider</span><span class="p">.</span><span class="nx">send</span><span class="p">({</span><span class="w"> </span><span class="nx">to</span><span class="o">:</span><span class="w"> </span><span class="nx">user</span><span class="p">.</span><span class="nx">email</span><span class="p">,</span><span class="w"> </span><span class="nx">template</span><span class="o">:</span><span class="w"> </span><span class="s2">"welcome"</span><span class="w"> </span><span class="p">});</span>
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="nx">users</span><span class="p">.</span><span class="nx">markWelcomeEmailSent</span><span class="p">(</span><span class="nx">user</span><span class="p">.</span><span class="nx">id</span><span class="p">);</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="p">{</span><span class="w"> </span><span class="nx">connection</span><span class="p">,</span><span class="w"> </span><span class="nx">concurrency</span><span class="o">:</span><span class="w"> </span><span class="mf">10</span><span class="w"> </span><span class="p">}</span>
+<span class="p">);</span>
+
+<span class="nx">worker</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">"failed"</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nx">job</span><span class="p">,</span><span class="w"> </span><span class="nx">error</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">logger</span><span class="p">.</span><span class="nx">error</span><span class="p">({</span><span class="w"> </span><span class="nx">jobId</span><span class="o">:</span><span class="w"> </span><span class="nx">job</span><span class="o">?</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span><span class="w"> </span><span class="nx">err</span><span class="o">:</span><span class="w"> </span><span class="nx">error</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="s2">"email job failed"</span><span class="p">);</span>
+<span class="p">});</span>
+
+<span class="nx">process</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">"SIGTERM"</span><span class="p">,</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">await</span><span class="w"> </span><span class="nx">worker</span><span class="p">.</span><span class="nx">close</span><span class="p">();</span><span class="w"> </span><span class="c1">// waits for active jobs to finish</span>
+<span class="w">  </span><span class="nx">process</span><span class="p">.</span><span class="nx">exit</span><span class="p">(</span><span class="mf">0</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre></div>
+<h3 id="a-repeatable-job-instead-of-in-process-cron">A repeatable job instead of in-process cron<a class="headerlink" href="#a-repeatable-job-instead-of-in-process-cron" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Queue</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"bullmq"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">connection</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"./queue.js"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">maintenanceQueue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">Queue</span><span class="p">(</span><span class="s2">"maintenance"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">connection</span><span class="w"> </span><span class="p">});</span>
+
+<span class="c1">// Upsert a scheduler: runs daily at 02:00 UTC no matter how many workers exist</span>
+<span class="k">await</span><span class="w"> </span><span class="nx">maintenanceQueue</span><span class="p">.</span><span class="nx">upsertJobScheduler</span><span class="p">(</span>
+<span class="w">  </span><span class="s2">"cleanup-expired-sessions"</span><span class="p">,</span>
+<span class="w">  </span><span class="p">{</span><span class="w"> </span><span class="nx">pattern</span><span class="o">:</span><span class="w"> </span><span class="s2">"0 2 * * *"</span><span class="p">,</span><span class="w"> </span><span class="nx">tz</span><span class="o">:</span><span class="w"> </span><span class="s2">"UTC"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="p">{</span><span class="w"> </span><span class="nx">name</span><span class="o">:</span><span class="w"> </span><span class="s2">"cleanup-expired-sessions"</span><span class="p">,</span><span class="w"> </span><span class="nx">data</span><span class="o">:</span><span class="w"> </span><span class="p">{}</span><span class="w"> </span><span class="p">}</span>
+<span class="p">);</span>
+</code></pre></div>
+<h3 id="node-cron-for-a-single-instance-app">node-cron for a single-instance app<a class="headerlink" href="#node-cron-for-a-single-instance-app" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="nx">cron</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node-cron"</span><span class="p">;</span>
+
+<span class="c1">// Fine for one instance; runs once per instance if you scale out</span>
+<span class="nx">cron</span><span class="p">.</span><span class="nx">schedule</span><span class="p">(</span>
+<span class="w">  </span><span class="s2">"*/15 * * * *"</span><span class="p">,</span>
+<span class="w">  </span><span class="k">async</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="nx">refreshExchangeRates</span><span class="p">();</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="p">{</span><span class="w"> </span><span class="nx">timezone</span><span class="o">:</span><span class="w"> </span><span class="s2">"UTC"</span><span class="w"> </span><span class="p">}</span>
+<span class="p">);</span>
+</code></pre></div>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Keep requests fast: save the core data, enqueue the rest, respond.</li>
+<li>Put only IDs and small parameters in job payloads; load fresh data in the
+  worker.</li>
+<li>Make every job idempotent; assume it may run more than once.</li>
+<li>Configure attempts, exponential backoff, and a dead-letter destination.</li>
+<li>Fail immediately on non-retryable errors.</li>
+<li>Run workers as separate processes that scale independently.</li>
+<li>Ensure scheduled jobs run once across instances (dedicated scheduler,
+  queue schedulers, or locks).</li>
+<li>Set time zones explicitly for schedules.</li>
+<li>Monitor queue depth, job age, failures, and DLQ size; alert on growth.</li>
+<li>Shut workers down gracefully.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>The backlog keeps growing.</strong> <em>Symptom:</em> emails arrive hours late.
+  <em>Detect:</em> queue depth and the age of the oldest waiting job rise steadily.
+  <em>Cause:</em> jobs arrive faster than workers finish them — too few workers, low
+  concurrency, or a slow dependency. <em>Fix:</em> scale workers, raise concurrency
+  where the dependency allows, and alert on job age rather than depth alone.</li>
+<li><strong>Enqueueing fails after "making it idempotent".</strong> <em>Symptom:</em> sign-ups
+  return 500 after a custom job ID is added. <em>Detect:</em> the error message
+  <code>Custom Id cannot contain :</code> from BullMQ. <em>Cause:</em> BullMQ rejects most
+  custom job IDs that contain a colon. <em>Fix:</em> use another separator, such as
+  <code>welcome-email-42</code>.</li>
+<li><strong>Workers stop processing after a Redis blip.</strong> <em>Symptom:</em> the queue grows
+  while workers are running. <em>Detect:</em> worker logs show Redis connection
+  errors and BullMQ warns that <code>maxRetriesPerRequest</code> must be <code>null</code>.
+  <em>Cause:</em> the ioredis connection gives up on commands instead of waiting for
+  Redis. <em>Fix:</em> create worker connections with <code>maxRetriesPerRequest: null</code>.</li>
+<li><strong>The nightly job runs three times.</strong> <em>Symptom:</em> customers get three copies
+  of a report. <em>Detect:</em> logs show the job starting on every instance at the
+  same minute. <em>Cause:</em> <code>node-cron</code> runs inside each scaled instance. <em>Fix:</em>
+  use a queue job scheduler, a single scheduler process, or a platform cron,
+  and make the job idempotent.</li>
+<li><strong>Jobs run twice after a deploy.</strong> <em>Symptom:</em> duplicate side effects around
+  release time. <em>Detect:</em> the same job ID appears as processed twice, or as
+  stalled and then retried. <em>Cause:</em> workers were killed mid-job, so the job
+  was redelivered. <em>Fix:</em> close workers gracefully on <code>SIGTERM</code>, give them
+  enough shutdown time, and keep jobs idempotent.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Background job:</strong> work performed outside the request-response cycle.</li>
+<li><strong>Producer / consumer (worker):</strong> creates jobs / processes jobs.</li>
+<li><strong>Broker:</strong> the system that stores and delivers jobs.</li>
+<li><strong>Acknowledgment:</strong> a worker's confirmation that a job completed.</li>
+<li><strong>Dead-letter queue:</strong> where jobs go after exhausting retries.</li>
+<li><strong>At-least-once delivery:</strong> jobs may be processed more than once.</li>
+<li><strong>Idempotent job:</strong> a job safe to run repeatedly.</li>
+<li><strong>Delayed job:</strong> a job scheduled to run after a delay.</li>
+<li><strong>Repeatable job / job scheduler:</strong> a job produced on a recurring schedule.</li>
+<li><strong>Cron expression:</strong> a five- (or six-) field schedule format.</li>
+<li><strong>Concurrency:</strong> how many jobs a worker processes at once.</li>
+<li><strong>Stalled job:</strong> a job whose worker stopped responding mid-processing.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Doing slow work inside the request</strong>, causing timeouts and poor
+  throughput.</li>
+<li><strong>Fire-and-forget promises</strong> (<code>sendEmail()</code> without awaiting or queueing):
+  the work is lost on restart and errors go unnoticed.</li>
+<li><strong>Non-idempotent jobs</strong> that send duplicate emails or charges on retry.</li>
+<li><strong>Large payloads</strong> in jobs, holding stale copies of data.</li>
+<li><strong>In-process cron on a scaled app</strong>, running the job once per instance.</li>
+<li><strong>Ignoring time zones and daylight saving</strong> in schedules.</li>
+<li><strong>No dead-letter handling</strong>, so failed jobs vanish silently.</li>
+<li><strong>Retrying jobs that can never succeed</strong>, wasting resources.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Which kinds of work should move to background jobs, and why?</li>
+<li>Describe the roles of the producer, broker, and worker.</li>
+<li>Why must background jobs be idempotent, and how can you make an email job
+   idempotent?</li>
+<li>Explain each field of the cron expression <code>30 9 * * 1-5</code>.</li>
+<li>What goes wrong when <code>node-cron</code> runs in an app scaled to three instances,
+   and how do you fix it?</li>
+<li>How should an API report progress for a long-running export?</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://docs.bullmq.io/">BullMQ documentation</a></li>
+<li><a href="https://www.npmjs.com/package/node-cron">node-cron on npm</a></li>
+<li><a href="https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html">Amazon SQS dead-letter queues</a></li>
+<li><a href="https://www.rabbitmq.com/docs/dlx">RabbitMQ: Dead letter exchanges</a></li>
+<li><a href="https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/">Kubernetes: CronJob</a></li>
+<li>Related notes: <a href="../../../05-application-architecture/message-queues/">Message queues</a>,
+  <a href="../../../05-application-architecture/redis/">Redis</a>,
+  <a href="../timeouts-retries-and-idempotency/">Timeouts, retries, and idempotency</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../concurrency-and-race-conditions/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Concurrency and Race Conditions">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Concurrency and Race Conditions</span>
+      </a>
+    
+    
+      <a href="../real-time-communication/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: Real-Time Communication">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">Real-Time Communication</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

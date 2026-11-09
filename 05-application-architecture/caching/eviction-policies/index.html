@@ -1,0 +1,2608 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../invalidation-and-expiration/">
+      
+      
+        <link rel="next" href="../cache-failure-modes/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Eviction Policies - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#eviction-policies" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Eviction Policies
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-ai-and-machine-learning/" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../06-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-devops-and-deployment/" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../08-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to Application Architecture">
+          <span class="md-ellipsis">&larr; Back to Architecture</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to Application Architecture">
+                  <span class="md-ellipsis">&larr; Back to Architecture</span>
+                </a>
+              
+            </div>
+          
+          
+            <label class="md-nav__title" for="__nav_6">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Application Architecture
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_3" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_6_3" id="__nav_6_3_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Caching
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_3_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_6_3">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Caching
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cache-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cache Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../caching-strategies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Caching Strategies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../invalidation-and-expiration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Invalidation and Expiration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Eviction Policies
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Eviction Policies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#expiration-compared-with-eviction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Expiration compared with eviction
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lru-least-recently-used" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LRU: least recently used
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lfu-least-frequently-used" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LFU: least frequently used
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fifo-random-and-ttl-based" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FIFO, random, and TTL-based
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#comparison" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comparison
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#approximated-lru-and-lfu-in-redis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Approximated LRU and LFU in Redis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#redis-maxmemory-and-maxmemory-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Redis maxmemory and maxmemory-policy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sizing-a-cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sizing a cache
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lru-cache-with-a-hash-map-and-a-doubly-linked-list" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LRU cache with a hash map and a doubly linked list
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lfu-idea-in-brief" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LFU idea in brief
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuring-redis-as-a-cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuring Redis as a cache
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cache-failure-modes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cache Failure Modes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../http-and-cdn-caching/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP and CDN Caching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-ai-and-machine-learning/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI and Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../06-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-devops-and-deployment/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DevOps and Deployment
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../08-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#expiration-compared-with-eviction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Expiration compared with eviction
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lru-least-recently-used" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LRU: least recently used
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lfu-least-frequently-used" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LFU: least frequently used
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fifo-random-and-ttl-based" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FIFO, random, and TTL-based
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#comparison" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comparison
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#approximated-lru-and-lfu-in-redis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Approximated LRU and LFU in Redis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#redis-maxmemory-and-maxmemory-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Redis maxmemory and maxmemory-policy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sizing-a-cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sizing a cache
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lru-cache-with-a-hash-map-and-a-doubly-linked-list" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LRU cache with a hash map and a doubly linked list
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lfu-idea-in-brief" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LFU idea in brief
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuring-redis-as-a-cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuring Redis as a cache
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="eviction-policies">Eviction Policies<a class="headerlink" href="#eviction-policies" title="Permanent link">&para;</a></h1>
+<p>A cache has limited memory. When it is full and a new entry must be
+stored, an <strong>eviction policy</strong> decides which existing entry to remove.
+Common policies are LRU (least recently used), LFU (least frequently
+used), FIFO, random, and TTL-based eviction. Redis exposes these choices
+through its <code>maxmemory-policy</code> setting.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>The eviction policy decides which data stays in the cache, and therefore
+the hit ratio. The wrong policy can push out exactly the data that is
+reused most, or, in Redis, make writes fail with out-of-memory errors.
+Eviction is different from expiration: expiration removes entries whose
+TTL has passed; eviction removes entries early because memory ran out.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Redis recommends <code>allkeys-lru</code> as a starting point.</strong> The Redis
+  <a href="https://redis.io/docs/latest/develop/reference/eviction/">key eviction guide</a>
+  calls <code>allkeys-lru</code> "a good default option" when a subset of keys is
+  accessed far more often than the rest, and explains that Redis
+  approximates LRU by sampling keys and keeping a pool of good eviction
+  candidates.</li>
+<li><strong>Managed Redis can have a different default.</strong> Open-source Redis
+  defaults to <code>noeviction</code>, but Amazon ElastiCache's
+  <a href="https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/ParameterGroups.Engine.html">parameter groups</a>
+  list <code>volatile-lru</code> as the default <code>maxmemory-policy</code>. Code that stores
+  keys without TTLs behaves differently on the two.</li>
+<li><strong>Caffeine combines frequency and recency.</strong> The Java caching library
+  <a href="https://github.com/ben-manes/caffeine">Caffeine</a> offers size-based
+  eviction "based on frequency and recency", and its README points to the
+  research behind its policy, including the TinyLFU admission policy paper.</li>
+<li><strong>Redis added an "LRM" policy.</strong> Since Redis 8.6, <code>allkeys-lrm</code> and
+  <code>volatile-lrm</code> evict the <em>least recently modified</em> keys: only writes
+  update the timestamp, so frequently read but rarely updated data can be
+  told apart from data that is actively changing.</li>
+</ul>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="expiration-compared-with-eviction">Expiration compared with eviction<a class="headerlink" href="#expiration-compared-with-eviction" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Expiration</th>
+<th>Eviction</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Trigger</td>
+<td>The entry's TTL passed</td>
+<td>Memory limit reached</td>
+</tr>
+<tr>
+<td>Chooses</td>
+<td>Exactly the expired entry</td>
+<td>A victim chosen by the policy</td>
+</tr>
+<tr>
+<td>Happens even with free memory</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Signal</td>
+<td>Normal; data aged out</td>
+<td>The cache may be too small</td>
+</tr>
+</tbody>
+</table>
+<p>A healthy cache mostly expires entries. Constant eviction means the
+working set does not fit.</p>
+<h3 id="lru-least-recently-used">LRU: least recently used<a class="headerlink" href="#lru-least-recently-used" title="Permanent link">&para;</a></h3>
+<p>LRU removes the entry that has gone unused the longest, assuming recently
+used data will be used again soon (temporal locality). It is the most
+widely used general-purpose policy.</p>
+<p>The classic O(1) implementation combines:</p>
+<ul>
+<li>a <strong>hash map</strong> from key to node, for O(1) lookup, and</li>
+<li>a <strong>doubly linked list</strong> ordered by recency, for O(1) moves and removal.</li>
+</ul>
+<p><img alt="Diagram: a hash map finds any node in O(1) while a doubly linked list orders nodes from head (most recent) to tail (least recent); starting from C, A, D, B, get(D) unlinks D and relinks it after the head (D, C, A, B); set(E) at capacity 4 evicts B from the tail, deletes it from the map, and inserts E at the head (E, D, C, A)." src="../lru-mechanics.svg" /></p>
+<h3 id="lfu-least-frequently-used">LFU: least frequently used<a class="headerlink" href="#lfu-least-frequently-used" title="Permanent link">&para;</a></h3>
+<p>LFU removes the entry with the lowest access count, assuming popular data
+stays popular. It protects long-term hot keys from being pushed out by a
+burst of one-time reads (for example a batch job scanning many keys once),
+which would flush an LRU cache.</p>
+<p><img alt="Comparison with capacity 3 and accesses A, A, A, B, B, C, D, E: LRU evicts A, the hottest key, when D arrives and then B when E arrives; LFU evicts C and then D, the keys read only once, so A and B stay cached." src="../lru-vs-lfu.svg" /></p>
+<p>Its weakness is history: an item that was popular last week can keep a
+high count forever. Practical LFU implementations therefore <strong>decay</strong>
+counts over time.</p>
+<h3 id="fifo-random-and-ttl-based">FIFO, random, and TTL-based<a class="headerlink" href="#fifo-random-and-ttl-based" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>FIFO (first in, first out):</strong> evicts the oldest inserted entry
+  regardless of use. Simple, but evicts hot entries just because they are
+  old.</li>
+<li><strong>Random:</strong> evicts any entry. Surprisingly reasonable when access is
+  roughly uniform, and very cheap.</li>
+<li><strong>TTL-based (shortest time to live first):</strong> evicts entries closest to
+  expiring, since they would disappear soon anyway.</li>
+</ul>
+<h3 id="comparison">Comparison<a class="headerlink" href="#comparison" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Policy</th>
+<th>Keeps</th>
+<th>Good for</th>
+<th>Weak when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LRU</td>
+<td>Recently used</td>
+<td>General workloads, recency matters</td>
+<td>One-off scans flush hot data</td>
+</tr>
+<tr>
+<td>LFU</td>
+<td>Frequently used</td>
+<td>Stable popularity (top products, configs)</td>
+<td>Popularity shifts; needs decay</td>
+</tr>
+<tr>
+<td>FIFO</td>
+<td>Newest inserted</td>
+<td>Simple buffers</td>
+<td>Old entries are still hot</td>
+</tr>
+<tr>
+<td>Random</td>
+<td>Anything</td>
+<td>Uniform access; low overhead</td>
+<td>Skewed access patterns</td>
+</tr>
+<tr>
+<td>TTL-based</td>
+<td>Long-lived entries</td>
+<td>Data with meaningful TTLs</td>
+<td>TTLs not set or meaningless</td>
+</tr>
+</tbody>
+</table>
+<h3 id="approximated-lru-and-lfu-in-redis">Approximated LRU and LFU in Redis<a class="headerlink" href="#approximated-lru-and-lfu-in-redis" title="Permanent link">&para;</a></h3>
+<p>Keeping a perfect linked list over millions of keys costs memory and CPU.
+Redis instead <strong>approximates</strong>:</p>
+<ul>
+<li>Each key stores a small access-time (LRU) or access-frequency (LFU)
+  field.</li>
+<li>When eviction is needed, Redis samples a few keys (the
+  <code>maxmemory-samples</code> setting, default 5) and evicts the best candidate
+  among them, keeping a small pool of good candidates between rounds.</li>
+<li>Higher sample counts get closer to true LRU at more CPU cost.</li>
+</ul>
+<p>Redis LFU uses a small logarithmic counter per key (a Morris-style
+counter) that grows more slowly as it gets larger, and <strong>decays</strong> over
+time so old popularity fades. <code>lfu-log-factor</code> controls how fast counters
+grow, and <code>lfu-decay-time</code> (in minutes) controls how fast they decay.</p>
+<h3 id="redis-maxmemory-and-maxmemory-policy">Redis <code>maxmemory</code> and <code>maxmemory-policy</code><a class="headerlink" href="#redis-maxmemory-and-maxmemory-policy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code># redis.conf
+maxmemory 2gb
+maxmemory-policy allkeys-lru
+</code></pre></div>
+<p>When memory use reaches <code>maxmemory</code>, Redis applies the policy. "All keys"
+policies consider every key; "volatile" policies consider only keys that
+have a TTL set.</p>
+<table>
+<thead>
+<tr>
+<th>Policy</th>
+<th>Evicts</th>
+<th>When to pick it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>noeviction</code> (default)</td>
+<td>Nothing; write commands that need memory return an error</td>
+<td>Redis holds data that must not be silently dropped (queues, primary data)</td>
+</tr>
+<tr>
+<td><code>allkeys-lru</code></td>
+<td>Least recently used among all keys</td>
+<td>Pure cache with recency-based access; the usual choice</td>
+</tr>
+<tr>
+<td><code>allkeys-lfu</code></td>
+<td>Least frequently used among all keys</td>
+<td>Pure cache with a stable set of popular keys</td>
+</tr>
+<tr>
+<td><code>allkeys-random</code></td>
+<td>Random key</td>
+<td>Uniform access, or lowest overhead</td>
+</tr>
+<tr>
+<td><code>volatile-lru</code></td>
+<td>Least recently used among keys with a TTL</td>
+<td>Mixed use: cache keys have TTLs, persistent keys do not</td>
+</tr>
+<tr>
+<td><code>volatile-lfu</code></td>
+<td>Least frequently used among keys with a TTL</td>
+<td>Mixed use with stable popularity</td>
+</tr>
+<tr>
+<td><code>volatile-random</code></td>
+<td>Random key with a TTL</td>
+<td>Mixed use, uniform access</td>
+</tr>
+<tr>
+<td><code>volatile-ttl</code></td>
+<td>Key with the shortest remaining TTL</td>
+<td>TTLs reflect how long data is worth keeping</td>
+</tr>
+<tr>
+<td><code>allkeys-lrm</code> (Redis 8.6+)</td>
+<td>Least recently <strong>modified</strong> among all keys</td>
+<td>Read-heavy data where recent writes signal value</td>
+</tr>
+<tr>
+<td><code>volatile-lrm</code> (Redis 8.6+)</td>
+<td>Least recently modified among keys with a TTL</td>
+<td>Mixed use with the same idea</td>
+</tr>
+</tbody>
+</table>
+<p>With any <code>volatile-*</code> policy, if no key has a TTL, Redis has nothing to
+evict and behaves like <code>noeviction</code>: writes start failing. Managed services
+can change the default policy (Amazon ElastiCache defaults to
+<code>volatile-lru</code>), so check the setting rather than assuming <code>noeviction</code>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Mixing a cache and important data (job queues, sessions you cannot
+lose) in one Redis instance with an <code>allkeys-*</code> policy lets cache
+pressure evict the important data. Use separate instances or a
+<code>volatile-*</code> policy with TTLs only on cache keys.</p>
+</div>
+<h3 id="sizing-a-cache">Sizing a cache<a class="headerlink" href="#sizing-a-cache" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Estimate the working set:</strong> how many distinct keys are read in a
+   typical TTL window, multiplied by the average value size plus
+   per-key overhead.</li>
+<li><strong>Look at the hit-ratio curve:</strong> hit ratio usually rises quickly and
+   then flattens. Doubling memory past the flat part buys little.</li>
+<li><strong>Leave headroom:</strong> Redis needs memory beyond the data for client
+   buffers, replication buffers, and, during snapshot persistence,
+   copy-on-write pages after forking.</li>
+<li><strong>Monitor:</strong> watch <code>used_memory</code>, <code>evicted_keys</code>, <code>expired_keys</code>,
+   <code>keyspace_hits</code>, and <code>keyspace_misses</code> from <code>INFO</code>.</li>
+</ol>
+<div class="highlight"><pre><span></span><code>Example estimate
+  500,000 active products × (2 KB value + ~100 B key/overhead) ≈ 1.05 GB
+  + 30% headroom                                               ≈ 1.4 GB
+  -&gt; start with maxmemory 1.5gb, then adjust from evicted_keys and hit ratio
+</code></pre></div>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>LRU:</strong> use for general caches where recently used data is likely to be
+  reused. Avoid it when large one-off scans or batch jobs read through the
+  cache.</li>
+<li><strong>LFU:</strong> use when a stable set of keys stays popular for a long time.
+  Avoid it when popularity shifts quickly and decay is not tuned.</li>
+<li><strong>Random:</strong> use when access is roughly uniform or eviction overhead must
+  be minimal. Avoid it for skewed workloads.</li>
+<li><strong>TTL-based (<code>volatile-ttl</code>):</strong> use when TTLs genuinely express how long
+  data is worth keeping. Avoid it when TTLs are arbitrary.</li>
+<li><strong>No eviction:</strong> use when the data must not be silently dropped (queues,
+  primary data). Never use it for a pure cache that is allowed to fill.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Workload</th>
+<th>Recommended policy</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pure cache, recency matters</td>
+<td><code>allkeys-lru</code></td>
+<td>Keeps recently used keys; a solid default</td>
+</tr>
+<tr>
+<td>Pure cache, stable popular set, periodic scans</td>
+<td><code>allkeys-lfu</code></td>
+<td>Scans do not push out long-term hot keys</td>
+</tr>
+<tr>
+<td>One instance for cache keys (with TTLs) and data you cannot lose</td>
+<td><code>volatile-lru</code> / <code>volatile-lfu</code></td>
+<td>Only TTL keys are candidates; better still, use two instances</td>
+</tr>
+<tr>
+<td>Queues, sessions you cannot lose, primary data</td>
+<td><code>noeviction</code> + memory alerts</td>
+<td>Fail loudly instead of losing data</td>
+</tr>
+<tr>
+<td>Read-heavy data where writes mark value (Redis 8.6+)</td>
+<td><code>allkeys-lrm</code></td>
+<td>Evicts data that has not changed recently</td>
+</tr>
+</tbody>
+</table>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="lru-cache-with-a-hash-map-and-a-doubly-linked-list">LRU cache with a hash map and a doubly linked list<a class="headerlink" href="#lru-cache-with-a-hash-map-and-a-doubly-linked-list" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kd">class</span><span class="w"> </span><span class="nx">Node</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kr">constructor</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span><span class="w"> </span><span class="nx">value</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="nx">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">key</span><span class="p">;</span>
+<span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="nx">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">value</span><span class="p">;</span>
+<span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="nx">prev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
+<span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="nx">next</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nx">LRUCache</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kr">constructor</span><span class="p">(</span><span class="nx">capacity</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="nx">capacity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">capacity</span><span class="p">;</span>
+<span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="nx">map</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Map</span><span class="p">();</span><span class="w">          </span><span class="c1">// key -&gt; Node</span>
+<span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="nx">head</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">Node</span><span class="p">(</span><span class="kc">null</span><span class="p">);</span><span class="w">    </span><span class="c1">// sentinel: most recent side</span>
+<span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="nx">tail</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">Node</span><span class="p">(</span><span class="kc">null</span><span class="p">);</span><span class="w">    </span><span class="c1">// sentinel: least recent side</span>
+<span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="nx">head</span><span class="p">.</span><span class="nx">next</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">tail</span><span class="p">;</span>
+<span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="nx">tail</span><span class="p">.</span><span class="nx">prev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">head</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="n">#remove</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">node</span><span class="p">.</span><span class="nx">prev</span><span class="p">.</span><span class="nx">next</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">node</span><span class="p">.</span><span class="nx">next</span><span class="p">;</span>
+<span class="w">    </span><span class="nx">node</span><span class="p">.</span><span class="nx">next</span><span class="p">.</span><span class="nx">prev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">node</span><span class="p">.</span><span class="nx">prev</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="n">#addToFront</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">node</span><span class="p">.</span><span class="nx">next</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">head</span><span class="p">.</span><span class="nx">next</span><span class="p">;</span>
+<span class="w">    </span><span class="nx">node</span><span class="p">.</span><span class="nx">prev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">head</span><span class="p">;</span>
+<span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="nx">head</span><span class="p">.</span><span class="nx">next</span><span class="p">.</span><span class="nx">prev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">node</span><span class="p">;</span>
+<span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="nx">head</span><span class="p">.</span><span class="nx">next</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">node</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="nx">get</span><span class="p">(</span><span class="nx">key</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">node</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">map</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">key</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">node</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="kc">undefined</span><span class="p">;</span><span class="w">   </span><span class="c1">// miss</span>
+<span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="n">#remove</span><span class="p">(</span><span class="nx">node</span><span class="p">);</span><span class="w">            </span><span class="c1">// hit: mark as most recently used</span>
+<span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="n">#addToFront</span><span class="p">(</span><span class="nx">node</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nx">node</span><span class="p">.</span><span class="nx">value</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="nx">set</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span><span class="w"> </span><span class="nx">value</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">existing</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">map</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">key</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">existing</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">existing</span><span class="p">.</span><span class="nx">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">value</span><span class="p">;</span>
+<span class="w">      </span><span class="k">this</span><span class="p">.</span><span class="n">#remove</span><span class="p">(</span><span class="nx">existing</span><span class="p">);</span>
+<span class="w">      </span><span class="k">this</span><span class="p">.</span><span class="n">#addToFront</span><span class="p">(</span><span class="nx">existing</span><span class="p">);</span>
+<span class="w">      </span><span class="k">return</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">map</span><span class="p">.</span><span class="nx">size</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">capacity</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="kd">const</span><span class="w"> </span><span class="nx">lru</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">tail</span><span class="p">.</span><span class="nx">prev</span><span class="p">;</span><span class="w">  </span><span class="c1">// least recently used</span>
+<span class="w">      </span><span class="k">this</span><span class="p">.</span><span class="n">#remove</span><span class="p">(</span><span class="nx">lru</span><span class="p">);</span>
+<span class="w">      </span><span class="k">this</span><span class="p">.</span><span class="nx">map</span><span class="p">.</span><span class="ow">delete</span><span class="p">(</span><span class="nx">lru</span><span class="p">.</span><span class="nx">key</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">node</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">Node</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span><span class="w"> </span><span class="nx">value</span><span class="p">);</span>
+<span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="nx">map</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span><span class="w"> </span><span class="nx">node</span><span class="p">);</span>
+<span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="n">#addToFront</span><span class="p">(</span><span class="nx">node</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="kd">const</span><span class="w"> </span><span class="nx">cache</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">LRUCache</span><span class="p">(</span><span class="mf">2</span><span class="p">);</span>
+<span class="nx">cache</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s2">"a"</span><span class="p">,</span><span class="w"> </span><span class="mf">1</span><span class="p">);</span>
+<span class="nx">cache</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s2">"b"</span><span class="p">,</span><span class="w"> </span><span class="mf">2</span><span class="p">);</span>
+<span class="nx">cache</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">"a"</span><span class="p">);</span><span class="w">        </span><span class="c1">// 1  (a is now most recent)</span>
+<span class="nx">cache</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s2">"c"</span><span class="p">,</span><span class="w"> </span><span class="mf">3</span><span class="p">);</span><span class="w">     </span><span class="c1">// evicts b, the least recently used</span>
+<span class="nx">cache</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">"b"</span><span class="p">);</span><span class="w">        </span><span class="c1">// undefined</span>
+</code></pre></div>
+<p>Every operation is O(1). JavaScript's <code>Map</code> keeps insertion order, so a
+shorter LRU can delete and re-insert keys on access and evict
+<code>map.keys().next().value</code>; the explicit linked list shows the classic
+data structure used in other languages and interviews.</p>
+<h3 id="lfu-idea-in-brief">LFU idea in brief<a class="headerlink" href="#lfu-idea-in-brief" title="Permanent link">&para;</a></h3>
+<p>An O(1) LFU keeps a map from key to <code>{ value, count }</code> and a map from
+count to an ordered set of keys with that count, plus the current minimum
+count. On access, a key moves from bucket <code>count</code> to <code>count + 1</code>; on
+eviction, remove the oldest key in the minimum-count bucket.</p>
+<h3 id="configuring-redis-as-a-cache">Configuring Redis as a cache<a class="headerlink" href="#configuring-redis-as-a-cache" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>redis-cli<span class="w"> </span>CONFIG<span class="w"> </span>SET<span class="w"> </span>maxmemory<span class="w"> </span>1gb
+redis-cli<span class="w"> </span>CONFIG<span class="w"> </span>SET<span class="w"> </span>maxmemory-policy<span class="w"> </span>allkeys-lfu
+redis-cli<span class="w"> </span>INFO<span class="w"> </span>stats<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-E<span class="w"> </span><span class="s2">"evicted_keys|keyspace_hits|keyspace_misses"</span>
+<span class="c1"># evicted_keys:0</span>
+<span class="c1"># keyspace_hits:982341</span>
+<span class="c1"># keyspace_misses:41022</span>
+</code></pre></div>
+<p>Settings changed with <code>CONFIG SET</code> are lost on restart unless also written
+to the configuration file (<code>CONFIG REWRITE</code>) or set by your managed
+service's parameter settings.</p>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Use <code>allkeys-lru</code> or <code>allkeys-lfu</code> for a Redis instance that is purely a
+  cache.</li>
+<li>Keep <code>noeviction</code> for Redis instances holding data you cannot lose, and
+  alert on memory before it fills.</li>
+<li>Do not mix cache data and critical data under an <code>allkeys-*</code> policy.</li>
+<li>Size from the working set, then tune from the hit ratio and eviction
+  metrics.</li>
+<li>Leave memory headroom for buffers and persistence.</li>
+<li>Treat rising <code>evicted_keys</code> with a falling hit ratio as a capacity
+  signal.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Writes start failing when the cache fills.</strong>
+  <em>Detect:</em> application logs show Redis out-of-memory errors on <code>SET</code>,
+  <code>used_memory</code> sits at <code>maxmemory</code>, and <code>evicted_keys</code> stays at 0.
+  <em>Cause:</em> <code>noeviction</code>, or a <code>volatile-*</code> policy with keys that have no
+  TTL. <em>Fix:</em> use an <code>allkeys-*</code> policy for a pure cache, or put TTLs on
+  every cache key.</li>
+<li><strong>Users are logged out at random under load.</strong>
+  <em>Detect:</em> <code>evicted_keys</code> rises during traffic peaks and session keys
+  disappear before their TTL. <em>Cause:</em> sessions share an <code>allkeys-*</code>
+  instance with cache data, so cache pressure evicts them. <em>Fix:</em> move
+  sessions to a separate instance with <code>noeviction</code>, or use <code>volatile-*</code>
+  with TTLs only on cache keys.</li>
+<li><strong>Hit ratio collapses every night.</strong>
+  <em>Detect:</em> <code>keyspace_misses</code> and database load jump during a nightly batch
+  job and stay high afterwards. <em>Cause:</em> the job reads many keys once and
+  flushes the LRU cache. <em>Fix:</em> switch to <code>allkeys-lfu</code>, or let the job
+  bypass the cache.</li>
+<li><strong>Behavior differs between local Redis and the managed service.</strong>
+  <em>Detect:</em> keys without TTLs are never evicted locally but writes fail (or
+  keys vanish) in the cloud. <em>Cause:</em> different default <code>maxmemory-policy</code>
+  values, such as <code>volatile-lru</code> on ElastiCache. <em>Fix:</em> set the policy
+  explicitly in every environment.</li>
+<li><strong>Latency spikes or the server is killed during snapshots.</strong>
+  <em>Detect:</em> <code>used_memory_rss</code> approaches the machine's RAM during
+  background saves, followed by swapping or an out-of-memory kill. <em>Cause:</em>
+  <code>maxmemory</code> set too close to physical memory, with no room for
+  copy-on-write pages and buffers. <em>Fix:</em> leave headroom; the Redis
+  eviction guide also recommends leaving RAM free for buffers when using
+  replication or persistence.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Eviction:</strong> Removing an entry early because the cache is full.</li>
+<li><strong>LRU:</strong> Evict the least recently used entry.</li>
+<li><strong>LFU:</strong> Evict the least frequently used entry.</li>
+<li><strong>FIFO:</strong> Evict the entry inserted first.</li>
+<li><strong>Approximated LRU/LFU:</strong> Choosing a victim from a random sample instead
+  of tracking exact order.</li>
+<li><strong><code>maxmemory-policy</code>:</strong> The Redis setting that selects the eviction
+  policy.</li>
+<li><strong>Volatile key:</strong> In Redis, a key that has a TTL.</li>
+<li><strong>Working set:</strong> The data actively used over a period.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Leaving Redis on the default <code>noeviction</code> when using it as a cache, so
+  writes fail with out-of-memory errors when it fills.</li>
+<li>Choosing a <code>volatile-*</code> policy while setting no TTLs.</li>
+<li>Confusing eviction with expiration.</li>
+<li>Assuming LRU is always best; scans and batch jobs can flush it.</li>
+<li>Setting <code>maxmemory</code> to the machine's full RAM, leaving no headroom.</li>
+<li>Using an unbounded in-process cache, which has no eviction at all.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>What is the difference between eviction and expiration?</li>
+<li>Why does an O(1) LRU need both a hash map and a doubly linked list?</li>
+<li>When does LFU outperform LRU, and why does LFU need decay?</li>
+<li>Which Redis policy would you choose for a pure cache, and which for an
+   instance that also stores job queues?</li>
+<li>What happens with <code>volatile-lru</code> when no keys have a TTL?</li>
+<li>Which metrics tell you a cache is too small?</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://redis.io/docs/latest/develop/reference/eviction/">Redis: Key eviction</a></li>
+<li><a href="https://redis.io/docs/latest/commands/info/">Redis: <code>INFO</code> command</a></li>
+<li><a href="https://redis.io/docs/latest/commands/config-set/">Redis: <code>CONFIG SET</code> command</a></li>
+<li>Related: <a href="../cache-fundamentals/">cache fundamentals</a>,
+  <a href="../../redis/redis-as-a-cache/">Redis as a cache</a>,
+  <a href="../">caching overview</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../invalidation-and-expiration/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Invalidation and Expiration">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Invalidation and Expiration</span>
+      </a>
+    
+    
+      <a href="../cache-failure-modes/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: Cache Failure Modes">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">Cache Failure Modes</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

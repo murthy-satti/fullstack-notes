@@ -1,0 +1,2732 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../common-use-cases/">
+      
+      
+        <link rel="next" href="../transactions-pipelining-and-lua/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Pub/Sub and Streams - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#pubsub-and-streams" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Pub/Sub and Streams
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-ai-and-machine-learning/" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../06-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-devops-and-deployment/" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../08-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to Application Architecture">
+          <span class="md-ellipsis">&larr; Back to Architecture</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to Application Architecture">
+                  <span class="md-ellipsis">&larr; Back to Architecture</span>
+                </a>
+              
+            </div>
+          
+          
+            <label class="md-nav__title" for="__nav_6">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Application Architecture
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_4" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_6_4" id="__nav_6_4_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Redis
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_4_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_6_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Redis
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../redis-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Redis Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data-structures/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Structures
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../redis-as-a-cache/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Redis as a Cache
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../common-use-cases/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common Use Cases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pub/Sub and Streams
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pub/Sub and Streams
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pubsub" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pub/Sub
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#streams" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Streams
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#consumer-groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consumer groups
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#comparison" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comparison
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-to-use-kafka-or-rabbitmq-instead" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use Kafka or RabbitMQ instead
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pubsub-in-redis-cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pub/Sub in redis-cli
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pubsub-in-nodejs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pub/Sub in Node.js
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#websocket-fan-out-across-app-instances" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WebSocket fan-out across app instances
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#streams-with-a-consumer-group-in-redis-cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Streams with a consumer group in redis-cli
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-stream-worker-in-nodejs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A stream worker in Node.js
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../transactions-pipelining-and-lua/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Transactions, Pipelining, and Lua
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../persistence-and-high-availability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Persistence and High Availability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+              
+                
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-ai-and-machine-learning/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI and Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../06-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-devops-and-deployment/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DevOps and Deployment
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../08-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pubsub" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pub/Sub
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#streams" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Streams
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#consumer-groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consumer groups
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#comparison" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comparison
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-to-use-kafka-or-rabbitmq-instead" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use Kafka or RabbitMQ instead
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pubsub-in-redis-cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pub/Sub in redis-cli
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pubsub-in-nodejs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pub/Sub in Node.js
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#websocket-fan-out-across-app-instances" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WebSocket fan-out across app instances
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#streams-with-a-consumer-group-in-redis-cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Streams with a consumer group in redis-cli
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-stream-worker-in-nodejs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A stream worker in Node.js
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="pubsub-and-streams">Pub/Sub and Streams<a class="headerlink" href="#pubsub-and-streams" title="Permanent link">&para;</a></h1>
+<p>Redis offers two ways to move messages between parts of a system. <strong>Pub/Sub</strong>
+broadcasts a message instantly to whoever is listening and then forgets it.
+<strong>Streams</strong> append messages to a stored log that consumers read at their own
+pace, with acknowledgments and recovery. This lesson explains both, compares
+them, and shows when a dedicated broker such as Kafka or RabbitMQ is the
+better choice.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>Backends constantly need to tell other processes that something happened:
+a chat message arrived, an order was placed, a cache entry is stale. Picking
+the wrong mechanism causes subtle bugs. Pub/Sub silently drops messages when
+a subscriber is offline, so it is wrong for "every order must be billed".
+Streams keep messages, but only within available memory. Knowing the delivery
+guarantees of each lets you choose deliberately; the general theory is in
+<a href="../../message-queues/messaging-fundamentals/">messaging fundamentals</a> and
+<a href="../../message-queues/delivery-guarantees/">delivery guarantees</a>.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Mastodon</strong> backs its streaming API with Redis: its streaming servers
+  receive updates through Redis Pub/Sub (they export a metric counting
+  messages received from Redis pubsub) and stream them to connected
+  clients
+  (<a href="https://docs.joinmastodon.org/admin/scaling/">Mastodon: Scaling up your server</a>).</li>
+<li><strong>GitLab</strong> uses Redis as the Pub/Sub backend for ActionCable, the Rails
+  WebSocket framework behind its real-time features
+  (<a href="https://docs.gitlab.com/development/redis/">GitLab: Redis guidelines</a>).</li>
+<li><strong>Discourse</strong>'s <code>message_bus</code> library, which pushes updates to Ruby
+  processes and browsers, can use Redis as its storage backend
+  (<a href="https://github.com/discourse/message_bus">discourse/message_bus</a>).</li>
+<li><strong>Slack</strong> ran its job queue on Redis, and after an outage caused by Redis
+  running out of memory it put Kafka in front of Redis as a durable buffer
+  "against memory exhaustion and job loss", keeping Redis for scheduling
+  and execution
+  (<a href="https://slack.engineering/scaling-slacks-job-queue/">Slack engineering</a>).</li>
+</ul>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="pubsub">Pub/Sub<a class="headerlink" href="#pubsub" title="Permanent link">&para;</a></h3>
+<p>Publishers send messages to a <strong>channel</strong>; every client currently
+subscribed to that channel receives a copy.</p>
+<p><img alt="Sequence diagram: subscribers A and B subscribe to chat:room:1 while C is offline; PUBLISH chat:room:1 &quot;hello&quot; is pushed to A and B and the publisher gets (integer) 2; C never receives it, and after subscribing again it gets only messages published from then on." src="../pubsub-fanout.svg" /></p>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>PUBLISH channel message</code></td>
+<td>Send a message; returns how many clients it was sent to (in Redis Cluster, only clients on the same node are counted)</td>
+</tr>
+<tr>
+<td><code>SUBSCRIBE channel...</code></td>
+<td>Listen on exact channel names</td>
+</tr>
+<tr>
+<td><code>PSUBSCRIBE pattern...</code></td>
+<td>Listen on glob patterns, such as <code>chat:room:*</code></td>
+</tr>
+<tr>
+<td><code>UNSUBSCRIBE</code> / <code>PUNSUBSCRIBE</code></td>
+<td>Stop listening</td>
+</tr>
+<tr>
+<td><code>PUBSUB CHANNELS</code> / <code>PUBSUB NUMSUB</code></td>
+<td>Inspect active channels and subscriber counts</td>
+</tr>
+</tbody>
+</table>
+<p>Key properties:</p>
+<ul>
+<li><strong>Fire-and-forget, at most once.</strong> Redis does not store messages. A
+  subscriber that is disconnected, restarting, or not yet subscribed misses
+  them forever. There are no acknowledgments or retries.</li>
+<li><strong>Fan-out.</strong> Every subscriber gets every message on its channels.</li>
+<li><strong>Subscribed connections are special.</strong> With the RESP2 protocol, a
+  connection that has subscribed can only run subscription-related commands
+  (and <code>PING</code>), so applications use a separate connection for subscribing.</li>
+<li><strong>Slow subscribers are disconnected.</strong> If a subscriber cannot keep up,
+  messages pile up in its output buffer; once it exceeds the
+  <code>client-output-buffer-limit</code> for Pub/Sub, Redis closes the connection.</li>
+<li><strong>Channels are independent of keys.</strong> Publishing to a channel has nothing
+  to do with a key of the same name.</li>
+</ul>
+<p><strong>Sharded Pub/Sub</strong> (Redis 7.0+): in Redis Cluster, normal <code>PUBLISH</code> messages
+are broadcast to every node, which limits scaling. <code>SPUBLISH</code> and
+<code>SSUBSCRIBE</code> assign each channel to a hash slot, like a key, so messages
+stay within the shard that owns that slot.</p>
+<p>Related feature: <strong>keyspace notifications</strong> (enabled with
+<code>notify-keyspace-events</code>) publish events such as "key expired" or "key
+deleted" on special channels. They inherit Pub/Sub's at-most-once delivery.</p>
+<h3 id="streams">Streams<a class="headerlink" href="#streams" title="Permanent link">&para;</a></h3>
+<p>A stream is an append-only log stored in a Redis key. Each entry has a
+unique, increasing ID and a set of fields.</p>
+<div class="highlight"><pre><span></span><code>stream "orders"
++------------------+------------------+------------------+
+| 1730900000000-0  | 1730900000123-0  | 1730900000456-0  |  --&gt; newer
+| orderId=1001     | orderId=1002     | orderId=1003     |
++------------------+------------------+------------------+
+</code></pre></div>
+<p>Because entries are stored, a consumer can read history, stop, restart, and
+continue from where it left off.</p>
+<p><strong>Writing and reading:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>XADD key [MAXLEN ~ n] * field value...</code></td>
+<td>Append an entry (<code>*</code> generates the ID)</td>
+</tr>
+<tr>
+<td><code>XRANGE key start end</code> / <code>XREVRANGE</code></td>
+<td>Read a range of IDs (<code>-</code> and <code>+</code> mean oldest and newest)</td>
+</tr>
+<tr>
+<td><code>XREAD [COUNT n] [BLOCK ms] STREAMS key id</code></td>
+<td>Read entries after an ID; <code>$</code> means "only new entries from now"</td>
+</tr>
+<tr>
+<td><code>XLEN key</code></td>
+<td>Number of entries</td>
+</tr>
+<tr>
+<td><code>XTRIM key MAXLEN ~ n</code></td>
+<td>Delete old entries</td>
+</tr>
+</tbody>
+</table>
+<h3 id="consumer-groups">Consumer groups<a class="headerlink" href="#consumer-groups" title="Permanent link">&para;</a></h3>
+<p>With plain <code>XREAD</code>, every reader sees every entry (fan-out). To <strong>share the
+work</strong> among several workers, so each entry is processed by one of them,
+create a <strong>consumer group</strong>.</p>
+<p><img alt="Diagram: a producer XADDs orders to the stream; consumer group billing gives order 1001 to worker-2, which XACKs it out of the pending entries list, and order 1002 to worker-1, which crashes before XACK; after 60 seconds idle, worker-2 runs XAUTOCLAIM orders billing worker-2 60000 0-0 COUNT 10, processes and acknowledges it, and entries delivered too often go to a dead-letter stream; group shipping reads the same entries independently." src="../stream-consumer-group.svg" /></p>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>XGROUP CREATE key group $ [MKSTREAM]</code></td>
+<td>Create a group starting at new entries (<code>0</code> to start from the beginning)</td>
+</tr>
+<tr>
+<td><code>XREADGROUP GROUP group consumer [COUNT n] [BLOCK ms] STREAMS key &gt;</code></td>
+<td>Get entries never delivered to this group</td>
+</tr>
+<tr>
+<td><code>XACK key group id...</code></td>
+<td>Mark entries as processed</td>
+</tr>
+<tr>
+<td><code>XPENDING key group</code></td>
+<td>Show delivered-but-unacknowledged entries</td>
+</tr>
+<tr>
+<td><code>XAUTOCLAIM key group consumer min-idle-ms start [COUNT n]</code></td>
+<td>Take over entries another consumer left pending too long</td>
+</tr>
+<tr>
+<td><code>XCLAIM</code></td>
+<td>Claim specific pending entries</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The pending entries list (PEL).</strong> When <code>XREADGROUP</code> delivers an entry, it
+is recorded as pending for that consumer until the consumer sends <code>XACK</code>.
+If the worker crashes before acknowledging:</p>
+<ol>
+<li>On restart, the same consumer can re-read its own pending entries with
+   <code>XREADGROUP ... STREAMS orders 0</code> (ID <code>0</code> instead of <code>&gt;</code>).</li>
+<li>If it never comes back, another worker uses <code>XAUTOCLAIM</code> to take entries
+   idle longer than a threshold.</li>
+<li>Each entry's <strong>delivery count</strong> is tracked; after too many attempts,
+   move it to a "dead-letter" stream instead of retrying forever.</li>
+</ol>
+<p>This gives <strong>at-least-once</strong> delivery: an entry can be processed twice (for
+example, the worker finishes but crashes before <code>XACK</code>), so handlers must be
+idempotent. See
+<a href="../../../03-backend-development/backend-concepts/timeouts-retries-and-idempotency/">timeouts, retries, and idempotency</a>.</p>
+<p><strong>Trimming.</strong> Acknowledging does not delete entries. Streams grow until
+trimmed, by <code>MAXLEN</code> (keep about N entries) or <code>MINID</code> (drop entries older
+than an ID, which is effectively a time). The <code>~</code> modifier trims
+approximately, which is much cheaper. Trim based on how far behind the
+slowest consumer group might fall.</p>
+<h3 id="comparison">Comparison<a class="headerlink" href="#comparison" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Pub/Sub</th>
+<th>Streams</th>
+<th>List (<code>LPUSH</code>/<code>BRPOP</code>)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Messages stored</td>
+<td>No</td>
+<td>Yes, until trimmed</td>
+<td>Yes, until popped</td>
+</tr>
+<tr>
+<td>Offline consumers</td>
+<td>Miss messages</td>
+<td>Catch up later</td>
+<td>Catch up later</td>
+</tr>
+<tr>
+<td>Fan-out to many readers</td>
+<td>Yes</td>
+<td>Yes (several groups, or plain <code>XREAD</code>)</td>
+<td>No: each item goes to one reader</td>
+</tr>
+<tr>
+<td>Work sharing</td>
+<td>No</td>
+<td>Yes (consumer groups)</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Acknowledgments and recovery</td>
+<td>No</td>
+<td>Yes (PEL, <code>XACK</code>, <code>XAUTOCLAIM</code>)</td>
+<td>No (item lost if worker crashes)</td>
+</tr>
+<tr>
+<td>Replay history</td>
+<td>No</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Delivery guarantee</td>
+<td>At most once</td>
+<td>At least once</td>
+<td>At most once without extra work</td>
+</tr>
+<tr>
+<td>Typical use</td>
+<td>Live notifications, cache invalidation, WebSocket fan-out</td>
+<td>Event logs, background processing, activity feeds</td>
+<td>Simple queues</td>
+</tr>
+</tbody>
+</table>
+<h3 id="when-to-use-kafka-or-rabbitmq-instead">When to use Kafka or RabbitMQ instead<a class="headerlink" href="#when-to-use-kafka-or-rabbitmq-instead" title="Permanent link">&para;</a></h3>
+<p>Redis streams live in memory, on one primary per key, with asynchronous
+replication. Choose a dedicated broker (see
+<a href="../../message-queues/">message queues</a>) when you need:</p>
+<ul>
+<li><strong>Long retention or very large volumes:</strong> days or months of events, more
+  than fits comfortably in RAM. Kafka stores logs on disk and partitions them
+  across many brokers. See <a href="../../message-queues/apache-kafka/">Apache Kafka</a>.</li>
+<li><strong>Rich routing and per-message features:</strong> exchanges, routing keys,
+  per-message TTLs, priority queues, dead-lettering built into the broker.
+  See <a href="../../message-queues/rabbitmq/">RabbitMQ</a>.</li>
+<li><strong>Strong durability:</strong> messages acknowledged only after being written to
+  disk on several nodes.</li>
+<li><strong>An organization-wide event backbone</strong> shared by many teams, with schemas
+  and connectors.</li>
+</ul>
+<p>Redis is a good fit when you already run it, volumes are moderate, and
+messages are short-lived.</p>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<p>Use <strong>Pub/Sub</strong> when a message is only useful right now and a receiver that
+misses it can recover another way: live notifications, cache invalidation,
+fan-out to WebSocket servers. Do not use it for work that must happen
+(billing, emails, orders).</p>
+<p>Use <strong>Streams</strong> when consumers must not miss messages, need to catch up
+after a restart, share work through consumer groups, or replay recent
+history, and the retained volume fits in memory.</p>
+<p>Use a <strong>dedicated broker</strong> when retention is long (days or more), volume is
+large, messages need rich routing, or acknowledged messages must survive
+the loss of a server's disk.</p>
+<table>
+<thead>
+<tr>
+<th>Requirement</th>
+<th>Pub/Sub</th>
+<th>Streams</th>
+<th>List queue</th>
+<th>Kafka</th>
+<th>RabbitMQ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Receiver offline for a minute</td>
+<td>Misses messages</td>
+<td>Catches up</td>
+<td>Catches up</td>
+<td>Catches up</td>
+<td>Catches up</td>
+</tr>
+<tr>
+<td>Several independent readers of every message</td>
+<td>Yes</td>
+<td>Yes (groups)</td>
+<td>No</td>
+<td>Yes (consumer groups)</td>
+<td>Yes (one queue per reader)</td>
+</tr>
+<tr>
+<td>Work shared among workers with acks</td>
+<td>No</td>
+<td>Yes</td>
+<td>No acks</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Long retention and replay</td>
+<td>No</td>
+<td>Limited by RAM</td>
+<td>No</td>
+<td>Yes, on disk</td>
+<td>Not its focus</td>
+</tr>
+<tr>
+<td>Extra infrastructure</td>
+<td>None if Redis exists</td>
+<td>None if Redis exists</td>
+<td>None if Redis exists</td>
+<td>A cluster to run</td>
+<td>A broker to run</td>
+</tr>
+</tbody>
+</table>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="pubsub-in-redis-cli">Pub/Sub in redis-cli<a class="headerlink" href="#pubsub-in-redis-cli" title="Permanent link">&para;</a></h3>
+<p>Terminal 1:</p>
+<div class="highlight"><pre><span></span><code>127.0.0.1:6379&gt; SUBSCRIBE chat:room:1
+Reading messages... (press Ctrl-C to quit)
+1) "subscribe"
+2) "chat:room:1"
+3) (integer) 1
+1) "message"
+2) "chat:room:1"
+3) "hello everyone"
+</code></pre></div>
+<p>Terminal 2:</p>
+<div class="highlight"><pre><span></span><code>127.0.0.1:6379&gt; PUBLISH chat:room:1 "hello everyone"
+(integer) 1          # one subscriber received it
+127.0.0.1:6379&gt; PUBLISH chat:room:2 "anyone?"
+(integer) 0          # nobody listening: the message is gone
+</code></pre></div>
+<h3 id="pubsub-in-nodejs">Pub/Sub in Node.js<a class="headerlink" href="#pubsub-in-nodejs" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">createClient</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"redis"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">publisher</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">createClient</span><span class="p">({</span><span class="w"> </span><span class="nx">url</span><span class="o">:</span><span class="w"> </span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">REDIS_URL</span><span class="w"> </span><span class="p">});</span>
+<span class="nx">publisher</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">"error"</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nx">err</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="nx">err</span><span class="p">));</span>
+<span class="k">await</span><span class="w"> </span><span class="nx">publisher</span><span class="p">.</span><span class="nx">connect</span><span class="p">();</span>
+
+<span class="c1">// Subscribing needs its own connection.</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">subscriber</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">publisher</span><span class="p">.</span><span class="nx">duplicate</span><span class="p">();</span>
+<span class="nx">subscriber</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">"error"</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nx">err</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="nx">err</span><span class="p">));</span>
+<span class="k">await</span><span class="w"> </span><span class="nx">subscriber</span><span class="p">.</span><span class="nx">connect</span><span class="p">();</span>
+
+<span class="k">await</span><span class="w"> </span><span class="nx">subscriber</span><span class="p">.</span><span class="nx">pSubscribe</span><span class="p">(</span><span class="s2">"chat:room:*"</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nx">message</span><span class="p">,</span><span class="w"> </span><span class="nx">channel</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`</span><span class="si">${</span><span class="nx">channel</span><span class="si">}</span><span class="sb">: </span><span class="si">${</span><span class="nx">message</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
+<span class="p">});</span>
+
+<span class="k">await</span><span class="w"> </span><span class="nx">publisher</span><span class="p">.</span><span class="nx">publish</span><span class="p">(</span><span class="s2">"chat:room:1"</span><span class="p">,</span><span class="w"> </span><span class="nb">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">({</span><span class="w"> </span><span class="nx">user</span><span class="o">:</span><span class="w"> </span><span class="s2">"ada"</span><span class="p">,</span><span class="w"> </span><span class="nx">text</span><span class="o">:</span><span class="w"> </span><span class="s2">"hi"</span><span class="w"> </span><span class="p">}));</span>
+</code></pre></div>
+<h3 id="websocket-fan-out-across-app-instances">WebSocket fan-out across app instances<a class="headerlink" href="#websocket-fan-out-across-app-instances" title="Permanent link">&para;</a></h3>
+<p>Each user's WebSocket is connected to one app instance. When a user on
+instance A sends a chat message, users connected to instances B and C must
+receive it too. Redis Pub/Sub relays it between instances:</p>
+<div class="highlight"><pre><span></span><code>user1 --ws--&gt; instance A --PUBLISH chat:room:1--&gt; Redis
+                                                    |
+                    +-------------------------------+---------------+
+                    v                               v               v
+               instance A                      instance B      instance C
+             (sends to its                   (sends to its   (sends to its
+              local sockets)                  local sockets)  local sockets)
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">WebSocketServer</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"ws"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">createClient</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"redis"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">pub</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">createClient</span><span class="p">({</span><span class="w"> </span><span class="nx">url</span><span class="o">:</span><span class="w"> </span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">REDIS_URL</span><span class="w"> </span><span class="p">});</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">sub</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">pub</span><span class="p">.</span><span class="nx">duplicate</span><span class="p">();</span>
+<span class="k">await</span><span class="w"> </span><span class="nb">Promise</span><span class="p">.</span><span class="nx">all</span><span class="p">([</span><span class="nx">pub</span><span class="p">.</span><span class="nx">connect</span><span class="p">(),</span><span class="w"> </span><span class="nx">sub</span><span class="p">.</span><span class="nx">connect</span><span class="p">()]);</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">wss</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">WebSocketServer</span><span class="p">({</span><span class="w"> </span><span class="nx">port</span><span class="o">:</span><span class="w"> </span><span class="nb">Number</span><span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">WS_PORT</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="mf">8080</span><span class="p">)</span><span class="w"> </span><span class="p">});</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">rooms</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Map</span><span class="p">();</span><span class="w"> </span><span class="c1">// roomId -&gt; Set of local sockets</span>
+
+<span class="nx">wss</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">"connection"</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nx">socket</span><span class="p">,</span><span class="w"> </span><span class="nx">req</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">roomId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">URL</span><span class="p">(</span><span class="nx">req</span><span class="p">.</span><span class="nx">url</span><span class="p">,</span><span class="w"> </span><span class="s2">"http://localhost"</span><span class="p">).</span><span class="nx">searchParams</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">"room"</span><span class="p">);</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">rooms</span><span class="p">.</span><span class="nx">has</span><span class="p">(</span><span class="nx">roomId</span><span class="p">))</span><span class="w"> </span><span class="nx">rooms</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nx">roomId</span><span class="p">,</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Set</span><span class="p">());</span>
+<span class="w">  </span><span class="nx">rooms</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">roomId</span><span class="p">).</span><span class="nx">add</span><span class="p">(</span><span class="nx">socket</span><span class="p">);</span>
+
+<span class="w">  </span><span class="nx">socket</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">"message"</span><span class="p">,</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="nx">data</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Publish instead of sending directly: every instance will deliver it.</span>
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="nx">pub</span><span class="p">.</span><span class="nx">publish</span><span class="p">(</span><span class="sb">`chat:room:</span><span class="si">${</span><span class="nx">roomId</span><span class="si">}</span><span class="sb">`</span><span class="p">,</span><span class="w"> </span><span class="nx">data</span><span class="p">.</span><span class="nx">toString</span><span class="p">());</span>
+<span class="w">  </span><span class="p">});</span>
+<span class="w">  </span><span class="nx">socket</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">"close"</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">rooms</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">roomId</span><span class="p">)</span><span class="o">?</span><span class="p">.</span><span class="ow">delete</span><span class="p">(</span><span class="nx">socket</span><span class="p">));</span>
+<span class="p">});</span>
+
+<span class="k">await</span><span class="w"> </span><span class="nx">sub</span><span class="p">.</span><span class="nx">pSubscribe</span><span class="p">(</span><span class="s2">"chat:room:*"</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nx">message</span><span class="p">,</span><span class="w"> </span><span class="nx">channel</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">roomId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">channel</span><span class="p">.</span><span class="nx">slice</span><span class="p">(</span><span class="s2">"chat:room:"</span><span class="p">.</span><span class="nx">length</span><span class="p">);</span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="nx">socket</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="nx">rooms</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">roomId</span><span class="p">)</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="p">[])</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">socket</span><span class="p">.</span><span class="nx">readyState</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="nx">socket</span><span class="p">.</span><span class="nx">OPEN</span><span class="p">)</span><span class="w"> </span><span class="nx">socket</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="nx">message</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">});</span>
+</code></pre></div>
+<p>Because Pub/Sub does not store messages, a user who reconnects does not get
+what they missed; load recent history from the database (or a stream) on
+reconnect. Libraries such as Socket.IO provide a Redis adapter built on the
+same idea. See <a href="../../../01-networking-and-protocols/web-sockets/">WebSockets</a>
+and <a href="../../../03-backend-development/backend-concepts/real-time-communication/">real-time communication</a>.</p>
+<h3 id="streams-with-a-consumer-group-in-redis-cli">Streams with a consumer group in redis-cli<a class="headerlink" href="#streams-with-a-consumer-group-in-redis-cli" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>127.0.0.1:6379&gt; XGROUP CREATE orders billing $ MKSTREAM
+OK
+127.0.0.1:6379&gt; XADD orders MAXLEN ~ 100000 * orderId 1001 total 49.90
+"1730900000000-0"
+127.0.0.1:6379&gt; XREADGROUP GROUP billing worker-1 COUNT 10 STREAMS orders &gt;
+1) 1) "orders"
+   2) 1) 1) "1730900000000-0"
+         2) 1) "orderId"
+            2) "1001"
+            3) "total"
+            4) "49.90"
+127.0.0.1:6379&gt; XPENDING orders billing
+1) (integer) 1                 # one entry delivered but not acknowledged
+2) "1730900000000-0"
+3) "1730900000000-0"
+4) 1) 1) "worker-1"
+      2) "1"
+127.0.0.1:6379&gt; XACK orders billing 1730900000000-0
+(integer) 1
+127.0.0.1:6379&gt; XAUTOCLAIM orders billing worker-2 60000 0-0 COUNT 10
+1) "0-0"
+2) (empty array)               # nothing has been idle for 60 seconds
+3) (empty array)
+</code></pre></div>
+<h3 id="a-stream-worker-in-nodejs">A stream worker in Node.js<a class="headerlink" href="#a-stream-worker-in-nodejs" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">createClient</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"redis"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">redis</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">createClient</span><span class="p">({</span><span class="w"> </span><span class="nx">url</span><span class="o">:</span><span class="w"> </span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">REDIS_URL</span><span class="w"> </span><span class="p">});</span>
+<span class="k">await</span><span class="w"> </span><span class="nx">redis</span><span class="p">.</span><span class="nx">connect</span><span class="p">();</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">STREAM</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"orders"</span><span class="p">;</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">GROUP</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"billing"</span><span class="p">;</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">CONSUMER</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sb">`worker-</span><span class="si">${</span><span class="nx">process</span><span class="p">.</span><span class="nx">pid</span><span class="si">}</span><span class="sb">`</span><span class="p">;</span>
+
+<span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">await</span><span class="w"> </span><span class="nx">redis</span><span class="p">.</span><span class="nx">xGroupCreate</span><span class="p">(</span><span class="nx">STREAM</span><span class="p">,</span><span class="w"> </span><span class="nx">GROUP</span><span class="p">,</span><span class="w"> </span><span class="s2">"0"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">MKSTREAM</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">});</span>
+<span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="nx">err</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nb">String</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nx">message</span><span class="p">).</span><span class="nx">includes</span><span class="p">(</span><span class="s2">"BUSYGROUP"</span><span class="p">))</span><span class="w"> </span><span class="k">throw</span><span class="w"> </span><span class="nx">err</span><span class="p">;</span><span class="w"> </span><span class="c1">// group exists</span>
+<span class="p">}</span>
+
+<span class="c1">// Blocking reads hold the connection, so use a dedicated one.</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">reader</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">redis</span><span class="p">.</span><span class="nx">duplicate</span><span class="p">();</span>
+<span class="k">await</span><span class="w"> </span><span class="nx">reader</span><span class="p">.</span><span class="nx">connect</span><span class="p">();</span>
+
+<span class="kd">let</span><span class="w"> </span><span class="nx">running</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span>
+<span class="nx">process</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">"SIGTERM"</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">running</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span><span class="w"> </span><span class="p">});</span>
+
+<span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="nx">running</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">response</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">reader</span><span class="p">.</span><span class="nx">xReadGroup</span><span class="p">(</span>
+<span class="w">    </span><span class="nx">GROUP</span><span class="p">,</span><span class="w"> </span><span class="nx">CONSUMER</span><span class="p">,</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nx">key</span><span class="o">:</span><span class="w"> </span><span class="nx">STREAM</span><span class="p">,</span><span class="w"> </span><span class="nx">id</span><span class="o">:</span><span class="w"> </span><span class="s2">"&gt;"</span><span class="w"> </span><span class="p">},</span><span class="w">          </span><span class="c1">// only new, undelivered entries</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nx">COUNT</span><span class="o">:</span><span class="w"> </span><span class="mf">10</span><span class="p">,</span><span class="w"> </span><span class="nx">BLOCK</span><span class="o">:</span><span class="w"> </span><span class="mf">5000</span><span class="w"> </span><span class="p">}</span><span class="w">          </span><span class="c1">// wait up to 5 s for work</span>
+<span class="w">  </span><span class="p">);</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">response</span><span class="p">)</span><span class="w"> </span><span class="k">continue</span><span class="p">;</span><span class="w">              </span><span class="c1">// timed out with nothing new</span>
+
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">messages</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="nx">response</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">id</span><span class="p">,</span><span class="w"> </span><span class="nx">message</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="nx">messages</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">await</span><span class="w"> </span><span class="nx">chargeOrder</span><span class="p">(</span><span class="nx">message</span><span class="p">.</span><span class="nx">orderId</span><span class="p">);</span><span class="w"> </span><span class="c1">// must be idempotent</span>
+<span class="w">      </span><span class="k">await</span><span class="w"> </span><span class="nx">redis</span><span class="p">.</span><span class="nx">xAck</span><span class="p">(</span><span class="nx">STREAM</span><span class="p">,</span><span class="w"> </span><span class="nx">GROUP</span><span class="p">,</span><span class="w"> </span><span class="nx">id</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+<span class="k">await</span><span class="w"> </span><span class="nb">Promise</span><span class="p">.</span><span class="nx">all</span><span class="p">([</span><span class="nx">reader</span><span class="p">.</span><span class="nx">close</span><span class="p">(),</span><span class="w"> </span><span class="nx">redis</span><span class="p">.</span><span class="nx">close</span><span class="p">()]);</span><span class="w"> </span><span class="c1">// close(): node-redis v5+</span>
+</code></pre></div>
+<p>A production worker also runs a periodic <code>XAUTOCLAIM</code> to rescue entries
+left pending by crashed consumers, and moves entries with a high delivery
+count to a dead-letter stream.</p>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Use Pub/Sub only where losing a message is acceptable, or where the
+  receiver can recover state another way.</li>
+<li>Use a dedicated connection for subscriptions and for blocking reads.</li>
+<li>Make stream handlers idempotent; delivery is at least once.</li>
+<li>Acknowledge only after the work has fully succeeded.</li>
+<li>Reclaim stuck entries with <code>XAUTOCLAIM</code> and dead-letter poison messages.</li>
+<li>Always trim streams (<code>MAXLEN ~</code> or <code>MINID</code>), sized for the slowest
+  consumer group.</li>
+<li>Monitor stream length, pending counts, and consumer lag.</li>
+<li>Move to Kafka or RabbitMQ when retention, volume, or durability needs
+  exceed what memory and asynchronous replication provide.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<p><strong>Subscribers are disconnected under load.</strong></p>
+<ul>
+<li><strong>Detect:</strong> subscriber clients log unexpected disconnects; <code>INFO clients</code>
+  shows <code>client_recent_max_output_buffer</code> growing during bursts.</li>
+<li><strong>Cause:</strong> a slow subscriber cannot read fast enough, its output buffer
+  passes the Pub/Sub <code>client-output-buffer-limit</code>, and Redis closes the
+  connection (every message in between is lost).</li>
+<li><strong>Fix:</strong> keep subscriber handlers fast (hand work to a queue), scale the
+  subscribers, or switch to Streams where consumers read at their own pace.</li>
+</ul>
+<p><strong>Messages "disappear" during deploys.</strong></p>
+<ul>
+<li><strong>Detect:</strong> events published while a service restarted never reach it;
+  <code>PUBLISH</code> returned <code>0</code> for those messages.</li>
+<li><strong>Cause:</strong> Pub/Sub delivers at most once and stores nothing.</li>
+<li><strong>Fix:</strong> move must-deliver events to a stream with a consumer group, or
+  reload state from the database after reconnecting.</li>
+</ul>
+<p><strong>The pending entries list keeps growing.</strong></p>
+<ul>
+<li><strong>Detect:</strong> the summary from <code>XPENDING key group</code> shows a rising count and
+  very old smallest IDs; <code>XINFO GROUPS key</code> shows <code>pending</code> rising.</li>
+<li><strong>Cause:</strong> a consumer crashed before <code>XACK</code>, or a poison message fails on
+  every attempt.</li>
+<li><strong>Fix:</strong> run <code>XAUTOCLAIM</code> periodically, acknowledge only after success,
+  and move entries with a high delivery count to a dead-letter stream.</li>
+</ul>
+<p><strong>Consumers fall behind and memory grows.</strong></p>
+<ul>
+<li><strong>Detect:</strong> <code>lag</code> in <code>XINFO GROUPS key</code> keeps increasing; <code>XLEN</code> and
+  <code>used_memory</code> grow together.</li>
+<li><strong>Cause:</strong> producers outpace the group, or the stream is never trimmed.</li>
+<li><strong>Fix:</strong> add consumers, trim with <code>MAXLEN ~</code> or <code>MINID</code> sized for the
+  slowest group, and move to a log-based broker if the backlog must be kept
+  for long.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Channel:</strong> A named Pub/Sub topic.</li>
+<li><strong>Fan-out:</strong> Delivering one message to many receivers.</li>
+<li><strong>At-most-once / at-least-once:</strong> A message is delivered zero or one
+  times / one or more times.</li>
+<li><strong>Stream entry ID:</strong> A unique, increasing <code>milliseconds-sequence</code> ID.</li>
+<li><strong>Consumer group:</strong> A set of consumers that share a stream's entries, each
+  entry going to one of them.</li>
+<li><strong>Pending entries list (PEL):</strong> Entries delivered to a consumer but not yet
+  acknowledged.</li>
+<li><strong>Dead-letter stream:</strong> Where repeatedly failing entries are moved for
+  inspection.</li>
+<li><strong>Sharded Pub/Sub:</strong> Pub/Sub in which channels belong to hash slots in a
+  cluster.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Using Pub/Sub for jobs that must not be lost.</strong> Offline subscribers never
+  receive them.</li>
+<li><strong>Running normal commands on a subscribed connection.</strong> Use a separate
+  connection.</li>
+<li><strong>"Acknowledging deletes the entry."</strong> <code>XACK</code> only clears it from the PEL;
+  trimming deletes.</li>
+<li><strong>Never trimming streams.</strong> They consume memory without limit.</li>
+<li><strong>Ignoring the PEL.</strong> Entries from crashed workers sit pending forever.</li>
+<li><strong>Assuming exactly-once processing.</strong> Retries and crashes can deliver an
+  entry twice.</li>
+<li><strong>"Streams replace Kafka."</strong> They overlap for moderate workloads but lack
+  disk-based retention and partitioned scaling.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>What happens to a Pub/Sub message published while a subscriber is
+   disconnected?</li>
+<li>How does a consumer group divide work, and how does it differ from plain
+   <code>XREAD</code>?</li>
+<li>What is the pending entries list, and how do <code>XACK</code> and <code>XAUTOCLAIM</code> use
+   it?</li>
+<li>Why must stream consumers be idempotent?</li>
+<li>How does Redis Pub/Sub let several app instances deliver WebSocket
+   messages to all users?</li>
+<li>Name three requirements that would push you from Redis streams to Kafka
+   or RabbitMQ.</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://redis.io/docs/latest/develop/data-types/streams/">Redis documentation: Streams</a></li>
+<li><a href="https://redis.io/docs/latest/commands/publish/">Redis command reference: PUBLISH</a></li>
+<li><a href="https://redis.io/docs/latest/commands/spublish/">Redis command reference: SPUBLISH</a></li>
+<li><a href="https://redis.io/docs/latest/commands/xreadgroup/">Redis command reference: XREADGROUP</a></li>
+<li><a href="https://redis.io/docs/latest/commands/xautoclaim/">Redis command reference: XAUTOCLAIM</a></li>
+<li><a href="https://github.com/redis/node-redis">node-redis on GitHub</a></li>
+<li><a href="../../message-queues/messaging-patterns/">Messaging patterns</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../common-use-cases/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Common Use Cases">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Common Use Cases</span>
+      </a>
+    
+    
+      <a href="../transactions-pipelining-and-lua/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: Transactions, Pipelining, and Lua">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">Transactions, Pipelining, and Lua</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>
