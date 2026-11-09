@@ -112,6 +112,35 @@ matter.
 These approaches can be combined, but complexity should be justified by
 evaluation results.
 
+### What does it mean to train a model on specific data?
+
+The phrase can refer to several different operations. Identify which one is
+meant before choosing an approach:
+
+- **Pretraining from scratch** learns general parameters from a very large
+  corpus. It is not what most application teams mean when they say they
+  want a model to know their documents.
+- **Continued pretraining or domain-adaptive pretraining** continues a
+  language-model objective on domain text, such as permitted technical
+  documents. It can adapt vocabulary or statistical patterns, but does not
+  guarantee reliable recall of an individual fact or provide citations.
+- **Supervised fine-tuning** trains on examples of desired inputs and
+  outputs. It is suited to repeatable task behavior, formats, and response
+  patterns, not a dependable searchable store of changing facts.
+- **Preference training** uses comparisons or preference signals to shape
+  which responses are favored. It does not by itself install a factual
+  database or enforce permissions.
+- **RAG** leaves model weights unchanged and retrieves authorized source
+  passages for each request. It is generally a better fit for changing
+  documents, traceable answers, and user-specific access.
+
+Training a model with a company's or user's data also requires permission
+to use that data, a suitable training method and model, careful separation
+of training and evaluation examples, and a plan for updates, deletion,
+privacy, and regressions. Training examples can influence outputs, but
+there is no guarantee the model will memorize or reproduce a particular
+record on demand. Do not use training as an access-control mechanism.
+
 Fine-tune only after collecting a baseline set of failures. For example,
 if a model can answer correctly when given a document but retrieves an
 outdated policy, improve retrieval and freshness first. If it repeatedly

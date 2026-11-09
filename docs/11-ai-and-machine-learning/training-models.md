@@ -64,6 +64,29 @@ They do not guarantee that the model follows every instruction, refuses
 every unsafe request, or gives factual answers. Test capabilities and
 failure modes independently from the training objective.
 
+### Training on domain-specific material
+
+When an organization says it wants to "train an LLM on its data," clarify
+the desired result:
+
+- To make a model more familiar with domain language and patterns, a team
+  may consider continued pretraining on permitted domain text.
+- To make it follow a repeatable task format, supervised fine-tuning on
+  curated examples may be relevant.
+- To prefer certain kinds of responses, preference-based post-training may
+  be considered.
+- To answer questions from a changing document collection with traceable
+  sources, retrieval-augmented generation is usually the more direct
+  application pattern.
+
+These are not interchangeable. Training changes learned parameters and
+requires data preparation, compute, evaluation, and lifecycle management.
+Retrieval selects source content at request time and can apply user-level
+permissions, but requires a secure, current retrieval system. Neither
+approach makes an answer automatically correct. See
+[Fine-Tuning](fine-tuning.md) for a comparison of the training options and
+their limitations.
+
 ### Training signals and losses
 
 A **loss** is a numeric objective used to guide parameter updates. For a

@@ -92,6 +92,41 @@ should remain deterministic backend operations.
 
 Each step has a distinct contract and should be evaluated separately.
 
+## Model routing: selecting a model for a task
+
+**Model routing** is the application-level decision about which model or
+processing path should handle a request. A system may route an image
+question to a vision-capable model, a semantic-search query to an embedding
+model, or a simple deterministic calculation to ordinary code.
+
+Routing can be implemented with:
+
+- **Explicit application rules:** choose a model from a known feature,
+  input type, account setting, or user selection. This is predictable and
+  easy to inspect.
+- **A lightweight classifier:** classify the task into a small set of
+  allowed routes. The backend still validates the route and permissions.
+- **A model-based router:** ask a model to select from a bounded set of
+  tools or model choices. This can handle less structured requests, but
+  adds another model call and can choose incorrectly.
+
+An example policy might send ordinary note questions to a lower-cost text
+model, image questions only to a model that supports images, and questions
+requiring current private information through an authorized retrieval
+workflow. A request to calculate a total should normally use application
+code rather than a language model.
+
+Keep the router separate from authorization. A route is a technical choice,
+not permission to read a user's data or perform an action. Define allowed
+routes on the server, validate the selected model's actual input and output
+capabilities, and provide a safe fallback when no route fits. Compare the
+routed result with a fixed baseline for task quality, latency, and cost;
+otherwise routing can add complexity without improving the experience.
+
+Do not route solely by a model's name, size, or marketing category.
+Provider capabilities, limits, and model versions change, so keep model
+configuration replaceable and verify the current provider documentation.
+
 ## Developer perspective
 
 Choose based on task quality, latency, cost, availability, data policy,
@@ -106,6 +141,8 @@ parameter counts alone.
 - A coding model can generate plausible but insecure or incorrect code.
 - Image, audio, video, and text models have different input, output, and
   evaluation requirements.
+- A model router does not grant access to data or tools; authorization
+  remains an application responsibility.
 
 ## Further learning
 

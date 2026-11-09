@@ -26,6 +26,10 @@ next layer is healthy.
 | HTTPS certificate is valid | The peer passed certificate checks for the host | That the site or its content is trustworthy |
 | HTTP returned `200` | The response was successful by HTTP semantics | That a business operation did what you intended |
 
+## Full stack developer guide
+
+Use the [Full Stack Developer Practical Guide](full-stack-practical-guide.md) for topic priorities, a request walkthrough, troubleshooting practice, protocol comparisons, and a glossary.
+
 ## Learning objectives
 
 - Understand the Internet's basic building blocks and addressing.

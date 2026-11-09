@@ -18,6 +18,45 @@ A language model alone cannot reliably read a live account balance, query a
 private database, send an email, or calculate an exact value. Tools connect
 the model to controlled application capabilities and current information.
 
+## How an assistant can fetch a browser URL
+
+A model does not automatically open a browser or fetch arbitrary URLs. A
+product can provide a controlled browsing tool or retrieval service. The
+model may request that tool; the application or a dedicated fetcher makes
+the network request and returns selected content to the model.
+
+A safe, simplified flow is:
+
+1. The user asks about a page or provides a URL.
+2. The backend validates the URL and checks that fetching it is permitted.
+3. A restricted fetcher requests the page, follows an allowed redirect
+   policy, and extracts bounded text or metadata.
+4. The application returns the fetched result and its URL to the model as
+   untrusted context.
+5. The answer can link to the fetched page, while the UI distinguishes
+   fetched source content from the model's explanation.
+
+Some products instead use a search provider or an isolated browser service;
+others have no browsing capability at all. The configured tool and
+provider documentation determine what is actually possible. A URL in a
+prompt by itself is not evidence that the page was visited or is current.
+
+There is also a difference between fetching a page and operating a browser.
+A basic fetcher requests a URL and extracts a response; it may not see
+content that only appears after JavaScript runs or after a user signs in.
+An isolated browser can render interactive pages, but it introduces more
+powerful capabilities and risks. Do not reuse a user's browser session or
+send credentials to a page unless the product explicitly requires it and
+has a secure, consent-based design.
+
+Fetching user-supplied URLs creates server-side request forgery (SSRF) and
+content risks. Block loopback, private, link-local, and otherwise
+disallowed network destinations; re-check every redirect and resolved
+address; limit response size and time; restrict schemes; and avoid sending
+cookies or internal credentials. Do not treat page instructions as trusted
+system instructions. For many applications, a vetted search or document
+connector is safer than an unrestricted URL-fetch tool.
+
 ## Tool-calling flow
 
 ![A model proposes a tool name and arguments; the application validates and authorizes the call, runs it, and returns the result to the model for a final response.](tool-calling-flow.svg)

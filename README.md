@@ -57,6 +57,11 @@ Write for a learner who wants clear explanations and practical examples:
 Lessons should be as detailed as the topic requires. Avoid repeating large
 explanations across pages; link to the lesson that explains a shared concept.
 
+The AI and Machine Learning section is intended as a core learning resource
+for future implementation, not as a claim that every AI product is already
+fully built. Its project guides should identify prerequisite lessons,
+skills practiced, and the reason to choose one project over another.
+
 ## Adding a Frontend language or subject
 
 When asked to add a Frontend subject (for example, another language,

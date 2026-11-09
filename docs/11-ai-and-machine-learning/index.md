@@ -20,7 +20,11 @@ unnecessary.
 ## What this module covers
 
 - **Foundations:** artificial intelligence, classical machine learning,
-  neural networks, transformers, tokens, inference, and language models.
+  practical mathematics, neural networks, transformers, tokens, inference,
+  and language models.
+- **AI inputs and formats:** computer-vision tasks, how raster and vector
+  images, audio streams, video containers, codecs, frames, and timestamps
+  become model inputs.
 - **Model choices:** chat and reasoning models, coding models, image and
   video generation, speech, embeddings, classifiers, recommendation, and
   multimodal systems.
@@ -28,24 +32,48 @@ unnecessary.
   models for learning, privacy, or offline work.
 - **Application patterns:** chat assistants, note search, structured output,
   tool calling, agents, MCP integrations, embeddings, vector search, and
-  advanced retrieval-augmented generation (RAG).
+  terminal or operating-system tools with explicit permission boundaries;
+  task-based model routing; and controlled web-page retrieval.
 - **Customization:** prompt design, retrieval, fine-tuning methods such as
-  LoRA, and training models from scratch, with their different costs and
-  purposes.
+  LoRA, domain-specific training approaches, and training models from
+  scratch, with their different costs and purposes.
 - **Production practice:** evaluation, safety, privacy, security, latency,
-  cost, model serving, MLOps, monitoring, and human review.
+  cost, model serving, MLOps, monitoring, prompt-injection defenses, and
+  human review.
+- **Hands-on preparation:** small labs with expected outputs and focused
+  project briefs that explain which skills each project practices,
+  including a small-scale image-model training walkthrough.
+
+## Core concepts checklist
+
+Use this as a map of the essential ideas the lessons aim to teach. It is a
+navigation aid, not a claim that one module can cover every research paper,
+model, or provider feature.
+
+| Area | Concepts to understand | Start here |
+|---|---|---|
+| Learning from data | Supervised, unsupervised, and reinforcement learning; data quality, leakage, generalization, and task metrics | [Machine Learning Foundations](machine-learning-foundations.md), [Data Preparation](ai-data-preparation-and-governance.md) |
+| Model foundations | Neural networks, transformers, tokens, embeddings, pretraining, post-training, and inference | [Neural Networks and Transformers](neural-networks-and-transformers.md), [Language Models and Tokens](language-models-and-tokens.md), [Training Models](training-models.md) |
+| Model choices | Chat, coding, image, audio, video, multimodal, embedding, classifier, computer-vision tasks, and local or hosted models | [Model Types and Capabilities](model-types-and-capabilities.md), [Practical Computer Vision](computer-vision.md), [Running Models Locally](local-models.md) |
+| AI application patterns | Prompting, structured output, model routing, retrieval, RAG, tool calling, agents, MCP, and browser-based retrieval | [Building AI Features](building-ai-applications.md), [RAG](retrieval-augmented-generation.md), [Tool Calling and Agents](tool-calling-and-agents.md) |
+| Model customization | Prompt design, continued pretraining, fine-tuning, preference methods, and training from scratch—and when not to use them | [Fine-Tuning](fine-tuning.md), [Training Models](training-models.md) |
+| Trust and production | Prompt injection, authorization, privacy, evaluation, monitoring, reliability, cost, and model lifecycle | [AI Security](security-privacy-and-responsible-ai.md), [Evaluation and Monitoring](evaluation-and-monitoring.md), [MLOps](mlops-and-model-lifecycle.md) |
+| Media and practice | Image, audio, and video inputs; a small image-classifier training walkthrough; small exercises and optional project steps | [Practical Computer Vision](computer-vision.md), [Small-Scale Model Training](small-scale-model-training.md), [Hands-On Labs](hands-on-labs.md) |
 
 ## Learning path
 
 1. Start with [AI and machine-learning fundamentals](fundamentals.md), then
-   learn [machine learning and deep learning](machine-learning-foundations.md)
+   learn [machine learning and deep learning](machine-learning-foundations.md),
+   [mathematics for machine learning](mathematics-for-machine-learning.md),
    and [AI data preparation and governance](ai-data-preparation-and-governance.md).
 2. Study [neural networks and transformers](neural-networks-and-transformers.md)
    and [language models and tokens](language-models-and-tokens.md), then
    understand [inference and decoding](inference-and-decoding.md).
 3. Compare [model types and capabilities](model-types-and-capabilities.md),
    [generative models and diffusion](generative-models-and-diffusion.md),
-   and [speech and multimodal AI](speech-and-multimodal-ai.md).
+   [practical computer vision](computer-vision.md),
+   [speech and multimodal AI](speech-and-multimodal-ai.md), and
+   [media formats for AI](media-formats-for-ai.md).
 4. Choose how to run a model: use a [hosted model API](hosted-model-apis.md)
    or [run a model locally](local-models.md); learn about
    [model serving](model-serving-and-inference.md).
@@ -56,13 +84,17 @@ unnecessary.
    [advanced RAG design](advanced-rag-design.md).
 7. Compare [tool calling and agents](tool-calling-and-agents.md),
    [MCP integrations](mcp-and-agent-integrations.md),
-   [fine-tuning](fine-tuning.md), and [training a model](training-models.md).
+   and [terminal tools and operating-system access](terminal-tools-and-os-operations.md).
+   Then compare [fine-tuning](fine-tuning.md) with
+   [training a model](training-models.md), and try the
+   [small-scale model training walkthrough](small-scale-model-training.md).
 8. Prepare for real use with [evaluation and monitoring](evaluation-and-monitoring.md),
    [security and responsible AI](security-privacy-and-responsible-ai.md),
    [MLOps](mlops-and-model-lifecycle.md), and
    [deployment, cost, and performance](deployment-cost-and-performance.md).
-9. Review [industry examples and future directions](industry-examples-and-future.md),
-   build a [guided project](projects.md), and finish with
+9. Try the [hands-on labs](hands-on-labs.md), review
+   [industry examples and future directions](industry-examples-and-future.md),
+   follow a [step-by-step project learning path](projects.md), and finish with
    [Interview Questions and Answers](interview-questions-and-answers.md).
 
 ## Hosted, local, fine-tuned, or trained?
@@ -101,8 +133,10 @@ when the model is unsure, unavailable, or wrong.
 Work through one small application end to end. Keep the model call on the
 server, use fictional or non-sensitive data, log latency and token usage
 without recording secrets, and compare outputs against a small set of
-expected examples. Add retrieval or tools only when a clear test shows they
-solve a real limitation.
+expected examples. Start with the short [hands-on labs](hands-on-labs.md),
+then select a project based on which skills you want to practice. Add
+retrieval or tools only when a clear test shows they solve a real
+limitation.
 
 ## Related sections
 

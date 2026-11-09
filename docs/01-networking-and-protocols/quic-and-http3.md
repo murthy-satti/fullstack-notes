@@ -37,15 +37,18 @@ resume connections efficiently.
 | HTTP/3 | QUIC over UDP | TLS 1.3 integrated into QUIC | Independent QUIC streams reduce transport-level blocking between streams |
 
 QUIC still needs congestion control and can still experience loss, latency,
-or server overload. HTTP/3 is negotiated when supported; services commonly
-retain other HTTP versions for compatibility.
+or server overload. Clients can learn about HTTP/3 through mechanisms such
+as an HTTP `Alt-Svc` response header or DNS HTTPS records. Support and
+deployment vary, and services commonly retain TCP-based HTTP versions for
+compatibility. If UDP is blocked or QUIC setup fails, clients can try a
+TCP-based HTTP version.
 
 ## Real-world example
 
 A video site or government portal may deliver HTTP/3 to a compatible
-browser. If a network blocks or degrades UDP, the browser and server may use
-another available HTTP version. The site still uses familiar HTTP methods
-and semantics; the transport below HTTP differs.
+browser. If a network blocks or degrades UDP, the browser can try a TCP-based
+HTTP version. The site still uses familiar HTTP methods and semantics; the
+transport below HTTP differs.
 
 ## Developer perspective
 
@@ -95,4 +98,5 @@ not remove the effects of congestion or poor connectivity.
 - [RFC 9000: QUIC Transport](https://www.rfc-editor.org/rfc/rfc9000)
 - [RFC 9001: Using TLS to Secure QUIC](https://www.rfc-editor.org/rfc/rfc9001)
 - [RFC 9114: HTTP/3](https://www.rfc-editor.org/rfc/rfc9114)
+- [RFC 9460: SVCB and HTTPS DNS records](https://www.rfc-editor.org/rfc/rfc9460)
 - [MDN: HTTP/3](https://developer.mozilla.org/en-US/docs/Glossary/HTTP_3)

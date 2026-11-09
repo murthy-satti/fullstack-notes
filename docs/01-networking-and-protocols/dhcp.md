@@ -3,7 +3,7 @@
 ## Introduction
 
 Dynamic Host Configuration Protocol (DHCP) automatically supplies network
-configuration to devices. A DHCP server can provide an IPv4 address, subnet
+configuration to devices. A DHCPv4 server can provide an IPv4 address, subnet
 mask, default gateway, DNS resolver, and lease duration.
 
 ## Why does it exist?
@@ -40,7 +40,9 @@ Common configuration includes:
 DHCPv6 provides IPv6 configuration services, but IPv6 can also use Router
 Advertisements and Stateless Address Autoconfiguration (SLAAC). Networks
 may use these mechanisms together. DHCPv4's DORA exchange is not the exact
-message sequence for DHCPv6.
+message sequence for DHCPv6. IPv6 default-router information is learned from
+Router Advertisements, not supplied by DHCPv6; DHCPv6 can provide addresses
+and other configuration information.
 
 ## Real-world example
 

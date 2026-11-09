@@ -36,6 +36,38 @@ whether a user may access a record. Give the model only the data and tools
 needed for the current task, and make the backend enforce permissions before
 retrieval and before each action.
 
+### Direct and indirect prompt injection
+
+- **Direct injection** comes from the user's message, such as a request to
+  ignore the application's instructions or reveal protected information.
+- **Indirect injection** is embedded in content the application retrieves
+  or processes, such as a web page, email, note, document, or tool result.
+  The user may not know that the content contains instructions aimed at the
+  model.
+
+For example, a study note might include a sentence telling an assistant to
+ignore its task and disclose other users' notes. The model may interpret
+that sentence as an instruction even though the note should be treated as
+data. Separating instructions from quoted content can help, but does not
+reliably prevent the model from following malicious text.
+
+Use layered controls rather than expecting a prompt to block every attack:
+
+1. Keep authentication, authorization, tenant filters, and secret handling
+   in normal application code.
+2. Give the model only the sources and narrow tools needed for the current
+   task; do not place secrets in its context.
+3. Treat retrieved pages, documents, and tool results as untrusted data,
+   even when they come from a source the user selected.
+4. Validate every tool name and argument on the server, check permissions
+   at execution time, and require confirmation for consequential actions.
+5. Check outputs before rendering or using them, and test with adversarial
+   examples that attempt to change instructions or trigger unauthorized
+   actions.
+
+These controls reduce risk; they do not prove that a model is injection
+proof. A system must remain safe even if the model follows hostile content.
+
 ## Privacy and data governance
 
 Before sending data to a provider, determine what the data contains, whether
@@ -84,6 +116,8 @@ retrieval store, provider, tools, logs, and user-visible result.
 ## Common misconceptions
 
 - A system prompt cannot replace access control.
+- Delimiters, refusal text, or an instruction to "ignore prompt injection"
+  cannot guarantee that hostile content will be ignored.
 - HTTPS protects data in transit but does not decide provider retention.
 - A private model is not automatically unbiased, safe, or legally compliant.
 - Human review is effective only when reviewers have enough context and

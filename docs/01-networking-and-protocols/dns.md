@@ -47,6 +47,8 @@ query.
 | `TXT` | Text data | Publish domain verification or email policy data |
 | `NS` | Name server for a zone | Delegate DNS authority |
 | `CAA` | Certificate issuance policy | Indicate which certificate authorities may issue for a domain |
+| `HTTPS` | HTTPS service binding | Advertise connection information for an HTTPS service, such as supported protocols or an alternate target |
+| `SVCB` | General service binding | Advertise connection information for services beyond HTTP |
 
 If a record has a TTL of `300` seconds, a resolver may reuse the cached
 answer for about five minutes. A low TTL can help changes become visible
@@ -70,7 +72,12 @@ This is an illustrative design, not a universal deployment recipe. A DNS
 provider may offer an apex-alias feature for the root domain, and hosting
 providers specify which targets and record types they support. A DNS
 `CNAME` cannot generally coexist with other ordinary records at the same
-owner name; follow the provider's instructions for the domain apex.
+owner name; follow the provider's instructions for the domain apex. HTTPS and
+SVCB records can advertise service connection parameters, and HTTPS records
+can help clients discover HTTP/3 support. Client and resolver support varies,
+so these records do not replace the address records and configuration required
+for clients that do not use them. They are DNS records, not the HTTPS protocol
+or a substitute for TLS certificate validation.
 
 Changing a record changes authoritative DNS data, but resolvers can retain
 older answers until cached TTLs expire. During a migration, the old and new
@@ -149,4 +156,5 @@ fail independently of the website it helps locate.
 
 - **Official documentation — MDN (beginner-friendly):** [DNS](https://developer.mozilla.org/en-US/docs/Glossary/DNS) introduces the naming system and the role of DNS records.
 - **Official standard — RFC Editor:** [RFC 1034, Domain Names—Concepts and Facilities](https://www.rfc-editor.org/rfc/rfc1034) explains DNS design and delegation.
+- **Official standard — RFC Editor:** [RFC 9460, SVCB and HTTPS DNS records](https://www.rfc-editor.org/rfc/rfc9460) defines service-binding DNS records.
 - **Official standard — RFC Editor:** [RFC 1035, Domain Names—Implementation and Specification](https://www.rfc-editor.org/rfc/rfc1035) describes DNS messages and basic record handling.

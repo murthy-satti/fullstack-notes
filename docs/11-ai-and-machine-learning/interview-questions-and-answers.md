@@ -370,6 +370,72 @@ validity, and safety. Include varying conditions such as noise, accents,
 lighting, and file quality, and use human review for ambiguous or
 consequential cases.
 
+### 53. Why does an AI application need to decode media before inference?
+
+Image, audio, and video files are encoded representations, not necessarily
+the tensors or media tokens a model consumes. The application or provider
+must decode and preprocess them, while respecting format, dimensions,
+duration, timestamps, and size limits.
+
+### 54. How can an AI feature safely use terminal commands?
+
+The model should propose a narrowly defined operation; application code
+must validate it, enforce user permissions, and execute only within a
+bounded environment. Avoid passing model-generated strings directly to a
+shell, and use least privilege, timeouts, resource limits, and audit logs.
+
+### 55. What is the difference between MCP stdio and Streamable HTTP?
+
+With stdio, the host launches a local server process and exchanges protocol
+messages over standard input and output. Streamable HTTP connects to a
+remote HTTP endpoint and requires appropriate authentication and transport
+security. Both need capability validation and host-side authorization.
+
+### 56. Does connecting an MCP server authorize every tool it exposes?
+
+No. A connection and capability discovery do not grant the model or user
+permission to perform every operation. The host should expose only needed
+capabilities, validate each request, enforce authorization, and require
+confirmation for sensitive actions.
+
+### 57. How do image classification, object detection, and segmentation differ?
+
+Classification assigns one or more labels to an image. Detection predicts
+labels with bounding boxes around objects. Segmentation predicts pixel-level
+regions, either by class or by individual object. Choose the task based on
+the output the application needs.
+
+### 58. How do CNNs and vision transformers process images differently?
+
+CNNs apply learned filters over local image regions and combine features
+through layers. Vision transformers commonly divide an image into patches
+and process patch representations with transformer layers. They have
+different architectural biases and trade-offs; neither is best for every
+dataset, task, or hardware target.
+
+### 59. What is transfer learning in computer vision?
+
+Transfer learning starts from a model whose weights were learned on another
+dataset. Feature extraction keeps much of that model fixed and trains a
+task-specific head; fine-tuning updates some or more of the pretrained
+model. It can reduce data and compute needs compared with training from
+scratch, but still requires compatible preprocessing, permitted data, and
+held-out evaluation.
+
+### 60. Why should image datasets sometimes be split by subject or source?
+
+Related images can be near-duplicates. If images of the same subject,
+scene, or video appear in both training and test sets, the test score may
+overstate generalization. Split by the source or group that best represents
+how genuinely new production examples will differ.
+
+### 61. What does a small-scale model-training exercise teach, and what does it not teach?
+
+It teaches data splitting, fitting, held-out evaluation, metrics, and
+inference on a manageable dataset. A small classical classifier does not
+reproduce the training of a deep vision model or an LLM, and its score does
+not prove performance on a different real-world image distribution.
+
 ## Further learning
 
 - [OWASP Top 10 for LLM Applications](https://genai.owasp.org/llm-top-10/)
