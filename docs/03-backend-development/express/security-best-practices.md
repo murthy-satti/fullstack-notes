@@ -173,7 +173,7 @@ specific number of hops (`1` for one proxy) or specific proxy addresses.
 Keep secrets (database URLs, JWT secrets, API keys) in environment variables
 or a secrets manager, never in code or Git. Use different secrets per
 environment, rotate them, and never log them. See
-[environment variables](../../07-devops-and-deployment/environment-variables.md).
+[environment variables](../../07-devops-and-deployment/07-devops-and-deployment/environment-variables.md).
 
 ### Dependency auditing
 

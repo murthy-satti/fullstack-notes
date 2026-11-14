@@ -515,4 +515,4 @@ CPU, which may stay low while workers wait on slow downstream APIs.
 - [The Twelve-Factor App: Processes](https://12factor.net/processes)
 - Related: [scalability fundamentals](scalability-fundamentals.md),
   [load balancing](../../06-servers-and-infrastructure/load-balancing.md),
-  [Docker](../../07-devops-and-deployment/docker.md).
+  [Docker](../../07-devops-and-deployment/07-devops-and-deployment/docker.md).

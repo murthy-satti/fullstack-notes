@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="400" viewBox="0 0 860 400" role="img" aria-labelledby="fvs-title fvs-desc">
+  <title id="fvs-title">Post-filtering, iterative scanning, and pre-filtering for a selective tenant filter</title>
+  <desc id="fvs-desc">The query asks for the ten nearest chunks in workspace 7, which owns 40 of 19,640 rows, 0.2 percent. Left, post-filtering: the HNSW index returns its 40 nearest candidates from all workspaces, the filter keeps only workspace 7, and in a real pgvector run zero rows remained. Middle, iterative scanning: the index keeps walking the graph past the first 40 candidates, up to hnsw.max_scan_tuples, until 10 rows match, and the same run returned 10 rows. Right, pre-filtering or a separate index per tenant: the search runs only over workspace 7's vectors, through a B-tree exact scan, a flat index, a partition, or a namespace, and returns 10 rows with exact results.</desc>
+  <defs>
+    <marker id="fvs-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#40566b"/>
+    </marker>
+  </defs>
+  <rect width="860" height="400" rx="14" fill="#f5f7fb"/>
+  <g font-family="Arial, sans-serif">
+    <rect x="230" y="18" width="400" height="34" rx="8" fill="#fff0d9" stroke="#bd7a20" stroke-width="2"/>
+    <text x="430" y="40" font-size="13" font-weight="700" fill="#66400f" text-anchor="middle">WHERE workspace_id = 7  (40 of 19,640 rows: 0.2%)</text>
+
+    <g font-size="14" font-weight="700" text-anchor="middle">
+      <text x="160" y="84" fill="#6e2a24">Post-filtering</text>
+      <text x="430" y="84" fill="#294a2e">Iterative scanning</text>
+      <text x="700" y="84" fill="#294a2e">Pre-filter or per-tenant index</text>
+    </g>
+
+    <rect x="40" y="98" width="240" height="64" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="160" y="124" font-size="12.5" font-weight="700" fill="#263e5a" text-anchor="middle">HNSW: 40 nearest (ef_search)</text>
+    <text x="160" y="144" font-size="11.5" fill="#263e5a" text-anchor="middle">from all 50 workspaces</text>
+
+    <rect x="40" y="194" width="240" height="64" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="160" y="220" font-size="12.5" font-weight="700" fill="#263e5a" text-anchor="middle">keep workspace 7 only</text>
+    <text x="160" y="240" font-size="11.5" fill="#263e5a" text-anchor="middle">none of the 40 qualify</text>
+
+    <rect x="40" y="290" width="240" height="50" rx="8" fill="#fbe9e7" stroke="#b5524b" stroke-width="2"/>
+    <text x="160" y="320" font-size="13" font-weight="700" fill="#6e2a24" text-anchor="middle">0 rows returned</text>
+
+    <rect x="310" y="98" width="240" height="64" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="430" y="124" font-size="12.5" font-weight="700" fill="#263e5a" text-anchor="middle">HNSW: first 40 candidates</text>
+    <text x="430" y="144" font-size="11.5" fill="#263e5a" text-anchor="middle">filter applied as rows stream</text>
+
+    <rect x="310" y="194" width="240" height="64" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="430" y="220" font-size="12.5" font-weight="700" fill="#263e5a" text-anchor="middle">keep walking the graph</text>
+    <text x="430" y="240" font-size="11.5" fill="#263e5a" text-anchor="middle">up to hnsw.max_scan_tuples</text>
+
+    <rect x="310" y="290" width="240" height="50" rx="8" fill="#e7f3e9" stroke="#53845b" stroke-width="2"/>
+    <text x="430" y="320" font-size="13" font-weight="700" fill="#294a2e" text-anchor="middle">10 rows returned</text>
+
+    <rect x="580" y="98" width="240" height="64" rx="8" fill="#f0e9fb" stroke="#8062a8" stroke-width="2"/>
+    <text x="700" y="124" font-size="12.5" font-weight="700" fill="#463365" text-anchor="middle">restrict to workspace 7 first</text>
+    <text x="700" y="144" font-size="11.5" fill="#463365" text-anchor="middle">then compute similarity</text>
+
+    <rect x="580" y="194" width="240" height="64" rx="8" fill="#f0e9fb" stroke="#8062a8" stroke-width="2"/>
+    <text x="700" y="220" font-size="12.5" font-weight="700" fill="#463365" text-anchor="middle">B-tree exact scan, flat index,</text>
+    <text x="700" y="240" font-size="12.5" font-weight="700" fill="#463365" text-anchor="middle">partition, or namespace</text>
+
+    <rect x="580" y="290" width="240" height="50" rx="8" fill="#e7f3e9" stroke="#53845b" stroke-width="2"/>
+    <text x="700" y="320" font-size="13" font-weight="700" fill="#294a2e" text-anchor="middle">10 rows, exact results</text>
+
+    <g fill="none" stroke="#40566b" stroke-width="2" stroke-linecap="round">
+      <path d="M160 162V192" marker-end="url(#fvs-arrow)"/>
+      <path d="M160 258V288" marker-end="url(#fvs-arrow)"/>
+      <path d="M430 162V192" marker-end="url(#fvs-arrow)"/>
+      <path d="M430 258V288" marker-end="url(#fvs-arrow)"/>
+      <path d="M700 162V192" marker-end="url(#fvs-arrow)"/>
+      <path d="M700 258V288" marker-end="url(#fvs-arrow)"/>
+    </g>
+
+    <text x="430" y="376" font-size="13" fill="#40566b" text-anchor="middle">Selective filters need iterative scans or pre-filtering; post-filtering silently returns too few rows.</text>
+  </g>
+</svg>

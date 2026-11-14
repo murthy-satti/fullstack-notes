@@ -82,7 +82,7 @@ questions and answers.
   transactions, replication, and sharding.
 - [Servers and Infrastructure](../06-servers-and-infrastructure/index.md) for
   load balancers, reverse proxies, and CDNs.
-- [DevOps and Deployment](../07-devops-and-deployment/index.md) for
+- [DevOps and Deployment](../07-devops-and-deployment/07-devops-and-deployment/index.md) for
   containers, CI/CD, and monitoring.
 
 ## A first practical exercise

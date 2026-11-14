@@ -45,6 +45,23 @@
     </a>
   {% endif %}
 {% endmacro %}
+{% macro mark_page_match(nav_item, target_url, state) %}
+  {% if nav_item.url is defined and nav_item.url == target_url %}
+    {% set state.value = true %}
+  {% endif %}
+  {% if nav_item.pages %}
+    {% for nav_page in nav_item.pages %}
+      {% if nav_page.url == target_url %}
+        {% set state.value = true %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+  {% if nav_item.children %}
+    {% for child in nav_item.children %}
+      {{ mark_page_match(child, target_url, state) }}
+    {% endfor %}
+  {% endif %}
+{% endmacro %}
 {% macro render(nav_item, path, level, parent) %}
   {% set original_title = nav_item.title %}
   {% set class = "md-nav__item" %}
@@ -79,7 +96,7 @@
       {% set is_section = true %}
     {% endif %}
     {% set is_pruned = false %}
-    {% if "navigation.prune" in features and not is_section and not nav_item.active %}
+    {% if "navigation.prune" in features and not is_section and not nav_item.active and not (page and level >= 2 and (page.url.startswith("07-devops-and-deployment/07-devops-and-deployment/") or page.url.startswith("11-ai-and-machine-learning/11-ai-and-machine-learning/11-ai-and-machine-learning/"))) %}
       {% set class = class ~ " md-nav__item--pruned" %}
       {% set is_pruned = true %}
     {% endif %}
@@ -92,7 +109,7 @@
         <input class="md-nav__toggle md-toggle {{ indeterminate }}" type="checkbox" id="{{ path }}" {{ checked }}>
         {% if not index %}
           {% set tabindex = "0" if not is_section %}
-          {% if not (original_title == "AI and Machine Learning" and page and page.url.startswith("11-ai-and-machine-learning/") and page.url != "11-ai-and-machine-learning/") %}
+          {% if not ((original_title == "AI and Machine Learning" and page and page.url.startswith("11-ai-and-machine-learning/11-ai-and-machine-learning/11-ai-and-machine-learning/") and page.url != "11-ai-and-machine-learning/11-ai-and-machine-learning/11-ai-and-machine-learning/") or (original_title == "DevOps and Deployment" and page and page.url.startswith("07-devops-and-deployment/07-devops-and-deployment/") and page.url != "07-devops-and-deployment/07-devops-and-deployment/")) %}
             <label class="md-nav__link" for="{{ path }}" id="{{ path }}_label" tabindex="{{ tabindex }}">
               {{ render_content(nav_item) }}
               <span class="md-nav__icon md-icon"></span>
@@ -100,7 +117,7 @@
           {% endif %}
         {% else %}
           {% set active_class = "md-nav__link--active" if index == page %}
-          {% if not (original_title == "AI and Machine Learning" and page and page.url.startswith("11-ai-and-machine-learning/") and page.url != "11-ai-and-machine-learning/") %}
+          {% if not ((original_title == "AI and Machine Learning" and page and page.url.startswith("11-ai-and-machine-learning/11-ai-and-machine-learning/11-ai-and-machine-learning/") and page.url != "11-ai-and-machine-learning/11-ai-and-machine-learning/11-ai-and-machine-learning/") or (original_title == "DevOps and Deployment" and page and page.url.startswith("07-devops-and-deployment/07-devops-and-deployment/") and page.url != "07-devops-and-deployment/07-devops-and-deployment/")) %}
             <div class="md-nav__link md-nav__container">
               <a href="{{ index.url | url }}" class="md-nav__link {{ active_class }}">
                 {{ render_content(index, nav_item) }}
@@ -114,7 +131,7 @@
             </div>
           {% endif %}
         {% endif %}
-        <nav class="md-nav" data-md-level="{{ level }}" {% if original_title == "AI and Machine Learning" and page and page.url.startswith("11-ai-and-machine-learning/") and page.url != "11-ai-and-machine-learning/" %}aria-label="AI module lessons"{% else %}aria-labelledby="{{ path }}_label"{% endif %} aria-expanded="{{ nav_item.active | tojson }}">
+        <nav class="md-nav" data-md-level="{{ level }}" {% if original_title == "AI and Machine Learning" and page and page.url.startswith("11-ai-and-machine-learning/11-ai-and-machine-learning/11-ai-and-machine-learning/") and page.url != "11-ai-and-machine-learning/11-ai-and-machine-learning/11-ai-and-machine-learning/" %}aria-label="AI module lessons"{% elif original_title == "DevOps and Deployment" and page and page.url.startswith("07-devops-and-deployment/07-devops-and-deployment/") and page.url != "07-devops-and-deployment/07-devops-and-deployment/" %}aria-label="DevOps module lessons"{% else %}aria-labelledby="{{ path }}_label"{% endif %} aria-expanded="{{ nav_item.active | tojson }}">
           {% if nav_item.active and level == 1 and nav.homepage %}
             <div class="md-nav__home md-nav__home--mobile">
               {% if page and page.url.startswith("02-frontend-development/") and page.url != "02-frontend-development/" %}
@@ -133,8 +150,12 @@
                 <a href="{{ '05-application-architecture/' | url }}" class="md-nav__link" aria-label="Back to Application Architecture">
                   <span class="md-ellipsis">&larr; Back to Architecture</span>
                 </a>
-              {% elif page and page.url.startswith("11-ai-and-machine-learning/") and page.url != "11-ai-and-machine-learning/" %}
-                <a href="{{ '11-ai-and-machine-learning/' | url }}" class="md-nav__link" aria-label="Back to AI and Machine Learning">
+              {% elif page and page.url.startswith("07-devops-and-deployment/07-devops-and-deployment/") and page.url != "07-devops-and-deployment/07-devops-and-deployment/" %}
+                <a href="{{ '07-devops-and-deployment/07-devops-and-deployment/' | url }}" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+                  <span class="md-ellipsis">&larr; Back to DevOps</span>
+                </a>
+              {% elif page and page.url.startswith("11-ai-and-machine-learning/11-ai-and-machine-learning/11-ai-and-machine-learning/") and page.url != "11-ai-and-machine-learning/11-ai-and-machine-learning/11-ai-and-machine-learning/" %}
+                <a href="{{ '11-ai-and-machine-learning/11-ai-and-machine-learning/11-ai-and-machine-learning/' | url }}" class="md-nav__link" aria-label="Back to AI and Machine Learning">
                   <span class="md-ellipsis">&larr; Back to AI</span>
                 </a>
               {% else %}
@@ -144,7 +165,7 @@
               {% endif %}
             </div>
           {% endif %}
-          {% if not (original_title == "AI and Machine Learning" and page and page.url.startswith("11-ai-and-machine-learning/") and page.url != "11-ai-and-machine-learning/") %}
+          {% if not ((original_title == "AI and Machine Learning" and page and page.url.startswith("11-ai-and-machine-learning/11-ai-and-machine-learning/11-ai-and-machine-learning/") and page.url != "11-ai-and-machine-learning/11-ai-and-machine-learning/11-ai-and-machine-learning/") or (original_title == "DevOps and Deployment" and page and page.url.startswith("07-devops-and-deployment/07-devops-and-deployment/") and page.url != "07-devops-and-deployment/07-devops-and-deployment/")) %}
             <label class="md-nav__title" for="{{ path }}">
               <span class="md-nav__icon md-icon"></span>
               {{ render_title(nav_item) }}
@@ -169,16 +190,16 @@
                   {% if item.children and item.children[0].url and page.url.startswith(item.children[0].url) %}
                     {{ render(item, path ~ "_" ~ loop.index, level + 1, nav_item) }}
                   {% endif %}
-                {% elif level == 1 and original_title == "AI and Machine Learning" and page and page.url.startswith("11-ai-and-machine-learning/") and page.url != "11-ai-and-machine-learning/" %}
-                  {% set ai_group_matches = namespace(value = false) %}
-                  {% if item.children %}
-                    {% for ai_page in item.children %}
-                      {% if ai_page.url == page.url or (ai_page.pages and page in ai_page.pages) %}
-                        {% set ai_group_matches.value = true %}
-                      {% endif %}
-                    {% endfor %}
+                {% elif level == 1 and original_title == "AI and Machine Learning" and page and page.url.startswith("11-ai-and-machine-learning/11-ai-and-machine-learning/11-ai-and-machine-learning/") and page.url != "11-ai-and-machine-learning/11-ai-and-machine-learning/11-ai-and-machine-learning/" %}
+                  {% set group_matches = namespace(value = false) %}
+                  {{ mark_page_match(item, page.url, group_matches) }}
+                  {% if group_matches.value %}
+                    {{ render(item, path ~ "_" ~ loop.index, level + 1, nav_item) }}
                   {% endif %}
-                  {% if ai_group_matches.value %}
+                {% elif level == 1 and original_title == "DevOps and Deployment" and page and page.url.startswith("07-devops-and-deployment/07-devops-and-deployment/") and page.url != "07-devops-and-deployment/07-devops-and-deployment/" %}
+                  {% set group_matches = namespace(value = false) %}
+                  {{ mark_page_match(item, page.url, group_matches) }}
+                  {% if group_matches.value %}
                     {{ render(item, path ~ "_" ~ loop.index, level + 1, nav_item) }}
                   {% endif %}
                 {% else %}

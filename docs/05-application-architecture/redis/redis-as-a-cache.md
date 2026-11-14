@@ -192,7 +192,7 @@ hit rate = keyspace_hits / (keyspace_hits + keyspace_misses)
 These counters are server-wide and include every read, not only cache
 lookups, so application-level metrics per key prefix give a more precise
 picture. Also watch `evicted_keys` (memory pressure) and `expired_keys`.
-See [monitoring and logging](../../07-devops-and-deployment/monitoring-and-logging.md).
+See [monitoring and logging](../../07-devops-and-deployment/07-devops-and-deployment/monitoring-and-logging.md).
 
 ## When to use and when not to use
 

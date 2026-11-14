@@ -312,7 +312,7 @@ corruption, ransomware, an operator deleting a database.
 Replication is **not** a backup: if a bug or attacker deletes data, the
 deletion replicates too. Keep point-in-time backups, store copies
 separately, and **test restores regularly**. See
-[backups](../../07-devops-and-deployment/backups.md).
+[backups](../../07-devops-and-deployment/07-devops-and-deployment/backups.md).
 
 ## When to use and when not to use
 
@@ -501,4 +501,4 @@ console.log(`${budget} failed requests allowed this month`); // 50000
   and [Static stability using Availability Zones](https://aws.amazon.com/builders-library/static-stability-using-availability-zones/).
 - **AWS:** [Disaster recovery options in the cloud](https://docs.aws.amazon.com/whitepapers/latest/disaster-recovery-workloads-on-aws/disaster-recovery-options-in-the-cloud.html).
 - **Related:** [scalability overview](../scalability.md) and
-  [monitoring and logging](../../07-devops-and-deployment/monitoring-and-logging.md).
+  [monitoring and logging](../../07-devops-and-deployment/07-devops-and-deployment/monitoring-and-logging.md).

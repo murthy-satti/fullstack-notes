@@ -454,5 +454,5 @@ export async function loadDatabaseCredentials() {
 - [Node.js: How to read environment variables](https://nodejs.org/en/learn/command-line/how-to-read-environment-variables-from-nodejs)
 - [AWS Secrets Manager documentation](https://docs.aws.amazon.com/secretsmanager/)
 - [HashiCorp Vault documentation](https://developer.hashicorp.com/vault/docs)
-- Related notes: [Environment variables](../../07-devops-and-deployment/environment-variables.md),
+- Related notes: [Environment variables](../../07-devops-and-deployment/07-devops-and-deployment/environment-variables.md),
   [Process, environment variables, and configuration](../nodejs/process-env-and-configuration.md)

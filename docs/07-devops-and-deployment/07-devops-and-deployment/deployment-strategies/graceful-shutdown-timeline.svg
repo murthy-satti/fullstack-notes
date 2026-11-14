@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="390" viewBox="0 0 860 390" role="img" aria-labelledby="gst-title gst-desc">
+  <title id="gst-title">Graceful shutdown of one API instance over a 30-second grace period</title>
+  <desc id="gst-desc">At 0 seconds the process receives SIGTERM, sets a draining flag, and its readiness endpoint starts answering 503. From 0 to about 5 seconds the load balancer and service endpoints update and stop sending new requests. At 5 seconds the code calls server.close, which stops accepting new connections and closes idle keep-alive connections. From 5 to 12 seconds the requests already in flight finish; the longest takes about 7 seconds. From 12 to 14 seconds the process closes its MongoDB client and flushes logs, then exits with code 0 at 14 seconds. If anything hangs, the process's own deadline at 25 seconds forces exit code 1, before the orchestrator's SIGKILL at the end of the 30-second grace period.</desc>
+  <rect width="860" height="390" rx="14" fill="#f5f7fb"/>
+  <g font-family="Arial, sans-serif">
+    <g font-size="12" font-weight="700" fill="#36424e">
+      <text x="20" y="66">1. SIGTERM, readyz 503</text>
+      <text x="20" y="100">2. LB stops new requests</text>
+      <text x="20" y="134">3. server.close()</text>
+      <text x="20" y="168">4. in-flight requests finish</text>
+      <text x="20" y="202">5. close DB, flush logs</text>
+      <text x="20" y="236">6. process.exit(0)</text>
+      <text x="20" y="270">own deadline: exit(1)</text>
+      <text x="20" y="304">SIGKILL (grace period)</text>
+    </g>
+
+    <g fill="none" stroke="#c9d1db" stroke-width="1">
+      <path d="M280 44V318"/>
+      <path d="M370 44V318"/>
+      <path d="M460 44V318"/>
+      <path d="M550 44V318"/>
+      <path d="M640 44V318"/>
+    </g>
+    <path d="M730 44V318" fill="none" stroke="#bd7a20" stroke-width="1.5" stroke-dasharray="5 4"/>
+    <path d="M820 44V318" fill="none" stroke="#b5524b" stroke-width="1.5" stroke-dasharray="5 4"/>
+
+    <rect x="280" y="51" width="11" height="22" rx="3" fill="#f0e9fb" stroke="#8062a8" stroke-width="1.5"/>
+    <text x="299" y="66" font-size="11.5" fill="#463365">draining = true</text>
+    <rect x="280" y="85" width="90" height="22" rx="3" fill="#f0e9fb" stroke="#8062a8" stroke-width="1.5"/>
+    <text x="378" y="100" font-size="11.5" fill="#463365">endpoints and LB update</text>
+    <rect x="370" y="119" width="11" height="22" rx="3" fill="#e5efff" stroke="#4774aa" stroke-width="1.5"/>
+    <text x="389" y="134" font-size="11.5" fill="#263e5a">stop accepting, close idle keep-alive</text>
+    <rect x="370" y="153" width="126" height="22" rx="3" fill="#e7f3e9" stroke="#53845b" stroke-width="1.5"/>
+    <text x="504" y="168" font-size="11.5" fill="#294a2e">longest request ~7 s</text>
+    <rect x="496" y="187" width="36" height="22" rx="3" fill="#e5efff" stroke="#4774aa" stroke-width="1.5"/>
+    <text x="540" y="202" font-size="11.5" fill="#263e5a">await client.close()</text>
+    <path d="M532 220 541 231 532 242 523 231z" fill="#e7f3e9" stroke="#53845b" stroke-width="1.5"/>
+    <text x="550" y="236" font-size="11.5" font-weight="700" fill="#294a2e">clean exit, 11 s early</text>
+    <path d="M730 254 739 265 730 276 721 265z" fill="#fff0d9" stroke="#bd7a20" stroke-width="1.5"/>
+    <text x="712" y="270" font-size="11.5" fill="#66400f" text-anchor="end">only if something hangs</text>
+    <path d="M820 288 829 299 820 310 811 299z" fill="#fbe9e7" stroke="#b5524b" stroke-width="1.5"/>
+    <rect x="616" y="290" width="188" height="16" fill="#f5f7fb"/>
+    <text x="802" y="303" font-size="11.5" fill="#6e2a24" text-anchor="end">default 30 s in Kubernetes</text>
+
+    <path d="M280 322H824" fill="none" stroke="#40566b" stroke-width="1.5"/>
+    <g font-size="11.5" fill="#36424e" text-anchor="middle">
+      <text x="280" y="338">0 s</text>
+      <text x="370" y="338">5 s</text>
+      <text x="460" y="338">10 s</text>
+      <text x="550" y="338">15 s</text>
+      <text x="640" y="338">20 s</text>
+      <text x="730" y="338">25 s</text>
+      <text x="820" y="338">30 s</text>
+    </g>
+    <text x="430" y="372" font-size="13" fill="#40566b" text-anchor="middle">Stop taking new work first, finish what you have, close resources, exit before the hard kill.</text>
+  </g>
+</svg>

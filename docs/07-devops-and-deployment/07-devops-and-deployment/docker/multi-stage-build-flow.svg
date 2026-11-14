@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="484" viewBox="0 0 860 484" role="img" aria-labelledby="msb-title msb-desc">
+  <title id="msb-title">A multi-stage build for the TaskFlow API</title>
+  <desc id="msb-desc">The build stage starts FROM node:24-slim, runs npm ci including dev dependencies, copies the source and runs npm run build, and outputs /app/dist with the compiled JavaScript. The deps stage starts FROM node:24-slim, runs npm ci with omit dev, and outputs /app/node_modules with production dependencies only. The runtime stage, the image that is shipped, starts FROM node:24-slim, copies dist from the build stage and node_modules from the deps stage, sets NODE_ENV to production and USER node, and runs CMD node dist/server.js. Dev dependencies, TypeScript sources, tests, build tools, and the npm cache stay behind in the earlier stages. As an approximate comparison, a single-stage image on node:24 with all dependencies is about 1.3 GB, while the multi-stage runtime on node:24-slim is about 250 MB.</desc>
+  <defs>
+    <marker id="msb-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#40566b"/>
+    </marker>
+  </defs>
+  <rect width="860" height="484" rx="14" fill="#f5f7fb"/>
+  <g font-family="Arial, sans-serif" text-anchor="middle">
+    <g fill="#eef1f5" stroke="#8a96a3" stroke-width="1.5">
+      <rect x="24" y="40" width="380" height="172" rx="8"/>
+      <rect x="24" y="224" width="380" height="136" rx="8"/>
+      <rect x="476" y="40" width="360" height="206" rx="8"/>
+    </g>
+    <g font-size="13" font-weight="700" fill="#40566b" text-anchor="start">
+      <text x="36" y="62">Stage: build</text>
+      <text x="36" y="246">Stage: deps</text>
+      <text x="488" y="62">Stage: runtime (the image you ship)</text>
+    </g>
+
+    <g stroke-width="1.5">
+      <rect x="36" y="72" width="356" height="26" rx="6" fill="#e5efff" stroke="#4774aa"/>
+      <rect x="36" y="104" width="356" height="26" rx="6" fill="#f0e9fb" stroke="#8062a8"/>
+      <rect x="36" y="136" width="356" height="26" rx="6" fill="#f0e9fb" stroke="#8062a8"/>
+      <rect x="36" y="168" width="356" height="32" rx="6" fill="#e7f3e9" stroke="#53845b"/>
+      <rect x="36" y="256" width="356" height="26" rx="6" fill="#e5efff" stroke="#4774aa"/>
+      <rect x="36" y="288" width="356" height="26" rx="6" fill="#f0e9fb" stroke="#8062a8"/>
+      <rect x="36" y="320" width="356" height="32" rx="6" fill="#e7f3e9" stroke="#53845b"/>
+    </g>
+    <g font-size="12" text-anchor="start">
+      <text x="48" y="90" fill="#263e5a">FROM node:24-slim AS build</text>
+      <text x="48" y="122" fill="#463365">RUN npm ci (dev dependencies included)</text>
+      <text x="48" y="154" fill="#463365">COPY . . then RUN npm run build</text>
+      <text x="48" y="189" fill="#294a2e" font-weight="700">output: /app/dist (compiled JS)</text>
+      <text x="48" y="274" fill="#263e5a">FROM node:24-slim AS deps</text>
+      <text x="48" y="306" fill="#463365">RUN npm ci --omit=dev</text>
+      <text x="48" y="341" fill="#294a2e" font-weight="700">output: /app/node_modules (production only)</text>
+    </g>
+
+    <g stroke-width="1.5">
+      <rect x="488" y="72" width="336" height="26" rx="6" fill="#e5efff" stroke="#4774aa"/>
+      <rect x="488" y="104" width="336" height="32" rx="6" fill="#e7f3e9" stroke="#53845b"/>
+      <rect x="488" y="142" width="336" height="32" rx="6" fill="#e7f3e9" stroke="#53845b"/>
+      <rect x="488" y="180" width="336" height="26" rx="6" fill="#f0e9fb" stroke="#8062a8"/>
+      <rect x="488" y="212" width="336" height="26" rx="6" fill="#f0e9fb" stroke="#8062a8"/>
+    </g>
+    <g font-size="12" text-anchor="start">
+      <text x="500" y="90" fill="#263e5a">FROM node:24-slim AS runtime</text>
+      <text x="500" y="125" fill="#294a2e" font-weight="700">dist: COPY --from=build</text>
+      <text x="500" y="163" fill="#294a2e" font-weight="700">node_modules: COPY --from=deps</text>
+      <text x="500" y="198" fill="#463365">ENV NODE_ENV=production, USER node</text>
+      <text x="500" y="230" fill="#463365">CMD ["node", "dist/server.js"]</text>
+    </g>
+
+    <g fill="none" stroke="#40566b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M392 184H432V120H486" marker-end="url(#msb-arrow)"/>
+      <path d="M392 336H452V158H486" marker-end="url(#msb-arrow)"/>
+    </g>
+
+    <rect x="476" y="262" width="360" height="98" rx="8" fill="#fbe9e7" stroke="#b5524b" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <text x="488" y="284" font-size="13" font-weight="700" fill="#6e2a24" text-anchor="start">Left behind, never shipped</text>
+    <g font-size="11.5" fill="#6e2a24" text-anchor="start">
+      <text x="488" y="306">devDependencies (TypeScript, test runners)</text>
+      <text x="488" y="324">TypeScript sources and test files</text>
+      <text x="488" y="342">build tools and the npm cache</text>
+    </g>
+
+    <path d="M24 376H836" stroke="#c9d1db" stroke-width="1.5"/>
+    <rect x="24" y="388" width="600" height="24" rx="4" fill="#fbe9e7" stroke="#b5524b" stroke-width="1.5"/>
+    <text x="612" y="405" font-size="12" font-weight="700" fill="#6e2a24" text-anchor="end">single stage on node:24 with all dependencies: ~1.3 GB</text>
+    <rect x="24" y="418" width="115" height="24" rx="4" fill="#e7f3e9" stroke="#53845b" stroke-width="1.5"/>
+    <text x="149" y="435" font-size="12" font-weight="700" fill="#294a2e" text-anchor="start">multi-stage runtime on node:24-slim: ~250 MB (approximate sizes)</text>
+
+    <text x="430" y="468" font-size="13" fill="#40566b">Build with everything, then copy only the results into a clean, small runtime stage.</text>
+  </g>
+</svg>

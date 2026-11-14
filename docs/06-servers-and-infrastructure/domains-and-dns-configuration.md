@@ -18,7 +18,7 @@ For `www.example.com`, an A record can point to a web server's IPv4 address, or 
 
 ## Developer perspective
 
-Resolvers cache DNS answers, so changes may not be immediate. Confirm the record type, hostname, destination, and TTL before changing production DNS. DNS directs clients to a service; the service decides its response. See [servers](servers.md), [CDN](cdn.md), and [SSL certificates](../07-devops-and-deployment/ssl-certificates.md).
+Resolvers cache DNS answers, so changes may not be immediate. Confirm the record type, hostname, destination, and TTL before changing production DNS. DNS directs clients to a service; the service decides its response. See [servers](servers.md), [CDN](cdn.md), and [SSL certificates](../07-devops-and-deployment/07-devops-and-deployment/ssl-certificates.md).
 
 ## Practical example
 

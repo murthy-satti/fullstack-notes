@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="430" viewBox="0 0 880 430" role="img" aria-labelledby="rpf-title rpf-desc">
+  <title id="rpf-title">Authorization pre-filter versus post-filter in vector search</title>
+  <desc id="rpf-desc">Two panels compare where the authorization filter goes for Ana, who can read project web but not project billing. Left, post-filter: $vectorSearch ranks all chunks with limit 8, so the ranking sees every project; the top 8 results are, by rank, billing, web, billing, billing, web, billing, billing, billing. A $match on projectId in web runs afterwards and only 2 of 8 results survive, while 6 forbidden chunks were ranked and can leak through logs, caches or a forgotten $match. Right, pre-filter: $vectorSearch runs with a filter of tenantId acme and projectId in web, limit 8, so all 8 ranked results are from project web and 8 of 8 results are returned; nothing forbidden was ranked, and the filter fields must be indexed as type filter. A legend shows green for project web, red for project billing, and dashed outlines for empty result slots.</desc>
+  <defs>
+    <marker id="rpf-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 8 4 0 8z" fill="#40566b"/></marker>
+  </defs>
+  <rect width="880" height="430" rx="14" fill="#f5f7fb"/>
+  <g font-family="Arial, sans-serif">
+    <text x="440" y="30" text-anchor="middle" font-size="15" font-weight="bold" fill="#36424e">Where the authorization filter goes (Ana can read project web only)</text>
+
+    <rect x="16" y="46" width="416" height="310" rx="10" fill="#ffffff" stroke="#c9d1db"/>
+    <text x="224" y="72" text-anchor="middle" font-size="14" font-weight="bold" fill="#6e2a24">Post-filter: leaks and under-fills</text>
+    <rect x="45" y="88" width="358" height="46" rx="8" fill="#e5efff" stroke="#4774aa"/>
+    <text x="224" y="107" text-anchor="middle" font-size="13" font-weight="bold" fill="#263e5a">$vectorSearch over all chunks, limit 8</text>
+    <text x="224" y="125" text-anchor="middle" font-size="11.5" fill="#263e5a">the ranking sees every project</text>
+    <line x1="224" y1="134" x2="224" y2="154" stroke="#40566b" stroke-width="1.5" marker-end="url(#rpf-arrow)"/>
+    <g font-size="13" font-weight="bold" text-anchor="middle">
+      <rect x="45" y="156" width="36" height="36" rx="6" fill="#fbe9e7" stroke="#b5524b"/><text x="63" y="179" fill="#6e2a24">1</text>
+      <rect x="91" y="156" width="36" height="36" rx="6" fill="#e7f3e9" stroke="#53845b"/><text x="109" y="179" fill="#294a2e">2</text>
+      <rect x="137" y="156" width="36" height="36" rx="6" fill="#fbe9e7" stroke="#b5524b"/><text x="155" y="179" fill="#6e2a24">3</text>
+      <rect x="183" y="156" width="36" height="36" rx="6" fill="#fbe9e7" stroke="#b5524b"/><text x="201" y="179" fill="#6e2a24">4</text>
+      <rect x="229" y="156" width="36" height="36" rx="6" fill="#e7f3e9" stroke="#53845b"/><text x="247" y="179" fill="#294a2e">5</text>
+      <rect x="275" y="156" width="36" height="36" rx="6" fill="#fbe9e7" stroke="#b5524b"/><text x="293" y="179" fill="#6e2a24">6</text>
+      <rect x="321" y="156" width="36" height="36" rx="6" fill="#fbe9e7" stroke="#b5524b"/><text x="339" y="179" fill="#6e2a24">7</text>
+      <rect x="367" y="156" width="36" height="36" rx="6" fill="#fbe9e7" stroke="#b5524b"/><text x="385" y="179" fill="#6e2a24">8</text>
+    </g>
+    <line x1="224" y1="192" x2="224" y2="212" stroke="#40566b" stroke-width="1.5" marker-end="url(#rpf-arrow)"/>
+    <rect x="45" y="214" width="358" height="34" rx="8" fill="#e5efff" stroke="#4774aa"/>
+    <text x="224" y="236" text-anchor="middle" font-size="13" font-weight="bold" fill="#263e5a">then $match: projectId in [web]</text>
+    <line x1="224" y1="248" x2="224" y2="268" stroke="#40566b" stroke-width="1.5" marker-end="url(#rpf-arrow)"/>
+    <g font-size="13" font-weight="bold" text-anchor="middle">
+      <rect x="45" y="270" width="36" height="36" rx="6" fill="#e7f3e9" stroke="#53845b"/><text x="63" y="293" fill="#294a2e">2</text>
+      <rect x="91" y="270" width="36" height="36" rx="6" fill="#e7f3e9" stroke="#53845b"/><text x="109" y="293" fill="#294a2e">5</text>
+    </g>
+    <g fill="none" stroke="#8a96a3" stroke-dasharray="4 3">
+      <rect x="137" y="270" width="36" height="36" rx="6"/>
+      <rect x="183" y="270" width="36" height="36" rx="6"/>
+      <rect x="229" y="270" width="36" height="36" rx="6"/>
+      <rect x="275" y="270" width="36" height="36" rx="6"/>
+      <rect x="321" y="270" width="36" height="36" rx="6"/>
+      <rect x="367" y="270" width="36" height="36" rx="6"/>
+    </g>
+    <text x="224" y="327" text-anchor="middle" font-size="11.5" fill="#6e2a24">Only 2 of 8 results survive; 6 forbidden chunks were</text>
+    <text x="224" y="344" text-anchor="middle" font-size="11.5" fill="#6e2a24">ranked and can leak via logs, caches or a missed $match.</text>
+
+    <rect x="448" y="46" width="416" height="310" rx="10" fill="#ffffff" stroke="#c9d1db"/>
+    <text x="656" y="72" text-anchor="middle" font-size="14" font-weight="bold" fill="#294a2e">Pre-filter: search only what Ana may read</text>
+    <rect x="477" y="88" width="358" height="46" rx="8" fill="#e5efff" stroke="#4774aa"/>
+    <text x="656" y="107" text-anchor="middle" font-size="13" font-weight="bold" fill="#263e5a">$vectorSearch with filter, limit 8</text>
+    <text x="656" y="125" text-anchor="middle" font-size="11.5" fill="#263e5a">tenantId = acme, projectId in [web]</text>
+    <line x1="656" y1="134" x2="656" y2="154" stroke="#40566b" stroke-width="1.5" marker-end="url(#rpf-arrow)"/>
+    <g font-size="13" font-weight="bold" text-anchor="middle" fill="#294a2e">
+      <rect x="477" y="156" width="36" height="36" rx="6" fill="#e7f3e9" stroke="#53845b"/><text x="495" y="179">1</text>
+      <rect x="523" y="156" width="36" height="36" rx="6" fill="#e7f3e9" stroke="#53845b"/><text x="541" y="179">2</text>
+      <rect x="569" y="156" width="36" height="36" rx="6" fill="#e7f3e9" stroke="#53845b"/><text x="587" y="179">3</text>
+      <rect x="615" y="156" width="36" height="36" rx="6" fill="#e7f3e9" stroke="#53845b"/><text x="633" y="179">4</text>
+      <rect x="661" y="156" width="36" height="36" rx="6" fill="#e7f3e9" stroke="#53845b"/><text x="679" y="179">5</text>
+      <rect x="707" y="156" width="36" height="36" rx="6" fill="#e7f3e9" stroke="#53845b"/><text x="725" y="179">6</text>
+      <rect x="753" y="156" width="36" height="36" rx="6" fill="#e7f3e9" stroke="#53845b"/><text x="771" y="179">7</text>
+      <rect x="799" y="156" width="36" height="36" rx="6" fill="#e7f3e9" stroke="#53845b"/><text x="817" y="179">8</text>
+    </g>
+    <line x1="656" y1="192" x2="656" y2="212" stroke="#40566b" stroke-width="1.5" marker-end="url(#rpf-arrow)"/>
+    <rect x="477" y="214" width="358" height="34" rx="8" fill="#e7f3e9" stroke="#53845b"/>
+    <text x="656" y="236" text-anchor="middle" font-size="13" font-weight="bold" fill="#294a2e">8 of 8 results returned</text>
+    <text x="656" y="282" text-anchor="middle" font-size="11.5" fill="#294a2e">Every candidate is readable, so the top k is full</text>
+    <text x="656" y="299" text-anchor="middle" font-size="11.5" fill="#294a2e">and nothing forbidden was ever ranked.</text>
+    <text x="656" y="327" text-anchor="middle" font-size="11.5" fill="#36424e">Filter fields must be indexed as type "filter";</text>
+    <text x="656" y="344" text-anchor="middle" font-size="11.5" fill="#36424e">the app still re-checks the scope (defence in depth).</text>
+
+    <rect x="196" y="370" width="16" height="16" rx="3" fill="#e7f3e9" stroke="#53845b"/>
+    <text x="218" y="383" font-size="11.5" fill="#36424e">project web (Ana can read)</text>
+    <rect x="402" y="370" width="16" height="16" rx="3" fill="#fbe9e7" stroke="#b5524b"/>
+    <text x="424" y="383" font-size="11.5" fill="#36424e">project billing (Ana cannot)</text>
+    <rect x="608" y="370" width="16" height="16" rx="3" fill="none" stroke="#8a96a3" stroke-dasharray="4 3"/>
+    <text x="630" y="383" font-size="11.5" fill="#36424e">empty result slot</text>
+
+    <text x="440" y="414" text-anchor="middle" font-size="13" fill="#40566b">Filter inside the vector search: every candidate is one the user may read, and k results still come back.</text>
+  </g>
+</svg>
