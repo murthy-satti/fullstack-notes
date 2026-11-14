@@ -76,7 +76,7 @@ A single Node process stops if it crashes. Something must restart it.
 With containers, run **one Node process per container** and scale by
 running more containers; the orchestrator already handles restarts, so PM2
 is usually unnecessary inside them. See
-[Docker](../../08-devops-and-deployment/08-devops-and-deployment/docker.md).
+[Docker](../../08-devops-and-deployment/docker.md).
 
 ### Using every CPU core
 
@@ -165,7 +165,7 @@ logs each request with method, URL, status, and response time. Give every
 request an ID (reuse an incoming `X-Request-Id` from the proxy or generate
 one) and include it in every log line and in error responses, so one request
 can be traced across logs. See
-[monitoring and logging](../../08-devops-and-deployment/08-devops-and-deployment/monitoring-and-logging.md).
+[monitoring and logging](../../08-devops-and-deployment/monitoring-and-logging.md).
 
 ### Monitoring and APM
 

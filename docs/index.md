@@ -14,17 +14,9 @@ through application development and deployment:
 3. [Backend Development](03-backend-development/index.md)
 4. [Databases](04-databases/index.md)
 5. [Application Architecture](05-application-architecture/index.md)
-6. [AI and Machine Learning](06-ai-and-machine-learning/06-ai-and-machine-learning/06-ai-and-machine-learning/index.md)
+6. [AI and Machine Learning](06-ai-and-machine-learning/index.md)
 7. [Servers and Infrastructure](07-servers-and-infrastructure/index.md)
-8. [DevOps and Deployment](08-devops-and-deployment/08-devops-and-deployment/index.md)
+8. [DevOps and Deployment](08-devops-and-deployment/index.md)
 9. [Operating Systems and Linux](09-operating-systems-and-linux/index.md)
 10. [Security and Testing](10-security-and-testing/index.md)
 11. [Rust and Systems Programming](11-rust-and-systems-programming/index.md)
-
-## How to use these notes
-
-Start with a section's overview, then follow its lessons or jump to a topic
-that answers a specific question. Lessons focus on clear explanations,
-practical examples, developer perspectives, and terminology. Sections with
-an interview-question page use it for review. Related concepts are linked
-throughout the notes.

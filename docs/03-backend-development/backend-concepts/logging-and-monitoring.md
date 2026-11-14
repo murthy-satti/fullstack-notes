@@ -474,5 +474,5 @@ process.on("SIGTERM", () => {
 - [OWASP Logging Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html)
 - [Prometheus: Metric types](https://prometheus.io/docs/concepts/metric_types/)
 - [Google SRE book: Service Level Objectives](https://sre.google/sre-book/service-level-objectives/)
-- Related notes: [Monitoring and logging](../../08-devops-and-deployment/08-devops-and-deployment/monitoring-and-logging.md),
+- Related notes: [Monitoring and logging](../../08-devops-and-deployment/monitoring-and-logging.md),
   [Error handling](error-handling.md)

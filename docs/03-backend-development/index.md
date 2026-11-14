@@ -90,7 +90,7 @@ Some backend topics have their own sections in these notes:
   caching, Redis, message queues, and scalability.
 - [Servers and Infrastructure](../07-servers-and-infrastructure/index.md) for
   Nginx, reverse proxies, and load balancing.
-- [DevOps and Deployment](../08-devops-and-deployment/08-devops-and-deployment/index.md) for Docker,
+- [DevOps and Deployment](../08-devops-and-deployment/index.md) for Docker,
   CI/CD, environment variables, and monitoring.
 - [Security and Testing](../10-security-and-testing/index.md) for OWASP,
   API security, and testing strategy.

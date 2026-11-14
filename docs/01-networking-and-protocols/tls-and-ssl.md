@@ -105,7 +105,7 @@ Use maintained TLS libraries and secure defaults; do not write custom
 cryptography or disable certificate checks to silence an error. Keep
 certificates valid and host names correct. Remember that TLS does not hide
 all connection metadata, prevent phishing, or make application logic secure.
-See [HTTP and HTTPS](http-and-https.md) and [SSL certificates](../08-devops-and-deployment/08-devops-and-deployment/ssl-certificates.md).
+See [HTTP and HTTPS](http-and-https.md) and [SSL certificates](../08-devops-and-deployment/ssl-certificates.md).
 For full-stack deployments, also check whether TLS terminates at the CDN,
 load balancer, reverse proxy, or application server, and document how each
 subsequent hop is protected.

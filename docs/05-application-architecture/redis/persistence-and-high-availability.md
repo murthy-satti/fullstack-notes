@@ -200,7 +200,7 @@ bad deploy is replicated instantly. Back up RDB files on a schedule (the
 current `dump.rdb` can be copied safely, because Redis writes a temporary
 file and renames it only when complete), store copies off the server, and
 test restores. Managed services offer automatic snapshots. See
-[backups](../../08-devops-and-deployment/08-devops-and-deployment/backups.md).
+[backups](../../08-devops-and-deployment/backups.md).
 
 ### Managed services
 
