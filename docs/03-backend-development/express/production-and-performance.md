@@ -76,7 +76,7 @@ A single Node process stops if it crashes. Something must restart it.
 With containers, run **one Node process per container** and scale by
 running more containers; the orchestrator already handles restarts, so PM2
 is usually unnecessary inside them. See
-[Docker](../../07-devops-and-deployment/07-devops-and-deployment/docker.md).
+[Docker](../../08-devops-and-deployment/08-devops-and-deployment/docker.md).
 
 ### Using every CPU core
 
@@ -89,13 +89,13 @@ and [scalability](../../05-application-architecture/scalability.md).
 
 ### Behind a reverse proxy
 
-A reverse proxy such as [nginx](../../06-servers-and-infrastructure/nginx.md)
+A reverse proxy such as [nginx](../../07-servers-and-infrastructure/nginx.md)
 or a cloud load balancer usually terminates TLS, serves static files,
 compresses responses, buffers slow clients, and spreads load. Express then
 sees every request as coming from the proxy over HTTP. Set `trust proxy` to
 the number of proxies so `req.ip`, `req.protocol`, and `req.secure` reflect
 the real client. See
-[reverse proxy](../../06-servers-and-infrastructure/reverse-proxy.md).
+[reverse proxy](../../07-servers-and-infrastructure/reverse-proxy.md).
 
 ### Compression
 
@@ -165,7 +165,7 @@ logs each request with method, URL, status, and response time. Give every
 request an ID (reuse an incoming `X-Request-Id` from the proxy or generate
 one) and include it in every log line and in error responses, so one request
 can be traced across logs. See
-[monitoring and logging](../../07-devops-and-deployment/07-devops-and-deployment/monitoring-and-logging.md).
+[monitoring and logging](../../08-devops-and-deployment/08-devops-and-deployment/monitoring-and-logging.md).
 
 ### Monitoring and APM
 
@@ -404,7 +404,7 @@ WantedBy=multi-user.target
 - Measure before optimizing: find slow routes from real latency data.
 - Keep handlers asynchronous and small; offload heavy work.
 - Load-test before major launches; see
-  [performance testing](../../09-security-and-testing/performance-testing.md).
+  [performance testing](../../10-security-and-testing/performance-testing.md).
 - Practice deployments and rollbacks so they are routine.
 
 ## In production
@@ -488,4 +488,4 @@ WantedBy=multi-user.target
 - [Node.js HTTP server API](https://nodejs.org/api/http.html#class-httpserver)
 - [pino documentation](https://getpino.io/)
 - [PM2 documentation](https://pm2.keymetrics.io/docs/usage/quick-start/)
-- [Load balancing](../../06-servers-and-infrastructure/load-balancing.md)
+- [Load balancing](../../07-servers-and-infrastructure/load-balancing.md)

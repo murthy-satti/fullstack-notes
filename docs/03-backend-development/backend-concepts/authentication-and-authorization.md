@@ -452,5 +452,5 @@ error responses.
 - [MDN: HTTP authentication](https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication)
 - [MDN: Web Authentication API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Authentication_API)
 - [RFC 6238: TOTP](https://www.rfc-editor.org/rfc/rfc6238)
-- Related notes: [Authentication security](../../09-security-and-testing/authentication-security.md),
-  [API security](../../09-security-and-testing/api-security.md)
+- Related notes: [Authentication security](../../10-security-and-testing/authentication-security.md),
+  [API security](../../10-security-and-testing/api-security.md)

@@ -169,7 +169,7 @@ Capacity per instance must be **measured**, not guessed:
 
 Use production-like data volumes, a realistic mix of endpoints, and an
 environment that matches production. See
-[performance testing](../../09-security-and-testing/performance-testing.md)
+[performance testing](../../10-security-and-testing/performance-testing.md)
 and [performance and latency](performance-and-latency.md).
 
 ### Autoscaling vs provisioned capacity

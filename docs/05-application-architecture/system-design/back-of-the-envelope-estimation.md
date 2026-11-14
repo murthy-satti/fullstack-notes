@@ -340,7 +340,7 @@ total instances = 70 ÷ (2/3) = 105 → 35 per zone
 **Conclusions:** about 105 instances at peak; autoscaling can run fewer at
 night. The estimate is only as good as the per-instance figure — that number
 must come from a load test (see
-[performance testing](../../09-security-and-testing/performance-testing.md)).
+[performance testing](../../10-security-and-testing/performance-testing.md)).
 
 ## Best practices
 

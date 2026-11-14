@@ -421,4 +421,4 @@ still validates, because it cannot trust the client.
 - [joi on npm](https://www.npmjs.com/package/joi)
 - Related: [validation and sanitization](../backend-concepts/validation-and-sanitization.md),
   [error handling in Express](error-handling-in-express.md),
-  [API security](../../09-security-and-testing/api-security.md).
+  [API security](../../10-security-and-testing/api-security.md).

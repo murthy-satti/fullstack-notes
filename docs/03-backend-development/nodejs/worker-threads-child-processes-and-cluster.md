@@ -13,7 +13,7 @@ blocks every other request (see [the event loop](event-loop.md)). And a
 server on an 8-core machine that runs one Node.js process leaves seven cores
 idle. Choosing the right tool—and knowing when to scale with more containers
 instead—is a core backend skill. For the operating-system background, see
-[processes and threads](../../08-operating-systems-and-linux/processes-and-threads.md).
+[processes and threads](../../09-operating-systems-and-linux/processes-and-threads.md).
 
 ## Real-world usage
 
@@ -157,7 +157,7 @@ pm2 logs
 
 In containerized deployments, the common pattern is to run **one Node.js
 process per container** and run several containers behind a
-[load balancer](../../06-servers-and-infrastructure/load-balancing.md). The
+[load balancer](../../07-servers-and-infrastructure/load-balancing.md). The
 orchestrator (Kubernetes, ECS, and so on) handles restarts, health checks,
 and scaling. Using cluster inside each container is possible but usually
 unnecessary.

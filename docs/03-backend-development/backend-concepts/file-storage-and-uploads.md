@@ -190,7 +190,7 @@ A CDN caches files at edge locations close to users, reducing latency and
 storage egress costs. For public assets, use long cache lifetimes with
 versioned keys (a new key for a new version). For private files, CDNs
 support signed URLs or signed cookies. See
-[CDN](../../06-servers-and-infrastructure/cdn.md).
+[CDN](../../07-servers-and-infrastructure/cdn.md).
 
 ### Processing pipelines
 
@@ -479,4 +479,4 @@ app.get("/api/files/:id/download", authenticate, async (request, response) => {
 - [tus resumable upload protocol](https://tus.io/)
 - Related notes: [File uploads with Multer](../express/file-uploads.md),
   [GridFS](../../04-databases/mongodb/gridfs.md),
-  [AWS](../../06-servers-and-infrastructure/aws.md)
+  [AWS](../../07-servers-and-infrastructure/aws.md)

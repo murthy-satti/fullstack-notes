@@ -212,7 +212,7 @@ and [the Node.js event loop](../../03-backend-development/nodejs/event-loop.md).
 | Compression | Smaller responses transfer faster | CPU cost; skip tiny or already-compressed data |
 | Pagination and field selection | Smaller queries and payloads | Clients needing more requests |
 | Indexing | Turns full scans into fast lookups | Slower writes, storage; index what you query |
-| CDN and edge caching | Serves static and cacheable content near users | Cache rules for personalized data; see [CDN](../../06-servers-and-infrastructure/cdn.md) |
+| CDN and edge caching | Serves static and cacheable content near users | Cache rules for personalized data; see [CDN](../../07-servers-and-infrastructure/cdn.md) |
 | Precomputation and denormalization | Store results ready to read (counters, feeds, summaries) | Keeping copies in sync |
 | Doing less | Remove unnecessary work, fields, and calls | Requires measuring to find it |
 
@@ -255,7 +255,7 @@ queries per request.
    delay, garbage collection metrics.
 4. **Change one thing and measure again** under the same load.
 5. **Load test** before launches and after big changes. See
-   [performance testing](../../09-security-and-testing/performance-testing.md).
+   [performance testing](../../10-security-and-testing/performance-testing.md).
 
 Benchmarking pitfalls: measuring without warm-up (cold caches, JIT not
 optimized), testing on a laptop with different hardware and data size,
@@ -482,4 +482,4 @@ app.get("/api/feed", async (req, res) => {
 - **Node.js:** [Performance measurement APIs (perf_hooks)](https://nodejs.org/api/perf_hooks.html).
 - **MDN:** [Server-Timing header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Server-Timing).
 - **Related:** [capacity planning](capacity-planning.md) and
-  [performance testing](../../09-security-and-testing/performance-testing.md).
+  [performance testing](../../10-security-and-testing/performance-testing.md).

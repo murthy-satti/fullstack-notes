@@ -287,7 +287,7 @@ CORS does not prevent CSRF, because simple requests are sent and processed
 before any CORS check. Protect cookie-authenticated, state-changing endpoints
 with `SameSite` cookies, CSRF tokens, or `Origin` header checks. A permissive
 CORS policy makes things worse: it lets an attacker read responses too. See
-[web security fundamentals](../../09-security-and-testing/web-security-fundamentals.md).
+[web security fundamentals](../../10-security-and-testing/web-security-fundamentals.md).
 
 ### Where CORS does not apply
 
@@ -309,7 +309,7 @@ request and no CORS:
   to the backend on another port.
 - **In production:** a reverse proxy serves the frontend and forwards
   `/api` to the backend under the same domain. See
-  [reverse proxy](../../06-servers-and-infrastructure/reverse-proxy.md).
+  [reverse proxy](../../07-servers-and-infrastructure/reverse-proxy.md).
 
 ## When to use and when not to use
 

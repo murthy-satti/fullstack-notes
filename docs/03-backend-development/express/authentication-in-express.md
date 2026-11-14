@@ -508,4 +508,4 @@ for one email, plus alerts and optional CAPTCHA.
 - [argon2 on npm](https://www.npmjs.com/package/argon2)
 - [Passport.js documentation](https://www.passportjs.org/)
 - [express-rate-limit on npm](https://www.npmjs.com/package/express-rate-limit)
-- [Authentication security](../../09-security-and-testing/authentication-security.md)
+- [Authentication security](../../10-security-and-testing/authentication-security.md)

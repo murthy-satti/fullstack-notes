@@ -14,8 +14,8 @@ breaches come from ordinary gaps (an injection, a missing ownership check,
 a leaked stack trace, an outdated dependency) rather than exotic attacks.
 Security is a set of habits applied consistently.
 
-For the attack catalogue behind these practices, see [OWASP](../../09-security-and-testing/owasp.md)
-and [API security](../../09-security-and-testing/api-security.md).
+For the attack catalogue behind these practices, see [OWASP](../../10-security-and-testing/owasp.md)
+and [API security](../../10-security-and-testing/api-security.md).
 
 ## Real-world usage
 
@@ -173,7 +173,7 @@ specific number of hops (`1` for one proxy) or specific proxy addresses.
 Keep secrets (database URLs, JWT secrets, API keys) in environment variables
 or a secrets manager, never in code or Git. Use different secrets per
 environment, rotate them, and never log them. See
-[environment variables](../../07-devops-and-deployment/07-devops-and-deployment/environment-variables.md).
+[environment variables](../../08-devops-and-deployment/08-devops-and-deployment/environment-variables.md).
 
 ### Dependency auditing
 
@@ -449,4 +449,4 @@ export const logger = pino({
 - [OWASP Injection Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Injection_Prevention_Cheat_Sheet.html)
 - [OWASP REST Security Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/REST_Security_Cheat_Sheet.html)
 - [MDN: Content Security Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CSP)
-- [Web security fundamentals](../../09-security-and-testing/web-security-fundamentals.md)
+- [Web security fundamentals](../../10-security-and-testing/web-security-fundamentals.md)

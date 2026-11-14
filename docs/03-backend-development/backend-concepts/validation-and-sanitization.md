@@ -502,6 +502,6 @@ export async function createBooking({ roomId, startDate, endDate }, user) {
 - [OWASP OS Command Injection Defense Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/OS_Command_Injection_Defense_Cheat_Sheet.html)
 - [OWASP Mass Assignment Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Mass_Assignment_Cheat_Sheet.html)
 - [MDN: String.prototype.normalize()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/normalize)
-- Related notes: [OWASP](../../09-security-and-testing/owasp.md),
-  [API security](../../09-security-and-testing/api-security.md),
+- Related notes: [OWASP](../../10-security-and-testing/owasp.md),
+  [API security](../../10-security-and-testing/api-security.md),
   [Error handling](error-handling.md)

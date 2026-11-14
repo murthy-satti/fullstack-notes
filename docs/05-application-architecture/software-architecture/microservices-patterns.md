@@ -72,7 +72,7 @@ Typical responsibilities:
 Costs: another component to run and scale, a possible bottleneck and single
 point of failure (run several instances), and a temptation to put business
 logic in it—keep it thin. Managed gateways, Nginx, Envoy, and Kong are common
-implementations; see also [reverse proxy](../../06-servers-and-infrastructure/reverse-proxy.md)
+implementations; see also [reverse proxy](../../07-servers-and-infrastructure/reverse-proxy.md)
 and [rate limiting](../../03-backend-development/backend-concepts/rate-limiting-and-throttling.md).
 
 ### Backend for frontend (BFF)

@@ -224,7 +224,7 @@ restart instances, based on health checks.
 Keep liveness checks **shallow**. If liveness fails whenever the database is
 slow, every instance restarts at once during a database incident, turning a
 partial problem into a total outage. See
-[load balancing](../../06-servers-and-infrastructure/load-balancing.md).
+[load balancing](../../07-servers-and-infrastructure/load-balancing.md).
 
 ### Availability zones and regions
 
@@ -312,7 +312,7 @@ corruption, ransomware, an operator deleting a database.
 Replication is **not** a backup: if a bug or attacker deletes data, the
 deletion replicates too. Keep point-in-time backups, store copies
 separately, and **test restores regularly**. See
-[backups](../../07-devops-and-deployment/07-devops-and-deployment/backups.md).
+[backups](../../08-devops-and-deployment/08-devops-and-deployment/backups.md).
 
 ## When to use and when not to use
 
@@ -501,4 +501,4 @@ console.log(`${budget} failed requests allowed this month`); // 50000
   and [Static stability using Availability Zones](https://aws.amazon.com/builders-library/static-stability-using-availability-zones/).
 - **AWS:** [Disaster recovery options in the cloud](https://docs.aws.amazon.com/whitepapers/latest/disaster-recovery-workloads-on-aws/disaster-recovery-options-in-the-cloud.html).
 - **Related:** [scalability overview](../scalability.md) and
-  [monitoring and logging](../../07-devops-and-deployment/07-devops-and-deployment/monitoring-and-logging.md).
+  [monitoring and logging](../../08-devops-and-deployment/08-devops-and-deployment/monitoring-and-logging.md).

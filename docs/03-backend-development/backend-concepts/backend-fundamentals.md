@@ -81,7 +81,7 @@ grows, more specialized parts appear:
   See [file storage and uploads](file-storage-and-uploads.md).
 - **Load balancer or reverse proxy:** spreads traffic across servers,
   terminates TLS, and shields the application. See
-  [reverse proxy](../../06-servers-and-infrastructure/reverse-proxy.md).
+  [reverse proxy](../../07-servers-and-infrastructure/reverse-proxy.md).
 
 ### Stateless and stateful servers
 

@@ -526,7 +526,7 @@ or only cheap endpoints, so capacity was overstated; or peak traffic was
 underestimated. Re-test with production-like data and traffic mixes, add
 headroom, and autoscale. See
 [back-of-the-envelope estimation](back-of-the-envelope-estimation.md) and
-[performance testing](../../09-security-and-testing/performance-testing.md).
+[performance testing](../../10-security-and-testing/performance-testing.md).
 
 ### 61. A region failed, and users kept hitting it for 15 minutes despite DNS failover. Why, and how do you shorten that?
 

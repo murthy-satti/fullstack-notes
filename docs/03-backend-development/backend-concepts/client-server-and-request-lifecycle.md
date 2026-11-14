@@ -81,12 +81,12 @@ Suppose a user opens `https://shop.example/orders` and the page calls
 6. **CDN or edge cache.** If a CDN sits in front and holds a fresh cached
    copy, it answers without touching your servers. API responses are often
    not cached, but static files and public data can be. See
-   [CDN](../../06-servers-and-infrastructure/cdn.md).
+   [CDN](../../07-servers-and-infrastructure/cdn.md).
 7. **Load balancer or reverse proxy.** It usually terminates TLS, chooses a
    healthy backend instance, enforces limits (body size, timeouts), and
    forwards the request over the internal network. It adds headers such as
    `X-Forwarded-For` so the app knows the real client IP. See
-   [load balancing](../../06-servers-and-infrastructure/load-balancing.md).
+   [load balancing](../../07-servers-and-infrastructure/load-balancing.md).
 8. **Application middleware.** Code that runs for many routes: assigning a
    request ID, logging, parsing the body, CORS, rate limiting, and checking
    the session or token. See [middleware](../express/middleware.md).

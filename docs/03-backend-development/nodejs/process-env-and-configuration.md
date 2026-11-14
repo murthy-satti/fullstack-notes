@@ -138,7 +138,7 @@ Node.js also provides `process.loadEnvFile(path)`. The popular `dotenv`
 package does the same in older setups. In production, real values come from
 the platform: container settings, a secrets manager, or the deployment
 system—not a file committed to git. See
-[environment variables](../../07-devops-and-deployment/07-devops-and-deployment/environment-variables.md)
+[environment variables](../../08-devops-and-deployment/08-devops-and-deployment/environment-variables.md)
 and [configuration and secrets](../backend-concepts/configuration-and-secrets.md).
 
 ### Validating configuration at startup

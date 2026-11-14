@@ -196,7 +196,7 @@ stateless.
   thundering herd onto the remaining servers. The load balancer must
   support WebSocket upgrades and long idle timeouts. See
   [WebSockets](../../01-networking-and-protocols/web-sockets.md) and
-  [load balancing](../../06-servers-and-infrastructure/load-balancing.md).
+  [load balancing](../../07-servers-and-infrastructure/load-balancing.md).
 
 ### 2. Message IDs, ordering, storage, and history
 

@@ -175,9 +175,9 @@ emails, PDFs, and small internal tools.
 
 Node can serve files, but a reverse proxy or CDN does it more efficiently:
 
-- [nginx](../../06-servers-and-infrastructure/nginx.md) serves files from
+- [nginx](../../07-servers-and-infrastructure/nginx.md) serves files from
   disk with very little CPU and memory and handles many slow clients well.
-- A [CDN](../../06-servers-and-infrastructure/cdn.md) caches files close to
+- A [CDN](../../07-servers-and-infrastructure/cdn.md) caches files close to
   users worldwide and removes the load from your servers entirely.
 
 A common setup: the frontend build is deployed to a CDN or object storage,

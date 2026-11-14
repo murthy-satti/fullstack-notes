@@ -80,9 +80,9 @@ questions and answers.
   inside a single service.
 - [Databases](../04-databases/index.md) for data modeling, indexes,
   transactions, replication, and sharding.
-- [Servers and Infrastructure](../06-servers-and-infrastructure/index.md) for
+- [Servers and Infrastructure](../07-servers-and-infrastructure/index.md) for
   load balancers, reverse proxies, and CDNs.
-- [DevOps and Deployment](../07-devops-and-deployment/07-devops-and-deployment/index.md) for
+- [DevOps and Deployment](../08-devops-and-deployment/08-devops-and-deployment/index.md) for
   containers, CI/CD, and monitoring.
 
 ## A first practical exercise

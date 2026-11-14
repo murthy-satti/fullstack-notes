@@ -14,7 +14,7 @@ does not scale and is not repeated on every change. A good automated suite
 runs in seconds on every commit and catches regressions before users do.
 
 For general testing theory (test types, pyramids, test doubles), see
-[testing fundamentals](../../09-security-and-testing/testing-fundamentals.md).
+[testing fundamentals](../../10-security-and-testing/testing-fundamentals.md).
 
 ## Real-world usage
 
@@ -116,7 +116,7 @@ tests short and make each test state only what it cares about.
 Coverage tools report which lines your tests executed. Use coverage to find
 untested paths (especially error branches), not as a goal in itself. Run the
 suite in CI on every pull request so failures block merging; see
-[CI/CD](../../07-devops-and-deployment/07-devops-and-deployment/ci-cd.md).
+[CI/CD](../../08-devops-and-deployment/08-devops-and-deployment/ci-cd.md).
 
 ### Contract testing
 
@@ -495,4 +495,4 @@ change.
 - [Testcontainers for Node.js](https://node.testcontainers.org/)
 - [nock on GitHub](https://github.com/nock/nock)
 - [Mock Service Worker documentation](https://mswjs.io/docs/)
-- [Performance testing](../../09-security-and-testing/performance-testing.md)
+- [Performance testing](../../10-security-and-testing/performance-testing.md)

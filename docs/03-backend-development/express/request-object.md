@@ -191,7 +191,7 @@ app.set("trust proxy", 1);
 Only enable it when a proxy you control really sits in front of the app.
 If the app is directly exposed, a client could send a fake
 `X-Forwarded-For` header and spoof its IP, which breaks rate limiting and
-audit logs. See [reverse proxy](../../06-servers-and-infrastructure/reverse-proxy.md).
+audit logs. See [reverse proxy](../../07-servers-and-infrastructure/reverse-proxy.md).
 
 ### Content checks: `req.is()` and `req.accepts()`
 

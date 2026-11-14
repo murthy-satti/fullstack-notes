@@ -19,7 +19,7 @@ Without limits, a single client can consume all of your capacity:
 - **Commercial plans:** free tiers get lower limits than paid tiers.
 
 Rate limiting is a standard part of API security (see
-[API security](../../09-security-and-testing/api-security.md)) and of
+[API security](../../10-security-and-testing/api-security.md)) and of
 resilience in general.
 
 ## Real-world usage
@@ -226,7 +226,7 @@ Client ─► CDN / WAF ─► API gateway / load balancer ─► reverse proxy 
 - **Edge (CDN, WAF):** absorbs volumetric attacks before they reach you.
 - **API gateway:** per-API-key and per-plan limits; central configuration.
 - **Reverse proxy** (for example, Nginx `limit_req`): cheap per-IP limits —
-  see [Nginx](../../06-servers-and-infrastructure/nginx.md).
+  see [Nginx](../../07-servers-and-infrastructure/nginx.md).
 - **Application:** limits that need business context — per user, per
   account, per action (password attempts, SMS sends, exports).
 
@@ -445,5 +445,5 @@ function allowRequest(key, capacity = 10, refillPerSecond = 1) {
 - [RFC 6585: Additional HTTP Status Codes (429)](https://www.rfc-editor.org/rfc/rfc6585)
 - [Express: Behind proxies (trust proxy)](https://expressjs.com/en/guide/behind-proxies.html)
 - [OWASP API Security Top 10](https://api-security.owasp.org/)
-- Related notes: [API security](../../09-security-and-testing/api-security.md),
-  [Load balancing](../../06-servers-and-infrastructure/load-balancing.md)
+- Related notes: [API security](../../10-security-and-testing/api-security.md),
+  [Load balancing](../../07-servers-and-infrastructure/load-balancing.md)

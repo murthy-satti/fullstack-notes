@@ -120,7 +120,7 @@ clients ─> load ────┼─> instance 2 ─┼─> shared data services
 
 The load balancer spreads requests, checks health, and stops sending
 traffic to failed instances. Algorithms and setup are covered in
-[load balancing](../../06-servers-and-infrastructure/load-balancing.md).
+[load balancing](../../07-servers-and-infrastructure/load-balancing.md).
 
 ### Autoscaling signals
 
@@ -514,5 +514,5 @@ CPU, which may stay low while workers wait on slow downstream APIs.
 - [Amazon EC2 Auto Scaling: Target tracking scaling policies](https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-scaling-target-tracking.html)
 - [The Twelve-Factor App: Processes](https://12factor.net/processes)
 - Related: [scalability fundamentals](scalability-fundamentals.md),
-  [load balancing](../../06-servers-and-infrastructure/load-balancing.md),
-  [Docker](../../07-devops-and-deployment/07-devops-and-deployment/docker.md).
+  [load balancing](../../07-servers-and-infrastructure/load-balancing.md),
+  [Docker](../../08-devops-and-deployment/08-devops-and-deployment/docker.md).

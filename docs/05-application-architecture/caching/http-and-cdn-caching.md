@@ -127,7 +127,7 @@ The same rules at a CDN edge, for a fresh hit, a miss, and a stale copy:
 A CDN runs servers in many locations (points of presence). DNS or anycast
 routing sends each user to a nearby edge, which serves cached responses or
 fetches from your origin on a miss. See
-[CDN](../../06-servers-and-infrastructure/cdn.md) for how CDNs work as
+[CDN](../../07-servers-and-infrastructure/cdn.md) for how CDNs work as
 infrastructure.
 
 ```text
@@ -386,6 +386,6 @@ a vendor-specific header reporting `HIT` or `MISS`.
 - [RFC 9111: HTTP Caching](https://www.rfc-editor.org/rfc/rfc9111)
 - [RFC 9213: Targeted HTTP Cache Control](https://www.rfc-editor.org/rfc/rfc9213)
 - [Amazon CloudFront: Optimizing caching and availability](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/ConfiguringCaching.html)
-- Related: [CDN](../../06-servers-and-infrastructure/cdn.md),
+- Related: [CDN](../../07-servers-and-infrastructure/cdn.md),
   [HTTP headers](../../03-backend-development/backend-concepts/http-headers.md),
   [invalidation and expiration](invalidation-and-expiration.md).

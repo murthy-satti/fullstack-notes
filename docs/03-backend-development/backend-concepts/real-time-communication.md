@@ -239,7 +239,7 @@ With several server instances behind a load balancer, two problems appear:
 Socket.IO provides a Redis adapter for this. Also plan for:
 
 - **Load balancer support** for upgrades and long-lived connections (see
-  [load balancing](../../06-servers-and-infrastructure/load-balancing.md)).
+  [load balancing](../../07-servers-and-infrastructure/load-balancing.md)).
 - **Deploys:** restarting a server drops its connections; clients must
   reconnect with backoff and jitter so they do not all reconnect at once.
 - **Connection limits:** file descriptors and memory per connection.

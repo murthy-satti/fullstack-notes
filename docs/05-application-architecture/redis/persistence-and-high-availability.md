@@ -200,7 +200,7 @@ bad deploy is replicated instantly. Back up RDB files on a schedule (the
 current `dump.rdb` can be copied safely, because Redis writes a temporary
 file and renames it only when complete), store copies off the server, and
 test restores. Managed services offer automatic snapshots. See
-[backups](../../07-devops-and-deployment/07-devops-and-deployment/backups.md).
+[backups](../../08-devops-and-deployment/08-devops-and-deployment/backups.md).
 
 ### Managed services
 
@@ -210,7 +210,7 @@ Managed offerings handle them:
 - **Amazon ElastiCache** offers Valkey, Redis OSS, and Memcached engines,
   with replication groups, Multi-AZ automatic failover, cluster mode for
   sharding, and automatic backups. **Amazon MemoryDB** targets use as a
-  durable primary database. See [AWS](../../06-servers-and-infrastructure/aws.md).
+  durable primary database. See [AWS](../../07-servers-and-infrastructure/aws.md).
 - Other clouds provide similar services, such as Google Cloud Memorystore
   and Azure Managed Redis (Microsoft is retiring Azure Cache for Redis in
   its favor), and Redis Ltd. offers its own cloud service.

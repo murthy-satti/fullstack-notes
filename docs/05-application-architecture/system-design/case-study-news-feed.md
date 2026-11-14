@@ -241,7 +241,7 @@ background job creates resized variants (thumbnail, 480 px, 1080 px) in
 modern formats. Feed responses contain **CDN URLs**, never bytes. Variant
 URLs are immutable (a new upload gets a new key), so the CDN can cache them
 for a long time. Clients request the size that fits the screen. See
-[CDN](../../06-servers-and-infrastructure/cdn.md) and
+[CDN](../../07-servers-and-infrastructure/cdn.md) and
 [file storage and uploads](../../03-backend-development/backend-concepts/file-storage-and-uploads.md).
 
 ### 6. Consistency expectations

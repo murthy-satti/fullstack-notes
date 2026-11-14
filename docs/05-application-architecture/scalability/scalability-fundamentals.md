@@ -216,7 +216,7 @@ database).
 1. Define goals: for example, "p99 under 300 ms at 3,000 requests/s".
 2. Measure current behavior with metrics and tracing.
 3. Load-test to find where latency or errors rise; see
-   [performance testing](../../09-security-and-testing/performance-testing.md).
+   [performance testing](../../10-security-and-testing/performance-testing.md).
 4. Fix or scale the **bottleneck**, then measure again.
 5. Repeat; the bottleneck moves after each fix.
 
@@ -406,5 +406,5 @@ can add instances behind a load balancer. See
 - [Shopify: A pods architecture to allow Shopify to scale](https://shopify.engineering/a-pods-architecture-to-allow-shopify-to-scale)
 - [Google SRE Book](https://sre.google/sre-book/table-of-contents/)
 - Related: [scalability overview](../scalability.md),
-  [load balancing](../../06-servers-and-infrastructure/load-balancing.md),
+  [load balancing](../../07-servers-and-infrastructure/load-balancing.md),
   [system design process](../system-design/system-design-process.md).

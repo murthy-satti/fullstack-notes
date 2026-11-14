@@ -48,7 +48,7 @@ can also route users to the nearest or healthiest region (latency-based,
 geolocation, weighted, and failover routing). Answers are cached for their
 TTL, so changes are not instant — keep TTLs short on records you may need to
 fail over. See [DNS](../../01-networking-and-protocols/dns.md) and
-[domains and DNS configuration](../../06-servers-and-infrastructure/domains-and-dns-configuration.md).
+[domains and DNS configuration](../../07-servers-and-infrastructure/domains-and-dns-configuration.md).
 
 ### CDN
 
@@ -56,7 +56,7 @@ A content delivery network caches content at edge locations close to users:
 static assets, images, video, and cacheable public API responses. It cuts
 latency, terminates TLS near the user, reduces origin load and egress cost,
 and absorbs spikes. Behavior is controlled with headers such as
-`Cache-Control`. See [CDN](../../06-servers-and-infrastructure/cdn.md) and
+`Cache-Control`. See [CDN](../../07-servers-and-infrastructure/cdn.md) and
 [HTTP and CDN caching](../caching/http-and-cdn-caching.md).
 
 ### Load balancer
@@ -72,7 +72,7 @@ stops sending traffic to unhealthy instances.
   (for affinity).
 
 Load balancers are themselves made redundant. See
-[load balancing](../../06-servers-and-infrastructure/load-balancing.md).
+[load balancing](../../07-servers-and-infrastructure/load-balancing.md).
 
 ### Reverse proxy and API gateway
 
@@ -80,7 +80,7 @@ A **reverse proxy** sits in front of application servers and forwards
 requests to them, commonly handling TLS termination, compression, static
 files, request buffering, caching, and basic rate limiting (Nginx, HAProxy,
 Envoy). A layer 7 load balancer is a reverse proxy that also balances. See
-[reverse proxy](../../06-servers-and-infrastructure/reverse-proxy.md).
+[reverse proxy](../../07-servers-and-infrastructure/reverse-proxy.md).
 
 An **API gateway** is a specialized entry point for APIs with many backend
 services: routing to services, token validation, per-key rate limits and

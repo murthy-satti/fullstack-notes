@@ -89,5 +89,5 @@ something that can fail.
 
 - [Google SRE Book](https://sre.google/sre-book/table-of-contents/)
 - [AWS Well-Architected Framework](https://docs.aws.amazon.com/wellarchitected/latest/framework/welcome.html)
-- [Load balancing](../06-servers-and-infrastructure/load-balancing.md)
+- [Load balancing](../07-servers-and-infrastructure/load-balancing.md)
 - [Scalability interview questions and answers](scalability/interview-questions-and-answers.md)

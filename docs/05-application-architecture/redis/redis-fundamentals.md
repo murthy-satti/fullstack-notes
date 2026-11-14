@@ -201,7 +201,7 @@ $ docker exec -it redis redis-cli PING
 PONG
 ```
 
-See [Docker](../../07-devops-and-deployment/07-devops-and-deployment/docker.md). Never expose port
+See [Docker](../../08-devops-and-deployment/08-devops-and-deployment/docker.md). Never expose port
 6379 to the internet: require authentication (passwords or ACL users), use
 TLS for connections across networks, and keep Redis on a private network.
 

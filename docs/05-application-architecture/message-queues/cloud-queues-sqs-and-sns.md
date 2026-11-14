@@ -483,4 +483,4 @@ long-polling loop above.
 - **AWS:** [Amazon EventBridge User Guide](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-what-is.html).
 - **Google Cloud:** [Pub/Sub documentation](https://cloud.google.com/pubsub/docs).
 - **Microsoft:** [Azure Service Bus messaging documentation](https://learn.microsoft.com/azure/service-bus-messaging/).
-- **Related:** [AWS overview](../../06-servers-and-infrastructure/aws.md).
+- **Related:** [AWS overview](../../07-servers-and-infrastructure/aws.md).

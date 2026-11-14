@@ -515,7 +515,7 @@ same handler runs for `SIGINT`.
   to `createReadStream`.
 - Run the graceful server in a container and stop it with `docker stop`,
   which sends `SIGTERM` and then `SIGKILL` after a grace period; see
-  [Docker](../../07-devops-and-deployment/07-devops-and-deployment/docker.md).
+  [Docker](../../08-devops-and-deployment/08-devops-and-deployment/docker.md).
 
 ## Troubleshooting
 

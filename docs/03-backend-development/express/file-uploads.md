@@ -458,4 +458,4 @@ Look files up by an ID in your database, not by a path from the URL. The
 - [OWASP File Upload Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html)
 - [file-type on npm](https://www.npmjs.com/package/file-type)
 - [AWS: Uploading objects with presigned URLs](https://docs.aws.amazon.com/AmazonS3/latest/userguide/PresignedUrlUploadObject.html)
-- [AWS overview in these notes](../../06-servers-and-infrastructure/aws.md)
+- [AWS overview in these notes](../../07-servers-and-infrastructure/aws.md)

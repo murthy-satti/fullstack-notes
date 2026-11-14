@@ -457,4 +457,4 @@ console.log(await findLogs("/var/app"));
 - [Node.js API: OS](https://nodejs.org/api/os.html)
 - [Node.js: Reading files with Node.js](https://nodejs.org/en/learn/manipulating-files/reading-files-with-nodejs)
 - [OWASP: Path traversal](https://owasp.org/www-community/attacks/Path_Traversal)
-- [File systems (operating systems section)](../../08-operating-systems-and-linux/file-systems.md)
+- [File systems (operating systems section)](../../09-operating-systems-and-linux/file-systems.md)

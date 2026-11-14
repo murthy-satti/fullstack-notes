@@ -181,7 +181,7 @@ createServer(
 
 In production, TLS is usually **terminated** at a reverse proxy or load
 balancer (Nginx, a cloud load balancer), which forwards plain HTTP to Node.js
-on a private network. See [reverse proxy](../../06-servers-and-infrastructure/reverse-proxy.md)
+on a private network. See [reverse proxy](../../07-servers-and-infrastructure/reverse-proxy.md)
 and [TLS and SSL](../../01-networking-and-protocols/tls-and-ssl.md).
 
 ### Making HTTP requests from Node.js
