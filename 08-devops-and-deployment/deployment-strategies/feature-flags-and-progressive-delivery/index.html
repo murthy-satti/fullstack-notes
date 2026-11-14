@@ -1,0 +1,4984 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../advanced-deployment-patterns/">
+      
+      
+        <link rel="next" href="../zero-downtime-database-migrations/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Feature Flags and Progressive Delivery - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#feature-flags-and-progressive-delivery" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Feature Flags and Progressive Delivery
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../05-application-architecture/" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../06-ai-and-machine-learning/" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+          <span class="md-ellipsis">&larr; Back to DevOps</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../05-application-architecture/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../06-ai-and-machine-learning/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI and Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
+        
+          
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-label="DevOps module lessons" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+                  <span class="md-ellipsis">&larr; Back to DevOps</span>
+                </a>
+              
+            </div>
+          
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                  
+  
+  
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+    
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_8" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_8" id="__nav_9_8_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment Strategies
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_8_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_8">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Deployment Strategies
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_8_2" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_8_2" id="__nav_9_8_2_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Foundations
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_8_2_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_8_2">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Foundations
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../environments-and-promotion/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Environments and Promotion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deploying-backend-services/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deploying Backend Services
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_8_3" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_8_3" id="__nav_9_8_3_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Moving Traffic Safely
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_8_3_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_8_3">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Moving Traffic Safely
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rolling-blue-green-and-canary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rolling, Blue-Green, and Canary Deployments
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../advanced-deployment-patterns/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced Deployment Patterns
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature Flags and Progressive Delivery
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature Flags and Progressive Delivery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-a-flag-looks-like-in-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What a flag looks like in code
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kinds-of-flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kinds of flags
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#evaluation-server-side-and-client-side" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Evaluation: server-side and client-side
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#targeting-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Targeting rules
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#percentage-rollouts-with-stable-hashing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Percentage rollouts with stable hashing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dark-launches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dark launches
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#progressive-delivery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Progressive delivery
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flag-lifecycle-and-flag-debt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Flag lifecycle and flag debt
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-openfeature-standard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The OpenFeature standard
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#testing-with-flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing with flags
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#choosing-a-tool" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Choosing a tool
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-small-flag-service-with-stable-bucketing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A small flag service with stable bucketing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-it-in-an-express-route" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using it in an Express route
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-same-call-through-openfeature" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The same call through OpenFeature
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#testing-both-states" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing both states
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#failing-ci-on-expired-flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Failing CI on expired flags
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../zero-downtime-database-migrations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Zero-Downtime Database Migrations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rollbacks-and-safe-releases/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rollbacks and Safe Releases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_8_4" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_8_4" id="__nav_9_8_4_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Other Kinds of Software
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_8_4_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_8_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Other Kinds of Software
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deploying-frontends-and-static-sites/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deploying Frontends and Static Sites
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../releasing-desktop-and-mobile-apps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Releasing Desktop and Mobile Apps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-a-flag-looks-like-in-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What a flag looks like in code
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kinds-of-flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kinds of flags
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#evaluation-server-side-and-client-side" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Evaluation: server-side and client-side
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#targeting-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Targeting rules
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#percentage-rollouts-with-stable-hashing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Percentage rollouts with stable hashing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dark-launches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dark launches
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#progressive-delivery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Progressive delivery
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flag-lifecycle-and-flag-debt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Flag lifecycle and flag debt
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-openfeature-standard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The OpenFeature standard
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#testing-with-flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing with flags
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#choosing-a-tool" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Choosing a tool
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-small-flag-service-with-stable-bucketing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A small flag service with stable bucketing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-it-in-an-express-route" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using it in an Express route
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-same-call-through-openfeature" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The same call through OpenFeature
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#testing-both-states" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing both states
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#failing-ci-on-expired-flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Failing CI on expired flags
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="feature-flags-and-progressive-delivery">Feature Flags and Progressive Delivery<a class="headerlink" href="#feature-flags-and-progressive-delivery" title="Permanent link">&para;</a></h1>
+<p>A feature flag (feature toggle) is a switch in the code whose position is
+decided at runtime, per request, from configuration you can change
+without deploying. Progressive delivery is the practice of releasing a
+change to gradually larger audiences (staff, 1% of users, 10%, everyone)
+while measuring it, using flags together with the deployment strategies
+from the previous lessons.</p>
+<p>This lesson covers the four kinds of flags, how flags are evaluated on
+servers and in clients, targeting rules, percentage rollouts with stable
+hashing (with a worked example), dark launches, the flag lifecycle and
+how flag debt builds up, the OpenFeature standard, the main tools,
+testing code that has flags, and a small flag service you can read end to
+end.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>Flags separate two decisions that deployment alone ties together: <em>when
+code reaches production</em> and <em>when users get the behavior</em>. That gives
+teams three abilities:</p>
+<ul>
+<li><strong>Merge and deploy unfinished work safely</strong> (trunk-based development),
+  so there are no long-lived branches and painful merges.</li>
+<li><strong>Release to a small audience first,</strong> watch metrics, and widen or
+  stop, without a deploy and at the speed of a configuration change.</li>
+<li><strong>Turn something off in seconds</strong> when it misbehaves: an expensive
+  query, a failing integration, a new UI that confuses users.</li>
+</ul>
+<p>Flags also carry real risk. Every flag doubles the number of code paths,
+flags left in the code become confusing and dangerous, and a flag
+evaluated wrongly can expose an unreleased feature or hide a working
+one. Treating flags as first-class, owned, short-lived configuration is
+what makes them safe.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Pete Hodgson on martinfowler.com.</strong> The article
+  <a href="https://martinfowler.com/articles/feature-toggles.html">Feature Toggles (aka Feature Flags)</a>
+  defines the four categories used on this page (release, experiment,
+  ops, and permission toggles), compares them by how long they live and
+  how dynamic their decisions are, and warns that toggles are inventory
+  with a carrying cost that teams must actively remove.</li>
+<li><strong>Google Cloud, June 2025.</strong> The
+  <a href="https://status.cloud.google.com/incidents/ow5i3PPK96RduMcb1SsW">incident report for the June 12, 2025 outage</a>
+  states that the change which failed "did not have appropriate error
+  handling nor was it feature flag protected", and that "if this had been
+  flag protected, the issue would have been caught in staging". Its
+  remediations include requiring feature flags, disabled by default, for
+  changes to critical binaries.</li>
+<li><strong>Knight Capital, 2012.</strong> The U.S. SEC's
+  <a href="https://www.sec.gov/litigation/admin/2013/34-70694.pdf">order against Knight Capital</a>
+  describes how new code was not deployed to one of eight servers and
+  how a flag that previously activated retired "Power Peg" code was
+  repurposed for the new feature. On that one server the flag reactivated
+  the old code, and the firm lost about $460 million in roughly 45
+  minutes: a lesson in flag debt and in never reusing flag names.</li>
+<li><strong>Facebook.</strong> The SOSP 2015 paper
+  <a href="https://research.facebook.com/publications/holistic-configuration-management-at-facebook/">Holistic Configuration Management at Facebook</a>
+  describes Gatekeeper, the system that controls feature rollouts by
+  user attributes and percentages, alongside the configuration system
+  whose changes are code-reviewed, tested, and canaried like code.</li>
+</ul>
+<p><strong>Popular tools and providers:</strong> LaunchDarkly, Unleash, Flagsmith,
+GrowthBook, ConfigCat, PostHog, AWS AppConfig, Firebase Remote Config,
+flagd, and the vendor-neutral OpenFeature SDKs.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="what-a-flag-looks-like-in-code">What a flag looks like in code<a class="headerlink" href="#what-a-flag-looks-like-in-code" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// In a route handler: the flag decides which code path runs</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">showNewBoard</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">flags</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">"new-task-board"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">userId</span><span class="o">:</span><span class="w"> </span><span class="nx">req</span><span class="p">.</span><span class="nx">user</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span><span class="w"> </span><span class="nx">plan</span><span class="o">:</span><span class="w"> </span><span class="nx">req</span><span class="p">.</span><span class="nx">user</span><span class="p">.</span><span class="nx">plan</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="kc">false</span><span class="p">);</span>
+<span class="nx">res</span><span class="p">.</span><span class="nx">json</span><span class="p">(</span><span class="nx">showNewBoard</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">boardV2</span><span class="p">(</span><span class="nx">req</span><span class="p">.</span><span class="nx">user</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">boardV1</span><span class="p">(</span><span class="nx">req</span><span class="p">.</span><span class="nx">user</span><span class="p">));</span>
+</code></pre></div>
+<p>Three parts matter in every call: the <strong>flag key</strong>, the <strong>evaluation
+context</strong> (who is asking: user ID, organization, plan, country, app
+version), and the <strong>default value</strong> used if the flag service is
+unreachable or the flag does not exist. The default must always be the
+safe, old behavior.</p>
+<h3 id="kinds-of-flags">Kinds of flags<a class="headerlink" href="#kinds-of-flags" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Kind</th>
+<th>Purpose</th>
+<th>Typical lifetime</th>
+<th>Who changes it</th>
+<th>Decision changes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Release</td>
+<td>Hide unfinished or not-yet-launched code; roll out gradually</td>
+<td>Days to weeks</td>
+<td>Developers, release owner</td>
+<td>Per user during rollout</td>
+</tr>
+<tr>
+<td>Experiment</td>
+<td>A/B and multivariate tests of product ideas</td>
+<td>Weeks, until the result is significant</td>
+<td>Product, data team</td>
+<td>Per user, sticky</td>
+</tr>
+<tr>
+<td>Ops (kill switch)</td>
+<td>Turn off expensive or failing functionality; degrade gracefully</td>
+<td>Long-lived by design</td>
+<td>On-call engineers</td>
+<td>Rarely, in incidents</td>
+</tr>
+<tr>
+<td>Permission</td>
+<td>Enable features for plans, beta programs, internal users</td>
+<td>Long-lived, often permanent</td>
+<td>Product, sales, support</td>
+<td>Per account</td>
+</tr>
+</tbody>
+</table>
+<p>The kinds differ in how long they live and how they must be governed.
+A release flag that is still in the code six months later is debt; a
+kill switch that is removed is a missing safety mechanism. Some teams
+move long-lived permission flags out of the flag system into a proper
+entitlements model once they stabilize.</p>
+<h3 id="evaluation-server-side-and-client-side">Evaluation: server-side and client-side<a class="headerlink" href="#evaluation-server-side-and-client-side" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: the request context for user-16 on the free plan is checked against the flag new-task-board in order; if the flag is disabled the off value is served; if the user is in the target list the target variant is served; if a rule such as plan equals beta matches the rule variant is served; otherwise if the user's bucket is below the rollout percentage the flag is on, else the default fallthrough off value is served; for user-16, bucket 364 is below 1000 for a 10% rollout, so the flag is on; the SDK keeps rules in memory, evaluates locally, and falls back to the code default if rules never loaded." src="../flag-evaluation-flow.svg" /></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Server-side SDK</th>
+<th>Client-side SDK (browser, mobile)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Where rules live</td>
+<td>Downloaded into the server process, refreshed by polling or streaming</td>
+<td>Usually <em>not</em> on the client; the client receives evaluated values for one user</td>
+</tr>
+<tr>
+<td>Cost per evaluation</td>
+<td>A local function call, microseconds</td>
+<td>Read from a local cache; network only on refresh</td>
+</tr>
+<tr>
+<td>Security</td>
+<td>Rules and targeting data stay on the server</td>
+<td>Anything sent to the client is visible to the user</td>
+</tr>
+<tr>
+<td>Typical use</td>
+<td>API behavior, backend paths, kill switches</td>
+<td>UI changes, mobile features that must change without a store release</td>
+</tr>
+<tr>
+<td>Failure mode</td>
+<td>Service unreachable: keep last known rules, else code defaults</td>
+<td>Offline: last cached values, else code defaults</td>
+</tr>
+</tbody>
+</table>
+<p>Two client-side cautions. First, never ship the full rule set (all flag
+keys, targeting lists, internal email domains) to browsers; send only the
+values for the current user, ideally evaluated by your server or the
+vendor's edge. Second, avoid "flicker", where the old UI renders and then
+switches: bootstrap the page with flag values computed on the server, or
+wait briefly for flags before first render.</p>
+<h3 id="targeting-rules">Targeting rules<a class="headerlink" href="#targeting-rules" title="Permanent link">&para;</a></h3>
+<p>A flag definition is an ordered list of decisions:</p>
+<ol>
+<li><strong>Enabled?</strong> A disabled flag serves its off value to everyone. This
+   is also the kill switch.</li>
+<li><strong>Individual targets:</strong> specific user or account IDs (QA accounts,
+   a customer who asked for early access).</li>
+<li><strong>Rules and segments:</strong> attribute matches such as <code>plan in [beta]</code>,
+   <code>email ends with @taskflow.example.com</code>, <code>country in [NZ]</code>,
+   <code>appVersion &gt;= 3.2</code>. Reusable groups of rules are segments.</li>
+<li><strong>Percentage rollout:</strong> a share of everyone else.</li>
+<li><strong>Fallthrough (default rule):</strong> what everyone else gets.</li>
+</ol>
+<p>The first matching step decides. Order matters: a staff rule placed after
+a 0% rollout never runs.</p>
+<h3 id="percentage-rollouts-with-stable-hashing">Percentage rollouts with stable hashing<a class="headerlink" href="#percentage-rollouts-with-stable-hashing" title="Permanent link">&para;</a></h3>
+<p>A percentage rollout must be <strong>sticky</strong>: the same user must get the same
+answer on every request, every server, every day, or they will see the
+feature appear and disappear. Random numbers per request do not work.
+Instead, hash a stable identifier:</p>
+<div class="highlight"><pre><span></span><code>bucket = first 4 bytes of SHA-256("&lt;flag key&gt;:&lt;user id&gt;") as an integer, mod 10,000
+on     = bucket &lt; percentage x 100
+</code></pre></div>
+<p><img alt="Diagram: the flag key and user ID new-task-board:user-16 are hashed with SHA-256; the first 4 bytes 0x3aa3e84c are 983,820,364, and modulo 10,000 that is bucket 364; on a line from 0 to 9,999, user-16 has bucket 364, user-1 1828, user-512 3028, and user-17 5569; at a 10% rollout only buckets below 1,000 are on, so only user-16; at 25% user-1 is added; at 50% user-512 is added while user-17 stays off; raising the percentage only adds users." src="../percentage-bucketing.svg" /></p>
+<p>Worked example with real SHA-256 values for the flag <code>new-task-board</code>:</p>
+<table>
+<thead>
+<tr>
+<th>User</th>
+<th>First 4 bytes of the hash</th>
+<th>As integer</th>
+<th>Bucket (mod 10,000)</th>
+<th>On at 10%?</th>
+<th>25%?</th>
+<th>50%?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>user-16</td>
+<td><code>3aa3e84c</code></td>
+<td>983,820,364</td>
+<td>364</td>
+<td>yes</td>
+<td>yes</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>user-1</td>
+<td><code>4356a514</code></td>
+<td>1,129,751,828</td>
+<td>1828</td>
+<td>no</td>
+<td>yes</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>user-512</td>
+<td><code>6cfbac84</code></td>
+<td>1,828,433,028</td>
+<td>3028</td>
+<td>no</td>
+<td>no</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>user-17</td>
+<td><code>63a8c7c1</code></td>
+<td>1,672,005,569</td>
+<td>5569</td>
+<td>no</td>
+<td>no</td>
+<td>no</td>
+</tr>
+</tbody>
+</table>
+<p>Properties worth knowing:</p>
+<ul>
+<li><strong>Monotonic:</strong> raising 10% to 25% only adds users (buckets 1000 to
+  2499); nobody who had the feature loses it. Lowering the percentage
+  removes the most recently added users first.</li>
+<li><strong>Uniform:</strong> a good hash spreads users evenly. Simulating 100,000 user
+  IDs gives 10.1% in the 10% bucket range. (The modulo adds a bias too
+  small to matter: 2^32 is not a multiple of 10,000, which skews bucket
+  probabilities by about 0.0002%.)</li>
+<li><strong>Independent across flags:</strong> because the flag key is part of the
+  hashed string, each flag picks a different 10%. In the same simulation,
+  only 9.9% of the users inside flag A's 10% were also inside flag B's
+  10%, which is what independence predicts. Without the flag key in the
+  hash, the same unlucky 10% of users would get every new feature first.</li>
+<li><strong>Choose the unit deliberately:</strong> bucket by <code>userId</code> for consumer
+  features, by <code>organizationId</code> in a B2B product so a whole team sees the
+  same UI, and by a device or session ID only for anonymous users.
+  Changing the unit or the salt reshuffles everyone.</li>
+</ul>
+<p>Unleash documents the same approach: it hashes the chosen stickiness
+field with the strategy's group ID (the flag name by default) using
+MurmurHash and compares the result with the rollout percentage.</p>
+<h3 id="dark-launches">Dark launches<a class="headerlink" href="#dark-launches" title="Permanent link">&para;</a></h3>
+<p>A dark launch deploys and runs a feature in production without showing it
+to users: the flag is off for users but on for staff, or the new code runs
+in the background and its result is logged and discarded. It answers
+"does this work at production scale?" before "do users like it?". See
+<a href="../advanced-deployment-patterns/">advanced deployment patterns</a> for dark
+launches alongside shadow traffic.</p>
+<h3 id="progressive-delivery">Progressive delivery<a class="headerlink" href="#progressive-delivery" title="Permanent link">&para;</a></h3>
+<p>Progressive delivery combines the pieces:</p>
+<ol>
+<li>Deploy the code with the flag off (dark), using a rolling or canary
+   deployment for the <em>technical</em> risk.</li>
+<li>Turn the flag on for staff and test accounts.</li>
+<li>Roll out to 1%, 5%, 25%, 50%, 100% of users, watching guardrail
+   metrics for the flagged population (errors, latency, and the business
+   metric the feature should move or must not harm).</li>
+<li>If a guardrail regresses, turn the flag off; some flag platforms can
+   do this automatically when metrics cross a threshold.</li>
+<li>At 100%, wait a short bake period, then remove the flag from the code.</li>
+</ol>
+<p>Deployment strategies control <em>which servers</em> run new code; flags control
+<em>which users</em> see new behavior. Mature teams use both: a canary catches a
+crash in the new binary, a flag rollout catches a confusing UI or a slow
+query that only some users trigger.</p>
+<h3 id="flag-lifecycle-and-flag-debt">Flag lifecycle and flag debt<a class="headerlink" href="#flag-lifecycle-and-flag-debt" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: a release flag moves through six stages: created and off with code merged; testing with the flag on for staff; rolling out from 1% to 100%, with a path back to off in seconds and without a deploy if a problem appears; fully on at 100% for about a week; code cleanup removing the checks and the old path; and archived with the flag deleted; skipping cleanup creates flag debt; release flags should live days to weeks, while kill switches and permission flags are long-lived by design but still need an owner and review date." src="../flag-lifecycle.svg" /></p>
+<p>Flag debt is what accumulates when flags reach 100% and stay in the code:</p>
+<ul>
+<li>Dead code paths that nobody tests but that can still be switched on.</li>
+<li>Confusing combinations (with 20 flags there are about a million
+  theoretical states).</li>
+<li>The Knight Capital failure mode: a flag or an old code path that means
+  something different on some servers than on others.</li>
+</ul>
+<p>Controls that work:</p>
+<ul>
+<li>Every flag has an <strong>owner</strong> and an <strong>expiry or review date</strong> when it is
+  created.</li>
+<li>CI fails when a release flag passes its expiry date (example below).</li>
+<li>The flag service reports flags that served a single value for 30 days.</li>
+<li>Removing the flag is part of the feature's definition of done.</li>
+<li>Flag keys are <strong>never reused</strong>; a new purpose gets a new key.</li>
+<li>Keep flag checks at the edges (route handlers, top-level components),
+  not deep inside libraries, so removal is a small change.</li>
+</ul>
+<h3 id="the-openfeature-standard">The OpenFeature standard<a class="headerlink" href="#the-openfeature-standard" title="Permanent link">&para;</a></h3>
+<p>OpenFeature is a CNCF project that defines a vendor-neutral API for flag
+evaluation. Application code calls the OpenFeature API; a <strong>provider</strong>
+connects it to a flag system (LaunchDarkly, Unleash, Flagsmith, flagd,
+your own service, or an in-memory provider for tests). Switching vendors
+then means changing the provider, not every call site.</p>
+<p>Core concepts:</p>
+<ul>
+<li><strong>Evaluation API:</strong> <code>getBooleanValue</code>, <code>getStringValue</code>,
+  <code>getNumberValue</code>, <code>getObjectValue</code>, each with a flag key, a default
+  value, and an optional context; <code>get...Details</code> variants also return
+  the reason and variant.</li>
+<li><strong>Evaluation context:</strong> attributes about the subject, with
+  <code>targetingKey</code> as the stable identifier used for bucketing.</li>
+<li><strong>Providers:</strong> adapters to flag back ends.</li>
+<li><strong>Hooks:</strong> code that runs before and after evaluations, for logging,
+  metrics, or validation.</li>
+<li><strong>Domains:</strong> named clients bound to different providers.</li>
+</ul>
+<h3 id="testing-with-flags">Testing with flags<a class="headerlink" href="#testing-with-flags" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Test <strong>both states</strong> of every flag the change introduces, with other
+  flags at their production values. Testing every combination is
+  impossible; testing each new flag on and off is cheap.</li>
+<li>Inject flags through an interface (or OpenFeature's in-memory provider)
+  so tests set values directly instead of calling a network service.</li>
+<li>Make the default value the old behavior, and test that the code
+  behaves correctly when the flag service is down.</li>
+<li>Run end-to-end tests with the flag states that production currently
+  serves, not just "all on".</li>
+</ul>
+<h3 id="choosing-a-tool">Choosing a tool<a class="headerlink" href="#choosing-a-tool" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Model</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LaunchDarkly</td>
+<td>SaaS</td>
+<td>Mature targeting, experimentation, streaming updates, wide SDK coverage</td>
+</tr>
+<tr>
+<td>Unleash</td>
+<td>Open source (self-host) and SaaS</td>
+<td>Strategies such as gradual rollout with stickiness; strong self-hosting story</td>
+</tr>
+<tr>
+<td>Flagsmith</td>
+<td>Open source (self-host) and SaaS</td>
+<td>Flags plus remote configuration values</td>
+</tr>
+<tr>
+<td>GrowthBook</td>
+<td>Open-source core, self-host or cloud</td>
+<td>Strong on experimentation and warehouse-native analysis</td>
+</tr>
+<tr>
+<td>ConfigCat</td>
+<td>SaaS</td>
+<td>Simple pricing, config files evaluated locally by SDKs</td>
+</tr>
+<tr>
+<td>AWS AppConfig</td>
+<td>Managed AWS service</td>
+<td>Feature flags and config with validators and deployment strategies that can roll back on alarms</td>
+</tr>
+<tr>
+<td>flagd</td>
+<td>Open source, OpenFeature project</td>
+<td>A small flag daemon that reads flag definitions from files or other sources</td>
+</tr>
+</tbody>
+</table>
+<p>A home-grown flag service is reasonable for a handful of release flags
+and kill switches (the example below). Once you need audit logs,
+approval workflows, experimentation statistics, and a UI for
+non-engineers, a dedicated tool usually costs less than building those.</p>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Use a flag for</th>
+<th>Do not use a flag for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Merging unfinished work into <code>main</code></td>
+<td>Secrets or credentials</td>
+</tr>
+<tr>
+<td>Gradual rollout of a risky behavior change</td>
+<td>Per-environment infrastructure settings (use configuration)</td>
+</tr>
+<tr>
+<td>A kill switch around an expensive or fragile dependency</td>
+<td>Database schema changes (use expand and contract)</td>
+</tr>
+<tr>
+<td>Beta programs and early access</td>
+<td>Permanent authorization rules that belong in your permission model</td>
+</tr>
+<tr>
+<td>A/B experiments on product ideas</td>
+<td>Trivial changes where the flag costs more than the risk</td>
+</tr>
+</tbody>
+</table>
+<p>Also avoid flags in code that runs before the flag system is available
+(startup configuration), and avoid nesting flags inside flags.</p>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="a-small-flag-service-with-stable-bucketing">A small flag service with stable bucketing<a class="headerlink" href="#a-small-flag-service-with-stable-bucketing" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/flags/flag-service.js: a small flag service with stable percentage bucketing</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">createHash</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:crypto"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">readFile</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:fs/promises"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">BUCKETS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">10</span><span class="nx">_000</span><span class="p">;</span><span class="w"> </span><span class="c1">// 0.01% resolution</span>
+
+<span class="c1">// Same flag + same unit (user, org) -&gt; same bucket, on every server, forever.</span>
+<span class="k">export</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">bucketFor</span><span class="p">(</span><span class="nx">flagKey</span><span class="p">,</span><span class="w"> </span><span class="nx">unitId</span><span class="p">,</span><span class="w"> </span><span class="nx">salt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">flagKey</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">digest</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">createHash</span><span class="p">(</span><span class="s2">"sha256"</span><span class="p">).</span><span class="nx">update</span><span class="p">(</span><span class="sb">`</span><span class="si">${</span><span class="nx">salt</span><span class="si">}</span><span class="sb">:</span><span class="si">${</span><span class="nx">unitId</span><span class="si">}</span><span class="sb">`</span><span class="p">).</span><span class="nx">digest</span><span class="p">();</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">digest</span><span class="p">.</span><span class="nx">readUInt32BE</span><span class="p">(</span><span class="mf">0</span><span class="p">)</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="nx">BUCKETS</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kd">function</span><span class="w"> </span><span class="nx">matches</span><span class="p">(</span><span class="nx">rule</span><span class="p">,</span><span class="w"> </span><span class="nx">ctx</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">actual</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">ctx</span><span class="p">[</span><span class="nx">rule</span><span class="p">.</span><span class="nx">attribute</span><span class="p">];</span>
+<span class="w">  </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="nx">rule</span><span class="p">.</span><span class="nx">operator</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="s2">"in"</span><span class="o">:</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="nx">rule</span><span class="p">.</span><span class="nx">values</span><span class="p">.</span><span class="nx">includes</span><span class="p">(</span><span class="nx">actual</span><span class="p">);</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="s2">"notIn"</span><span class="o">:</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="o">!</span><span class="nx">rule</span><span class="p">.</span><span class="nx">values</span><span class="p">.</span><span class="nx">includes</span><span class="p">(</span><span class="nx">actual</span><span class="p">);</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="s2">"endsWith"</span><span class="o">:</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="ow">typeof</span><span class="w"> </span><span class="nx">actual</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">"string"</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nx">rule</span><span class="p">.</span><span class="nx">values</span><span class="p">.</span><span class="nx">some</span><span class="p">((</span><span class="nx">v</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">actual</span><span class="p">.</span><span class="nx">endsWith</span><span class="p">(</span><span class="nx">v</span><span class="p">));</span>
+<span class="w">    </span><span class="k">default</span><span class="o">:</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span><span class="w"> </span><span class="c1">// unknown operators never match</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">evaluate</span><span class="p">(</span><span class="nx">flag</span><span class="p">,</span><span class="w"> </span><span class="nx">ctx</span><span class="p">,</span><span class="w"> </span><span class="nx">defaultValue</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">flag</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">value</span><span class="o">:</span><span class="w"> </span><span class="nx">defaultValue</span><span class="p">,</span><span class="w"> </span><span class="nx">reason</span><span class="o">:</span><span class="w"> </span><span class="s2">"FLAG_NOT_FOUND"</span><span class="w"> </span><span class="p">};</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">flag</span><span class="p">.</span><span class="nx">enabled</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">value</span><span class="o">:</span><span class="w"> </span><span class="nx">flag</span><span class="p">.</span><span class="nx">offValue</span><span class="p">,</span><span class="w"> </span><span class="nx">reason</span><span class="o">:</span><span class="w"> </span><span class="s2">"DISABLED"</span><span class="w"> </span><span class="p">};</span>
+
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">unitId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">ctx</span><span class="p">[</span><span class="nx">flag</span><span class="p">.</span><span class="nx">bucketBy</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="s2">"userId"</span><span class="p">];</span>
+
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">unitId</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nx">flag</span><span class="p">.</span><span class="nx">targets</span><span class="o">?</span><span class="p">.[</span><span class="nx">unitId</span><span class="p">]</span><span class="w"> </span><span class="o">!==</span><span class="w"> </span><span class="kc">undefined</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">value</span><span class="o">:</span><span class="w"> </span><span class="nx">flag</span><span class="p">.</span><span class="nx">targets</span><span class="p">[</span><span class="nx">unitId</span><span class="p">],</span><span class="w"> </span><span class="nx">reason</span><span class="o">:</span><span class="w"> </span><span class="s2">"TARGET_MATCH"</span><span class="w"> </span><span class="p">};</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="nx">rule</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="nx">flag</span><span class="p">.</span><span class="nx">rules</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="p">[])</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">matches</span><span class="p">(</span><span class="nx">rule</span><span class="p">,</span><span class="w"> </span><span class="nx">ctx</span><span class="p">))</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">value</span><span class="o">:</span><span class="w"> </span><span class="nx">rule</span><span class="p">.</span><span class="nx">value</span><span class="p">,</span><span class="w"> </span><span class="nx">reason</span><span class="o">:</span><span class="w"> </span><span class="s2">"RULE_MATCH"</span><span class="w"> </span><span class="p">};</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">flag</span><span class="p">.</span><span class="nx">rollout</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nx">unitId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">bucket</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">bucketFor</span><span class="p">(</span><span class="nx">flag</span><span class="p">.</span><span class="nx">key</span><span class="p">,</span><span class="w"> </span><span class="nx">unitId</span><span class="p">,</span><span class="w"> </span><span class="nx">flag</span><span class="p">.</span><span class="nx">salt</span><span class="p">);</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">inRollout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">bucket</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="nx">flag</span><span class="p">.</span><span class="nx">rollout</span><span class="p">.</span><span class="nx">percentage</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="nx">BUCKETS</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">100</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">value</span><span class="o">:</span><span class="w"> </span><span class="nx">inRollout</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="nx">flag</span><span class="p">.</span><span class="nx">rollout</span><span class="p">.</span><span class="nx">value</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="nx">flag</span><span class="p">.</span><span class="nx">fallthroughValue</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">reason</span><span class="o">:</span><span class="w"> </span><span class="s2">"PERCENTAGE_ROLLOUT"</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">bucket</span><span class="p">,</span>
+<span class="w">    </span><span class="p">};</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">value</span><span class="o">:</span><span class="w"> </span><span class="nx">flag</span><span class="p">.</span><span class="nx">fallthroughValue</span><span class="p">,</span><span class="w"> </span><span class="nx">reason</span><span class="o">:</span><span class="w"> </span><span class="s2">"FALLTHROUGH"</span><span class="w"> </span><span class="p">};</span>
+<span class="p">}</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nx">FlagService</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">#flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Map</span><span class="p">();</span>
+<span class="w">  </span><span class="n">#timer</span><span class="p">;</span>
+
+<span class="w">  </span><span class="kr">constructor</span><span class="p">({</span><span class="w"> </span><span class="nx">source</span><span class="p">,</span><span class="w"> </span><span class="nx">refreshMs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">30</span><span class="nx">_000</span><span class="p">,</span><span class="w"> </span><span class="nx">logger</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">console</span><span class="w"> </span><span class="p">})</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="nx">source</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">source</span><span class="p">;</span><span class="w"> </span><span class="c1">// async () =&gt; array of flag definitions</span>
+<span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="nx">refreshMs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">refreshMs</span><span class="p">;</span>
+<span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="nx">logger</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">logger</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="k">async</span><span class="w"> </span><span class="nx">start</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">refresh</span><span class="p">();</span>
+<span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="n">#timer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">setInterval</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">refresh</span><span class="p">(),</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">refreshMs</span><span class="p">);</span>
+<span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="n">#timer</span><span class="p">.</span><span class="nx">unref</span><span class="p">();</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="nx">stop</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">clearInterval</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="n">#timer</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="k">async</span><span class="w"> </span><span class="nx">refresh</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="kd">const</span><span class="w"> </span><span class="nx">defs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">source</span><span class="p">();</span>
+<span class="w">      </span><span class="k">this</span><span class="p">.</span><span class="n">#flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Map</span><span class="p">(</span><span class="nx">defs</span><span class="p">.</span><span class="nx">map</span><span class="p">((</span><span class="nx">f</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">[</span><span class="nx">f</span><span class="p">.</span><span class="nx">key</span><span class="p">,</span><span class="w"> </span><span class="nx">f</span><span class="p">]));</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="nx">err</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="c1">// Keep serving the last good rules; never crash because flags are unavailable</span>
+<span class="w">      </span><span class="k">this</span><span class="p">.</span><span class="nx">logger</span><span class="p">.</span><span class="nx">error</span><span class="p">({</span><span class="w"> </span><span class="nx">err</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="s2">"flag refresh failed; using last known rules"</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="nx">get</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span><span class="w"> </span><span class="nx">ctx</span><span class="p">,</span><span class="w"> </span><span class="nx">defaultValue</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nx">evaluate</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="n">#flags</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">key</span><span class="p">),</span><span class="w"> </span><span class="nx">ctx</span><span class="p">,</span><span class="w"> </span><span class="nx">defaultValue</span><span class="p">).</span><span class="nx">value</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="nx">explain</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span><span class="w"> </span><span class="nx">ctx</span><span class="p">,</span><span class="w"> </span><span class="nx">defaultValue</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nx">evaluate</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="n">#flags</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">key</span><span class="p">),</span><span class="w"> </span><span class="nx">ctx</span><span class="p">,</span><span class="w"> </span><span class="nx">defaultValue</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// Example source: a JSON file shipped by the flag pipeline (or an HTTP endpoint)</span>
+<span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">fileSource</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nx">path</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nb">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="k">await</span><span class="w"> </span><span class="nx">readFile</span><span class="p">(</span><span class="nx">path</span><span class="p">,</span><span class="w"> </span><span class="s2">"utf8"</span><span class="p">));</span>
+</code></pre></div>
+<p>The flag definitions, <code>flags/flags.json</code> (JSON has no comments, so the
+owner and expiry are ordinary fields):</p>
+<div class="highlight"><pre><span></span><code><span class="p">[</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"key"</span><span class="p">:</span><span class="w"> </span><span class="s2">"new-task-board"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"enabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"offValue"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"fallthroughValue"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"bucketBy"</span><span class="p">:</span><span class="w"> </span><span class="s2">"userId"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"targets"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"user-qa-1"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"rules"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">"attribute"</span><span class="p">:</span><span class="w"> </span><span class="s2">"email"</span><span class="p">,</span><span class="w"> </span><span class="nt">"operator"</span><span class="p">:</span><span class="w"> </span><span class="s2">"endsWith"</span><span class="p">,</span><span class="w"> </span><span class="nt">"values"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"@taskflow.example.com"</span><span class="p">],</span><span class="w"> </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">"attribute"</span><span class="p">:</span><span class="w"> </span><span class="s2">"plan"</span><span class="p">,</span><span class="w"> </span><span class="nt">"operator"</span><span class="p">:</span><span class="w"> </span><span class="s2">"in"</span><span class="p">,</span><span class="w"> </span><span class="nt">"values"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"beta"</span><span class="p">],</span><span class="w"> </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">    </span><span class="nt">"rollout"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"percentage"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"owner"</span><span class="p">:</span><span class="w"> </span><span class="s2">"team-boards"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"expires"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2027-01-31"</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"key"</span><span class="p">:</span><span class="w"> </span><span class="s2">"search-backend-v2"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"enabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"offValue"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"fallthroughValue"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"owner"</span><span class="p">:</span><span class="w"> </span><span class="s2">"team-search"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"expires"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-12-15"</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">]</span>
+</code></pre></div>
+<p>Evaluating <code>new-task-board</code> with this file gives:</p>
+<div class="highlight"><pre><span></span><code>{ userId: "user-16", plan: "free" }               -&gt; true   PERCENTAGE_ROLLOUT (bucket 364)
+{ userId: "user-1",  plan: "free" }               -&gt; false  PERCENTAGE_ROLLOUT (bucket 1828)
+{ userId: "user-17", plan: "beta" }               -&gt; true   RULE_MATCH
+{ userId: "user-99", email: "ana@taskflow.example.com" } -&gt; true RULE_MATCH
+{ userId: "user-qa-1" }                           -&gt; true   TARGET_MATCH
+search-backend-v2 for anyone                      -&gt; false  DISABLED
+an unknown flag                                   -&gt; the caller's default, FLAG_NOT_FOUND
+</code></pre></div>
+<p>Design choices worth copying: evaluation is a pure function (easy to
+test), the service keeps the last good rules when a refresh fails, the
+default value is chosen by the caller, and <code>explain</code> returns the reason so
+logs can show <em>why</em> a user saw a feature.</p>
+<h3 id="using-it-in-an-express-route">Using it in an Express route<a class="headerlink" href="#using-it-in-an-express-route" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/routes/board.js</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Router</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"express"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">flags</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"../flags/index.js"</span><span class="p">;</span><span class="w"> </span><span class="c1">// a started FlagService instance</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">board</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">Router</span><span class="p">();</span>
+
+<span class="nx">board</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">"/board"</span><span class="p">,</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="nx">req</span><span class="p">,</span><span class="w"> </span><span class="nx">res</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">ctx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">userId</span><span class="o">:</span><span class="w"> </span><span class="nx">req</span><span class="p">.</span><span class="nx">user</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span><span class="w"> </span><span class="nx">plan</span><span class="o">:</span><span class="w"> </span><span class="nx">req</span><span class="p">.</span><span class="nx">user</span><span class="p">.</span><span class="nx">plan</span><span class="p">,</span><span class="w"> </span><span class="nx">email</span><span class="o">:</span><span class="w"> </span><span class="nx">req</span><span class="p">.</span><span class="nx">user</span><span class="p">.</span><span class="nx">email</span><span class="w"> </span><span class="p">};</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">value</span><span class="o">:</span><span class="w"> </span><span class="nx">useNewBoard</span><span class="p">,</span><span class="w"> </span><span class="nx">reason</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">flags</span><span class="p">.</span><span class="nx">explain</span><span class="p">(</span><span class="s2">"new-task-board"</span><span class="p">,</span><span class="w"> </span><span class="nx">ctx</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">);</span>
+
+<span class="w">  </span><span class="nx">req</span><span class="p">.</span><span class="nx">log</span><span class="p">.</span><span class="nx">info</span><span class="p">({</span><span class="w"> </span><span class="nx">flag</span><span class="o">:</span><span class="w"> </span><span class="s2">"new-task-board"</span><span class="p">,</span><span class="w"> </span><span class="nx">value</span><span class="o">:</span><span class="w"> </span><span class="nx">useNewBoard</span><span class="p">,</span><span class="w"> </span><span class="nx">reason</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="s2">"flag evaluated"</span><span class="p">);</span>
+<span class="w">  </span><span class="nx">res</span><span class="p">.</span><span class="nx">json</span><span class="p">(</span><span class="nx">useNewBoard</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">buildBoardV2</span><span class="p">(</span><span class="nx">req</span><span class="p">.</span><span class="nx">user</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">buildBoardV1</span><span class="p">(</span><span class="nx">req</span><span class="p">.</span><span class="nx">user</span><span class="p">));</span>
+<span class="p">});</span>
+</code></pre></div>
+<h3 id="the-same-call-through-openfeature">The same call through OpenFeature<a class="headerlink" href="#the-same-call-through-openfeature" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/flags/openfeature.js: vendor-neutral evaluation (in-memory provider shown)</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">OpenFeature</span><span class="p">,</span><span class="w"> </span><span class="nx">InMemoryProvider</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"@openfeature/server-sdk"</span><span class="p">;</span>
+
+<span class="k">await</span><span class="w"> </span><span class="nx">OpenFeature</span><span class="p">.</span><span class="nx">setProviderAndWait</span><span class="p">(</span>
+<span class="w">  </span><span class="ow">new</span><span class="w"> </span><span class="nx">InMemoryProvider</span><span class="p">({</span>
+<span class="w">    </span><span class="s2">"new-task-board"</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">disabled</span><span class="o">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">variants</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">on</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="nx">off</span><span class="o">:</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="nx">defaultVariant</span><span class="o">:</span><span class="w"> </span><span class="s2">"off"</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">contextEvaluator</span><span class="o">:</span><span class="w"> </span><span class="p">(</span><span class="nx">ctx</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">(</span><span class="nx">ctx</span><span class="p">.</span><span class="nx">plan</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">"beta"</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="s2">"on"</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="s2">"off"</span><span class="p">),</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">  </span><span class="p">}),</span>
+<span class="p">);</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">client</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">OpenFeature</span><span class="p">.</span><span class="nx">getClient</span><span class="p">(</span><span class="s2">"taskflow-api"</span><span class="p">);</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">useNewBoard</span><span class="p">(</span><span class="nx">user</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">client</span><span class="p">.</span><span class="nx">getBooleanValue</span><span class="p">(</span><span class="s2">"new-task-board"</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">targetingKey</span><span class="o">:</span><span class="w"> </span><span class="nx">user</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span><span class="w"> </span><span class="c1">// the stable ID providers use for bucketing</span>
+<span class="w">    </span><span class="nx">plan</span><span class="o">:</span><span class="w"> </span><span class="nx">user</span><span class="p">.</span><span class="nx">plan</span><span class="p">,</span>
+<span class="w">  </span><span class="p">});</span>
+<span class="p">}</span>
+
+<span class="c1">// On shutdown: await OpenFeature.close();</span>
+</code></pre></div>
+<p>In production you replace <code>InMemoryProvider</code> with the provider package
+for your flag system; the call sites do not change.</p>
+<h3 id="testing-both-states">Testing both states<a class="headerlink" href="#testing-both-states" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// test/board.test.js</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">test</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:test"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="nx">assert</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:assert/strict"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">evaluate</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"../src/flags/flag-service.js"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">flag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">key</span><span class="o">:</span><span class="w"> </span><span class="s2">"new-task-board"</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">enabled</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">offValue</span><span class="o">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">fallthroughValue</span><span class="o">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">rollout</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">percentage</span><span class="o">:</span><span class="w"> </span><span class="mf">10</span><span class="p">,</span><span class="w"> </span><span class="nx">value</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">},</span>
+<span class="p">};</span>
+
+<span class="nx">test</span><span class="p">(</span><span class="s2">"a user inside the 10% rollout gets the new board"</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">assert</span><span class="p">.</span><span class="nx">equal</span><span class="p">(</span><span class="nx">evaluate</span><span class="p">(</span><span class="nx">flag</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">userId</span><span class="o">:</span><span class="w"> </span><span class="s2">"user-16"</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="kc">false</span><span class="p">).</span><span class="nx">value</span><span class="p">,</span><span class="w"> </span><span class="kc">true</span><span class="p">);</span><span class="w"> </span><span class="c1">// bucket 364</span>
+<span class="p">});</span>
+
+<span class="nx">test</span><span class="p">(</span><span class="s2">"a user outside the rollout keeps the old board"</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">assert</span><span class="p">.</span><span class="nx">equal</span><span class="p">(</span><span class="nx">evaluate</span><span class="p">(</span><span class="nx">flag</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">userId</span><span class="o">:</span><span class="w"> </span><span class="s2">"user-1"</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="kc">false</span><span class="p">).</span><span class="nx">value</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">);</span><span class="w"> </span><span class="c1">// bucket 1828</span>
+<span class="p">});</span>
+
+<span class="nx">test</span><span class="p">(</span><span class="s2">"a disabled flag acts as a kill switch"</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">assert</span><span class="p">.</span><span class="nx">equal</span><span class="p">(</span><span class="nx">evaluate</span><span class="p">({</span><span class="w"> </span><span class="p">...</span><span class="nx">flag</span><span class="p">,</span><span class="w"> </span><span class="nx">enabled</span><span class="o">:</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">userId</span><span class="o">:</span><span class="w"> </span><span class="s2">"user-16"</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="kc">false</span><span class="p">).</span><span class="nx">value</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">);</span>
+<span class="p">});</span>
+
+<span class="nx">test</span><span class="p">(</span><span class="s2">"an unknown flag falls back to the caller's default"</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">assert</span><span class="p">.</span><span class="nx">equal</span><span class="p">(</span><span class="nx">evaluate</span><span class="p">(</span><span class="kc">undefined</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">userId</span><span class="o">:</span><span class="w"> </span><span class="s2">"user-16"</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="kc">false</span><span class="p">).</span><span class="nx">value</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre></div>
+<h3 id="failing-ci-on-expired-flags">Failing CI on expired flags<a class="headerlink" href="#failing-ci-on-expired-flags" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// scripts/check-flag-expiry.js: fail the build when a release flag is past its date</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">readFile</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:fs/promises"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="k">await</span><span class="w"> </span><span class="nx">readFile</span><span class="p">(</span><span class="s2">"flags/flags.json"</span><span class="p">,</span><span class="w"> </span><span class="s2">"utf8"</span><span class="p">));</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">today</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Date</span><span class="p">().</span><span class="nx">toISOString</span><span class="p">().</span><span class="nx">slice</span><span class="p">(</span><span class="mf">0</span><span class="p">,</span><span class="w"> </span><span class="mf">10</span><span class="p">);</span><span class="w"> </span><span class="c1">// YYYY-MM-DD compares as text</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">expired</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">flags</span><span class="p">.</span><span class="nx">filter</span><span class="p">((</span><span class="nx">f</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">f</span><span class="p">.</span><span class="nx">expires</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nx">f</span><span class="p">.</span><span class="nx">expires</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="nx">today</span><span class="p">);</span>
+<span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="nx">f</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="nx">expired</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="sb">`flag "</span><span class="si">${</span><span class="nx">f</span><span class="p">.</span><span class="nx">key</span><span class="si">}</span><span class="sb">" (owner </span><span class="si">${</span><span class="nx">f</span><span class="p">.</span><span class="nx">owner</span><span class="si">}</span><span class="sb">) expired on </span><span class="si">${</span><span class="nx">f</span><span class="p">.</span><span class="nx">expires</span><span class="si">}</span><span class="sb">: remove it or extend it`</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">expired</span><span class="p">.</span><span class="nx">length</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">0</span><span class="p">)</span><span class="w"> </span><span class="nx">process</span><span class="p">.</span><span class="nx">exit</span><span class="p">(</span><span class="mf">1</span><span class="p">);</span>
+</code></pre></div>
+<p>Add <code>node scripts/check-flag-expiry.js</code> to the CI pipeline. Extending a
+date is allowed, but it becomes a visible, reviewed decision instead of
+silent drift.</p>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Default every flag call to the safe, old behavior.</li>
+<li>Give every flag an owner, a kind, and an expiry or review date.</li>
+<li>Hash a stable ID salted with the flag key for percentage rollouts;
+  bucket by organization in B2B products.</li>
+<li>Keep rules on the server; send clients only their evaluated values.</li>
+<li>Log the flag value and reason with requests, so incidents can be traced
+  to flag states.</li>
+<li>Watch guardrail metrics per flag cohort during rollouts.</li>
+<li>Remove release flags within days of reaching 100%; never reuse keys.</li>
+<li>Keep kill switches for expensive or fragile dependencies and test them
+  regularly.</li>
+<li>Put flag checks at the edges of the code, not deep in shared libraries.</li>
+<li>Use OpenFeature (or your own thin interface) so call sites do not
+  depend on one vendor's SDK.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>A user sees the new feature appear and disappear.</strong>
+  <em>Detect:</em> support reports of a flickering UI; logs show the same user
+  with different flag values. <em>Cause:</em> bucketing on a value that changes
+  (session ID, random number), or rules that depend on an attribute not
+  always present. <em>Fix:</em> bucket on a stable user or organization ID and
+  always send the same context.</li>
+<li><strong>The flag service had an outage and the API slowed to a crawl.</strong>
+  <em>Detect:</em> latency matches the flag client's timeout. <em>Cause:</em> flags
+  were evaluated by a network call per request. <em>Fix:</em> use an SDK that
+  evaluates locally from cached rules, with code defaults if rules never
+  loaded.</li>
+<li><strong>An unreleased feature name leaked.</strong>
+  <em>Detect:</em> someone posts flag keys found in the browser's network tab.
+  <em>Cause:</em> the client SDK received the full rule set. <em>Fix:</em> evaluate on
+  the server or vendor edge and send only values; use neutral flag keys.</li>
+<li><strong>Turning a flag off did not stop the problem.</strong>
+  <em>Detect:</em> errors continue after the flag change. <em>Cause:</em> the slow code
+  was not behind the flag, values were cached in the app for a long time,
+  or a second flag also controlled the path. <em>Fix:</em> keep refresh
+  intervals short, test kill switches, and map which code each flag
+  guards.</li>
+<li><strong>An old flag reactivated retired code.</strong>
+  <em>Detect:</em> unexpected behavior after a config change to a flag "nobody
+  uses". <em>Cause:</em> flag debt; the dead path was never deleted, or a key
+  was reused. <em>Fix:</em> expiry dates enforced in CI, cleanup as part of done,
+  and new keys for new purposes.</li>
+<li><strong>A 10% rollout hit the same customers as the last three rollouts.</strong>
+  <em>Detect:</em> the same accounts report every new bug. <em>Cause:</em> bucketing
+  hashed only the user ID, without the flag key. <em>Fix:</em> include the flag
+  key (or a per-flag salt) in the hashed string.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Feature flag (toggle):</strong> a runtime switch that selects a code path.</li>
+<li><strong>Evaluation context:</strong> the attributes describing who or what a flag
+  is evaluated for.</li>
+<li><strong>Targeting rule:</strong> a condition on context attributes that selects a
+  variant.</li>
+<li><strong>Segment:</strong> a reusable group of targeting rules.</li>
+<li><strong>Variant:</strong> one of the values a flag can serve.</li>
+<li><strong>Percentage rollout:</strong> serving a variant to a share of units chosen by
+  hashing.</li>
+<li><strong>Bucketing (stickiness):</strong> mapping a stable ID to a fixed bucket so
+  the decision is consistent.</li>
+<li><strong>Kill switch:</strong> an ops flag that turns off functionality quickly.</li>
+<li><strong>Dark launch:</strong> running a feature in production without exposing it
+  to users.</li>
+<li><strong>Progressive delivery:</strong> releasing to growing audiences with
+  measurement and automatic or manual stop points.</li>
+<li><strong>Flag debt:</strong> flags and dead code paths left after their purpose
+  ended.</li>
+<li><strong>OpenFeature:</strong> a CNCF project defining a vendor-neutral flag
+  evaluation API.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Using flags as a substitute for testing; a flag limits blast radius, it
+  does not make the code correct.</li>
+<li>Evaluating flags with a network call on every request.</li>
+<li>Choosing an unsafe default value, so an outage of the flag service
+  turns features on.</li>
+<li>Shipping all flag rules to browsers.</li>
+<li>Hashing only the user ID, so the same users are always first.</li>
+<li>Leaving release flags in the code indefinitely, and reusing old keys.</li>
+<li>Treating permission and kill-switch flags like release flags and
+  deleting them.</li>
+<li>Assuming a flag can protect a database schema change; both code paths
+  still need a compatible schema.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>What are the four kinds of feature flags, and how do their lifetimes
+   differ?</li>
+<li>Why must percentage rollouts hash a stable identifier instead of using
+   a random number per request?</li>
+<li>With buckets 0 to 9,999, a user's bucket is 2,731. At which rollout
+   percentages is the user included: 10%, 25%, 30%, 50%?</li>
+<li>Why should the flag key be part of the hashed string?</li>
+<li>When would you bucket by organization ID instead of user ID?</li>
+<li>What should happen when the flag service is unreachable, and how
+   should the SDK be built to make that safe?</li>
+<li>Explain how flag debt contributed to the Knight Capital incident.</li>
+<li>What does OpenFeature standardize, and what stays vendor-specific?</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://martinfowler.com/articles/feature-toggles.html">Pete Hodgson: Feature Toggles (aka Feature Flags)</a></li>
+<li><a href="https://openfeature.dev/specification/">OpenFeature specification</a></li>
+<li><a href="https://openfeature.dev/docs/reference/sdks/server/javascript/">OpenFeature: JavaScript server SDK</a></li>
+<li><a href="https://docs.getunleash.io/reference/stickiness">Unleash: Stickiness</a></li>
+<li><a href="https://status.cloud.google.com/incidents/ow5i3PPK96RduMcb1SsW">Google Cloud incident report, June 12, 2025</a></li>
+<li>Next: <a href="../zero-downtime-database-migrations/">zero-downtime database migrations</a>. Back to the
+  <a href="../">deployment strategies overview</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../advanced-deployment-patterns/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Advanced Deployment Patterns">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Advanced Deployment Patterns</span>
+      </a>
+    
+    
+      <a href="../zero-downtime-database-migrations/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: Zero-Downtime Database Migrations">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">Zero-Downtime Database Migrations</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,173 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="530" viewBox="0 0 880 530" role="img" aria-labelledby="alg-title alg-desc">
+  <title id="alg-title">How six balancing algorithms pick a backend</title>
+  <desc id="alg-desc">Six cards use servers A, B, and C. Round robin sends requests 1 to 6 to A, B, C, A, B, C, so each server gets 2; it fits identical servers and similar requests, but slow requests can pile up on one server. Weighted round robin with weights A 2, B 1, C 1 sends 8 requests as A, B, C, A, A, B, C, A, so A gets 4 and B and C get 2 each; it fits mixed instance sizes and gradual traffic shifts, but weights are static guesses. Least connections or least outstanding requests sees A with 3 open, B with 1, and C with 2, so the next request goes to B; it fits long or uneven requests and WebSockets, but a newly added server can get a burst. Power of two choices sees A with 4 in flight, B with 2, and C with 1, samples two servers at random, A and C, and sends to C; it fits many independent balancers and sidecars, but needs a load signal per server. IP hash maps client X to B, client Y to A, and client Z to B using hash of IP modulo 3; it gives simple affinity without cookies, but clients behind one NAT skew load and most keys move when servers are added. Consistent hashing places servers A, B, and C on a ring; when D is added, only the keys between C and D move, about one in N; it fits caches and sharded backends, but hot keys can still overload one server.</desc>
+  <defs>
+    <marker id="alg-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#40566b"/>
+    </marker>
+  </defs>
+  <rect width="880" height="530" rx="14" fill="#f5f7fb"/>
+  <g font-family="Arial, sans-serif" text-anchor="middle">
+    <text x="24" y="28" font-size="13" font-weight="700" fill="#40566b" text-anchor="start">How each algorithm picks a backend (servers A, B, C)</text>
+
+    <g fill="#ffffff" stroke="#c9d1db" stroke-width="1.5">
+      <rect x="20" y="42" width="268" height="214" rx="10"/>
+      <rect x="306" y="42" width="268" height="214" rx="10"/>
+      <rect x="592" y="42" width="268" height="214" rx="10"/>
+      <rect x="20" y="272" width="268" height="214" rx="10"/>
+      <rect x="306" y="272" width="268" height="214" rx="10"/>
+      <rect x="592" y="272" width="268" height="214" rx="10"/>
+    </g>
+    <g font-size="13" font-weight="700" fill="#36424e" text-anchor="start">
+      <text x="34" y="64">Round robin</text>
+      <text x="320" y="64">Weighted round robin</text>
+      <text x="606" y="64">Least connections / requests</text>
+      <text x="34" y="294">Power of two choices</text>
+      <text x="320" y="294">IP hash</text>
+      <text x="606" y="294">Consistent hashing</text>
+    </g>
+
+    <!-- 1 round robin -->
+    <g fill="#fff0d9" stroke="#bd7a20" stroke-width="1.5">
+      <rect x="46" y="78" width="30" height="22" rx="5"/>
+      <rect x="82" y="78" width="30" height="22" rx="5"/>
+      <rect x="118" y="78" width="30" height="22" rx="5"/>
+      <rect x="154" y="78" width="30" height="22" rx="5"/>
+      <rect x="190" y="78" width="30" height="22" rx="5"/>
+      <rect x="226" y="78" width="30" height="22" rx="5"/>
+    </g>
+    <g font-size="11" font-weight="700" fill="#66400f">
+      <text x="61" y="93">1</text><text x="97" y="93">2</text><text x="133" y="93">3</text>
+      <text x="169" y="93">4</text><text x="205" y="93">5</text><text x="241" y="93">6</text>
+    </g>
+    <g fill="#e5efff" stroke="#4774aa" stroke-width="1.5">
+      <rect x="46" y="110" width="30" height="22" rx="5"/>
+      <rect x="82" y="110" width="30" height="22" rx="5"/>
+      <rect x="118" y="110" width="30" height="22" rx="5"/>
+      <rect x="154" y="110" width="30" height="22" rx="5"/>
+      <rect x="190" y="110" width="30" height="22" rx="5"/>
+      <rect x="226" y="110" width="30" height="22" rx="5"/>
+    </g>
+    <g font-size="11" font-weight="700" fill="#263e5a">
+      <text x="61" y="125">A</text><text x="97" y="125">B</text><text x="133" y="125">C</text>
+      <text x="169" y="125">A</text><text x="205" y="125">B</text><text x="241" y="125">C</text>
+    </g>
+    <text x="154" y="164" font-size="12" font-weight="700" fill="#263e5a">A: 2, B: 2, C: 2</text>
+
+    <!-- 2 weighted -->
+    <text x="440" y="82" font-size="11" fill="#36424e">weights A=2, B=1, C=1</text>
+    <g fill="#fff0d9" stroke="#bd7a20" stroke-width="1.5">
+      <rect x="330" y="92" width="24" height="22" rx="5"/><rect x="358" y="92" width="24" height="22" rx="5"/>
+      <rect x="386" y="92" width="24" height="22" rx="5"/><rect x="414" y="92" width="24" height="22" rx="5"/>
+      <rect x="442" y="92" width="24" height="22" rx="5"/><rect x="470" y="92" width="24" height="22" rx="5"/>
+      <rect x="498" y="92" width="24" height="22" rx="5"/><rect x="526" y="92" width="24" height="22" rx="5"/>
+    </g>
+    <g font-size="11" font-weight="700" fill="#66400f">
+      <text x="342" y="107">1</text><text x="370" y="107">2</text><text x="398" y="107">3</text><text x="426" y="107">4</text>
+      <text x="454" y="107">5</text><text x="482" y="107">6</text><text x="510" y="107">7</text><text x="538" y="107">8</text>
+    </g>
+    <g fill="#e5efff" stroke="#4774aa" stroke-width="1.5">
+      <rect x="330" y="122" width="24" height="22" rx="5"/><rect x="358" y="122" width="24" height="22" rx="5"/>
+      <rect x="386" y="122" width="24" height="22" rx="5"/><rect x="414" y="122" width="24" height="22" rx="5"/>
+      <rect x="442" y="122" width="24" height="22" rx="5"/><rect x="470" y="122" width="24" height="22" rx="5"/>
+      <rect x="498" y="122" width="24" height="22" rx="5"/><rect x="526" y="122" width="24" height="22" rx="5"/>
+    </g>
+    <g font-size="11" font-weight="700" fill="#263e5a">
+      <text x="342" y="137">A</text><text x="370" y="137">B</text><text x="398" y="137">C</text><text x="426" y="137">A</text>
+      <text x="454" y="137">A</text><text x="482" y="137">B</text><text x="510" y="137">C</text><text x="538" y="137">A</text>
+    </g>
+    <text x="440" y="170" font-size="12" font-weight="700" fill="#263e5a">A: 4, B: 2, C: 2</text>
+
+    <!-- 3 least connections -->
+    <g font-size="12" font-weight="700" fill="#263e5a" text-anchor="start">
+      <text x="614" y="93">A</text><text x="614" y="121">B</text><text x="614" y="149">C</text>
+    </g>
+    <rect x="632" y="80" width="120" height="18" rx="4" fill="#e5efff" stroke="#4774aa" stroke-width="1.5"/>
+    <rect x="632" y="108" width="40" height="18" rx="4" fill="#e7f3e9" stroke="#53845b" stroke-width="2"/>
+    <rect x="632" y="136" width="80" height="18" rx="4" fill="#e5efff" stroke="#4774aa" stroke-width="1.5"/>
+    <g font-size="11" fill="#36424e" text-anchor="start">
+      <text x="760" y="93">3 open</text><text x="680" y="121">1 open</text><text x="720" y="149">2 open</text>
+    </g>
+    <text x="726" y="182" font-size="12" font-weight="700" fill="#294a2e">next request goes to B</text>
+
+    <!-- 4 power of two choices -->
+    <g font-size="12" font-weight="700" fill="#263e5a" text-anchor="start">
+      <text x="42" y="323">A</text><text x="42" y="351">B</text><text x="42" y="379">C</text>
+    </g>
+    <rect x="60" y="310" width="128" height="18" rx="4" fill="#e5efff" stroke="#4774aa" stroke-width="1.5" stroke-dasharray="5 3"/>
+    <rect x="60" y="338" width="64" height="18" rx="4" fill="#eef1f5" stroke="#8a96a3" stroke-width="1.5"/>
+    <rect x="60" y="366" width="32" height="18" rx="4" fill="#e7f3e9" stroke="#53845b" stroke-width="2" stroke-dasharray="5 3"/>
+    <g font-size="11" fill="#36424e" text-anchor="start">
+      <text x="196" y="323">4 in flight</text><text x="132" y="351">2 in flight</text><text x="100" y="379">1 in flight</text>
+    </g>
+    <text x="154" y="408" font-size="11.5" font-weight="700" fill="#294a2e">sample A and C at random, send to C</text>
+
+    <!-- 5 IP hash -->
+    <g fill="#fff0d9" stroke="#bd7a20" stroke-width="1.5">
+      <rect x="334" y="308" width="76" height="22" rx="5"/>
+      <rect x="334" y="338" width="76" height="22" rx="5"/>
+      <rect x="334" y="368" width="76" height="22" rx="5"/>
+    </g>
+    <g font-size="11" font-weight="700" fill="#66400f">
+      <text x="372" y="323">client X</text><text x="372" y="353">client Y</text><text x="372" y="383">client Z</text>
+    </g>
+    <g fill="#e5efff" stroke="#4774aa" stroke-width="1.5">
+      <rect x="480" y="308" width="60" height="22" rx="5"/>
+      <rect x="480" y="338" width="60" height="22" rx="5"/>
+      <rect x="480" y="368" width="60" height="22" rx="5"/>
+    </g>
+    <g font-size="11" font-weight="700" fill="#263e5a">
+      <text x="510" y="323">A</text><text x="510" y="353">B</text><text x="510" y="383">C</text>
+    </g>
+    <g fill="none" stroke="#40566b" stroke-width="1.5">
+      <path d="M410 319 478 346" marker-end="url(#alg-arrow)"/>
+      <path d="M410 349 478 322" marker-end="url(#alg-arrow)"/>
+      <path d="M410 379 478 354" marker-end="url(#alg-arrow)"/>
+    </g>
+    <text x="440" y="414" font-size="11.5" font-weight="700" fill="#263e5a">hash(IP) mod 3 picks the server</text>
+
+    <!-- 6 consistent hashing -->
+    <circle cx="676" cy="356" r="44" fill="none" stroke="#8a96a3" stroke-width="2"/>
+    <g fill="#e5efff" stroke="#4774aa" stroke-width="2">
+      <circle cx="676" cy="312" r="9"/>
+      <circle cx="714" cy="378" r="9"/>
+      <circle cx="638" cy="378" r="9"/>
+    </g>
+    <circle cx="720" cy="356" r="9" fill="#e7f3e9" stroke="#53845b" stroke-width="2" stroke-dasharray="3 2"/>
+    <g font-size="10.5" font-weight="700" fill="#263e5a">
+      <text x="676" y="316">A</text><text x="714" y="382">B</text><text x="638" y="382">C</text>
+    </g>
+    <text x="720" y="360" font-size="10.5" font-weight="700" fill="#294a2e">D</text>
+    <g fill="#bd7a20">
+      <circle cx="704" cy="322" r="3.5"/><circle cx="719" cy="342" r="3.5"/>
+      <circle cx="694" cy="397" r="3.5"/><circle cx="652" cy="397" r="3.5"/>
+      <circle cx="633" cy="346" r="3.5"/><circle cx="650" cy="320" r="3.5"/>
+    </g>
+    <g font-size="11" fill="#36424e" text-anchor="start">
+      <text x="736" y="320">add server D:</text>
+      <text x="736" y="336">only keys just</text>
+      <text x="736" y="352">before D move</text>
+      <text x="736" y="368">(about 1 in N)</text>
+    </g>
+
+    <!-- fits / watch lines -->
+    <g font-size="11" fill="#294a2e" text-anchor="start">
+      <text x="34" y="222">Fits: identical servers, similar requests</text>
+      <text x="320" y="222">Fits: mixed sizes, gradual traffic shifts</text>
+      <text x="606" y="222">Fits: uneven requests, WebSockets</text>
+      <text x="34" y="452">Fits: many independent balancers</text>
+      <text x="320" y="452">Fits: simple affinity without cookies</text>
+      <text x="606" y="452">Fits: caches, sharded backends</text>
+    </g>
+    <g font-size="11" fill="#6e2a24" text-anchor="start">
+      <text x="34" y="240">Watch: slow requests pile up</text>
+      <text x="320" y="240">Watch: weights are static guesses</text>
+      <text x="606" y="240">Watch: a new server gets a burst</text>
+      <text x="34" y="470">Watch: needs a load signal per server</text>
+      <text x="320" y="470">Watch: NAT skew; keys move on resize</text>
+      <text x="606" y="470">Watch: hot keys still overload a server</text>
+    </g>
+
+    <text x="440" y="512" font-size="13" fill="#40566b">Pick by what varies: request cost (least requests), server size (weights), or data placement (hashing).</text>
+  </g>
+</svg>

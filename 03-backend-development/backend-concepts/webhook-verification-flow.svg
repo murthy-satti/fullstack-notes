@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="620" viewBox="0 0 800 620" role="img" aria-labelledby="wvf-title wvf-desc">
+  <title id="wvf-title">How a webhook endpoint verifies an event and a worker processes it once</title>
+  <desc id="wvf-desc">The endpoint receives the raw body and the Webhook-Signature header. If the timestamp is missing or older than 300 seconds, it answers 400. If the HMAC recomputed over the timestamp and raw body does not match according to timingSafeEqual, it answers 401. Otherwise it parses the JSON, enqueues the event, and answers 200 within seconds. Later a worker takes the event from the queue; if the event ID was already processed it skips it as a duplicate, otherwise it records the ID and updates the order in the same transaction, only moving the order state forward.</desc>
+  <defs>
+    <marker id="wvf-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#40566b"/>
+    </marker>
+  </defs>
+  <rect width="800" height="620" rx="14" fill="#f5f7fb"/>
+  <g font-family="Arial, sans-serif" text-anchor="middle">
+    <text x="24" y="36" font-size="13" font-weight="700" fill="#40566b" text-anchor="start">Your endpoint: POST /webhooks/payments</text>
+
+    <rect x="110" y="50" width="280" height="40" rx="20" fill="#eef1f5" stroke="#8a96a3" stroke-width="2"/>
+    <text x="250" y="68" font-size="13" font-weight="700" fill="#36424e">Raw body via express.raw()</text>
+    <text x="250" y="83" font-size="11" fill="#36424e">+ Webhook-Signature: t=..., v1=...</text>
+
+    <g fill="#eef1f5" stroke="#8a96a3" stroke-width="2">
+      <path d="M250 108 360 138 250 168 140 138z"/>
+      <path d="M250 196 360 226 250 256 140 226z"/>
+      <path d="M250 448 360 478 250 508 140 478z"/>
+    </g>
+    <g font-size="12" font-weight="700" fill="#36424e">
+      <text x="250" y="135">timestamp within</text>
+      <text x="250" y="149">300 seconds?</text>
+      <text x="250" y="223">HMAC matches?</text>
+      <text x="250" y="237">(timingSafeEqual)</text>
+      <text x="250" y="475">event ID already</text>
+      <text x="250" y="489">processed?</text>
+    </g>
+
+    <rect x="420" y="114" width="340" height="48" rx="8" fill="#fde8e6" stroke="#b5473a" stroke-width="2"/>
+    <text x="590" y="134" font-size="14" font-weight="700" fill="#6b241c">400 Bad Request</text>
+    <text x="590" y="151" font-size="11.5" fill="#6b241c">stale or missing timestamp: possible replay</text>
+    <rect x="420" y="202" width="340" height="48" rx="8" fill="#fde8e6" stroke="#b5473a" stroke-width="2"/>
+    <text x="590" y="222" font-size="14" font-weight="700" fill="#6b241c">401 Unauthorized</text>
+    <text x="590" y="239" font-size="11.5" fill="#6b241c">invalid signature: not from the provider</text>
+
+    <rect x="130" y="284" width="240" height="44" rx="8" fill="#fff0d9" stroke="#bd7a20" stroke-width="2"/>
+    <text x="250" y="303" font-size="13" font-weight="700" fill="#66400f">JSON.parse, then enqueue</text>
+    <text x="250" y="319" font-size="11.5" fill="#66400f">only now trust the body</text>
+    <rect x="420" y="284" width="340" height="44" rx="8" fill="#e8f5e9" stroke="#53845b" stroke-width="2"/>
+    <text x="590" y="303" font-size="14" font-weight="700" fill="#294a2e">200 OK</text>
+    <text x="590" y="319" font-size="11.5" fill="#294a2e">acknowledge within seconds</text>
+
+    <path d="M20 360H780" fill="none" stroke="#c9d1db" stroke-width="1.5" stroke-dasharray="6 5"/>
+    <text x="24" y="384" font-size="13" font-weight="700" fill="#40566b" text-anchor="start">Worker (later, from the queue)</text>
+
+    <rect x="130" y="394" width="240" height="36" rx="8" fill="#f0e9fb" stroke="#8062a8" stroke-width="2"/>
+    <text x="250" y="417" font-size="13" font-weight="700" fill="#463365">Take the event from the queue</text>
+
+    <rect x="420" y="454" width="340" height="48" rx="8" fill="#eef1f5" stroke="#8a96a3" stroke-width="2"/>
+    <text x="590" y="474" font-size="14" font-weight="700" fill="#36424e">Skip: already handled</text>
+    <text x="590" y="491" font-size="11.5" fill="#36424e">a duplicate delivery changes nothing</text>
+    <rect x="110" y="534" width="280" height="48" rx="8" fill="#e8f5e9" stroke="#53845b" stroke-width="2"/>
+    <text x="250" y="554" font-size="13" font-weight="700" fill="#294a2e">Record ID + update order</text>
+    <text x="250" y="571" font-size="11.5" fill="#294a2e">one transaction; only move state forward</text>
+
+    <g fill="none" stroke="#40566b" stroke-width="2" stroke-linecap="round">
+      <path d="M250 90V106" marker-end="url(#wvf-arrow)"/>
+      <path d="M250 168V194" marker-end="url(#wvf-arrow)"/>
+      <path d="M250 256V282" marker-end="url(#wvf-arrow)"/>
+      <path d="M360 138H418" marker-end="url(#wvf-arrow)"/>
+      <path d="M360 226H418" marker-end="url(#wvf-arrow)"/>
+      <path d="M370 306H418" marker-end="url(#wvf-arrow)"/>
+      <path d="M250 328V392" marker-end="url(#wvf-arrow)"/>
+      <path d="M250 430V446" marker-end="url(#wvf-arrow)"/>
+      <path d="M360 478H418" marker-end="url(#wvf-arrow)"/>
+      <path d="M250 508V532" marker-end="url(#wvf-arrow)"/>
+    </g>
+    <g font-size="12" font-weight="700" fill="#40566b">
+      <text x="389" y="130">no</text>
+      <text x="389" y="218">no</text>
+      <text x="389" y="470">yes</text>
+    </g>
+    <g font-size="12" font-weight="700" fill="#40566b" text-anchor="start">
+      <text x="258" y="186">yes</text>
+      <text x="258" y="274">yes</text>
+      <text x="258" y="350">queue</text>
+      <text x="258" y="526">no</text>
+    </g>
+    <text x="400" y="606" font-size="13" fill="#40566b">Reject anything unsigned or stale; accept duplicates at the door and drop them in the worker.</text>
+  </g>
+</svg>

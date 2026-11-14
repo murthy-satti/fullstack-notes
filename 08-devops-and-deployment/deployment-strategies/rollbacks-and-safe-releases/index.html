@@ -1,0 +1,4828 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../zero-downtime-database-migrations/">
+      
+      
+        <link rel="next" href="../deploying-frontends-and-static-sites/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Rollbacks and Safe Releases - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#rollbacks-and-safe-releases" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Rollbacks and Safe Releases
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../05-application-architecture/" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../06-ai-and-machine-learning/" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+          <span class="md-ellipsis">&larr; Back to DevOps</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../05-application-architecture/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../06-ai-and-machine-learning/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI and Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
+        
+          
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-label="DevOps module lessons" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+                  <span class="md-ellipsis">&larr; Back to DevOps</span>
+                </a>
+              
+            </div>
+          
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                  
+  
+  
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+    
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_8" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_8" id="__nav_9_8_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment Strategies
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_8_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_8">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Deployment Strategies
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_8_2" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_8_2" id="__nav_9_8_2_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Foundations
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_8_2_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_8_2">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Foundations
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../environments-and-promotion/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Environments and Promotion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deploying-backend-services/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deploying Backend Services
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_8_3" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_8_3" id="__nav_9_8_3_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Moving Traffic Safely
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_8_3_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_8_3">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Moving Traffic Safely
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rolling-blue-green-and-canary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rolling, Blue-Green, and Canary Deployments
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../advanced-deployment-patterns/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced Deployment Patterns
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../feature-flags-and-progressive-delivery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature Flags and Progressive Delivery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../zero-downtime-database-migrations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Zero-Downtime Database Migrations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rollbacks and Safe Releases
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rollbacks and Safe Releases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rollback-or-roll-forward" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rollback or roll forward
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-makes-rollback-possible" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What makes rollback possible
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#automated-rollback-on-health-and-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Automated rollback on health and metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deployment-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deployment verification
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bake-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bake time
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#release-checklists" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Release checklists
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#change-freezes-and-deployment-windows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Change freezes and deployment windows
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reducing-blast-radius" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reducing blast radius
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#measuring-it-dora-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Measuring it: DORA metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rolling-back-things-that-are-not-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rolling back things that are not code
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#verify-after-deploying-and-roll-back-automatically" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verify after deploying, and roll back automatically
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-smoke-test-that-exercises-real-paths" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A smoke test that exercises real paths
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#automatic-rollback-in-aws-codedeploy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Automatic rollback in AWS CodeDeploy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rolling-back-a-helm-release" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rolling back a Helm release
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keep-rollback-targets-in-the-registry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Keep rollback targets in the registry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-release-checklist-for-risky-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A release checklist for risky changes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_8_4" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_8_4" id="__nav_9_8_4_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Other Kinds of Software
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_8_4_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_8_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Other Kinds of Software
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deploying-frontends-and-static-sites/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deploying Frontends and Static Sites
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../releasing-desktop-and-mobile-apps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Releasing Desktop and Mobile Apps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rollback-or-roll-forward" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rollback or roll forward
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-makes-rollback-possible" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What makes rollback possible
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#automated-rollback-on-health-and-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Automated rollback on health and metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deployment-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deployment verification
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bake-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bake time
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#release-checklists" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Release checklists
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#change-freezes-and-deployment-windows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Change freezes and deployment windows
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reducing-blast-radius" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reducing blast radius
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#measuring-it-dora-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Measuring it: DORA metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rolling-back-things-that-are-not-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rolling back things that are not code
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#verify-after-deploying-and-roll-back-automatically" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verify after deploying, and roll back automatically
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-smoke-test-that-exercises-real-paths" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A smoke test that exercises real paths
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#automatic-rollback-in-aws-codedeploy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Automatic rollback in AWS CodeDeploy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rolling-back-a-helm-release" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rolling back a Helm release
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keep-rollback-targets-in-the-registry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Keep rollback targets in the registry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-release-checklist-for-risky-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A release checklist for risky changes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="rollbacks-and-safe-releases">Rollbacks and Safe Releases<a class="headerlink" href="#rollbacks-and-safe-releases" title="Permanent link">&para;</a></h1>
+<p>A rollback returns production to the last version that worked. A safe
+release is one designed so that a bad change is caught early, affects
+few users, and can be undone quickly. This lesson covers rollback versus
+roll forward, what has to be true for a rollback to work at all,
+automated rollback driven by health checks and metrics, post-deploy
+verification with smoke tests and synthetic checks, bake time, release
+checklists, change freezes and deployment windows, blast radius
+reduction with rings, regions, and cells, and how all of this shows up
+in the DORA metrics.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>Most outages are caused by change. The Google SRE book's
+<a href="https://sre.google/sre-book/introduction/">introduction</a> states that SRE
+has found roughly 70% of outages are due to changes in a live system,
+and recommends progressive rollouts, quick and accurate detection of
+problems, and safe rollback when problems arise. You cannot stop
+changing software, so the practical goal is that a bad change is
+<em>cheap</em>: few users see it, for a short time, and recovery needs no
+heroics.</p>
+<p>The time a bad release hurts users is detection time plus decision time
+plus recovery time. Each can be designed: detection with good metrics and
+canaries, decision with a pre-agreed rule ("if the error rate doubles,
+roll back"), and recovery with a previous version that is ready to run.
+Teams that leave any of the three to improvisation at 3 a.m. have long
+incidents.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Amazon: rollback-safe changes.</strong> The Amazon Builders' Library article
+  <a href="https://aws.amazon.com/builders-library/ensuring-rollback-safety-during-deployments/">Ensuring rollback safety during deployments</a>
+  describes a two-phase technique for changes in data or protocol
+  formats: first deploy a version that can <em>read</em> the new format but
+  still <em>writes</em> the old one (prepare), and only after it is everywhere
+  deploy the version that writes the new format (activate), so a
+  rollback at any point leaves servers able to read what was written.</li>
+<li><strong>Amazon: automated rollback.</strong>
+  <a href="https://aws.amazon.com/builders-library/automating-safe-hands-off-deployments/">Automating safe, hands-off deployments</a>
+  describes pipelines that roll back automatically when alarms fire,
+  bake for at least an hour after the first production host, block
+  deploys while high-severity alarms are active, and avoid nights,
+  weekends, and holidays.</li>
+<li><strong>DORA.</strong> The <a href="https://dora.dev/guides/dora-metrics/">DORA metrics guide</a>
+  measures delivery with throughput (change lead time, deployment
+  frequency, failed deployment recovery time) and instability (change
+  fail rate, deployment rework rate). Change fail rate is "the ratio of
+  deployments that require immediate intervention following a
+  deployment"; failed deployment recovery time is how long recovery from
+  such a deployment takes.</li>
+<li><strong>CrowdStrike, July 2024.</strong> The
+  <a href="https://www.crowdstrike.com/wp-content/uploads/2024/08/Executive-Summary_Root-Cause-Analysis_Channel-File-291.pdf">root cause analysis executive summary</a>
+  for the Channel File 291 incident describes a content update delivered
+  to Windows hosts that crashed them, and commits to staged deployment of
+  such content through rings with canary testing. A configuration or
+  content push is a release and needs the same safety as code.</li>
+<li><strong>Cloudflare, November 2025.</strong> The
+  <a href="https://blog.cloudflare.com/18-november-2025-outage/">post-incident report for 18 November 2025</a>
+  explains how a generated feature file that doubled in size propagated
+  quickly across the network and crashed the proxy software, and lists
+  remediations including hardening ingestion of internally generated
+  configuration "in the same way we would for user-generated input" and
+  more global kill switches.</li>
+</ul>
+<p><strong>Popular tools and providers:</strong> Argo Rollouts, Flagger, Spinnaker, AWS
+CodeDeploy (automatic rollback on CloudWatch alarms), Kubernetes
+<code>rollout undo</code>, Helm <code>rollback</code>, feature flag platforms, Prometheus and
+Alertmanager, Datadog, Grafana, synthetic monitoring tools (Checkly,
+Datadog Synthetics, Grafana Synthetic Monitoring), and error trackers
+with release health such as Sentry.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="rollback-or-roll-forward">Rollback or roll forward<a class="headerlink" href="#rollback-or-roll-forward" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Roll back</th>
+<th>Roll forward</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>What it is</td>
+<td>Return to the previous known-good version</td>
+<td>Ship a new version that fixes the problem</td>
+</tr>
+<tr>
+<td>Speed</td>
+<td>Fast if the previous version is ready (seconds to minutes)</td>
+<td>As fast as your pipeline: build, test, deploy</td>
+</tr>
+<tr>
+<td>Risk</td>
+<td>Low if compatibility was preserved; dangerous if data changed shape</td>
+<td>A rushed fix can add a second bug</td>
+</tr>
+<tr>
+<td>Needs</td>
+<td>Previous artifact, compatible schema and data, no irreversible effects</td>
+<td>A clear diagnosis and a fast, trustworthy pipeline</td>
+</tr>
+<tr>
+<td>Typical choice</td>
+<td>Default when the cause is unclear or impact is high</td>
+<td>When rollback is unsafe, or the fix is tiny and certain</td>
+</tr>
+</tbody>
+</table>
+<p>The rule most teams adopt: <strong>restore service first, diagnose later</strong>.
+If a release correlates with the problem and rollback is safe, roll back
+without waiting for a root cause. A feature flag switched off counts as
+the fastest rollback of all.</p>
+<p><img alt="Diagram: after errors rise following a release, first ask whether the problem started with the release; if not, continue normal incident response; if so, ask whether the change is behind a feature flag and if yes turn it off in seconds; if not, ask whether rollback is safe given schema, data, and side effects, and if yes roll back now and investigate after recovery; if not, ask whether a small fix is faster than mitigating, and if yes roll forward with a hotfix through an expedited pipeline, otherwise mitigate first by scaling, shedding load, or disabling the feature, then fix." src="../rollback-decision-flowchart.svg" /></p>
+<h3 id="what-makes-rollback-possible">What makes rollback possible<a class="headerlink" href="#what-makes-rollback-possible" title="Permanent link">&para;</a></h3>
+<p>Rollback is a property you build in advance, not a button:</p>
+<ul>
+<li><strong>Immutable, retained artifacts.</strong> The previous image or package must
+  still exist and be identical to what ran before. Registry cleanup
+  policies that delete "old" images can delete your rollback target.</li>
+<li><strong>The previous version is runnable.</strong> Its configuration, secrets, and
+  dependencies still exist. If you rotated a credential and the old
+  version reads it from a different place, rollback fails.</li>
+<li><strong>Compatible schema and data.</strong> The database still has everything the
+  old code needs, and data written by the new code is readable by the old
+  code (expand and contract, prepare and activate). See
+  <a href="../zero-downtime-database-migrations/">zero-downtime database migrations</a>.</li>
+<li><strong>Compatible messages and caches.</strong> Events, queue messages, and cache
+  entries written by the new version must not crash the old one.</li>
+<li><strong>No irreversible side effects, or a plan for them.</strong> Emails sent,
+  payments taken, and webhooks delivered cannot be rolled back; a bug in
+  those paths needs compensation, not just a rollback.</li>
+<li><strong>Clients.</strong> Browsers that loaded new frontend assets may call APIs the
+  old backend lacks; mobile apps cannot be rolled back at all (see
+  <a href="../releasing-desktop-and-mobile-apps/">releasing desktop and mobile apps</a>).</li>
+<li><strong>Practice.</strong> A rollback path that has never been exercised is a guess.
+  Roll back in staging regularly and occasionally in production on
+  purpose.</li>
+</ul>
+<h3 id="automated-rollback-on-health-and-metrics">Automated rollback on health and metrics<a class="headerlink" href="#automated-rollback-on-health-and-metrics" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: a chart of 5xx error rate over 20 minutes; the normal rate is 0.2%; a bad deploy at minute 2 raises errors to 4% by minute 3; with a 1% alarm threshold needing three one-minute data points, the alarm fires at minute 6; automatic rollback brings errors back to normal by minute 9, about 7 minutes after the deploy, while a manual rollback that waits for a person keeps errors at 4% until minute 16 and recovers at minute 19, about 17 minutes after the deploy." src="../automated-rollback-timeline.svg" /></p>
+<p>The slowest part of most incidents is a human noticing, deciding, and
+acting. Automation removes it: the deployment tool watches health checks
+and metrics during and after the rollout, and reverts on its own when
+they cross agreed thresholds.</p>
+<ul>
+<li><strong>Kubernetes Deployments</strong> stop a rollout whose pods never become
+  ready, but do not roll back by themselves.</li>
+<li><strong>AWS CodeDeploy</strong> can roll back automatically when a deployment fails
+  or when a CloudWatch alarm attached to the deployment group fires.</li>
+<li><strong>Argo Rollouts and Flagger</strong> run analysis during canary steps and
+  abort to the stable version when it fails.</li>
+<li><strong>Feature flag platforms</strong> can switch a flag off when guardrail metrics
+  regress.</li>
+</ul>
+<p>Worked example: suppose the bad version failed <em>every</em> request. A
+99.9% monthly availability target allows <code>30 x 24 x 60 x 0.001 = 43.2</code>
+minutes of full outage per month. The automatic path above (about 7
+minutes) spends 16% of the month's budget; the manual path (about 17
+minutes) spends 39%. With a 10% canary in front, the same failures reach
+one tenth of the traffic, about 1.6% and 3.9% of the budget.</p>
+<p>Thresholds need care. Too sensitive and normal noise triggers rollbacks
+(at low traffic, two errors can be "a 5% error rate"); too loose and real
+regressions pass. Require several consecutive data points, a minimum
+request count, and compare with a baseline where possible.</p>
+<h3 id="deployment-verification">Deployment verification<a class="headerlink" href="#deployment-verification" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Check</th>
+<th>When</th>
+<th>What it proves</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Readiness probes</td>
+<td>As each instance starts</td>
+<td>The process can serve</td>
+</tr>
+<tr>
+<td>Version check</td>
+<td>Right after the deploy</td>
+<td>The intended version is actually running everywhere</td>
+</tr>
+<tr>
+<td>Smoke tests</td>
+<td>Right after the deploy, against production</td>
+<td>Key flows work end to end (sign in, list tasks, create a task in a test account)</td>
+</tr>
+<tr>
+<td>Canary analysis</td>
+<td>During progressive rollout</td>
+<td>The new version behaves no worse than the old one under real traffic</td>
+</tr>
+<tr>
+<td>Synthetic checks</td>
+<td>Continuously, every minute</td>
+<td>Key flows keep working, from outside, even with no real users active</td>
+</tr>
+<tr>
+<td>Error tracker release health</td>
+<td>Hours after the deploy</td>
+<td>New errors and crash rates by release</td>
+</tr>
+<tr>
+<td>Business metrics</td>
+<td>Hours to days</td>
+<td>Sign-ups, tasks created, payments are not quietly down</td>
+</tr>
+</tbody>
+</table>
+<p>Smoke tests must exercise real paths, not just <code>/readyz</code>. Use dedicated
+test accounts or tenants so writes in production are harmless and easy
+to clean up.</p>
+<h3 id="bake-time">Bake time<a class="headerlink" href="#bake-time" title="Permanent link">&para;</a></h3>
+<p>Bake time is how long a version runs at one stage before it is promoted
+further. Some failures need time to appear:</p>
+<ul>
+<li>memory leaks and slow resource exhaustion,</li>
+<li>daily or hourly jobs (a nightly report, a cache refresh, log rotation),</li>
+<li>traffic peaks (the Monday-morning login rush),</li>
+<li>rare paths (month-end billing, a specific locale, a certificate
+  renewal).</li>
+</ul>
+<p>Amazon's pipelines bake at least an hour after the first production host
+and at least 12 hours after the first region; Microsoft's guidance
+suggests about a day per tier, including a period of peak usage. Shorter
+bakes are fine for low-risk changes; the point is to choose them
+deliberately rather than promote the moment the dashboard looks green.</p>
+<h3 id="release-checklists">Release checklists<a class="headerlink" href="#release-checklists" title="Permanent link">&para;</a></h3>
+<p>A short checklist, kept in the repository and used for risky releases,
+catches the predictable mistakes:</p>
+<ul>
+<li>Is the previous version's artifact retained and its configuration
+  unchanged?</li>
+<li>Are database changes expand-only in this release?</li>
+<li>Is the change behind a flag, and is the flag's default the old
+  behavior?</li>
+<li>What metrics and thresholds mean "roll back", and who decides?</li>
+<li>Are on-call engineers aware, and is this inside a deployment window?</li>
+<li>Are dependent teams (mobile, partners, support) informed of visible
+  changes?</li>
+</ul>
+<p>Go/no-go criteria, release captains, and coordinating one release across
+web, API, and mobile are covered in
+<a href="../../release-engineering/release-trains-and-release-management/">release trains and release management</a>.</p>
+<h3 id="change-freezes-and-deployment-windows">Change freezes and deployment windows<a class="headerlink" href="#change-freezes-and-deployment-windows" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Deployment windows</strong> restrict deploys to times when people are
+  available to respond: working hours, not Friday evening, not during a
+  holiday. Amazon's and Microsoft's guidance both favor deploying during
+  working hours, early in the week.</li>
+<li><strong>Change freezes</strong> stop non-urgent changes during high-risk periods
+  (a major sales event, year-end, a big launch).</li>
+</ul>
+<p>Both reduce risk during the window and <em>increase</em> it afterwards:
+changes queue up and ship as one large batch when the freeze lifts, which
+is harder to test and debug. Keep freezes short, allow small low-risk
+changes where possible, keep an approved path for emergency fixes, and
+release the backlog gradually after the freeze.</p>
+<h3 id="reducing-blast-radius">Reducing blast radius<a class="headerlink" href="#reducing-blast-radius" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: four concentric rings; ring 0 at the center is the owning team and test tenants, baked about an hour; ring 1 is all employees using the product, baked about a day; ring 2 is opted-in beta customers and one small region, about 10% of users, baked about a day including a peak; ring 3 is everyone; a release is promoted outward one ring at a time while health checks pass, and if any ring fails, the release halts and rolls back so outer rings never receive it." src="../release-rings.svg" /></p>
+<p>Blast radius is the share of users or systems a failure can reach. Ways
+to shrink it, from finest to coarsest:</p>
+<ul>
+<li><strong>Feature flags:</strong> 1% of users, or only staff.</li>
+<li><strong>Canary traffic:</strong> a small share of requests.</li>
+<li><strong>Rings:</strong> team, employees, beta customers, everyone.</li>
+<li><strong>One box, one AZ, one region:</strong> infrastructure stages.</li>
+<li><strong>Cells:</strong> independent copies of the stack, each serving a fixed set
+  of customers.</li>
+</ul>
+<p>These combine. <a href="../advanced-deployment-patterns/">Advanced deployment patterns</a>
+covers waves, cells, and rings in depth. The same staging applies to
+configuration and data pushes, which are releases too, as the Google,
+Cloudflare, and CrowdStrike reports show.</p>
+<h3 id="measuring-it-dora-metrics">Measuring it: DORA metrics<a class="headerlink" href="#measuring-it-dora-metrics" title="Permanent link">&para;</a></h3>
+<p>Two DORA metrics measure release safety directly:</p>
+<ul>
+<li><strong>Change fail rate:</strong> of 120 production deployments in a quarter, 9
+  needed immediate intervention (rollback, hotfix, or flag off), a change
+  fail rate of <code>9 / 120 = 7.5%</code>.</li>
+<li><strong>Failed deployment recovery time:</strong> how long those 9 took to recover,
+  typically reported as a median.</li>
+</ul>
+<p>DORA's research consistently finds that speed and stability go together:
+teams that deploy small changes often also tend to have lower change fail
+rates and faster recovery. Small batches, automated verification, and
+fast rollback are what make that possible. How to compute these metrics
+from deployment and incident records is shown in
+<a href="../../devops-fundamentals/measuring-delivery-performance/">measuring delivery performance</a>.</p>
+<h3 id="rolling-back-things-that-are-not-code">Rolling back things that are not code<a class="headerlink" href="#rolling-back-things-that-are-not-code" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>What changed</th>
+<th>How to undo it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Application version</td>
+<td>Redeploy the previous image or release</td>
+</tr>
+<tr>
+<td>Feature flag</td>
+<td>Switch it back; keep an audit log of who changed what</td>
+</tr>
+<tr>
+<td>Runtime configuration</td>
+<td>Revert the commit in the config repository and redeploy, or restore the previous version in the config service</td>
+</tr>
+<tr>
+<td>Infrastructure (Terraform)</td>
+<td>Revert the commit and apply; some changes (deleted data stores) cannot be undone by code</td>
+</tr>
+<tr>
+<td>Database schema</td>
+<td>Usually roll forward with a new migration</td>
+</tr>
+<tr>
+<td>Data</td>
+<td>Restore from backup or point-in-time recovery, or run a corrective job</td>
+</tr>
+<tr>
+<td>DNS</td>
+<td>Revert the record, then wait for TTLs and caches</td>
+</tr>
+</tbody>
+</table>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Situation</th>
+<th>Choose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A release correlates with errors, rollback is compatible</td>
+<td>Roll back immediately</td>
+</tr>
+<tr>
+<td>The problem is behind a flag</td>
+<td>Switch the flag off</td>
+</tr>
+<tr>
+<td>The new version already wrote data the old version cannot read</td>
+<td>Roll forward, or mitigate and then roll forward</td>
+</tr>
+<tr>
+<td>The fix is one line, certain, and the pipeline takes 5 minutes</td>
+<td>Roll forward is acceptable, with an expedited review</td>
+</tr>
+<tr>
+<td>Cause unclear, high impact</td>
+<td>Roll back first, investigate with the old version running</td>
+</tr>
+<tr>
+<td>Mobile or desktop client release</td>
+<td>You cannot roll back installed apps: halt the rollout, disable the feature by flag, and ship a fix</td>
+</tr>
+</tbody>
+</table>
+<p>Avoid automatic rollback where its trigger cannot be trusted, for
+example a service with so little traffic that one error trips the
+threshold. Use minimum request counts or longer windows, or alert a
+human instead.</p>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="verify-after-deploying-and-roll-back-automatically">Verify after deploying, and roll back automatically<a class="headerlink" href="#verify-after-deploying-and-roll-back-automatically" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="ch">#!/usr/bin/env bash</span>
+<span class="c1"># scripts/deploy-and-verify.sh: deploy, verify, watch metrics, roll back on failure</span>
+<span class="c1"># usage: deploy-and-verify.sh &lt;image&gt;</span>
+<span class="nb">set</span><span class="w"> </span>-euo<span class="w"> </span>pipefail
+<span class="nv">IMAGE</span><span class="o">=</span><span class="s2">"</span><span class="nv">$1</span><span class="s2">"</span>
+<span class="nv">PROM</span><span class="o">=</span><span class="s2">"http://prometheus.monitoring.svc.cluster.local:9090"</span>
+<span class="nv">QUERY</span><span class="o">=</span><span class="s1">'sum(rate(http_requests_total{service="taskflow-api",code=~"5.."}[2m])) / sum(rate(http_requests_total{service="taskflow-api"}[2m]))'</span>
+<span class="nv">THRESHOLD</span><span class="o">=</span><span class="m">0</span>.01<span class="w">      </span><span class="c1"># 1% errors</span>
+<span class="nv">WATCH_MINUTES</span><span class="o">=</span><span class="m">10</span>
+<span class="nv">BAD_LIMIT</span><span class="o">=</span><span class="m">3</span><span class="w">         </span><span class="c1"># consecutive bad samples before rolling back</span>
+
+rollback<span class="o">()</span><span class="w"> </span><span class="o">{</span>
+<span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"rolling back: </span><span class="nv">$1</span><span class="s2">"</span><span class="w"> </span>&gt;<span class="p">&amp;</span><span class="m">2</span>
+<span class="w">  </span>kubectl<span class="w"> </span>rollout<span class="w"> </span>undo<span class="w"> </span>deployment/taskflow-api
+<span class="w">  </span>kubectl<span class="w"> </span>rollout<span class="w"> </span>status<span class="w"> </span>deployment/taskflow-api<span class="w"> </span>--timeout<span class="o">=</span>5m
+<span class="w">  </span><span class="nb">exit</span><span class="w"> </span><span class="m">1</span>
+<span class="o">}</span>
+
+kubectl<span class="w"> </span><span class="nb">set</span><span class="w"> </span>image<span class="w"> </span>deployment/taskflow-api<span class="w"> </span><span class="nv">api</span><span class="o">=</span><span class="s2">"</span><span class="nv">$IMAGE</span><span class="s2">"</span>
+kubectl<span class="w"> </span>rollout<span class="w"> </span>status<span class="w"> </span>deployment/taskflow-api<span class="w"> </span>--timeout<span class="o">=</span>5m<span class="w"> </span><span class="o">||</span><span class="w"> </span>rollback<span class="w"> </span><span class="s2">"rollout did not become ready"</span>
+
+./scripts/smoke-test.sh<span class="w"> </span>https://api.taskflow.example.com<span class="w"> </span><span class="o">||</span><span class="w"> </span>rollback<span class="w"> </span><span class="s2">"smoke tests failed"</span>
+
+<span class="nv">bad</span><span class="o">=</span><span class="m">0</span>
+<span class="k">for</span><span class="w"> </span>_<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="k">$(</span>seq<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="s2">"</span><span class="nv">$WATCH_MINUTES</span><span class="s2">"</span><span class="k">)</span><span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<span class="w">  </span>sleep<span class="w"> </span><span class="m">60</span>
+<span class="w">  </span><span class="nv">rate</span><span class="o">=</span><span class="k">$(</span>curl<span class="w"> </span>-fsS<span class="w"> </span>--get<span class="w"> </span><span class="s2">"</span><span class="nv">$PROM</span><span class="s2">/api/v1/query"</span><span class="w"> </span>--data-urlencode<span class="w"> </span><span class="s2">"query=</span><span class="nv">$QUERY</span><span class="s2">"</span><span class="w"> </span><span class="p">|</span>
+<span class="w">         </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">'.data.result[0].value[1] // "0"'</span><span class="k">)</span>
+<span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"5xx rate: </span><span class="nv">$rate</span><span class="s2">"</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span>awk<span class="w"> </span>-v<span class="w"> </span><span class="nv">r</span><span class="o">=</span><span class="s2">"</span><span class="nv">$rate</span><span class="s2">"</span><span class="w"> </span>-v<span class="w"> </span><span class="nv">t</span><span class="o">=</span><span class="s2">"</span><span class="nv">$THRESHOLD</span><span class="s2">"</span><span class="w"> </span><span class="s1">'BEGIN { exit !(r &gt; t) }'</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<span class="w">    </span><span class="nv">bad</span><span class="o">=</span><span class="k">$((</span><span class="nv">bad</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">1</span><span class="k">))</span>
+<span class="w">    </span><span class="o">[</span><span class="w"> </span><span class="s2">"</span><span class="nv">$bad</span><span class="s2">"</span><span class="w"> </span>-ge<span class="w"> </span><span class="s2">"</span><span class="nv">$BAD_LIMIT</span><span class="s2">"</span><span class="w"> </span><span class="o">]</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>rollback<span class="w"> </span><span class="s2">"5xx rate above </span><span class="nv">$THRESHOLD</span><span class="s2"> for </span><span class="nv">$bad</span><span class="s2"> minutes"</span>
+<span class="w">  </span><span class="k">else</span>
+<span class="w">    </span><span class="nv">bad</span><span class="o">=</span><span class="m">0</span>
+<span class="w">  </span><span class="k">fi</span>
+<span class="k">done</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">"release verified"</span>
+</code></pre></div>
+<ul>
+<li><code>rollout status</code> fails when the new pods do not become ready in time.</li>
+<li>Smoke tests run against production before the watch begins.</li>
+<li>The metric must be bad for three consecutive minutes, so one noisy
+  sample does not trigger a rollback.</li>
+</ul>
+<h3 id="a-smoke-test-that-exercises-real-paths">A smoke test that exercises real paths<a class="headerlink" href="#a-smoke-test-that-exercises-real-paths" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="ch">#!/usr/bin/env bash</span>
+<span class="c1"># scripts/smoke-test.sh: real requests against a dedicated test tenant</span>
+<span class="c1"># usage: smoke-test.sh &lt;base-url&gt;</span>
+<span class="nb">set</span><span class="w"> </span>-euo<span class="w"> </span>pipefail
+<span class="nv">BASE</span><span class="o">=</span><span class="s2">"</span><span class="nv">$1</span><span class="s2">"</span>
+<span class="nv">AUTH</span><span class="o">=</span><span class="s2">"Authorization: Bearer </span><span class="nv">$SMOKE_TEST_TOKEN</span><span class="s2">"</span><span class="w">   </span><span class="c1"># injected by CI, test tenant only</span>
+
+curl<span class="w"> </span>-fsS<span class="w"> </span><span class="s2">"</span><span class="nv">$BASE</span><span class="s2">/readyz"</span><span class="w"> </span>&gt;<span class="w"> </span>/dev/null
+curl<span class="w"> </span>-fsS<span class="w"> </span><span class="s2">"</span><span class="nv">$BASE</span><span class="s2">/version"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-e<span class="w"> </span><span class="s1">'.version'</span><span class="w"> </span>&gt;<span class="w"> </span>/dev/null
+
+<span class="c1"># Read path</span>
+curl<span class="w"> </span>-fsS<span class="w"> </span>-H<span class="w"> </span><span class="s2">"</span><span class="nv">$AUTH</span><span class="s2">"</span><span class="w"> </span><span class="s2">"</span><span class="nv">$BASE</span><span class="s2">/tasks?limit=1"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-e<span class="w"> </span><span class="s1">'type == "array"'</span><span class="w"> </span>&gt;<span class="w"> </span>/dev/null
+
+<span class="c1"># Write path, then clean up</span>
+<span class="nv">id</span><span class="o">=</span><span class="k">$(</span>curl<span class="w"> </span>-fsS<span class="w"> </span>-H<span class="w"> </span><span class="s2">"</span><span class="nv">$AUTH</span><span class="s2">"</span><span class="w"> </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">       </span>-d<span class="w"> </span><span class="s1">'{"title":"smoke test"}'</span><span class="w"> </span><span class="s2">"</span><span class="nv">$BASE</span><span class="s2">/tasks"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">'.id'</span><span class="k">)</span>
+curl<span class="w"> </span>-fsS<span class="w"> </span>-H<span class="w"> </span><span class="s2">"</span><span class="nv">$AUTH</span><span class="s2">"</span><span class="w"> </span>-X<span class="w"> </span>DELETE<span class="w"> </span><span class="s2">"</span><span class="nv">$BASE</span><span class="s2">/tasks/</span><span class="nv">$id</span><span class="s2">"</span><span class="w"> </span>&gt;<span class="w"> </span>/dev/null
+<span class="nb">echo</span><span class="w"> </span><span class="s2">"smoke tests passed"</span>
+</code></pre></div>
+<h3 id="automatic-rollback-in-aws-codedeploy">Automatic rollback in AWS CodeDeploy<a class="headerlink" href="#automatic-rollback-in-aws-codedeploy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>aws<span class="w"> </span>deploy<span class="w"> </span>update-deployment-group<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--application-name<span class="w"> </span>taskflow-api<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--current-deployment-group-name<span class="w"> </span>production<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--auto-rollback-configuration<span class="w"> </span><span class="nv">enabled</span><span class="o">=</span>true,events<span class="o">=</span>DEPLOYMENT_FAILURE,DEPLOYMENT_STOP_ON_ALARM<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--alarm-configuration<span class="w"> </span><span class="s1">'enabled=true,alarms=[{name=taskflow-api-5xx-high},{name=taskflow-api-p99-high}]'</span>
+</code></pre></div>
+<p>When either CloudWatch alarm fires during a deployment, CodeDeploy stops
+it and redeploys the last known-good revision.</p>
+<h3 id="rolling-back-a-helm-release">Rolling back a Helm release<a class="headerlink" href="#rolling-back-a-helm-release" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>helm<span class="w"> </span><span class="nb">history</span><span class="w"> </span>taskflow<span class="w"> </span>-n<span class="w"> </span>production<span class="w">        </span><span class="c1"># list revisions with status and chart version</span>
+helm<span class="w"> </span>rollback<span class="w"> </span>taskflow<span class="w"> </span><span class="m">41</span><span class="w"> </span>-n<span class="w"> </span>production<span class="w"> </span>--wait<span class="w"> </span>--timeout<span class="w"> </span>5m
+</code></pre></div>
+<p>Helm rollback restores the Kubernetes manifests of revision 41. It does
+not touch the database, so it is only safe when the schema is compatible
+with that revision.</p>
+<h3 id="keep-rollback-targets-in-the-registry">Keep rollback targets in the registry<a class="headerlink" href="#keep-rollback-targets-in-the-registry" title="Permanent link">&para;</a></h3>
+<p>An Amazon ECR lifecycle policy, saved as <code>ecr-lifecycle.json</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">"rules"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"rulePriority"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Release images expire only after a year"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"selection"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"tagStatus"</span><span class="p">:</span><span class="w"> </span><span class="s2">"tagged"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"tagPrefixList"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"release-"</span><span class="p">],</span>
+<span class="w">        </span><span class="nt">"countType"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sinceImagePushed"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"countUnit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"days"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"countNumber"</span><span class="p">:</span><span class="w"> </span><span class="mi">365</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="nt">"action"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"expire"</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"rulePriority"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Keep the 50 most recent other images"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"selection"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"tagStatus"</span><span class="p">:</span><span class="w"> </span><span class="s2">"any"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"countType"</span><span class="p">:</span><span class="w"> </span><span class="s2">"imageCountMoreThan"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"countNumber"</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="nt">"action"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"expire"</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Applied with <code>aws ecr put-lifecycle-policy</code>, it keeps tagged release images
+for a year and only trims other images beyond the newest 50. In ECR, an
+image matched by a higher-priority rule's tag selection is not expired by
+a lower-priority rule, so the catch-all rule cannot remove release images.</p>
+<h3 id="a-release-checklist-for-risky-changes">A release checklist for risky changes<a class="headerlink" href="#a-release-checklist-for-risky-changes" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code># docs/release-checklist.md
+[ ] Previous release image is retained (tag and digest noted below)
+[ ] Migrations in this release are expand-only; contract is scheduled later
+[ ] New behavior is behind flag ______, default off
+[ ] Rollback triggers agreed: 5xx &gt; 1% for 3 min, p99 &gt; 800 ms for 5 min
+[ ] Smoke tests and synthetic checks cover the changed flow
+[ ] Deploying inside the window (Mon-Thu, 09:00-15:00 local), on-call aware
+[ ] Support and mobile teams told about visible changes
+Previous release: ghcr.io/example/taskflow-api@sha256:________
+</code></pre></div>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Make rollback the default response to a release-correlated incident
+  when it is safe; diagnose afterwards.</li>
+<li>Keep every release artifact immutable and retained; never deploy
+  mutable tags.</li>
+<li>Keep schema, data, messages, and caches compatible with the previous
+  version (expand and contract, prepare and activate).</li>
+<li>Automate verification: version check, smoke tests, canary analysis,
+  synthetic checks.</li>
+<li>Automate rollback on clear, noise-resistant signals.</li>
+<li>Bake long enough to cover peaks and scheduled jobs.</li>
+<li>Release in small batches, during working hours, through rings.</li>
+<li>Treat configuration, flags, and data pushes as releases with the same
+  safety.</li>
+<li>Practice rollbacks; track change fail rate and recovery time.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>The rollback failed because the old image was gone.</strong>
+  <em>Detect:</em> <code>ImagePullBackOff</code> or "manifest unknown" during rollback.
+  <em>Cause:</em> a registry lifecycle policy deleted older images. <em>Fix:</em>
+  retention rules that protect release tags, and record the previous
+  digest in every deploy.</li>
+<li><strong>The rollback made things worse.</strong>
+  <em>Detect:</em> new errors from the old version, such as parse failures or
+  missing columns. <em>Cause:</em> the new version wrote data in a format the
+  old version cannot read, or a migration removed something. <em>Fix:</em>
+  prepare-then-activate format changes, expand-only migrations, and
+  testing rollback in staging.</li>
+<li><strong>Automatic rollbacks keep firing on healthy releases.</strong>
+  <em>Detect:</em> rollbacks with no user complaints; the metric spiked on a
+  handful of requests. <em>Cause:</em> thresholds without minimum volume or
+  consecutive-sample rules. <em>Fix:</em> require a minimum request count, several
+  bad samples in a row, and baseline comparison.</li>
+<li><strong>Smoke tests passed but users could not sign in.</strong>
+  <em>Detect:</em> support tickets after a "green" deploy. <em>Cause:</em> smoke tests
+  checked only health endpoints. <em>Fix:</em> smoke tests and synthetic checks
+  that exercise sign-in and the main flows with test accounts.</li>
+<li><strong>Rolling back the code did not fix it.</strong>
+  <em>Detect:</em> errors persist with the previous version running. <em>Cause:</em>
+  the real change was a configuration value, flag, or infrastructure
+  change made alongside the deploy. <em>Fix:</em> record every change (code,
+  config, flags, infra) on one timeline and version configuration like
+  code.</li>
+<li><strong>The first release after a freeze caused a long outage.</strong>
+  <em>Detect:</em> an unusually large release (many PRs) right after the freeze.
+  <em>Cause:</em> batched changes, hard to verify and debug. <em>Fix:</em> shorter
+  freezes, small low-risk changes allowed, gradual release of the backlog.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Rollback:</strong> returning to the previous known-good version.</li>
+<li><strong>Roll forward:</strong> fixing a problem with a new release.</li>
+<li><strong>Known-good version:</strong> the last release that met its health criteria.</li>
+<li><strong>Automated rollback:</strong> a rollback triggered by the deployment system
+  from health checks or metrics.</li>
+<li><strong>Smoke test:</strong> a quick end-to-end check of key flows right after a
+  deploy.</li>
+<li><strong>Synthetic check:</strong> a scripted request run continuously against
+  production from outside.</li>
+<li><strong>Bake time:</strong> how long a release runs at a stage before promotion.</li>
+<li><strong>Deployment window:</strong> the times when deploys are allowed.</li>
+<li><strong>Change freeze:</strong> a period when non-urgent changes are blocked.</li>
+<li><strong>Blast radius:</strong> the share of users or systems a failure can affect.</li>
+<li><strong>Change fail rate:</strong> the share of deployments needing immediate
+  intervention.</li>
+<li><strong>Failed deployment recovery time:</strong> how long recovery from such a
+  deployment takes.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Assuming rollback is always possible because "we can redeploy the old
+  version".</li>
+<li>Waiting for a root cause before rolling back.</li>
+<li>Treating down migrations as a rollback plan for data.</li>
+<li>Smoke tests that only call a health endpoint.</li>
+<li>Automatic rollback on a single noisy sample.</li>
+<li>Freezes that create one enormous release afterwards.</li>
+<li>Forgetting that configuration, flag, and data changes need rollbacks
+  too.</li>
+<li>Counting only code deploys when measuring change fail rate.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>List five conditions that must hold for a rollback to be safe.</li>
+<li>When is rolling forward the better choice?</li>
+<li>Explain the prepare-then-activate technique for changing a data
+   format.</li>
+<li>A 99.95% monthly target allows how many minutes of full outage in a
+   30-day month? How much of it does a 9-minute full outage consume?</li>
+<li>Why must an automated rollback trigger require more than one bad
+   data point?</li>
+<li>Why can change freezes increase risk after they end?</li>
+<li>In a quarter, 200 deploys led to 14 rollbacks or hotfixes. What is the
+   change fail rate?</li>
+<li>Why did the CrowdStrike and Cloudflare incidents lead to staged
+   rollouts for content and configuration, not only code?</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://aws.amazon.com/builders-library/ensuring-rollback-safety-during-deployments/">Amazon Builders' Library: Ensuring rollback safety during deployments</a></li>
+<li><a href="https://aws.amazon.com/builders-library/automating-safe-hands-off-deployments/">Amazon Builders' Library: Automating safe, hands-off deployments</a></li>
+<li><a href="https://dora.dev/guides/dora-metrics/">DORA: Software delivery performance metrics</a></li>
+<li><a href="https://sre.google/sre-book/release-engineering/">Google SRE book: Release engineering</a></li>
+<li><a href="https://docs.aws.amazon.com/codedeploy/latest/userguide/deployments-rollback-and-redeploy.html">AWS CodeDeploy: Redeploy and roll back a deployment</a></li>
+<li><a href="https://helm.sh/docs/helm/helm_rollback/">Helm: helm rollback</a></li>
+<li>Next: <a href="../deploying-frontends-and-static-sites/">deploying frontends and static sites</a>. Back to the
+  <a href="../">deployment strategies overview</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../zero-downtime-database-migrations/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Zero-Downtime Database Migrations">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Zero-Downtime Database Migrations</span>
+      </a>
+    
+    
+      <a href="../deploying-frontends-and-static-sites/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: Deploying Frontends and Static Sites">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">Deploying Frontends and Static Sites</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,4734 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../continuous-integration-fundamentals/">
+      
+      
+        <link rel="next" href="../github-actions-in-depth/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Pipeline Design - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#pipeline-design" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Pipeline Design
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../05-application-architecture/" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../06-ai-and-machine-learning/" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+          <span class="md-ellipsis">&larr; Back to DevOps</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../05-application-architecture/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../06-ai-and-machine-learning/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI and Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
+        
+          
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-label="DevOps module lessons" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+                  <span class="md-ellipsis">&larr; Back to DevOps</span>
+                </a>
+              
+            </div>
+          
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                  
+  
+  
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+    
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_4" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_4" id="__nav_9_4_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CI/CD
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_4_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    CI/CD
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_4_2" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_4_2" id="__nav_9_4_2_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Foundations
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_4_2_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_4_2">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Foundations
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../continuous-integration-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Continuous Integration Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline Design
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#stages-and-job-graphs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stages and job graphs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fail-fast-ordering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fail-fast ordering
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parallelism-and-matrix-builds" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parallelism and matrix builds
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependency-caching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dependency caching
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#artifacts-between-jobs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Artifacts between jobs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-once-deploy-many" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build once, deploy many
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deterministic-builds" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deterministic builds
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#monorepo-path-filters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monorepo path filters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipeline-speed-budgets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pipeline speed budgets
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#idempotent-deploy-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Idempotent deploy steps
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-pipeline-skeleton-as-a-job-graph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A pipeline skeleton as a job graph
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-matrix-for-a-shared-npm-package" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A matrix for a shared npm package
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explicit-lockfile-keyed-caching-and-docker-layer-caching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Explicit lockfile-keyed caching and Docker layer caching
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#change-detection-that-works-with-required-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Change detection that works with required checks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#an-idempotent-deploy-step" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        An idempotent deploy step
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#finding-the-critical-path-of-a-slow-run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding the critical path of a slow run
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../github-actions-in-depth/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitHub Actions in Depth
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_4_4" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_4_4" id="__nav_9_4_4_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quality and Delivery
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_4_4_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_4_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Quality and Delivery
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../testing-and-quality-gates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing and Quality Gates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../artifacts-and-environment-promotion/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Artifacts and Environment Promotion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipeline-and-supply-chain-security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline and Supply Chain Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#stages-and-job-graphs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stages and job graphs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fail-fast-ordering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fail-fast ordering
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parallelism-and-matrix-builds" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parallelism and matrix builds
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependency-caching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dependency caching
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#artifacts-between-jobs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Artifacts between jobs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-once-deploy-many" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build once, deploy many
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deterministic-builds" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deterministic builds
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#monorepo-path-filters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monorepo path filters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipeline-speed-budgets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pipeline speed budgets
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#idempotent-deploy-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Idempotent deploy steps
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-pipeline-skeleton-as-a-job-graph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A pipeline skeleton as a job graph
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-matrix-for-a-shared-npm-package" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A matrix for a shared npm package
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explicit-lockfile-keyed-caching-and-docker-layer-caching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Explicit lockfile-keyed caching and Docker layer caching
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#change-detection-that-works-with-required-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Change detection that works with required checks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#an-idempotent-deploy-step" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        An idempotent deploy step
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#finding-the-critical-path-of-a-slow-run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding the critical path of a slow run
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="pipeline-design">Pipeline Design<a class="headerlink" href="#pipeline-design" title="Permanent link">&para;</a></h1>
+<p>A CI/CD pipeline is a program that turns a commit into a tested,
+deployable artifact and moves it through environments. Like any program,
+it can be well or badly designed: the same checks can take 8 minutes or
+45, cost a little or a lot, and produce trustworthy or misleading
+results depending on how jobs are arranged, cached, and connected.</p>
+<p>This lesson covers stages and job graphs, fail-fast ordering, parallelism
+and matrix builds, lockfile-keyed dependency caching, passing artifacts
+between jobs, building once and deploying many times, deterministic
+builds, path filters for monorepos, pipeline speed budgets, and
+idempotent deploy steps.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>Pipeline speed and reliability directly shape how a team works. A slow
+pipeline makes developers batch changes and context-switch; a flaky one
+teaches them to ignore red; a pipeline that rebuilds per environment
+ships bits that were never tested; and a deploy step that is not
+idempotent turns every retry into a gamble. Because the pipeline runs for
+every push of every developer, small design choices multiply: shaving 3
+minutes off a pipeline that runs 200 times a day saves 10 hours of
+waiting daily.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Twelve-Factor apps.</strong> The
+  <a href="https://12factor.net/build-release-run">Build, release, run</a> factor
+  requires strictly separating the build stage (turning code into an
+  executable bundle) from the release stage (combining that build with an
+  environment's config), with every release getting a unique ID and never
+  being changed. That is "build once, deploy many" stated as a principle.</li>
+<li><strong>Google.</strong> The CI chapter of
+  <a href="https://abseil.io/resources/swe-book/html/ch23.html">Software Engineering at Google</a>
+  explains how Google's continuous build uses the dependency graph to run
+  only the tests downstream of a change, batches changes when there are
+  too many to test individually, and splits fast presubmit checks from
+  slower post-submit ones.</li>
+<li><strong>GitHub Actions caching.</strong> GitHub's
+  <a href="https://docs.github.com/en/actions/reference/workflows-and-actions/dependency-caching">dependency caching reference</a>
+  documents lockfile-hash keys with <code>hashFiles</code>, prefix-matching
+  <code>restore-keys</code>, branch scoping, immutable cache entries, a default
+  10 GB per-repository limit, and eviction of caches unused for 7 days.</li>
+<li><strong>Reproducible builds.</strong> The
+  <a href="https://reproducible-builds.org/docs/definition/">Reproducible Builds project</a>
+  defines a build as reproducible when identical source, environment, and
+  instructions produce bit-for-bit identical artifacts, which lets anyone
+  verify that a binary came from the claimed source.</li>
+</ul>
+<p><strong>Popular tools and providers:</strong> GitHub Actions, GitLab CI/CD (stages and
+<code>needs</code>), CircleCI workflows, Buildkite pipelines, Jenkins pipelines, and
+build systems with remote caching such as Bazel, Nx, and Turborepo.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="stages-and-job-graphs">Stages and job graphs<a class="headerlink" href="#stages-and-job-graphs" title="Permanent link">&para;</a></h3>
+<p>Older pipelines run in <strong>stages</strong>: every job in stage 1, then every job in
+stage 2, and so on. Modern systems describe a <strong>directed acyclic graph
+(DAG)</strong> of jobs: each job declares the jobs it needs (<code>needs:</code> in GitHub
+Actions and GitLab), and anything without a dependency starts
+immediately. Jobs on separate runners run in parallel.</p>
+<p><img alt="Diagram: lint (1 minute), unit tests (2), integration tests (4), and dependency audit (1) run in parallel; build image (3) needs all four; deploy staging (2), end-to-end tests (6), and after approval deploy prod (3) follow; the critical path through integration tests, build, staging, end-to-end tests, and production is 4 + 3 + 2 + 6 + 3 = 18 minutes, compared with 22 minutes if all eight jobs ran one after another." src="../pipeline-job-dag.svg" /></p>
+<p>The pipeline's wall-clock time is the length of its <strong>critical path</strong>,
+the longest chain of dependent jobs. In the example, making lint faster
+saves nothing; making integration or end-to-end tests faster saves time
+directly. Every job also has fixed overhead (runner start, checkout,
+dependency install, typically 20-60 seconds), so splitting work into too
+many tiny jobs can make a pipeline slower.</p>
+<h3 id="fail-fast-ordering">Fail-fast ordering<a class="headerlink" href="#fail-fast-ordering" title="Permanent link">&para;</a></h3>
+<p>Run the cheapest checks that catch the most common failures first, and
+stop spending compute once a run is doomed:</p>
+<table>
+<thead>
+<tr>
+<th>Order</th>
+<th>Check</th>
+<th>Why here</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Formatting, lint, type check</td>
+<td>Seconds; catch the most frequent mistakes</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Unit tests</td>
+<td>Fast and deterministic</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Integration tests with service containers</td>
+<td>Slower; need a database</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Build and package</td>
+<td>Only worth it if the code is correct</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Deploy to staging, end-to-end tests</td>
+<td>Slowest and most expensive</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Production deploy</td>
+<td>Only for verified artifacts</td>
+</tr>
+</tbody>
+</table>
+<p>Fail-fast has two layers. Ordering decides what runs first; parallel
+jobs that are independent can still run side by side. In a matrix,
+<code>strategy.fail-fast: true</code> (the default in GitHub Actions) cancels the
+other matrix jobs when one fails, which saves compute but hides whether
+other combinations would also have failed; set it to <code>false</code> when you
+need the full picture.</p>
+<h3 id="parallelism-and-matrix-builds">Parallelism and matrix builds<a class="headerlink" href="#parallelism-and-matrix-builds" title="Permanent link">&para;</a></h3>
+<p>A <strong>matrix</strong> runs the same job over combinations of variables:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">strategy</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">matrix</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">node</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">22</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">24</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">26</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">os</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">ubuntu-latest</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">windows-latest</span><span class="p p-Indicator">]</span>
+</code></pre></div>
+<p>This creates 6 jobs. Use matrices where the variation is real: a library
+that supports several Node.js versions and operating systems. For an
+application deployed on one runtime (TaskFlow API runs Node.js 24 in a
+Linux container), test that one combination; a matrix adds cost without
+adding confidence. The other common use is <strong>test sharding</strong>: splitting
+one slow suite across N parallel jobs (see
+<a href="../testing-and-quality-gates/">testing and quality gates</a>).</p>
+<h3 id="dependency-caching">Dependency caching<a class="headerlink" href="#dependency-caching" title="Permanent link">&para;</a></h3>
+<p>Installing dependencies from the network is often the slowest part of a
+short job. A cache stores files between runs under a <strong>key</strong>; the right
+key changes exactly when the cached content should change. For npm that
+is the lockfile:</p>
+<div class="highlight"><pre><span></span><code>key:          Linux-npm-&lt;sha256 of package-lock.json&gt;
+restore-keys: Linux-npm-
+</code></pre></div>
+<p><img alt="Diagram: the job computes the key from the runner OS and the hash of package-lock.json; if the exact key exists the npm cache is restored, npm ci needs no downloads (about 10 seconds in this example), and saving is skipped; if the lockfile changed, the restore-keys prefix restores the newest older cache, npm ci downloads only changed packages (about 25 seconds) and a new cache is saved under the new key; if nothing matches the job runs cold, downloading everything (about 60 seconds), then saves the cache." src="../lockfile-cache-hit-miss.svg" /></p>
+<p>Rules that keep caching correct:</p>
+<ul>
+<li><strong>Cache the package manager's download cache</strong> (<code>~/.npm</code>), not
+  <code>node_modules</code>. <code>npm ci</code> deletes <code>node_modules</code> anyway, and caching it
+  across Node.js versions or operating systems causes subtle breakage.
+  <code>actions/setup-node</code> with <code>cache: npm</code> does this for you.</li>
+<li><strong>Key on everything that changes the content:</strong> OS, runtime version if
+  native modules are built, and the lockfile hash.</li>
+<li><strong>Caches are immutable:</strong> an existing key is never overwritten, which
+  is why the key must change with the content.</li>
+<li><strong>Caches are a speed-up, never a correctness requirement.</strong> A cold run
+  must produce the same result.</li>
+<li><strong>Scope matters.</strong> Branch runs can read caches from their own branch
+  and the default branch; pull requests can also read their base
+  branch's. Untrusted workflows writing caches that privileged workflows
+  later read is a known poisoning risk (see
+  <a href="../pipeline-and-supply-chain-security/">pipeline and supply chain security</a>).</li>
+</ul>
+<p>Container builds cache <strong>layers</strong> instead. With Docker Buildx in GitHub
+Actions, <code>cache-from: type=gha</code> and <code>cache-to: type=gha,mode=max</code> store
+layers in the Actions cache, so an unchanged <code>npm ci</code> layer is reused
+(see <a href="../../docker/writing-production-dockerfiles/">writing production Dockerfiles</a>).</p>
+<h3 id="artifacts-between-jobs">Artifacts between jobs<a class="headerlink" href="#artifacts-between-jobs" title="Permanent link">&para;</a></h3>
+<p>Jobs run on fresh machines and share nothing by default. Two mechanisms
+move files between them, and they are often confused:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Cache</th>
+<th>Artifact</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Purpose</td>
+<td>Speed up repeated work (dependencies)</td>
+<td>Pass outputs of this run to later jobs, or keep them for people</td>
+</tr>
+<tr>
+<td>Lifetime</td>
+<td>Until evicted (unused 7 days, size limit)</td>
+<td>Retention period (90 days by default, configurable)</td>
+</tr>
+<tr>
+<td>Guaranteed present</td>
+<td>No</td>
+<td>Yes, within the run</td>
+</tr>
+<tr>
+<td>Typical contents</td>
+<td><code>~/.npm</code>, build tool caches</td>
+<td>Built bundles, test reports, coverage, SBOMs</td>
+</tr>
+<tr>
+<td>Actions</td>
+<td><code>actions/cache</code>, setup-* caching</td>
+<td><code>actions/upload-artifact</code>, <code>actions/download-artifact</code></td>
+</tr>
+</tbody>
+</table>
+<p>Container images are not passed as workflow artifacts; the build job
+pushes them to a registry and passes the <strong>digest</strong> to later jobs as a
+job output (shown below).</p>
+<h3 id="build-once-deploy-many">Build once, deploy many<a class="headerlink" href="#build-once-deploy-many" title="Permanent link">&para;</a></h3>
+<p>Build the deployable artifact exactly once, from one commit, and deploy
+that same artifact to every environment. Environment differences belong
+in configuration injected at deploy time, never in separate builds.</p>
+<p><img alt="Diagram: commit a1b2c3d merged to main is built exactly once into ghcr.io/example/taskflow-api at an immutable digest sha256:9f2c, tagged sha-a1b2c3d and 2.4.0; dev, staging, and production each pull the same digest, promoted in that order, with smoke tests in dev, end-to-end tests in staging, and approval before production; each environment's config and secrets such as MONGODB_URI and LOG_LEVEL are injected at deploy time, never baked into the image." src="../build-once-promotion.svg" /></p>
+<p>Rebuilding for each environment means the production artifact was never
+tested: a dependency release between builds, a different base image, or
+a build flag can change it. Promotion by digest, approvals, and
+deployment records are covered in
+<a href="../artifacts-and-environment-promotion/">artifacts and environment promotion</a>.</p>
+<h3 id="deterministic-builds">Deterministic builds<a class="headerlink" href="#deterministic-builds" title="Permanent link">&para;</a></h3>
+<p>A build is deterministic when the same inputs always produce the same
+output. Sources of nondeterminism and their fixes:</p>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Floating dependency versions</td>
+<td>Commit the lockfile; install with <code>npm ci</code></td>
+</tr>
+<tr>
+<td>Floating base images (<code>node:24</code>)</td>
+<td>Pin by digest (<code>node:24-slim@sha256:...</code>), updated by Dependabot</td>
+</tr>
+<tr>
+<td>Floating tool versions (runner images, CLIs)</td>
+<td>Pin action versions and tool versions explicitly</td>
+</tr>
+<tr>
+<td>Network fetches during the build</td>
+<td>Fetch everything in an install step; fail if the network is needed later</td>
+</tr>
+<tr>
+<td>Timestamps and build paths embedded in output</td>
+<td>Use <code>SOURCE_DATE_EPOCH</code>, avoid embedding absolute paths</td>
+</tr>
+<tr>
+<td>Tests depending on time, randomness, or order</td>
+<td>Fixed seeds, fake clocks, isolated test data</td>
+</tr>
+</tbody>
+</table>
+<p>Full bit-for-bit reproducibility is hard; the practical goal is that
+rebuilding the same commit gives functionally identical artifacts, and
+that you never need to, because you keep the original.</p>
+<h3 id="monorepo-path-filters">Monorepo path filters<a class="headerlink" href="#monorepo-path-filters" title="Permanent link">&para;</a></h3>
+<p>In a monorepo, running every pipeline on every change wastes time.
+Workflows can trigger only when relevant paths change:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">on</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">pull_request</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">paths</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"apps/api/**"</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"packages/shared/**"</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">".github/workflows/api.yml"</span>
+</code></pre></div>
+<p>The catch: a workflow skipped by a path filter never reports its checks,
+so a <strong>required</strong> check stays pending and blocks the PR. Two common
+solutions are to keep workflow-level filters only on non-required
+workflows, or to run the workflow always and decide inside it, with a
+small job that computes what changed and conditional jobs (a job skipped
+by <code>if:</code> reports success). Build tools such as Nx and Turborepo can also
+compute "affected" projects from the dependency graph.</p>
+<h3 id="pipeline-speed-budgets">Pipeline speed budgets<a class="headerlink" href="#pipeline-speed-budgets" title="Permanent link">&para;</a></h3>
+<p>Treat pipeline time as a budget with an owner, like page-load time:</p>
+<table>
+<thead>
+<tr>
+<th>Segment</th>
+<th>Budget (typical target)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pull request checks</td>
+<td>10 minutes or less</td>
+</tr>
+<tr>
+<td>Merge to deployed in staging</td>
+<td>20 minutes or less</td>
+</tr>
+<tr>
+<td>Staging to production (excluding approval wait)</td>
+<td>15 minutes or less</td>
+</tr>
+<tr>
+<td>Checkout and dependency install per job</td>
+<td>Under 1 minute with caching</td>
+</tr>
+<tr>
+<td>Flaky failure rate</td>
+<td>Well under 1% of runs</td>
+</tr>
+</tbody>
+</table>
+<p>Measure the critical path and its trend (<code>gh run view &lt;id&gt; --json jobs</code>
+gives each job's start and end time), alert on regressions, and spend
+effort on the jobs that sit on the critical path.</p>
+<h3 id="idempotent-deploy-steps">Idempotent deploy steps<a class="headerlink" href="#idempotent-deploy-steps" title="Permanent link">&para;</a></h3>
+<p>An idempotent step produces the same end state no matter how many times
+it runs. Deploy steps must be idempotent because pipelines retry: a
+runner dies, a network call times out, someone clicks "re-run".</p>
+<ul>
+<li><strong>Declare desired state</strong> instead of issuing changes: <code>kubectl apply</code>,
+  <code>terraform apply</code>, or "set the image to this digest" are safe to repeat;
+  "add one replica" or "append this line" are not.</li>
+<li><strong>Use immutable inputs:</strong> deploy a digest, not <code>latest</code>.</li>
+<li><strong>Make migrations tracked:</strong> migration tools record applied migrations,
+  so re-running applies nothing new.</li>
+<li><strong>Serialize deploys per environment</strong> with a concurrency group, so two
+  runs never deploy to the same environment at once.</li>
+<li><strong>Verify after acting:</strong> wait for the rollout to become healthy, and
+  fail the step if it does not.</li>
+</ul>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Technique</th>
+<th>Use when</th>
+<th>Avoid or adapt when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Job DAG with parallel jobs</td>
+<td>Independent checks that each take more than a minute</td>
+<td>Tiny checks where per-job overhead dominates; group them in one job</td>
+</tr>
+<tr>
+<td>Matrix builds</td>
+<td>Libraries and tools supporting several runtimes or platforms</td>
+<td>Applications deployed on one runtime</td>
+</tr>
+<tr>
+<td>Test sharding</td>
+<td>A single suite longer than a few minutes</td>
+<td>Suites with heavy shared setup per shard</td>
+</tr>
+<tr>
+<td>Dependency cache</td>
+<td>Almost always</td>
+<td>Workflows with elevated privileges where cache poisoning is a concern; disable or isolate</td>
+</tr>
+<tr>
+<td>Workflow artifacts</td>
+<td>Passing files between jobs, keeping reports</td>
+<td>Container images (use a registry)</td>
+</tr>
+<tr>
+<td>Path filters</td>
+<td>Monorepos with independent projects</td>
+<td>Required checks (use in-workflow change detection instead)</td>
+</tr>
+<tr>
+<td>Post-merge-only suites</td>
+<td>Slow, less reliable suites</td>
+<td>Checks that must block merging (security, unit tests)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="a-pipeline-skeleton-as-a-job-graph">A pipeline skeleton as a job graph<a class="headerlink" href="#a-pipeline-skeleton-as-a-job-graph" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># .github/workflows/pipeline.yml (structure; full steps on the next pages)</span>
+<span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pipeline</span>
+<span class="nt">on</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">pull_request</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">push</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">branches</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">main</span><span class="p p-Indicator">]</span>
+
+<span class="nt">permissions</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">contents</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">read</span>
+
+<span class="nt">jobs</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">lint</span><span class="p">:</span><span class="w">             </span><span class="p p-Indicator">{</span><span class="nt"> runs-on</span><span class="p">:</span><span class="w"> </span><span class="nv">ubuntu-latest</span><span class="p p-Indicator">,</span><span class="nt"> steps</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="nv">...</span><span class="w"> </span><span class="p p-Indicator">]</span><span class="w"> </span><span class="p p-Indicator">}</span>
+<span class="w">  </span><span class="nt">unit</span><span class="p">:</span><span class="w">             </span><span class="p p-Indicator">{</span><span class="nt"> runs-on</span><span class="p">:</span><span class="w"> </span><span class="nv">ubuntu-latest</span><span class="p p-Indicator">,</span><span class="nt"> steps</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="nv">...</span><span class="w"> </span><span class="p p-Indicator">]</span><span class="w"> </span><span class="p p-Indicator">}</span>
+<span class="w">  </span><span class="nt">integration</span><span class="p">:</span><span class="w">      </span><span class="p p-Indicator">{</span><span class="nt"> runs-on</span><span class="p">:</span><span class="w"> </span><span class="nv">ubuntu-latest</span><span class="p p-Indicator">,</span><span class="nt"> services</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="w"> </span><span class="nv">...</span><span class="w"> </span><span class="p p-Indicator">},</span><span class="nt"> steps</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="nv">...</span><span class="w"> </span><span class="p p-Indicator">]</span><span class="w"> </span><span class="p p-Indicator">}</span>
+<span class="w">  </span><span class="nt">audit</span><span class="p">:</span><span class="w">            </span><span class="p p-Indicator">{</span><span class="nt"> runs-on</span><span class="p">:</span><span class="w"> </span><span class="nv">ubuntu-latest</span><span class="p p-Indicator">,</span><span class="nt"> steps</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="nv">...</span><span class="w"> </span><span class="p p-Indicator">]</span><span class="w"> </span><span class="p p-Indicator">}</span>
+
+<span class="w">  </span><span class="nt">ci-ok</span><span class="p">:</span><span class="w">                                   </span><span class="c1"># the single required check</span>
+<span class="w">    </span><span class="nt">if</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">always()</span>
+<span class="w">    </span><span class="nt">needs</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">lint</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">unit</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">integration</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">audit</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
+<span class="w">    </span><span class="nt">steps</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Fail if any needed job failed or was cancelled</span>
+<span class="w">        </span><span class="nt">if</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')</span>
+<span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">exit 1</span>
+
+<span class="w">  </span><span class="nt">build</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">needs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ci-ok</span>
+<span class="w">    </span><span class="nt">if</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">github.event_name == 'push'</span><span class="w">        </span><span class="c1"># only main builds a deployable image</span>
+<span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
+<span class="w">    </span><span class="nt">permissions</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> contents</span><span class="p">:</span><span class="w"> </span><span class="nv">read</span><span class="p p-Indicator">,</span><span class="nt"> packages</span><span class="p">:</span><span class="w"> </span><span class="nv">write</span><span class="w"> </span><span class="p p-Indicator">}</span>
+<span class="w">    </span><span class="nt">outputs</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">digest</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ steps.push.outputs.digest }}</span>
+<span class="w">    </span><span class="nt">steps</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="nv">...</span><span class="w"> </span><span class="p p-Indicator">]</span><span class="w">                         </span><span class="c1"># step id "push" builds and pushes the image</span>
+
+<span class="w">  </span><span class="nt">deploy-staging</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">needs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">build</span>
+<span class="w">    </span><span class="nt">environment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">staging</span>
+<span class="w">    </span><span class="nt">concurrency</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> group</span><span class="p">:</span><span class="w"> </span><span class="nv">deploy-staging</span><span class="p p-Indicator">,</span><span class="nt"> cancel-in-progress</span><span class="p">:</span><span class="w"> </span><span class="nv">false</span><span class="w"> </span><span class="p p-Indicator">}</span>
+<span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
+<span class="w">    </span><span class="nt">steps</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="nv">...</span><span class="w"> </span><span class="p p-Indicator">]</span><span class="w">                         </span><span class="c1"># deploys needs.build.outputs.digest</span>
+
+<span class="w">  </span><span class="nt">e2e</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">needs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">deploy-staging</span>
+<span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
+<span class="w">    </span><span class="nt">steps</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="nv">...</span><span class="w"> </span><span class="p p-Indicator">]</span>
+
+<span class="w">  </span><span class="nt">deploy-production</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">needs</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">build</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">e2e</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">environment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">production</span><span class="w">                </span><span class="c1"># required reviewers approve here</span>
+<span class="w">    </span><span class="nt">concurrency</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> group</span><span class="p">:</span><span class="w"> </span><span class="nv">deploy-production</span><span class="p p-Indicator">,</span><span class="nt"> cancel-in-progress</span><span class="p">:</span><span class="w"> </span><span class="nv">false</span><span class="w"> </span><span class="p p-Indicator">}</span>
+<span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
+<span class="w">    </span><span class="nt">steps</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="nv">...</span><span class="w"> </span><span class="p p-Indicator">]</span><span class="w">                         </span><span class="c1"># deploys the same digest</span>
+</code></pre></div>
+<p>The <code>ci-ok</code> job exists because of a subtle rule: if a job fails, the jobs
+that need it are <em>skipped</em>, and a skipped job counts as passing for
+required checks. Requiring only <code>build</code> would therefore let a PR with
+failing tests merge. An aggregator job with <code>if: always()</code> that fails
+when any dependency failed gives branch protection one reliable check to
+require. Complete versions of these jobs are in
+<a href="../github-actions-in-depth/">GitHub Actions in depth</a> and
+<a href="../artifacts-and-environment-promotion/">artifacts and environment promotion</a>.</p>
+<h3 id="a-matrix-for-a-shared-npm-package">A matrix for a shared npm package<a class="headerlink" href="#a-matrix-for-a-shared-npm-package" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># .github/workflows/sdk.yml (taskflow-sdk supports several Node.js versions)</span>
+<span class="nt">jobs</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">test</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ matrix.os }}</span>
+<span class="w">    </span><span class="nt">strategy</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">fail-fast</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w">          </span><span class="c1"># show every failing combination</span>
+<span class="w">      </span><span class="nt">max-parallel</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4</span>
+<span class="w">      </span><span class="nt">matrix</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">node</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">22</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">24</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">26</span><span class="p p-Indicator">]</span>
+<span class="w">        </span><span class="nt">os</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">ubuntu-latest</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">windows-latest</span><span class="p p-Indicator">]</span>
+<span class="w">        </span><span class="nt">exclude</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">node</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">22</span>
+<span class="w">            </span><span class="nt">os</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">windows-latest</span>
+<span class="w">        </span><span class="nt">include</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">node</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">24</span>
+<span class="w">            </span><span class="nt">os</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">macos-latest</span>
+<span class="w">    </span><span class="nt">steps</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/checkout@v7</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/setup-node@v7</span>
+<span class="w">        </span><span class="nt">with</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">node-version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ matrix.node }}</span>
+<span class="w">          </span><span class="nt">cache</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">npm</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">npm ci</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">npm test</span>
+</code></pre></div>
+<p>Three Node.js versions times two operating systems is 6 combinations;
+the <code>exclude</code> removes one and the <code>include</code> adds a macOS job, so 6 jobs
+run, at most 4 at a time.</p>
+<h3 id="explicit-lockfile-keyed-caching-and-docker-layer-caching">Explicit lockfile-keyed caching and Docker layer caching<a class="headerlink" href="#explicit-lockfile-keyed-caching-and-docker-layer-caching" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># .github/workflows/build.yml (excerpt)</span>
+<span class="nt">steps</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/checkout@v7</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/setup-node@v7</span>
+<span class="w">    </span><span class="nt">with</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">node-version-file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.nvmrc</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/cache@v6</span>
+<span class="w">    </span><span class="nt">with</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">~/.npm</span>
+<span class="w">      </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}</span>
+<span class="w">      </span><span class="nt">restore-keys</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">        </span><span class="no">${{ runner.os }}-npm-</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">npm ci</span>
+
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docker/setup-buildx-action@v4</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docker/build-push-action@v7</span>
+<span class="w">    </span><span class="nt">with</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">context</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span>
+<span class="w">      </span><span class="nt">push</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">      </span><span class="nt">tags</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-api:ci</span>
+<span class="w">      </span><span class="nt">cache-from</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">type=gha</span>
+<span class="w">      </span><span class="nt">cache-to</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">type=gha,mode=max</span>
+</code></pre></div>
+<p><code>setup-node</code>'s <code>cache: npm</code> input does the same as the explicit
+<code>actions/cache</code> step; the explicit form shows how keys work and lets you
+cache other tools. <code>mode=max</code> also caches intermediate layers of
+multi-stage builds.</p>
+<h3 id="change-detection-that-works-with-required-checks">Change detection that works with required checks<a class="headerlink" href="#change-detection-that-works-with-required-checks" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># .github/workflows/monorepo-ci.yml (excerpt)</span>
+<span class="nt">on</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">pull_request</span><span class="p">:</span>
+
+<span class="nt">jobs</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">changes</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
+<span class="w">    </span><span class="nt">outputs</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">api</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ steps.diff.outputs.api }}</span>
+<span class="w">      </span><span class="nt">web</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ steps.diff.outputs.web }}</span>
+<span class="w">    </span><span class="nt">steps</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/checkout@v7</span>
+<span class="w">        </span><span class="nt">with</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">fetch-depth</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">diff</span>
+<span class="w">        </span><span class="nt">env</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">BASE_SHA</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ github.event.pull_request.base.sha }}</span>
+<span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">          </span><span class="no">changed=$(git diff --name-only "$BASE_SHA" HEAD)</span>
+<span class="w">          </span><span class="no">echo "api=$(grep -qE '^(apps/api/|packages/shared/)' &lt;&lt;&lt;"$changed" &amp;&amp; echo true || echo false)" &gt;&gt; "$GITHUB_OUTPUT"</span>
+<span class="w">          </span><span class="no">echo "web=$(grep -qE '^(apps/web/|packages/shared/)' &lt;&lt;&lt;"$changed" &amp;&amp; echo true || echo false)" &gt;&gt; "$GITHUB_OUTPUT"</span>
+
+<span class="w">  </span><span class="nt">api-test</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">needs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">changes</span>
+<span class="w">    </span><span class="nt">if</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">needs.changes.outputs.api == 'true'</span><span class="w">   </span><span class="c1"># skipped job reports success</span>
+<span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
+<span class="w">    </span><span class="nt">steps</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/checkout@v7</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">npm ci &amp;&amp; npm test --workspace apps/api</span>
+</code></pre></div>
+<p>The workflow always runs, so its checks always report. When the API did
+not change, <code>api-test</code> is skipped and counts as passing; when it did, the
+tests must pass.</p>
+<h3 id="an-idempotent-deploy-step">An idempotent deploy step<a class="headerlink" href="#an-idempotent-deploy-step" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="ch">#!/usr/bin/env bash</span>
+<span class="c1"># scripts/deploy.sh: deploy one image digest to one environment; safe to re-run</span>
+<span class="nb">set</span><span class="w"> </span>-euo<span class="w"> </span>pipefail
+
+<span class="nv">ENVIRONMENT</span><span class="o">=</span><span class="s2">"</span><span class="nv">$1</span><span class="s2">"</span><span class="w">                 </span><span class="c1"># staging | production</span>
+<span class="nv">IMAGE</span><span class="o">=</span><span class="s2">"</span><span class="nv">$2</span><span class="s2">"</span><span class="w">                       </span><span class="c1"># ghcr.io/example/taskflow-api@sha256:...</span>
+
+<span class="c1"># Desired state: the Deployment runs exactly this image. Re-running is a no-op.</span>
+kubectl<span class="w"> </span>--context<span class="w"> </span><span class="s2">"</span><span class="nv">$ENVIRONMENT</span><span class="s2">"</span><span class="w"> </span>-n<span class="w"> </span>taskflow<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="nb">set</span><span class="w"> </span>image<span class="w"> </span>deployment/taskflow-api<span class="w"> </span><span class="nv">api</span><span class="o">=</span><span class="s2">"</span><span class="nv">$IMAGE</span><span class="s2">"</span>
+
+<span class="c1"># Verify: wait for the rollout to finish, fail the job if it does not.</span>
+kubectl<span class="w"> </span>--context<span class="w"> </span><span class="s2">"</span><span class="nv">$ENVIRONMENT</span><span class="s2">"</span><span class="w"> </span>-n<span class="w"> </span>taskflow<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>rollout<span class="w"> </span>status<span class="w"> </span>deployment/taskflow-api<span class="w"> </span>--timeout<span class="o">=</span>5m
+</code></pre></div>
+<p>Setting the image to the digest it already runs changes nothing, so a
+retried job is harmless, and <code>rollout status</code> makes the step fail when
+the new version never becomes healthy. Kubernetes rollouts are covered in
+<a href="../../kubernetes/health-probes-and-rolling-updates/">health probes and rolling updates</a>.</p>
+<h3 id="finding-the-critical-path-of-a-slow-run">Finding the critical path of a slow run<a class="headerlink" href="#finding-the-critical-path-of-a-slow-run" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>gh<span class="w"> </span>run<span class="w"> </span>list<span class="w"> </span>--workflow<span class="w"> </span>pipeline.yml<span class="w"> </span>--branch<span class="w"> </span>main<span class="w"> </span>--limit<span class="w"> </span><span class="m">1</span><span class="w"> </span>--json<span class="w"> </span>databaseId<span class="w"> </span>--jq<span class="w"> </span><span class="s1">'.[0].databaseId'</span>
+<span class="c1"># 13579</span>
+gh<span class="w"> </span>run<span class="w"> </span>view<span class="w"> </span><span class="m">13579</span><span class="w"> </span>--json<span class="w"> </span><span class="nb">jobs</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--jq<span class="w"> </span><span class="s1">'.jobs[] | [.name, .startedAt, .completedAt, .conclusion] | @tsv'</span>
+</code></pre></div>
+<p>Sort the jobs by start time and follow the <code>needs</code> chain with the latest
+finishing times; that chain is where optimization pays.</p>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Model the pipeline as a job graph; parallelize independent checks and
+  keep the critical path short.</li>
+<li>Order checks cheapest-first and fail fast, but keep per-job overhead in
+  mind.</li>
+<li>Use matrices only where the variation is real, and sharding for long
+  suites.</li>
+<li>Key caches on the lockfile hash (plus OS and runtime), cache download
+  directories rather than <code>node_modules</code>, and make cold runs correct.</li>
+<li>Pass files with artifacts and images with registry digests, not caches.</li>
+<li>Build once per commit and promote the same artifact; inject
+  configuration at deploy time.</li>
+<li>Pin dependencies, base images, and actions so builds are deterministic.</li>
+<li>Give branch protection one aggregate required check that cannot be
+  skipped into a pass.</li>
+<li>Write deploy steps as idempotent desired-state operations, serialized
+  per environment.</li>
+<li>Set and track pipeline speed budgets.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>A PR with failing tests was merged.</strong>
+  <em>Detect:</em> <code>main</code> fails right after the merge; the PR's required check
+  shows "skipped" or "success" while tests failed. <em>Cause:</em> the required
+  check was a job that <code>needs</code> the test job, so it was skipped when tests
+  failed, and skipped counts as success. <em>Fix:</em> require an aggregator job
+  with <code>if: always()</code> that fails on any failed or cancelled dependency,
+  or require the test jobs themselves.</li>
+<li><strong>Builds fail at random after a dependency cache was introduced.</strong>
+  <em>Detect:</em> failures disappear when the cache is deleted (Actions caches
+  page or <code>gh cache delete --all</code>). <em>Cause:</em> caching <code>node_modules</code>
+  across Node.js versions or OSes, or a key that does not include the
+  lockfile hash. <em>Fix:</em> cache <code>~/.npm</code> keyed on OS and lockfile hash, and
+  always run <code>npm ci</code>.</li>
+<li><strong>Production runs code that differs from what staging tested.</strong>
+  <em>Detect:</em> the image digest in production differs from staging's for the
+  same version. <em>Cause:</em> each environment's job rebuilt the image.
+  <em>Fix:</em> build once, pass the digest as a job output, and deploy by
+  digest everywhere.</li>
+<li><strong>A monorepo PR is blocked forever on a pending check.</strong>
+  <em>Detect:</em> the check shows "Expected: waiting for status"; the workflow
+  has a <code>paths</code> filter. <em>Cause:</em> the workflow was skipped, so its required
+  check never reported. <em>Fix:</em> run the workflow always and use in-job
+  change detection with conditional jobs.</li>
+<li><strong>A re-run deploy left two versions half-rolled-out.</strong>
+  <em>Detect:</em> overlapping deploy runs in the Actions history; mixed pod
+  versions. <em>Cause:</em> non-idempotent steps and no concurrency control.
+  <em>Fix:</em> desired-state deploys by digest, a concurrency group per
+  environment with <code>cancel-in-progress: false</code>, and rollout verification.</li>
+<li><strong>The pipeline crept from 9 to 26 minutes over six months.</strong>
+  <em>Detect:</em> trend of run duration per workflow. <em>Cause:</em> new jobs added
+  to the critical path, a slow integration suite, lost caching. <em>Fix:</em>
+  set a budget with an owner, parallelize or shard the critical path,
+  and restore caching.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Stage:</strong> A group of jobs that runs before the next group starts.</li>
+<li><strong>Job DAG:</strong> Jobs connected by declared dependencies (<code>needs</code>).</li>
+<li><strong>Critical path:</strong> The longest chain of dependent jobs; it sets the
+  pipeline's duration.</li>
+<li><strong>Fail fast:</strong> Running cheap, likely-to-fail checks first and stopping
+  early.</li>
+<li><strong>Matrix build:</strong> One job definition run over combinations of
+  variables.</li>
+<li><strong>Sharding:</strong> Splitting one test suite across parallel jobs.</li>
+<li><strong>Cache key:</strong> The identifier deciding which cached files to restore.</li>
+<li><strong>Restore keys:</strong> Fallback key prefixes used when no exact match exists.</li>
+<li><strong>Artifact (workflow):</strong> Files uploaded by a job for later jobs or
+  people.</li>
+<li><strong>Build once, deploy many:</strong> Promoting one built artifact through all
+  environments.</li>
+<li><strong>Deterministic build:</strong> Same inputs, same outputs.</li>
+<li><strong>Path filter:</strong> A trigger condition based on changed file paths.</li>
+<li><strong>Idempotent step:</strong> A step whose repeated execution yields the same end
+  state.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Splitting every check into its own job, so runner overhead dominates.</li>
+<li>Using a matrix for an application that runs on one runtime.</li>
+<li>Caching <code>node_modules</code> or using a cache key without the lockfile hash.</li>
+<li>Treating caches as artifacts, or depending on a cache being present.</li>
+<li>Rebuilding the image for staging and production.</li>
+<li>Requiring a check that can be skipped into a pass.</li>
+<li>Path filters on workflows that provide required checks.</li>
+<li>Deploy scripts that "add" or "increment" instead of declaring state.</li>
+<li>Optimizing jobs that are not on the critical path.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>What is a pipeline's critical path, and why does speeding up a job off
+   it not help?</li>
+<li>Order these checks for fail-fast: end-to-end tests, lint, build image,
+   unit tests, integration tests. Justify the order.</li>
+<li>A matrix has <code>node: [22, 24, 26]</code>, <code>os: [ubuntu-latest,
+   windows-latest, macos-latest]</code>, one <code>exclude</code> entry, and two <code>include</code>
+   entries that add new combinations. How many jobs run? (3 x 3 - 1 + 2 =
+   10.)</li>
+<li>Why is the lockfile hash the right cache key for npm, and why cache
+   <code>~/.npm</code> rather than <code>node_modules</code>?</li>
+<li>Explain the difference between a cache and an artifact, with one
+   example of each.</li>
+<li>Why must a pipeline build once and deploy many, and where do
+   environment differences go?</li>
+<li>Why can a required check that <code>needs</code> the test job let a failing PR
+   merge, and how do you fix it?</li>
+<li>What makes a deploy step idempotent? Rewrite "scale up by one replica"
+   as an idempotent operation.</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://12factor.net/build-release-run">Twelve-Factor App: Build, release, run</a></li>
+<li><a href="https://docs.github.com/en/actions/reference/workflows-and-actions/dependency-caching">GitHub Docs: Dependency caching reference</a></li>
+<li><a href="https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/run-job-variations">GitHub Docs: Running variations of jobs (matrix)</a></li>
+<li><a href="https://docs.github.com/en/actions/concepts/workflows-and-actions/workflow-artifacts">GitHub Docs: Workflow artifacts</a></li>
+<li><a href="https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/collaborating-on-repositories-with-code-quality-features/troubleshooting-required-status-checks">GitHub Docs: Troubleshooting required status checks</a></li>
+<li><a href="https://docs.docker.com/build/ci/github-actions/cache/">Docker Docs: Cache management with GitHub Actions</a></li>
+<li><a href="https://reproducible-builds.org/docs/definition/">Reproducible Builds: definition</a></li>
+<li>Next: <a href="../github-actions-in-depth/">GitHub Actions in depth</a>. Back to the
+  <a href="../">CI/CD overview</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../continuous-integration-fundamentals/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Continuous Integration Fundamentals">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Continuous Integration Fundamentals</span>
+      </a>
+    
+    
+      <a href="../github-actions-in-depth/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: GitHub Actions in Depth">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">GitHub Actions in Depth</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

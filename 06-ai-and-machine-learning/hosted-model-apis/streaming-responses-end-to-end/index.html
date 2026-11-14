@@ -1,0 +1,3794 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../calling-model-apis-from-a-backend/">
+      
+      
+        <link rel="next" href="../prompt-caching-and-batch-processing/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Streaming Responses End to End - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#streaming-responses-end-to-end" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Streaming Responses End to End
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../05-application-architecture/" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../08-devops-and-deployment/" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to AI and Machine Learning">
+          <span class="md-ellipsis">&larr; Back to AI</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../05-application-architecture/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        
+          
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-label="AI module lessons" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to AI and Machine Learning">
+                  <span class="md-ellipsis">&larr; Back to AI</span>
+                </a>
+              
+            </div>
+          
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                  
+  
+  
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+    
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_4" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_7_4" id="__nav_7_4_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Access
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_4_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_7_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Model Access
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_4_1" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_7_4_1" id="__nav_7_4_1_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hosted Model APIs
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_7_4_1_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_7_4_1">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Hosted Model APIs
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../calling-model-apis-from-a-backend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calling Model APIs from a Backend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Streaming Responses End to End
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Streaming Responses End to End
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#three-streams-in-a-row" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Three streams in a row
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-the-providers-send" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What the providers send
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-sse-wire-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The SSE wire format
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#headers-flushing-and-compression" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Headers, flushing, and compression
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#proxies-load-balancers-and-timeouts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Proxies, load balancers, and timeouts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aborting-when-the-client-disconnects" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Aborting when the client disconnects
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#backpressure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backpressure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#partial-failures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Partial failures
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#timeouts-for-streams" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timeouts for streams
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-express-relay" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Express relay
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-nginx-location-for-the-stream" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The nginx location for the stream
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reading-the-stream-in-taskflow-web" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading the stream in TaskFlow Web
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-same-relay-with-other-sdks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The same relay with other SDKs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#testing-the-relay-without-a-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing the relay without a provider
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../prompt-caching-and-batch-processing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Prompt Caching and Batch Processing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../choosing-models-and-providers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Choosing Models and Providers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../local-models/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Running Models Locally
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../model-serving-and-inference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Serving and Inference Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../08-devops-and-deployment/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DevOps and Deployment
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#three-streams-in-a-row" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Three streams in a row
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-the-providers-send" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What the providers send
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-sse-wire-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The SSE wire format
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#headers-flushing-and-compression" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Headers, flushing, and compression
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#proxies-load-balancers-and-timeouts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Proxies, load balancers, and timeouts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aborting-when-the-client-disconnects" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Aborting when the client disconnects
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#backpressure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backpressure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#partial-failures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Partial failures
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#timeouts-for-streams" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timeouts for streams
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-express-relay" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Express relay
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-nginx-location-for-the-stream" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The nginx location for the stream
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reading-the-stream-in-taskflow-web" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading the stream in TaskFlow Web
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-same-relay-with-other-sdks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The same relay with other SDKs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#testing-the-relay-without-a-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing the relay without a provider
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="streaming-responses-end-to-end">Streaming Responses End to End<a class="headerlink" href="#streaming-responses-end-to-end" title="Permanent link">&para;</a></h1>
+<p>When a TaskFlow user opens a meeting and asks for a summary, the first
+words should appear in well under a second, even though the whole summary
+takes several seconds to generate. That is streaming: the model provider
+sends text as it is produced, and every hop between the provider and the
+browser passes it on immediately. This lesson follows one streamed answer
+end to end: the provider's server-sent events, the SDK's stream, an
+Express relay that re-encodes them for TaskFlow Web, the reverse proxy
+that must not buffer them, and the browser code that reads them. It then
+covers cancelling generation when the user leaves, backpressure, and what
+to do when a stream fails halfway through.</p>
+<p>Rendering streamed text in React (stop and regenerate buttons, scroll
+behavior, partial markdown) is covered in
+<a href="../../building-ai-applications/frontend-patterns-for-ai-features/">frontend patterns for AI features</a>;
+this lesson owns the backend relay and the wire format.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>Two numbers describe a model response: <strong>time to first token</strong> (how long
+until anything appears) and <strong>total generation time</strong> (how long until the
+last token). Generation speed is bounded by the model, so a 600-token
+summary takes the same total time whether it is streamed or not. What
+streaming changes is perception and control: the user reads from the
+first second instead of staring at a spinner, can stop a summary that is
+going in the wrong direction, and a long answer never runs into a
+non-streaming request timeout.</p>
+<p>Streaming also moves failures to awkward places. The HTTP status <code>200</code> is
+sent before the model has produced anything, so an error that happens
+halfway cannot change the status code. A proxy that buffers responses
+silently turns the stream back into one late response. A user who closes
+the tab leaves the provider generating (and billing) tokens nobody will
+read, unless the cancel travels back through every hop. Each of these is
+invisible in a quick local test and obvious in production.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>OpenAI streaming events.</strong> The
+  <a href="https://developers.openai.com/api/docs/guides/streaming-responses">streaming responses guide</a>
+  describes the Responses API's typed server-sent events, such as
+  <code>response.created</code>, <code>response.output_text.delta</code>, <code>response.completed</code>,
+  and <code>error</code>, which clients handle by type instead of parsing raw chunks.</li>
+<li><strong>Anthropic streaming events.</strong> The
+  <a href="https://platform.claude.com/docs/en/build-with-claude/streaming">streaming messages page</a>
+  documents the event flow (<code>message_start</code>, <code>content_block_delta</code>,
+  <code>message_delta</code>, <code>message_stop</code>), <code>ping</code> events that can appear at any
+  time, and error events such as <code>overloaded_error</code> that arrive inside a
+  stream that started with <code>200</code>.</li>
+<li><strong>nginx buffering by default.</strong> The
+  <a href="https://nginx.org/en/docs/http/ngx_http_proxy_module.html">proxy module documentation</a>
+  shows <code>proxy_buffering on</code> as the default, explains that buffering can
+  be switched off per response with an <code>X-Accel-Buffering: no</code> header, and
+  that <code>proxy_read_timeout</code> (60 seconds by default) applies between two
+  successive reads.</li>
+<li><strong>Compression and SSE.</strong> The README of the Express
+  <a href="https://github.com/expressjs/compression">compression middleware</a>
+  warns that it "does not work out of the box with server-sent events"
+  because compression buffers output, and that <code>res.flush()</code> must be
+  called to push data to the client.</li>
+<li><strong>The SSE format.</strong> The HTML standard's
+  <a href="https://html.spec.whatwg.org/multipage/server-sent-events.html">server-sent events section</a>
+  defines the <code>event:</code> and <code>data:</code> fields, blank-line-terminated messages,
+  and comment lines starting with a colon.</li>
+</ul>
+<p><strong>Popular tools and providers:</strong> the streaming helpers in the OpenAI,
+Anthropic, and Google Gen AI SDKs; the Vercel AI SDK (<code>streamText</code> and UI
+message streams); nginx, cloud load balancers, and CDNs on the path;
+<code>fetch</code> with <code>ReadableStream</code> in the browser.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="three-streams-in-a-row">Three streams in a row<a class="headerlink" href="#three-streams-in-a-row" title="Permanent link">&para;</a></h3>
+<p>A streamed answer passes through three different streams, and each one is
+your responsibility to keep flowing:</p>
+<ol>
+<li><strong>Provider to backend.</strong> The provider sends server-sent events (SSE)
+   over one long HTTP response. The SDK parses them into typed event
+   objects and exposes them as an async iterator.</li>
+<li><strong>Backend to proxy.</strong> The Express route writes its own SSE events to
+   its response as soon as each provider event arrives.</li>
+<li><strong>Proxy to browser.</strong> nginx, a load balancer, or a CDN forwards the
+   bytes. TaskFlow Web reads them with <code>fetch</code> and a stream reader.</li>
+</ol>
+<p><img alt="Diagram: five hops from left to right: the model provider sending server-sent events, the SDK stream exposing event objects, the Express relay writing its own SSE events, nginx or a load balancer that must not buffer, and TaskFlow Web reading with fetch and a reader. Under each hop are its settings: typed JSON events with text deltas, completed or failed events, and mid-stream errors; an async iterator read with for await whose signal closes the upstream socket; flushHeaders, X-Accel-Buffering, heartbeat comments, and waiting for drain; proxy_buffering off, a read timeout longer than the longest gap, no gzip on the stream, and HTTP/1.1 upstream; and parsing event blocks, treating a missing done event as a cut-off stream, showing partial text, and aborting on Stop. A dashed arrow shows an abort travelling back from the browser to the provider. A red band warns that one buffering hop turns the stream back into one late response." src="../sse-relay-path.svg" /></p>
+<p>The relay re-encodes instead of piping the provider's bytes through. The
+provider's events contain internal ids, reasoning summaries, tool-call
+fragments, and usage fields the browser should not depend on, and their
+format differs per provider. TaskFlow defines three events of its own:</p>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Data</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>delta</code></td>
+<td><code>{"text": "..."}</code></td>
+<td>Append this text</td>
+</tr>
+<tr>
+<td><code>done</code></td>
+<td><code>{"status": "completed" or "incomplete", ...}</code></td>
+<td>The answer ended normally, or hit the output limit</td>
+</tr>
+<tr>
+<td><code>error</code></td>
+<td><code>{"message": "...", "partial": true}</code></td>
+<td>Generation failed; any text shown so far is incomplete</td>
+</tr>
+</tbody>
+</table>
+<p>A small vocabulary like this survives a change of provider or model
+without touching TaskFlow Web.</p>
+<h3 id="what-the-providers-send">What the providers send<a class="headerlink" href="#what-the-providers-send" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Provider and API</th>
+<th>Text arrives in</th>
+<th>End of answer</th>
+<th>Errors inside the stream</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OpenAI Responses (<code>stream: true</code>)</td>
+<td><code>response.output_text.delta</code> (<code>delta</code>)</td>
+<td><code>response.completed</code>, or <code>response.incomplete</code> with a reason such as <code>max_output_tokens</code></td>
+<td><code>response.failed</code>, <code>error</code></td>
+</tr>
+<tr>
+<td>Anthropic Messages (<code>stream: true</code>)</td>
+<td><code>content_block_delta</code> with a <code>text_delta</code></td>
+<td><code>message_delta</code> (with <code>stop_reason</code>), then <code>message_stop</code></td>
+<td><code>error</code> events such as <code>overloaded_error</code>; <code>ping</code> events in between</td>
+</tr>
+<tr>
+<td>Gemini (<code>generateContentStream</code>)</td>
+<td>Each chunk's <code>text</code></td>
+<td>The iterator ends; check <code>finishReason</code> on the final chunk's candidate</td>
+<td>Thrown by the iterator</td>
+</tr>
+</tbody>
+</table>
+<p>Usage (token counts) arrives at the end: in <code>response.completed</code> for
+OpenAI and in the cumulative <code>usage</code> of <code>message_delta</code> for Anthropic.
+Quotas and cost tracking from
+<a href="../calling-model-apis-from-a-backend/">calling model APIs from a backend</a>
+must read it there, not from a non-streaming response object.</p>
+<h3 id="the-sse-wire-format">The SSE wire format<a class="headerlink" href="#the-sse-wire-format" title="Permanent link">&para;</a></h3>
+<p>SSE is plain text over a normal HTTP response with
+<code>Content-Type: text/event-stream</code>. Each message is a set of <code>field: value</code>
+lines ended by a blank line:</p>
+<div class="highlight"><pre><span></span><code>event: delta
+data: {"text":"Decision: ship v2 "}
+
+: ping
+
+event: done
+data: {"status":"completed"}
+</code></pre></div>
+<ul>
+<li><code>event:</code> names the message type; without it the type is <code>message</code>.</li>
+<li><code>data:</code> carries the payload. Several <code>data:</code> lines join with newlines,
+  so encoding each payload as one line of JSON avoids framing bugs when
+  the text itself contains newlines.</li>
+<li>A line starting with <code>:</code> is a comment. Comments are ideal heartbeats:
+  they keep idle timers on proxies from firing and are ignored by parsers.</li>
+</ul>
+<p>The browser's built-in <code>EventSource</code> only makes <code>GET</code> requests and cannot
+send custom headers such as <code>Authorization</code>, and it reconnects
+automatically, which would restart a paid generation. TaskFlow Web
+therefore uses <code>fetch</code> with <code>POST</code> and reads the body as a stream.</p>
+<h3 id="headers-flushing-and-compression">Headers, flushing, and compression<a class="headerlink" href="#headers-flushing-and-compression" title="Permanent link">&para;</a></h3>
+<p>Four details decide whether the first byte leaves the server promptly:</p>
+<ul>
+<li><strong><code>Content-Type: text/event-stream</code></strong> tells every hop what this is.</li>
+<li><strong><code>Cache-Control: no-cache, no-transform</code></strong> stops caches from storing it
+  and intermediaries from transforming (and buffering) it.</li>
+<li><strong><code>X-Accel-Buffering: no</code></strong> asks nginx not to buffer this one response,
+  even if buffering stays on for the rest of the site.</li>
+<li><strong><code>res.flushHeaders()</code></strong> sends the status and headers immediately,
+  before the first model token, so the browser knows the request was
+  accepted.</li>
+</ul>
+<p>Response compression is the classic hidden buffer. The <code>compression</code>
+middleware collects output to compress it efficiently, so either exclude
+stream routes from it or call <code>res.flush()</code> after every write. Validation,
+authentication, and authorization must all happen before
+<code>flushHeaders()</code>: once the <code>200</code> is out, failures can only be reported as
+events.</p>
+<h3 id="proxies-load-balancers-and-timeouts">Proxies, load balancers, and timeouts<a class="headerlink" href="#proxies-load-balancers-and-timeouts" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: three rows on a 0 to 8 second axis with example timings. The provider emits small text chunks steadily from 0.6 seconds to about 6.9 seconds. With buffering off, the browser receives each chunk almost immediately, so the first token is visible at 0.6 seconds. With proxy buffering on, nothing arrives until a buffer fills at about 3.6 seconds, when a burst of text appears at once, and the rest arrives when the response ends at about 7 seconds. The caption notes that the model and its speed are the same; only the time the user first sees words changes." src="../buffered-vs-streamed-delivery.svg" /></p>
+<p>With <code>proxy_buffering on</code>, nginx reads the upstream response into buffers
+of one memory page (4 or 8 KB, depending on the platform) and forwards
+them as they fill or when the response ends. Small SSE events then arrive
+in bursts. Turning buffering off for the stream location, or sending
+<code>X-Accel-Buffering: no</code> from Express, restores token-by-token delivery.</p>
+<p>Idle timeouts are the second trap. nginx closes an upstream connection
+when nothing arrives for <code>proxy_read_timeout</code> (60 seconds by default,
+measured between two reads, not for the whole response), and cloud load
+balancers have their own idle timeouts (60 seconds by default on an AWS
+Application Load Balancer, as covered in
+<a href="../../../08-devops-and-deployment/load-balancing-and-multi-server/load-balancers-in-depth/">load balancers in depth</a>).
+A reasoning model can think silently for longer than that before its first
+text token. A heartbeat comment every 15 seconds keeps every hop's idle
+timer from firing without the browser seeing anything. Since nginx 1.29.7
+<code>proxy_http_version</code> defaults to 1.1; on older versions set it explicitly,
+because HTTP/1.0 upstream connections handle long responses poorly.</p>
+<h3 id="aborting-when-the-client-disconnects">Aborting when the client disconnects<a class="headerlink" href="#aborting-when-the-client-disconnects" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: a sequence with five lifelines: TaskFlow Web, nginx, the Express relay, the model provider, and MongoDB. Text deltas flow from the provider through Express and nginx to the browser as delta events. The user presses Stop or closes the tab and the browser closes its connection; nginx closes its upstream connection; Express sees its response emit close before it finished and calls controller.abort; the SDK closes the request to the provider, which stops generating; Express saves the partial summary in MongoDB with the status cancelled. The caption warns that without the abort the provider keeps generating output that is billed and never read." src="../client-disconnect-abort.svg" /></p>
+<p>A provider keeps generating as long as the connection to it is open, and
+output tokens are billed whether or not anyone reads them. The cancel must
+therefore travel back through every hop:</p>
+<ol>
+<li>The browser aborts its <code>fetch</code> (Stop button) or the tab closes.</li>
+<li>nginx, with the default <code>proxy_ignore_client_abort off</code>, closes its
+   connection to Express.</li>
+<li>Express emits <code>close</code> on the response before it finished. The route
+   checks <code>res.writableFinished</code> to tell a disconnect from a normal end,
+   and calls <code>controller.abort()</code>.</li>
+<li>The SDK request was created with that <code>signal</code>, so the SDK closes its
+   connection to the provider, and generation stops.</li>
+</ol>
+<p>One SDK detail matters here. When the OpenAI SDK's stream is aborted, its
+iterator ends quietly instead of throwing (the source comments say it
+should "exit without throwing"), so code after the <code>for await</code> loop must
+check <code>signal.aborted</code> to know whether the answer finished. The relay
+below does exactly that and records the summary as <code>cancelled</code>.</p>
+<p>The worked example shows why this matters for cost: if 1,000 users a day
+close the tab 2 seconds into a 600-token summary that streams at 100
+tokens per second, the remaining 400 tokens each add up to 400,000 output
+tokens a day that are generated, billed, and thrown away when the abort is
+not wired up.</p>
+<h3 id="backpressure">Backpressure<a class="headerlink" href="#backpressure" title="Permanent link">&para;</a></h3>
+<p><code>res.write()</code> returns <code>false</code> when the socket's buffer is full, which
+happens when a client on a slow mobile connection reads more slowly than
+the model writes. Ignoring the return value keeps queueing data in the
+Node process's memory. The relay awaits the <code>drain</code> event (or <code>close</code>, if
+the client leaves) before writing more, which also slows how fast it
+consumes the provider stream.</p>
+<h3 id="partial-failures">Partial failures<a class="headerlink" href="#partial-failures" title="Permanent link">&para;</a></h3>
+<p>Once streaming has started, failures fall into a few shapes, and each one
+needs a deliberate response:</p>
+<table>
+<thead>
+<tr>
+<th>What happened</th>
+<th>How the relay sees it</th>
+<th>What it sends</th>
+<th>What it stores</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Output limit reached</td>
+<td><code>response.incomplete</code> (<code>max_output_tokens</code>) or <code>stop_reason: "max_tokens"</code></td>
+<td><code>done</code> with <code>status: "incomplete"</code></td>
+<td>Text, status <code>incomplete</code></td>
+</tr>
+<tr>
+<td>Provider error mid-stream</td>
+<td><code>response.failed</code>, <code>error</code>, or an Anthropic <code>error</code> event</td>
+<td><code>error</code> with <code>partial: true</code></td>
+<td>Text so far, status <code>failed</code></td>
+</tr>
+<tr>
+<td>Upstream connection dropped</td>
+<td>The iterator throws</td>
+<td><code>error</code> with <code>partial: true</code></td>
+<td>Text so far, status <code>failed</code></td>
+</tr>
+<tr>
+<td>User left</td>
+<td>Response <code>close</code> before finishing</td>
+<td>Nothing (nobody is listening)</td>
+<td>Text so far, status <code>cancelled</code></td>
+</tr>
+<tr>
+<td>A proxy cut the stream</td>
+<td>Nothing on the server, or a write error</td>
+<td>Nothing arrives</td>
+<td>Depends where it was cut</td>
+</tr>
+</tbody>
+</table>
+<p>The browser applies one rule: an answer is complete only if a <code>done</code>
+event arrived. A stream that ends without <code>done</code> was cut off somewhere,
+however it ended, and the UI should say so and offer to try again.</p>
+<p>Retrying a failed stream is not the same as retrying a normal request.
+The user has already seen part of the answer, so a silent retry would
+show different text, or the same text twice. The usual choices are:</p>
+<ul>
+<li><strong>Start over visibly.</strong> Clear the partial text and generate again (a
+  "Retry" button). Simple and honest.</li>
+<li><strong>Resume where it stopped.</strong> OpenAI's background mode
+  (<code>background: true</code>) keeps a response on the provider side for roughly
+  10 minutes, and <code>responses.retrieve(id, { stream: true, starting_after:
+  &lt;sequence number&gt; })</code> resumes the event stream after a dropped
+  connection, as described in the
+  <a href="https://developers.openai.com/api/docs/guides/background">background mode guide</a>.
+  This requires storing the response id and the last sequence number, and
+  it is a provider-specific feature.</li>
+</ul>
+<p>Never store a partial answer as if it were complete: a summary saved with
+status <code>completed</code> after a dropped connection is a silent data-quality
+bug that resurfaces later as "the summary is missing the action items".</p>
+<h3 id="timeouts-for-streams">Timeouts for streams<a class="headerlink" href="#timeouts-for-streams" title="Permanent link">&para;</a></h3>
+<p>A total-time timeout makes little sense for a stream that legitimately
+runs for a minute. Two other limits work better: <strong>time to first byte</strong>
+(if the provider has not started within N seconds, fail or fall back
+before anything was shown) and <strong>maximum idle gap</strong> (if no event arrives
+for N seconds, the stream is stuck). Falling back to another model is
+only safe before the first <code>delta</code> has been sent to the browser.</p>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Situation</th>
+<th>Stream?</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Summaries, answers, drafts shown to a waiting user</td>
+<td>Yes</td>
+<td>First words in under a second; Stop saves cost</td>
+</tr>
+<tr>
+<td>Long outputs (thousands of tokens)</td>
+<td>Yes</td>
+<td>Avoids long non-streaming timeouts</td>
+</tr>
+<tr>
+<td>Structured output the server must validate before use</td>
+<td>Usually no</td>
+<td>The result is only usable once complete; stream progress events instead of tokens</td>
+</tr>
+<tr>
+<td>Background jobs (nightly summaries, batch work)</td>
+<td>No</td>
+<td>Nobody is watching; use a queue or a batch API</td>
+</tr>
+<tr>
+<td>Very short answers (a label, a yes or no)</td>
+<td>No</td>
+<td>The overhead buys nothing</td>
+</tr>
+<tr>
+<td>A path through proxies you cannot configure</td>
+<td>Test first</td>
+<td>A buffering hop removes the benefit</td>
+</tr>
+</tbody>
+</table>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="the-express-relay">The Express relay<a class="headerlink" href="#the-express-relay" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/routes/summary-stream.ts</span>
+<span class="c1">// POST /api/meetings/:id/summary/stream: relay a model stream to the browser as SSE.</span>
+<span class="k">import</span><span class="w"> </span><span class="nx">express</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="kr">type</span><span class="w"> </span><span class="nx">Request</span><span class="p">,</span><span class="w"> </span><span class="kr">type</span><span class="w"> </span><span class="nx">Response</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"express"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="nx">OpenAI</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"openai"</span><span class="p">;</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">interface</span><span class="w"> </span><span class="nx">SummaryStore</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">loadNotes</span><span class="p">(</span><span class="nx">userId</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="nx">meetingId</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="nb">Promise</span><span class="o">&lt;</span><span class="kt">string</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="kc">null</span><span class="o">&gt;</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">saveSummary</span><span class="p">(</span><span class="nx">meetingId</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="nx">text</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="nx">status</span><span class="o">:</span><span class="w"> </span><span class="s2">"completed"</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">"incomplete"</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">"failed"</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">"cancelled"</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="nb">Promise</span><span class="o">&lt;</span><span class="ow">void</span><span class="o">&gt;</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">INSTRUCTIONS</span><span class="w"> </span><span class="o">=</span>
+<span class="w">  </span><span class="s2">"Summarize the meeting notes for the TaskFlow project team: decisions, owners, open questions."</span><span class="p">;</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">HEARTBEAT_MS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">15</span><span class="nx">_000</span><span class="p">;</span>
+
+<span class="c1">// One SSE event. JSON keeps newlines inside the data out of the framing.</span>
+<span class="kd">function</span><span class="w"> </span><span class="nx">sseEvent</span><span class="p">(</span><span class="nx">event</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="nx">data</span><span class="o">:</span><span class="w"> </span><span class="kt">unknown</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="sb">`event: </span><span class="si">${</span><span class="nx">event</span><span class="si">}</span><span class="sb">\ndata: </span><span class="si">${</span><span class="nb">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">data</span><span class="p">)</span><span class="si">}</span><span class="sb">\n\n`</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c1">// Respect backpressure: wait for "drain" when the socket buffer is full.</span>
+<span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">write</span><span class="p">(</span><span class="nx">res</span><span class="o">:</span><span class="w"> </span><span class="kt">Response</span><span class="p">,</span><span class="w"> </span><span class="nx">chunk</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="nb">Promise</span><span class="o">&lt;</span><span class="ow">void</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">res</span><span class="p">.</span><span class="nx">write</span><span class="p">(</span><span class="nx">chunk</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Promise</span><span class="o">&lt;</span><span class="ow">void</span><span class="o">&gt;</span><span class="p">((</span><span class="nx">resolve</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="kd">const</span><span class="w"> </span><span class="nx">done</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nx">res</span><span class="p">.</span><span class="nx">off</span><span class="p">(</span><span class="s2">"drain"</span><span class="p">,</span><span class="w"> </span><span class="nx">done</span><span class="p">);</span>
+<span class="w">        </span><span class="nx">res</span><span class="p">.</span><span class="nx">off</span><span class="p">(</span><span class="s2">"close"</span><span class="p">,</span><span class="w"> </span><span class="nx">done</span><span class="p">);</span>
+<span class="w">        </span><span class="nx">resolve</span><span class="p">();</span>
+<span class="w">      </span><span class="p">};</span>
+<span class="w">      </span><span class="nx">res</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">"drain"</span><span class="p">,</span><span class="w"> </span><span class="nx">done</span><span class="p">);</span>
+<span class="w">      </span><span class="nx">res</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">"close"</span><span class="p">,</span><span class="w"> </span><span class="nx">done</span><span class="p">);</span>
+<span class="w">    </span><span class="p">});</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">summaryStreamRouter</span><span class="p">(</span><span class="nx">deps</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">client</span><span class="o">:</span><span class="w"> </span><span class="kt">OpenAI</span><span class="p">;</span><span class="w"> </span><span class="nx">store</span><span class="o">:</span><span class="w"> </span><span class="kt">SummaryStore</span><span class="p">;</span><span class="w"> </span><span class="nx">model</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="p">})</span><span class="o">:</span><span class="w"> </span><span class="nx">express</span><span class="p">.</span><span class="nx">Router</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">router</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">express</span><span class="p">.</span><span class="nx">Router</span><span class="p">();</span>
+
+<span class="w">  </span><span class="nx">router</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s2">"/api/meetings/:id/summary/stream"</span><span class="p">,</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="nx">req</span><span class="o">:</span><span class="w"> </span><span class="kt">Request</span><span class="p">,</span><span class="w"> </span><span class="nx">res</span><span class="o">:</span><span class="w"> </span><span class="kt">Response</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">userId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">res</span><span class="p">.</span><span class="nx">locals</span><span class="p">.</span><span class="nx">userId</span><span class="w"> </span><span class="kr">as</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="kc">undefined</span><span class="p">;</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">meetingId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">String</span><span class="p">(</span><span class="nx">req</span><span class="p">.</span><span class="nx">params</span><span class="p">.</span><span class="nx">id</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">userId</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="nx">res</span><span class="p">.</span><span class="nx">status</span><span class="p">(</span><span class="mf">401</span><span class="p">).</span><span class="nx">json</span><span class="p">({</span><span class="w"> </span><span class="nx">error</span><span class="o">:</span><span class="w"> </span><span class="s2">"Sign in first."</span><span class="w"> </span><span class="p">});</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">notes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">deps</span><span class="p">.</span><span class="nx">store</span><span class="p">.</span><span class="nx">loadNotes</span><span class="p">(</span><span class="nx">userId</span><span class="p">,</span><span class="w"> </span><span class="nx">meetingId</span><span class="p">);</span><span class="w"> </span><span class="c1">// authorization happens here</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">notes</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="nx">res</span><span class="p">.</span><span class="nx">status</span><span class="p">(</span><span class="mf">404</span><span class="p">).</span><span class="nx">json</span><span class="p">({</span><span class="w"> </span><span class="nx">error</span><span class="o">:</span><span class="w"> </span><span class="s2">"Meeting not found."</span><span class="w"> </span><span class="p">});</span>
+
+<span class="w">    </span><span class="c1">// Errors before this point are normal JSON responses. After it, only SSE events.</span>
+<span class="w">    </span><span class="nx">res</span><span class="p">.</span><span class="nx">status</span><span class="p">(</span><span class="mf">200</span><span class="p">).</span><span class="nx">set</span><span class="p">({</span>
+<span class="w">      </span><span class="s2">"Content-Type"</span><span class="o">:</span><span class="w"> </span><span class="s2">"text/event-stream; charset=utf-8"</span><span class="p">,</span>
+<span class="w">      </span><span class="s2">"Cache-Control"</span><span class="o">:</span><span class="w"> </span><span class="s2">"no-cache, no-transform"</span><span class="p">,</span>
+<span class="w">      </span><span class="s2">"X-Accel-Buffering"</span><span class="o">:</span><span class="w"> </span><span class="s2">"no"</span><span class="p">,</span><span class="w"> </span><span class="c1">// tell nginx not to buffer this response</span>
+<span class="w">    </span><span class="p">});</span>
+<span class="w">    </span><span class="nx">res</span><span class="p">.</span><span class="nx">flushHeaders</span><span class="p">();</span>
+
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">controller</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">AbortController</span><span class="p">();</span>
+<span class="w">    </span><span class="nx">res</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">"close"</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">res</span><span class="p">.</span><span class="nx">writableFinished</span><span class="p">)</span><span class="w"> </span><span class="nx">controller</span><span class="p">.</span><span class="nx">abort</span><span class="p">();</span><span class="w"> </span><span class="c1">// the browser went away</span>
+<span class="w">    </span><span class="p">});</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">heartbeat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">setInterval</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">res</span><span class="p">.</span><span class="nx">write</span><span class="p">(</span><span class="s2">": ping\n\n"</span><span class="p">),</span><span class="w"> </span><span class="nx">HEARTBEAT_MS</span><span class="p">);</span>
+
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="nx">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">""</span><span class="p">;</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="nx">status</span><span class="o">:</span><span class="w"> </span><span class="s2">"completed"</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">"incomplete"</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">"failed"</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">"cancelled"</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"failed"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="kd">const</span><span class="w"> </span><span class="nx">stream</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">deps</span><span class="p">.</span><span class="nx">client</span><span class="p">.</span><span class="nx">responses</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nx">model</span><span class="o">:</span><span class="w"> </span><span class="kt">deps.model</span><span class="p">,</span><span class="w"> </span><span class="nx">instructions</span><span class="o">:</span><span class="w"> </span><span class="kt">INSTRUCTIONS</span><span class="p">,</span><span class="w"> </span><span class="nx">input</span><span class="o">:</span><span class="w"> </span><span class="kt">notes</span><span class="p">,</span><span class="w"> </span><span class="nx">max_output_tokens</span><span class="o">:</span><span class="w"> </span><span class="kt">800</span><span class="p">,</span><span class="w"> </span><span class="nx">stream</span><span class="o">:</span><span class="w"> </span><span class="kt">true</span><span class="p">,</span><span class="w"> </span><span class="nx">store</span><span class="o">:</span><span class="w"> </span><span class="kt">false</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nx">signal</span><span class="o">:</span><span class="w"> </span><span class="kt">controller.signal</span><span class="p">,</span><span class="w"> </span><span class="nx">timeout</span><span class="o">:</span><span class="w"> </span><span class="kt">60_000</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="p">);</span>
+<span class="w">      </span><span class="k">for</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="nx">event</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="nx">stream</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">event</span><span class="p">.</span><span class="kr">type</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">"response.output_text.delta"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nx">text</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="nx">event</span><span class="p">.</span><span class="nx">delta</span><span class="p">;</span>
+<span class="w">          </span><span class="k">await</span><span class="w"> </span><span class="nx">write</span><span class="p">(</span><span class="nx">res</span><span class="p">,</span><span class="w"> </span><span class="nx">sseEvent</span><span class="p">(</span><span class="s2">"delta"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">text</span><span class="o">:</span><span class="w"> </span><span class="kt">event.delta</span><span class="w"> </span><span class="p">}));</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">event</span><span class="p">.</span><span class="kr">type</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">"response.completed"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nx">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"completed"</span><span class="p">;</span>
+<span class="w">          </span><span class="k">await</span><span class="w"> </span><span class="nx">write</span><span class="p">(</span><span class="nx">res</span><span class="p">,</span><span class="w"> </span><span class="nx">sseEvent</span><span class="p">(</span><span class="s2">"done"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">status</span><span class="p">,</span><span class="w"> </span><span class="nx">usage</span><span class="o">:</span><span class="w"> </span><span class="kt">event.response.usage</span><span class="w"> </span><span class="p">}));</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">event</span><span class="p">.</span><span class="kr">type</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">"response.incomplete"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nx">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"incomplete"</span><span class="p">;</span>
+<span class="w">          </span><span class="kd">const</span><span class="w"> </span><span class="nx">reason</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">event</span><span class="p">.</span><span class="nx">response</span><span class="p">.</span><span class="nx">incomplete_details</span><span class="o">?</span><span class="p">.</span><span class="nx">reason</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="s2">"unknown"</span><span class="p">;</span>
+<span class="w">          </span><span class="k">await</span><span class="w"> </span><span class="nx">write</span><span class="p">(</span><span class="nx">res</span><span class="p">,</span><span class="w"> </span><span class="nx">sseEvent</span><span class="p">(</span><span class="s2">"done"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">status</span><span class="p">,</span><span class="w"> </span><span class="nx">reason</span><span class="w"> </span><span class="p">}));</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">event</span><span class="p">.</span><span class="kr">type</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">"response.failed"</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nx">event</span><span class="p">.</span><span class="kr">type</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">"error"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="k">await</span><span class="w"> </span><span class="nx">write</span><span class="p">(</span><span class="nx">res</span><span class="p">,</span><span class="w"> </span><span class="nx">sseEvent</span><span class="p">(</span><span class="s2">"error"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">message</span><span class="o">:</span><span class="w"> </span><span class="s2">"The summary stopped early."</span><span class="p">,</span><span class="w"> </span><span class="nx">partial</span><span class="o">:</span><span class="w"> </span><span class="kt">text.length</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">0</span><span class="w"> </span><span class="p">}));</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">      </span><span class="c1">// An aborted SDK stream ends the loop quietly instead of throwing.</span>
+<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">controller</span><span class="p">.</span><span class="nx">signal</span><span class="p">.</span><span class="nx">aborted</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nx">status</span><span class="w"> </span><span class="o">!==</span><span class="w"> </span><span class="s2">"completed"</span><span class="p">)</span><span class="w"> </span><span class="nx">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"cancelled"</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="nx">err</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">controller</span><span class="p">.</span><span class="nx">signal</span><span class="p">.</span><span class="nx">aborted</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nx">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"cancelled"</span><span class="p">;</span><span class="w"> </span><span class="c1">// client left; provider connection already closed by the SDK</span>
+<span class="w">      </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="nb">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">({</span><span class="w"> </span><span class="nx">msg</span><span class="o">:</span><span class="w"> </span><span class="s2">"summary_stream_failed"</span><span class="p">,</span><span class="w"> </span><span class="nx">meetingId</span><span class="p">,</span><span class="w"> </span><span class="nx">error</span><span class="o">:</span><span class="w"> </span><span class="kt">String</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span><span class="w"> </span><span class="p">}));</span>
+<span class="w">        </span><span class="k">await</span><span class="w"> </span><span class="nx">write</span><span class="p">(</span><span class="nx">res</span><span class="p">,</span><span class="w"> </span><span class="nx">sseEvent</span><span class="p">(</span><span class="s2">"error"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">message</span><span class="o">:</span><span class="w"> </span><span class="s2">"The summary stopped early."</span><span class="p">,</span><span class="w"> </span><span class="nx">partial</span><span class="o">:</span><span class="w"> </span><span class="kt">text.length</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">0</span><span class="w"> </span><span class="p">}));</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">finally</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">clearInterval</span><span class="p">(</span><span class="nx">heartbeat</span><span class="p">);</span>
+<span class="w">      </span><span class="k">await</span><span class="w"> </span><span class="nx">deps</span><span class="p">.</span><span class="nx">store</span><span class="p">.</span><span class="nx">saveSummary</span><span class="p">(</span><span class="nx">meetingId</span><span class="p">,</span><span class="w"> </span><span class="nx">text</span><span class="p">,</span><span class="w"> </span><span class="nx">status</span><span class="p">);</span><span class="w"> </span><span class="c1">// never store a partial as completed</span>
+<span class="w">      </span><span class="nx">res</span><span class="p">.</span><span class="nx">end</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">});</span>
+
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">router</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<ul>
+<li><code>loadNotes</code> takes the user id, so authorization happens before the
+  <code>200</code> is committed; a user cannot stream another team's meeting.</li>
+<li>The <code>timeout</code> passed to the SDK covers waiting for the response to
+  start; once events flow, the heartbeat and the proxies' idle timeouts
+  take over.</li>
+<li><code>store: false</code> and the meeting text: summaries of private notes are
+  exactly the content whose retention matters; see
+  <a href="../choosing-models-and-providers/">choosing models and providers</a>.</li>
+<li>The <code>finally</code> block runs for every outcome, so the status written to
+  MongoDB always matches what the user actually received.</li>
+</ul>
+<h3 id="the-nginx-location-for-the-stream">The nginx location for the stream<a class="headerlink" href="#the-nginx-location-for-the-stream" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code># /etc/nginx/conf.d/taskflow.conf (excerpt)
+location /api/ {
+    proxy_pass http://taskflow_api;
+    proxy_http_version 1.1;          # default since nginx 1.29.7; explicit for older versions
+    proxy_set_header Connection "";  # keep upstream connections reusable
+    proxy_set_header Host $host;
+}
+
+location ~ ^/api/meetings/[^/]+/summary/stream$ {
+    proxy_pass http://taskflow_api;
+    proxy_http_version 1.1;
+    proxy_set_header Connection "";
+    proxy_set_header Host $host;
+    proxy_buffering off;             # pass each event through as it arrives
+    proxy_read_timeout 120s;         # longer than the longest silent gap; heartbeats every 15 s
+    gzip off;                        # compression buffers output
+}
+</code></pre></div>
+<p>The <code>X-Accel-Buffering: no</code> header from Express already disables
+buffering for this response, so the dedicated location is belt and braces;
+it also documents the stream route for whoever maintains the proxy. Other
+nginx basics for TaskFlow are in
+<a href="../../../08-devops-and-deployment/linux-server-operations/running-apps-with-systemd-and-nginx/">running apps with systemd and nginx</a>.</p>
+<h3 id="reading-the-stream-in-taskflow-web">Reading the stream in TaskFlow Web<a class="headerlink" href="#reading-the-stream-in-taskflow-web" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/lib/read-sse.ts (TaskFlow Web)</span>
+<span class="c1">// Parse a fetch() response body as server-sent events. EventSource cannot</span>
+<span class="c1">// POST or send an Authorization header, so the web app reads the stream itself.</span>
+<span class="k">export</span><span class="w"> </span><span class="kd">interface</span><span class="w"> </span><span class="nx">SseMessage</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">event</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">data</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="o">*</span><span class="w"> </span><span class="nx">readSse</span><span class="p">(</span><span class="nx">response</span><span class="o">:</span><span class="w"> </span><span class="kt">Response</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="nx">AsyncGenerator</span><span class="o">&lt;</span><span class="nx">SseMessage</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">response</span><span class="p">.</span><span class="nx">ok</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="nx">response</span><span class="p">.</span><span class="nx">body</span><span class="p">)</span><span class="w"> </span><span class="k">throw</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="ne">Error</span><span class="p">(</span><span class="sb">`Stream failed with HTTP </span><span class="si">${</span><span class="nx">response</span><span class="p">.</span><span class="nx">status</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">reader</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">response</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">pipeThrough</span><span class="p">(</span><span class="ow">new</span><span class="w"> </span><span class="nx">TextDecoderStream</span><span class="p">()).</span><span class="nx">getReader</span><span class="p">();</span>
+<span class="w">  </span><span class="kd">let</span><span class="w"> </span><span class="nx">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">""</span><span class="p">;</span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(;;)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">value</span><span class="p">,</span><span class="w"> </span><span class="nx">done</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">reader</span><span class="p">.</span><span class="nx">read</span><span class="p">();</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">done</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="p">;</span>
+<span class="w">    </span><span class="nx">buffer</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="nx">value</span><span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="sr">/\r\n/g</span><span class="p">,</span><span class="w"> </span><span class="s2">"\n"</span><span class="p">);</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="nx">boundary</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">;</span>
+<span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="p">((</span><span class="nx">boundary</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">buffer</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="s2">"\n\n"</span><span class="p">))</span><span class="w"> </span><span class="o">!==</span><span class="w"> </span><span class="o">-</span><span class="mf">1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="kd">const</span><span class="w"> </span><span class="nx">block</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">buffer</span><span class="p">.</span><span class="nx">slice</span><span class="p">(</span><span class="mf">0</span><span class="p">,</span><span class="w"> </span><span class="nx">boundary</span><span class="p">);</span>
+<span class="w">      </span><span class="nx">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">buffer</span><span class="p">.</span><span class="nx">slice</span><span class="p">(</span><span class="nx">boundary</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">2</span><span class="p">);</span>
+<span class="w">      </span><span class="kd">let</span><span class="w"> </span><span class="nx">event</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"message"</span><span class="p">;</span>
+<span class="w">      </span><span class="kd">const</span><span class="w"> </span><span class="nx">data</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[];</span>
+<span class="w">      </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="nx">line</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="nx">block</span><span class="p">.</span><span class="nx">split</span><span class="p">(</span><span class="s2">"\n"</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">line</span><span class="p">.</span><span class="nx">startsWith</span><span class="p">(</span><span class="s2">":"</span><span class="p">))</span><span class="w"> </span><span class="k">continue</span><span class="p">;</span><span class="w"> </span><span class="c1">// comment, e.g. a heartbeat</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">line</span><span class="p">.</span><span class="nx">startsWith</span><span class="p">(</span><span class="s2">"event:"</span><span class="p">))</span><span class="w"> </span><span class="nx">event</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">line</span><span class="p">.</span><span class="nx">slice</span><span class="p">(</span><span class="mf">6</span><span class="p">).</span><span class="nx">trim</span><span class="p">();</span>
+<span class="w">        </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">line</span><span class="p">.</span><span class="nx">startsWith</span><span class="p">(</span><span class="s2">"data:"</span><span class="p">))</span><span class="w"> </span><span class="nx">data</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">line</span><span class="p">.</span><span class="nx">slice</span><span class="p">(</span><span class="mf">5</span><span class="p">).</span><span class="nx">replace</span><span class="p">(</span><span class="sr">/^ /</span><span class="p">,</span><span class="w"> </span><span class="s2">""</span><span class="p">));</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">data</span><span class="p">.</span><span class="nx">length</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">0</span><span class="p">)</span><span class="w"> </span><span class="k">yield</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">event</span><span class="p">,</span><span class="w"> </span><span class="nx">data</span><span class="o">:</span><span class="w"> </span><span class="kt">data.join</span><span class="p">(</span><span class="s2">"\n"</span><span class="p">)</span><span class="w"> </span><span class="p">};</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// Usage: stream a summary; resolve with its final status, or throw if it broke.</span>
+<span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">streamSummary</span><span class="p">(</span>
+<span class="w">  </span><span class="nx">url</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">onText</span><span class="o">:</span><span class="w"> </span><span class="p">(</span><span class="nx">t</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="ow">void</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">signal</span><span class="o">:</span><span class="w"> </span><span class="kt">AbortSignal</span><span class="p">,</span>
+<span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="nb">Promise</span><span class="o">&lt;</span><span class="s2">"completed"</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">"incomplete"</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">response</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">fetch</span><span class="p">(</span><span class="nx">url</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">method</span><span class="o">:</span><span class="w"> </span><span class="s2">"POST"</span><span class="p">,</span><span class="w"> </span><span class="nx">signal</span><span class="w"> </span><span class="p">});</span>
+<span class="w">  </span><span class="kd">let</span><span class="w"> </span><span class="nx">status</span><span class="o">:</span><span class="w"> </span><span class="s2">"completed"</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">"incomplete"</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="kc">undefined</span><span class="p">;</span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="nx">msg</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="nx">readSse</span><span class="p">(</span><span class="nx">response</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">payload</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">msg</span><span class="p">.</span><span class="nx">data</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">msg</span><span class="p">.</span><span class="nx">event</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">"delta"</span><span class="p">)</span><span class="w"> </span><span class="nx">onText</span><span class="p">(</span><span class="nx">payload</span><span class="p">.</span><span class="nx">text</span><span class="p">);</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">msg</span><span class="p">.</span><span class="nx">event</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">"done"</span><span class="p">)</span><span class="w"> </span><span class="nx">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">payload</span><span class="p">.</span><span class="nx">status</span><span class="p">;</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">msg</span><span class="p">.</span><span class="nx">event</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">"error"</span><span class="p">)</span><span class="w"> </span><span class="k">throw</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="ne">Error</span><span class="p">(</span><span class="nx">payload</span><span class="p">.</span><span class="nx">message</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="c1">// No "done" event means a proxy or the network cut the stream.</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">status</span><span class="p">)</span><span class="w"> </span><span class="k">throw</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="ne">Error</span><span class="p">(</span><span class="s2">"The connection closed before the summary finished."</span><span class="p">);</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">status</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<ul>
+<li><code>TextDecoderStream</code> decodes UTF-8 correctly even when a multi-byte
+  character is split across two network chunks; decoding each chunk
+  separately with <code>new TextDecoder().decode(chunk)</code> does not.</li>
+<li>The parser keeps incomplete blocks in <code>buffer</code>, because an event can be
+  split anywhere between two reads.</li>
+<li>The <code>signal</code> comes from the Stop button's <code>AbortController</code>; aborting it
+  starts the chain shown in the disconnect diagram.</li>
+</ul>
+<h3 id="the-same-relay-with-other-sdks">The same relay with other SDKs<a class="headerlink" href="#the-same-relay-with-other-sdks" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/ai/stream-equivalents.ts</span>
+<span class="k">import</span><span class="w"> </span><span class="nx">Anthropic</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"@anthropic-ai/sdk"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">GoogleGenAI</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"@google/genai"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">pipeTextStreamToResponse</span><span class="p">,</span><span class="w"> </span><span class="nx">streamText</span><span class="p">,</span><span class="w"> </span><span class="nx">toTextStream</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"ai"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">openai</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"@ai-sdk/openai"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="kr">type</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Response</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"express"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">anthropic</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">Anthropic</span><span class="p">({</span><span class="w"> </span><span class="nx">maxRetries</span><span class="o">:</span><span class="w"> </span><span class="kt">0</span><span class="w"> </span><span class="p">});</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">genai</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">GoogleGenAI</span><span class="p">({</span><span class="w"> </span><span class="nx">apiKey</span><span class="o">:</span><span class="w"> </span><span class="kt">process.env.GEMINI_API_KEY</span><span class="w"> </span><span class="p">});</span>
+
+<span class="c1">// Anthropic: raw events; text arrives in content_block_delta events of type text_delta.</span>
+<span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="o">*</span><span class="w"> </span><span class="nx">anthropicText</span><span class="p">(</span><span class="nx">notes</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="nx">signal</span><span class="o">:</span><span class="w"> </span><span class="kt">AbortSignal</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="nx">AsyncGenerator</span><span class="o">&lt;</span><span class="kt">string</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">stream</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">anthropic</span><span class="p">.</span><span class="nx">messages</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nx">model</span><span class="o">:</span><span class="w"> </span><span class="kt">process.env.ANTHROPIC_MODEL</span><span class="o">!</span><span class="p">,</span><span class="w"> </span><span class="nx">max_tokens</span><span class="o">:</span><span class="w"> </span><span class="kt">800</span><span class="p">,</span><span class="w"> </span><span class="nx">messages</span><span class="o">:</span><span class="w"> </span><span class="p">[{</span><span class="w"> </span><span class="nx">role</span><span class="o">:</span><span class="w"> </span><span class="s2">"user"</span><span class="p">,</span><span class="w"> </span><span class="nx">content</span><span class="o">:</span><span class="w"> </span><span class="kt">notes</span><span class="w"> </span><span class="p">}],</span><span class="w"> </span><span class="nx">stream</span><span class="o">:</span><span class="w"> </span><span class="kt">true</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nx">signal</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="p">);</span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="nx">event</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="nx">stream</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">event</span><span class="p">.</span><span class="kr">type</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">"content_block_delta"</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nx">event</span><span class="p">.</span><span class="nx">delta</span><span class="p">.</span><span class="kr">type</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">"text_delta"</span><span class="p">)</span><span class="w"> </span><span class="k">yield</span><span class="w"> </span><span class="nx">event</span><span class="p">.</span><span class="nx">delta</span><span class="p">.</span><span class="nx">text</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">event</span><span class="p">.</span><span class="kr">type</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">"message_delta"</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nx">event</span><span class="p">.</span><span class="nx">delta</span><span class="p">.</span><span class="nx">stop_reason</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">"max_tokens"</span><span class="p">)</span><span class="w"> </span><span class="k">yield</span><span class="w"> </span><span class="s2">"\n[truncated]"</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// Gemini: each chunk is a partial GenerateContentResponse.</span>
+<span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="o">*</span><span class="w"> </span><span class="nx">geminiText</span><span class="p">(</span><span class="nx">notes</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="nx">signal</span><span class="o">:</span><span class="w"> </span><span class="kt">AbortSignal</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="nx">AsyncGenerator</span><span class="o">&lt;</span><span class="kt">string</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">stream</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">genai</span><span class="p">.</span><span class="nx">models</span><span class="p">.</span><span class="nx">generateContentStream</span><span class="p">({</span>
+<span class="w">    </span><span class="nx">model</span><span class="o">:</span><span class="w"> </span><span class="kt">process.env.GEMINI_CHAT_MODEL</span><span class="o">!</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">contents</span><span class="o">:</span><span class="w"> </span><span class="kt">notes</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">config</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">maxOutputTokens</span><span class="o">:</span><span class="w"> </span><span class="kt">800</span><span class="p">,</span><span class="w"> </span><span class="nx">abortSignal</span><span class="o">:</span><span class="w"> </span><span class="kt">signal</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="p">});</span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="nx">chunk</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="nx">stream</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">chunk</span><span class="p">.</span><span class="nx">text</span><span class="p">)</span><span class="w"> </span><span class="k">yield</span><span class="w"> </span><span class="nx">chunk</span><span class="p">.</span><span class="nx">text</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// Vercel AI SDK: plain text stream piped straight into an Express response.</span>
+<span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">aiSdkRelay</span><span class="p">(</span><span class="nx">notes</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="nx">res</span><span class="o">:</span><span class="w"> </span><span class="kt">Response</span><span class="p">,</span><span class="w"> </span><span class="nx">signal</span><span class="o">:</span><span class="w"> </span><span class="kt">AbortSignal</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="nb">Promise</span><span class="o">&lt;</span><span class="ow">void</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">streamText</span><span class="p">({</span>
+<span class="w">    </span><span class="nx">model</span><span class="o">:</span><span class="w"> </span><span class="kt">openai</span><span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">CHAT_MODEL</span><span class="o">!</span><span class="p">),</span>
+<span class="w">    </span><span class="nx">instructions</span><span class="o">:</span><span class="w"> </span><span class="s2">"Summarize the meeting notes: decisions, owners, open questions."</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">prompt</span><span class="o">:</span><span class="w"> </span><span class="kt">notes</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">abortSignal</span><span class="o">:</span><span class="w"> </span><span class="kt">signal</span><span class="p">,</span>
+<span class="w">  </span><span class="p">});</span>
+<span class="w">  </span><span class="k">await</span><span class="w"> </span><span class="nx">pipeTextStreamToResponse</span><span class="p">({</span><span class="w"> </span><span class="nx">response</span><span class="o">:</span><span class="w"> </span><span class="kt">res</span><span class="p">,</span><span class="w"> </span><span class="nx">stream</span><span class="o">:</span><span class="w"> </span><span class="kt">toTextStream</span><span class="p">({</span><span class="w"> </span><span class="nx">stream</span><span class="o">:</span><span class="w"> </span><span class="kt">result.stream</span><span class="w"> </span><span class="p">})</span><span class="w"> </span><span class="p">});</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>The generator versions plug into the same relay loop: replace the OpenAI
+event handling with <code>for await (const text of anthropicText(...))</code>. AI SDK
+7's standalone <code>pipeTextStreamToResponse</code> helper writes plain text without
+event framing (the older <code>result.pipeTextStreamToResponse()</code> method is
+deprecated); the UI message stream (<code>toUIMessageStream</code> with
+<code>pipeUIMessageStreamToResponse</code>) carries typed parts for the React hooks
+covered in
+<a href="../../building-ai-applications/frontend-patterns-for-ai-features/">frontend patterns for AI features</a>.</p>
+<h3 id="testing-the-relay-without-a-provider">Testing the relay without a provider<a class="headerlink" href="#testing-the-relay-without-a-provider" title="Permanent link">&para;</a></h3>
+<p>A stub server that speaks the provider's SSE format lets the real SDK,
+the real relay, and the real parser run together locally. The stub reads
+the scenario from the request and either streams normally, streams
+slowly, drops the connection after two deltas, or ends with
+<code>response.incomplete</code>. Results from a run of that test suite against the
+code on this page (dummy keys, no provider called):</p>
+<div class="highlight"><pre><span></span><code>normal      deltas arrived at 99, 143, 189, 234, 279, 325, 375 ms; saved "completed"
+slow        browser aborted after 2 deltas; stub saw its connection close after
+            4 events of 20; saved "cancelled" with the partial text
+drop        stub destroyed the socket after 2 deltas; browser got an "error"
+            event; saved "failed" with "Decision: ship v2 "
+incomplete  stream ended with response.incomplete; browser resolved "incomplete"
+parser      heartbeat comments, CRLF line endings, and an event split across
+            two chunks all parsed correctly
+</code></pre></div>
+<p>The "slow" scenario is the important one: it proves that a closed browser
+tab really closes the provider connection, which is otherwise hard to see
+until the bill arrives.</p>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Re-encode provider events into a small event vocabulary of your own
+  (<code>delta</code>, <code>done</code>, <code>error</code>).</li>
+<li>Authenticate, authorize, and validate before <code>flushHeaders()</code>; after
+  the <code>200</code>, report problems only as events.</li>
+<li>Send <code>Cache-Control: no-cache, no-transform</code> and
+  <code>X-Accel-Buffering: no</code>, and keep compression off stream routes.</li>
+<li>Send a heartbeat comment more often than the shortest idle timeout on
+  the path.</li>
+<li>Pass an <code>AbortSignal</code> to the SDK and abort it when the response closes
+  early; check the signal after the stream loop.</li>
+<li>Respect backpressure with <code>drain</code>.</li>
+<li>Treat an answer as complete only after a <code>done</code> event, and store partial
+  results with an explicit status.</li>
+<li>Use time-to-first-byte and idle-gap limits instead of a total timeout,
+  and fall back to another model only before the first token was sent.</li>
+<li>Test streaming through the real proxy chain, not only against
+  <code>localhost</code>.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>The whole summary appears at once after several seconds.</strong>
+  <em>Detect:</em> <code>curl -N</code> against the API directly streams, but through the
+  public URL it does not; browser dev tools show one large chunk. <em>Cause:</em>
+  proxy buffering, response compression, or a CDN that buffers.
+  <em>Fix:</em> <code>X-Accel-Buffering: no</code> or <code>proxy_buffering off</code>, disable
+  compression on the route, and check CDN settings for streaming.</li>
+<li><strong>Long answers stop at exactly 60 seconds.</strong>
+  <em>Detect:</em> streams end at the same duration; proxy logs show upstream
+  timeouts; the browser receives no <code>done</code>. <em>Cause:</em> an idle or read
+  timeout on nginx or the load balancer while the model was thinking.
+  <em>Fix:</em> heartbeat comments every 15 seconds and timeouts longer than the
+  longest silent gap.</li>
+<li><strong>Output token spend is much higher than tokens shown to users.</strong>
+  <em>Detect:</em> provider usage exceeds the sum of completed summaries; many
+  summaries end as abandoned. <em>Cause:</em> client disconnects are not
+  propagated, so generation continues. <em>Fix:</em> abort on response <code>close</code>,
+  pass the signal to the SDK, and verify with a slow-stream test.</li>
+<li><strong>Saved summaries are missing their last section.</strong>
+  <em>Detect:</em> summaries stored as <code>completed</code> end mid-sentence. <em>Cause:</em> the
+  code saved whatever text it had when the loop ended, without checking
+  for a completion event. <em>Fix:</em> set the status only from <code>completed</code> or
+  <code>incomplete</code> events and store everything else as <code>failed</code> or
+  <code>cancelled</code>.</li>
+<li><strong>Node memory grows during busy hours.</strong>
+  <em>Detect:</em> heap usage rises with concurrent streams; slow mobile clients
+  correlate with spikes. <em>Cause:</em> <code>res.write()</code> return values ignored, so
+  output queues in memory. <em>Fix:</em> await <code>drain</code>, and cap concurrent
+  streams per user.</li>
+<li><strong>Users see raw JSON or "undefined" when a stream fails.</strong>
+  <em>Detect:</em> error reports with fragments of event payloads in the UI.
+  <em>Cause:</em> a mid-stream provider error was forwarded as a delta, or the
+  client did not handle <code>error</code> events. <em>Fix:</em> map provider errors to an
+  <code>error</code> event and handle it explicitly in the client.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Server-sent events (SSE):</strong> A text format for a stream of events over
+  one long HTTP response.</li>
+<li><strong>Time to first token:</strong> The delay between sending a request and
+  receiving the first generated text.</li>
+<li><strong>Delta:</strong> A small piece of newly generated text in a stream event.</li>
+<li><strong>Relay:</strong> A backend route that consumes the provider's stream and
+  writes its own stream to the client.</li>
+<li><strong>Heartbeat:</strong> A periodic comment line that keeps idle connections from
+  timing out.</li>
+<li><strong>Proxy buffering:</strong> A proxy collecting response data before passing it
+  on, which delays streamed events.</li>
+<li><strong>Backpressure:</strong> Slowing the producer when the consumer cannot keep up,
+  signalled in Node by <code>write()</code> returning <code>false</code>.</li>
+<li><strong>Partial failure:</strong> A stream that ends with an error after some output
+  was already delivered.</li>
+<li><strong>Background mode:</strong> An OpenAI Responses option that runs a response
+  asynchronously and allows resuming its event stream.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Believing streaming makes the model faster; it changes when output is
+  seen, not how long generation takes.</li>
+<li>Using <code>EventSource</code> for a <code>POST</code> endpoint with an <code>Authorization</code> header.</li>
+<li>Piping the provider's raw events to the browser.</li>
+<li>Forgetting that the <code>200</code> is sent before generation, then trying to
+  return an error status mid-stream.</li>
+<li>Leaving compression or proxy buffering on for stream routes.</li>
+<li>Not aborting the provider request when the client disconnects.</li>
+<li>Saving a partial answer as complete.</li>
+<li>Retrying silently after some text was already shown.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Which two latency numbers describe a model response, and which one
+   does streaming improve?</li>
+<li>Why does TaskFlow re-encode provider events instead of forwarding them?</li>
+<li>List the headers the relay sends and what each one prevents.</li>
+<li>Walk through what happens, hop by hop, when a user closes the tab
+   mid-summary.</li>
+<li>Why must code after an OpenAI SDK stream loop check <code>signal.aborted</code>?</li>
+<li>A proxy has a 60-second idle timeout and a reasoning model can be
+   silent for 90 seconds before its first token. What breaks, and what are
+   two fixes?</li>
+<li>An abandoned summary would have produced 600 tokens; users leave after
+   about 150 tokens on average, 2,000 times a day. How many output tokens
+   a day does aborting save? (2,000 x 450 = 900,000.)</li>
+<li>How should TaskFlow Web decide whether a summary is complete, and what
+   should it do if it is not?</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://developers.openai.com/api/docs/guides/streaming-responses">OpenAI: Streaming API responses</a></li>
+<li><a href="https://developers.openai.com/api/docs/guides/background">OpenAI: Background mode</a></li>
+<li><a href="https://platform.claude.com/docs/en/build-with-claude/streaming">Anthropic: Streaming messages</a></li>
+<li><a href="https://aistudio.google.com/docs/text-generation">Gemini API: Text generation</a></li>
+<li><a href="https://ai-sdk.dev/docs/reference/ai-sdk-core/stream-text">AI SDK: streamText reference</a></li>
+<li><a href="https://html.spec.whatwg.org/multipage/server-sent-events.html">HTML standard: Server-sent events</a></li>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events">MDN: Using server-sent events</a></li>
+<li><a href="https://nginx.org/en/docs/http/ngx_http_proxy_module.html">nginx: ngx_http_proxy_module</a></li>
+<li>Next: <a href="../prompt-caching-and-batch-processing/">prompt caching and batch processing</a>. Back to the <a href="../">hosted model APIs overview</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../calling-model-apis-from-a-backend/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Calling Model APIs from a Backend">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Calling Model APIs from a Backend</span>
+      </a>
+    
+    
+      <a href="../prompt-caching-and-batch-processing/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: Prompt Caching and Batch Processing">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">Prompt Caching and Batch Processing</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

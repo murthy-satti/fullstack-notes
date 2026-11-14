@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="330" viewBox="0 0 860 330" role="img" aria-labelledby="stf-title stf-desc">
+  <title id="stf-title">How SAST follows tainted data from a source to a sink</title>
+  <desc id="stf-desc">Top row, a tainted flow: the source is req.body.owner from the JSON request body; it is copied unchanged into the filter object { owner: req.body.owner }; the filter reaches the sink Task.find(), a MongoDB query; the analyzer raises an alert for the CodeQL query js/sql-injection, which also covers NoSQL. An attacker who sends the body {"owner": {"$ne": null}} turns the filter into "owner is not null", which matches every task. Bottom row, a sanitized flow: the same source passes through a sanitizer, z.string().parse(), before reaching Task.find() with { owner: string }; the analyzer stays quiet because objects are rejected and operators never reach the query.</desc>
+  <defs>
+    <marker id="stf-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#40566b"/>
+    </marker>
+  </defs>
+  <rect width="860" height="330" rx="14" fill="#f5f7fb"/>
+  <g font-family="Arial, sans-serif" text-anchor="middle">
+    <text x="24" y="34" font-size="13" font-weight="700" fill="#6e2a24" text-anchor="start">Tainted flow: the source reaches the sink unchanged</text>
+
+    <rect x="24" y="50" width="180" height="56" rx="8" fill="#fff0d9" stroke="#bd7a20" stroke-width="2"/>
+    <text x="114" y="74" font-size="13" font-weight="700" fill="#66400f">Source</text>
+    <text x="114" y="92" font-size="11.5" fill="#66400f">req.body.owner</text>
+    <rect x="236" y="50" width="196" height="56" rx="8" fill="#eef1f5" stroke="#8a96a3" stroke-width="2"/>
+    <text x="334" y="74" font-size="13" font-weight="700" fill="#36424e">Filter object</text>
+    <text x="334" y="92" font-size="11" fill="#36424e">{ owner: req.body.owner }</text>
+    <rect x="464" y="50" width="172" height="56" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="550" y="74" font-size="13" font-weight="700" fill="#263e5a">Sink: Task.find()</text>
+    <text x="550" y="92" font-size="11.5" fill="#263e5a">MongoDB query</text>
+    <rect x="668" y="50" width="168" height="56" rx="8" fill="#fbe9e7" stroke="#b5524b" stroke-width="2"/>
+    <text x="752" y="74" font-size="13" font-weight="700" fill="#6e2a24">Alert</text>
+    <text x="752" y="92" font-size="11.5" fill="#6e2a24">js/sql-injection</text>
+
+    <g fill="none" stroke="#40566b" stroke-width="2" stroke-linecap="round">
+      <path d="M204 78H234" marker-end="url(#stf-arrow)"/>
+      <path d="M432 78H462" marker-end="url(#stf-arrow)"/>
+      <path d="M636 78H666" marker-end="url(#stf-arrow)"/>
+    </g>
+    <text x="24" y="134" font-size="11.5" fill="#6e2a24" text-anchor="start">attacker body: {"owner": {"$ne": null}}  becomes "owner is not null", which matches every task</text>
+
+    <path d="M24 156H836" stroke="#c9d1db" stroke-width="1.5"/>
+
+    <text x="24" y="184" font-size="13" font-weight="700" fill="#294a2e" text-anchor="start">Sanitized flow: validation breaks the taint</text>
+    <rect x="24" y="200" width="180" height="56" rx="8" fill="#fff0d9" stroke="#bd7a20" stroke-width="2"/>
+    <text x="114" y="224" font-size="13" font-weight="700" fill="#66400f">Source</text>
+    <text x="114" y="242" font-size="11.5" fill="#66400f">req.body.owner</text>
+    <rect x="236" y="200" width="196" height="56" rx="8" fill="#e7f3e9" stroke="#53845b" stroke-width="2"/>
+    <text x="334" y="224" font-size="13" font-weight="700" fill="#294a2e">Sanitizer</text>
+    <text x="334" y="242" font-size="11" fill="#294a2e">z.string().parse(owner)</text>
+    <rect x="464" y="200" width="172" height="56" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="550" y="224" font-size="13" font-weight="700" fill="#263e5a">Sink: Task.find()</text>
+    <text x="550" y="242" font-size="11.5" fill="#263e5a">{ owner: string }</text>
+    <rect x="668" y="200" width="168" height="56" rx="8" fill="#e7f3e9" stroke="#53845b" stroke-width="2"/>
+    <text x="752" y="224" font-size="13" font-weight="700" fill="#294a2e">No alert</text>
+    <text x="752" y="242" font-size="11.5" fill="#294a2e">objects rejected</text>
+
+    <g fill="none" stroke="#40566b" stroke-width="2" stroke-linecap="round">
+      <path d="M204 228H234" marker-end="url(#stf-arrow)"/>
+      <path d="M432 228H462" marker-end="url(#stf-arrow)"/>
+      <path d="M636 228H666" marker-end="url(#stf-arrow)"/>
+    </g>
+    <text x="24" y="282" font-size="11.5" fill="#294a2e" text-anchor="start">a non-string owner fails validation with a 400, so query operators never reach MongoDB</text>
+
+    <text x="430" y="314" font-size="13" fill="#40566b">SAST follows untrusted data from source to sink and stays quiet when a sanitizer sits in between.</text>
+  </g>
+</svg>

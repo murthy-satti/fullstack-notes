@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="480" viewBox="0 0 780 480" role="img" aria-labelledby="ob-title ob-desc">
+  <title id="ob-title">Transactional outbox: save the change and the event together, publish later</title>
+  <desc id="ob-desc">placeOrder inserts the order row and an outbox row in one database transaction, so both are committed or neither is. A relay then selects unsent outbox rows where published_at is null, using FOR UPDATE SKIP LOCKED so several relays can run, publishes each to the broker with its id as the messageId, and sets published_at. Consumers such as inventory and payments receive the event and skip message IDs they have already processed. If the relay crashes after publishing but before updating the row, the row is published again, so delivery is at least once and consumers must deduplicate.</desc>
+  <defs>
+    <marker id="ob-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#40566b"/>
+    </marker>
+  </defs>
+  <rect width="780" height="480" rx="14" fill="#f5f7fb"/>
+  <g font-family="Arial, sans-serif" text-anchor="middle">
+    <rect x="24" y="24" width="320" height="150" rx="10" fill="#fff8ec" stroke="#bd7a20" stroke-width="2" stroke-dasharray="6 4"/>
+    <text x="184" y="46" font-size="13" font-weight="700" fill="#66400f">placeOrder(): one transaction</text>
+    <rect x="44" y="60" width="280" height="34" rx="6" fill="#fff0d9" stroke="#bd7a20" stroke-width="1.5"/>
+    <text x="184" y="82" font-size="12" font-weight="700" fill="#66400f">INSERT INTO orders ... 'PENDING'</text>
+    <rect x="44" y="104" width="280" height="34" rx="6" fill="#fff0d9" stroke="#bd7a20" stroke-width="1.5"/>
+    <text x="184" y="126" font-size="12" font-weight="700" fill="#66400f">INSERT INTO outbox (id, topic, payload)</text>
+    <text x="184" y="162" font-size="11.5" fill="#66400f">COMMIT: both rows, or neither</text>
+
+    <rect x="24" y="210" width="320" height="104" rx="10" fill="#f0e9fb" stroke="#8062a8" stroke-width="2"/>
+    <text x="184" y="232" font-size="13" font-weight="700" fill="#463365">database</text>
+    <rect x="40" y="244" width="288" height="26" rx="6" fill="#ffffff" stroke="#8062a8" stroke-width="1.5"/>
+    <text x="52" y="262" font-size="11.5" fill="#463365" text-anchor="start">orders: o-1, PENDING</text>
+    <rect x="40" y="278" width="288" height="26" rx="6" fill="#ffffff" stroke="#8062a8" stroke-width="1.5"/>
+    <text x="52" y="296" font-size="11.5" fill="#463365" text-anchor="start">outbox: order.placed, published_at NULL</text>
+
+    <rect x="390" y="24" width="220" height="290" rx="10" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="500" y="46" font-size="13" font-weight="700" fill="#263e5a">relayOutbox(), on a loop</text>
+    <g fill="#ffffff" stroke="#4774aa" stroke-width="1.5">
+      <rect x="404" y="60" width="192" height="58" rx="6"/>
+      <rect x="404" y="150" width="192" height="58" rx="6"/>
+      <rect x="404" y="240" width="192" height="58" rx="6"/>
+    </g>
+    <g fill="#263e5a">
+      <text x="500" y="78" font-size="12" font-weight="700">1. select unsent rows</text>
+      <text x="500" y="94" font-size="10.5">WHERE published_at IS NULL</text>
+      <text x="500" y="108" font-size="10.5">FOR UPDATE SKIP LOCKED</text>
+      <text x="500" y="168" font-size="12" font-weight="700">2. publish to broker</text>
+      <text x="500" y="184" font-size="10.5">publish(topic, payload,</text>
+      <text x="500" y="198" font-size="10.5">{ messageId: row.id })</text>
+      <text x="500" y="258" font-size="12" font-weight="700">3. mark as sent</text>
+      <text x="500" y="274" font-size="10.5">UPDATE outbox SET</text>
+      <text x="500" y="288" font-size="10.5">published_at = now()</text>
+    </g>
+
+    <rect x="646" y="152" width="110" height="54" rx="8" fill="#eef1f5" stroke="#8a96a3" stroke-width="2"/>
+    <text x="701" y="175" font-size="13" font-weight="700" fill="#36424e">broker</text>
+    <text x="701" y="192" font-size="11" fill="#36424e">order.placed</text>
+    <rect x="646" y="240" width="110" height="74" rx="8" fill="#e8f5e9" stroke="#53845b" stroke-width="2"/>
+    <text x="701" y="260" font-size="12.5" font-weight="700" fill="#294a2e">consumers</text>
+    <text x="701" y="277" font-size="10.5" fill="#294a2e">inventory, payments</text>
+    <text x="701" y="293" font-size="10.5" fill="#294a2e">skip seen</text>
+    <text x="701" y="306" font-size="10.5" fill="#294a2e">messageIds</text>
+
+    <g fill="none" stroke="#40566b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M184 174V208" marker-end="url(#ob-arrow)"/>
+      <path d="M328 291H370V89H402" marker-end="url(#ob-arrow)"/>
+      <path d="M500 118V148" marker-end="url(#ob-arrow)"/>
+      <path d="M500 208V238" marker-end="url(#ob-arrow)"/>
+      <path d="M596 179H644" marker-end="url(#ob-arrow)"/>
+      <path d="M701 206V238" marker-end="url(#ob-arrow)"/>
+      <path d="M404 280H380V302H330" marker-end="url(#ob-arrow)"/>
+    </g>
+    <g font-size="11" font-style="italic" fill="#40566b">
+      <text x="364" y="190" text-anchor="end">reads</text>
+      <text x="386" y="330" text-anchor="start">marks sent</text>
+    </g>
+
+    <rect x="24" y="346" width="732" height="66" rx="8" fill="#fde8e6" stroke="#b5473a" stroke-width="1.5" stroke-dasharray="5 4"/>
+    <text x="390" y="368" font-size="12.5" font-weight="700" fill="#6b241c">Crash between step 2 and step 3?</text>
+    <text x="390" y="386" font-size="11.5" fill="#6b241c">The row is still unsent, so the next run publishes it again: delivery is at least once,</text>
+    <text x="390" y="402" font-size="11.5" fill="#6b241c">and consumers must deduplicate by messageId (the idempotent consumer pattern).</text>
+    <text x="390" y="446" font-size="13" fill="#40566b">The event can no longer be lost or invented: it exists exactly when the order does.</text>
+  </g>
+</svg>

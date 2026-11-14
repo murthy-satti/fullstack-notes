@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="420" viewBox="0 0 860 420" role="img" aria-labelledby="lkq-title lkq-desc">
+  <title id="lkq-title">How a waiting ALTER TABLE blocks every query, and how lock_timeout prevents it</title>
+  <desc id="lkq-desc">Top, without lock_timeout: a long report query holds an ACCESS SHARE lock on tasks from 0 to 30 seconds. At 5 seconds a migration runs ALTER TABLE, which needs an ACCESS EXCLUSIVE lock and waits behind the report. Every application query that arrives after 5 seconds queues behind the waiting ALTER, so from 5 to 30 seconds the API's requests pile up and time out. Bottom, with lock_timeout set to 2 seconds: the ALTER waits only from 5 to 7 seconds and then gives up, to be retried later; application queries pause for at most 2 seconds and then run normally while the report continues.</desc>
+  <rect width="860" height="420" rx="14" fill="#f5f7fb"/>
+  <g font-family="Arial, sans-serif">
+    <text x="20" y="32" font-size="13" font-weight="700" fill="#6e2a24">Without lock_timeout</text>
+    <g font-size="12" font-weight="700" fill="#36424e">
+      <text x="20" y="66">Report query</text>
+      <text x="20" y="100">Migration (ALTER)</text>
+      <text x="20" y="134">App queries</text>
+    </g>
+    <rect x="220" y="50" width="600" height="24" rx="4" fill="#e5efff" stroke="#4774aa" stroke-width="1.5"/>
+    <text x="520" y="66" font-size="11.5" fill="#263e5a" text-anchor="middle">long SELECT holds ACCESS SHARE on tasks</text>
+    <rect x="320" y="84" width="500" height="24" rx="4" fill="#fbe9e7" stroke="#b5524b" stroke-width="1.5" stroke-dasharray="5 4"/>
+    <text x="570" y="100" font-size="11.5" fill="#6e2a24" text-anchor="middle">waits for ACCESS EXCLUSIVE</text>
+    <rect x="220" y="118" width="100" height="24" rx="4" fill="#e7f3e9" stroke="#53845b" stroke-width="1.5"/>
+    <text x="270" y="134" font-size="11.5" fill="#294a2e" text-anchor="middle">normal</text>
+    <rect x="320" y="118" width="500" height="24" rx="4" fill="#fbe9e7" stroke="#b5524b" stroke-width="1.5"/>
+    <text x="570" y="134" font-size="11.5" font-weight="700" fill="#6e2a24" text-anchor="middle">queued behind the ALTER: requests time out</text>
+    <path d="M220 160H820" fill="none" stroke="#40566b" stroke-width="1.5"/>
+    <g font-size="11" fill="#36424e" text-anchor="middle">
+      <text x="220" y="176">0 s</text>
+      <text x="320" y="176">5 s</text>
+      <text x="420" y="176">10 s</text>
+      <text x="620" y="176">20 s</text>
+      <text x="820" y="176">30 s</text>
+    </g>
+
+    <path d="M20 196H840" stroke="#c9d1db" stroke-width="1.5"/>
+
+    <text x="20" y="226" font-size="13" font-weight="700" fill="#294a2e">With SET lock_timeout = '2s'</text>
+    <g font-size="12" font-weight="700" fill="#36424e">
+      <text x="20" y="260">Report query</text>
+      <text x="20" y="294">Migration (ALTER)</text>
+      <text x="20" y="328">App queries</text>
+    </g>
+    <rect x="220" y="244" width="600" height="24" rx="4" fill="#e5efff" stroke="#4774aa" stroke-width="1.5"/>
+    <text x="520" y="260" font-size="11.5" fill="#263e5a" text-anchor="middle">long SELECT holds ACCESS SHARE on tasks</text>
+    <rect x="320" y="278" width="40" height="24" rx="4" fill="#fbe9e7" stroke="#b5524b" stroke-width="1.5" stroke-dasharray="5 4"/>
+    <text x="370" y="294" font-size="11.5" font-weight="700" fill="#6e2a24">gives up after 2 s; retried later, off-peak</text>
+    <rect x="220" y="312" width="100" height="24" rx="4" fill="#e7f3e9" stroke="#53845b" stroke-width="1.5"/>
+    <rect x="320" y="312" width="40" height="24" rx="4" fill="#fff0d9" stroke="#bd7a20" stroke-width="1.5"/>
+    <rect x="360" y="312" width="460" height="24" rx="4" fill="#e7f3e9" stroke="#53845b" stroke-width="1.5"/>
+    <text x="590" y="328" font-size="11.5" fill="#294a2e" text-anchor="middle">a pause of at most 2 s, then normal</text>
+    <path d="M220 354H820" fill="none" stroke="#40566b" stroke-width="1.5"/>
+    <g font-size="11" fill="#36424e" text-anchor="middle">
+      <text x="220" y="370">0 s</text>
+      <text x="320" y="370">5 s</text>
+      <text x="420" y="370">10 s</text>
+      <text x="620" y="370">20 s</text>
+      <text x="820" y="370">30 s</text>
+    </g>
+
+    <text x="430" y="402" font-size="13" fill="#40566b" text-anchor="middle">A waiting ALTER blocks everyone queued behind it; lock_timeout turns an outage into a retry.</text>
+  </g>
+</svg>

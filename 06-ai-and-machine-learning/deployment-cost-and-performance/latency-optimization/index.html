@@ -1,0 +1,4510 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../serving-open-models/">
+      
+      
+        <link rel="next" href="../cost-optimization-for-llm-apps/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Latency Optimization - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#latency-optimization" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Latency Optimization
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../05-application-architecture/" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../08-devops-and-deployment/" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to AI and Machine Learning">
+          <span class="md-ellipsis">&larr; Back to AI</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../05-application-architecture/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        
+          
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-label="AI module lessons" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to AI and Machine Learning">
+                  <span class="md-ellipsis">&larr; Back to AI</span>
+                </a>
+              
+            </div>
+          
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                  
+  
+  
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+    
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+  
+
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_8" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_7_8" id="__nav_7_8_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Production
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_8_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_7_8">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Production
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_8_1" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_7_8_1" id="__nav_7_8_1_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evaluation and Monitoring
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_7_8_1_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_7_8_1">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Evaluation and Monitoring
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../evaluation-and-monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../evaluation-and-monitoring/building-evaluation-sets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Building Evaluation Sets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../evaluation-and-monitoring/llm-as-judge-and-automated-evals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM-as-Judge and Automated Evals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../evaluation-and-monitoring/evals-in-ci-and-regression-testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evals in CI and Regression Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../evaluation-and-monitoring/llm-observability-and-tracing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM Observability and Tracing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../evaluation-and-monitoring/cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../evaluation-and-monitoring/interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_8_2" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_7_8_2" id="__nav_7_8_2_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security, Privacy, and Responsible AI
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_7_8_2_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_7_8_2">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Security, Privacy, and Responsible AI
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security-privacy-and-responsible-ai/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security-privacy-and-responsible-ai/prompt-injection-and-defenses/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Prompt Injection and Defenses
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security-privacy-and-responsible-ai/guardrails-and-content-moderation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guardrails and Content Moderation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security-privacy-and-responsible-ai/privacy-pii-and-data-retention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Privacy, PII, and Data Retention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security-privacy-and-responsible-ai/ai-regulation-and-governance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Regulation and Governance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security-privacy-and-responsible-ai/cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security-privacy-and-responsible-ai/interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_8_3" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_7_8_3" id="__nav_7_8_3_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment, Cost, and Performance
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_7_8_3_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_7_8_3">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Deployment, Cost, and Performance
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../serving-open-models/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Serving Open Models
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Latency Optimization
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Latency Optimization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#where-the-time-goes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where the time goes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-metrics-to-collect" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The metrics to collect
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generate-fewer-tokens" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Generate fewer tokens
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#send-fewer-more-cacheable-input-tokens" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Send fewer, more cacheable input tokens
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stream-to-cut-perceived-latency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stream to cut perceived latency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#make-fewer-requests-and-run-independent-ones-in-parallel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Make fewer requests, and run independent ones in parallel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#smaller-faster-models-and-tiers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Smaller, faster models and tiers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#regional-placement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Regional placement
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#speculative-decoding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Speculative decoding
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#engine-settings-for-self-hosted-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Engine settings for self-hosted models
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#measuring-ttft-and-tokens-per-second" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Measuring TTFT and tokens per second
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#running-independent-calls-in-parallel-with-a-limit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running independent calls in parallel with a limit
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#laying-out-a-prompt-for-caching-and-checking-hits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Laying out a prompt for caching and checking hits
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#turning-on-speculative-decoding-in-vllm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Turning on speculative decoding in vLLM
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cost-optimization-for-llm-apps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cost Optimization for LLM Apps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gpu-capacity-and-scaling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GPU Capacity and Scaling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_8_4" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_7_8_4" id="__nav_7_8_4_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MLOps and Model Lifecycle
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_7_8_4_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_7_8_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    MLOps and Model Lifecycle
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mlops-and-model-lifecycle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mlops-and-model-lifecycle/experiment-tracking-and-model-registry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Experiment Tracking and Model Registry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mlops-and-model-lifecycle/llmops-prompt-and-model-versioning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLMOps: Prompt and Model Versioning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mlops-and-model-lifecycle/production-monitoring-and-drift/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Production Monitoring and Drift
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mlops-and-model-lifecycle/cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mlops-and-model-lifecycle/interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../08-devops-and-deployment/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DevOps and Deployment
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#where-the-time-goes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where the time goes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-metrics-to-collect" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The metrics to collect
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generate-fewer-tokens" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Generate fewer tokens
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#send-fewer-more-cacheable-input-tokens" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Send fewer, more cacheable input tokens
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stream-to-cut-perceived-latency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stream to cut perceived latency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#make-fewer-requests-and-run-independent-ones-in-parallel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Make fewer requests, and run independent ones in parallel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#smaller-faster-models-and-tiers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Smaller, faster models and tiers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#regional-placement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Regional placement
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#speculative-decoding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Speculative decoding
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#engine-settings-for-self-hosted-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Engine settings for self-hosted models
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#measuring-ttft-and-tokens-per-second" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Measuring TTFT and tokens per second
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#running-independent-calls-in-parallel-with-a-limit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running independent calls in parallel with a limit
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#laying-out-a-prompt-for-caching-and-checking-hits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Laying out a prompt for caching and checking hits
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#turning-on-speculative-decoding-in-vllm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Turning on speculative decoding in vLLM
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="latency-optimization">Latency Optimization<a class="headerlink" href="#latency-optimization" title="Permanent link">&para;</a></h1>
+<p>An LLM feature feels slow for one of two reasons: nothing appears for a
+long time, or text appears and then takes ages to finish. Those are
+different problems with different fixes. This lesson splits a request's
+latency into its parts (network, queueing, prefill, and decode), defines
+the metrics that separate them (time to first token, time per output token,
+end-to-end latency), and works through the levers in order of how often
+they matter: generating fewer tokens, sending fewer and more cacheable
+input tokens, streaming, making fewer and parallel calls, choosing smaller
+or faster models, placing compute near users, and, for self-hosted models,
+speculative decoding and engine settings.</p>
+<p>The running examples are TaskFlow's features: the Assistant that turns a
+sentence into a task, project Q&amp;A over documents, the agent that updates
+tasks through tools, and meeting-notes summaries. Each has a different
+latency profile, so each gets a different mix of fixes.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>Users judge an interactive feature by how quickly something useful appears.
+A meeting summary that starts streaming after half a second feels fast even
+if it finishes eight seconds later; a task-creation call that shows a
+spinner for four seconds feels broken, even though it produced only fifty
+tokens. Knowing which part of the request dominates tells you whether to
+stream, trim the prompt, shorten the answer, or pick another model.</p>
+<p>Latency also compounds. An agent that makes five sequential model calls,
+each with a two-second answer, takes ten seconds before any tool result
+reaches the user. A RAG answer that embeds the query, searches, reranks, and
+then generates pays every step in series unless some run in parallel. And
+tail latency matters more than the average: if 5% of Assistant calls take
+twelve seconds, many users see one of them in a session.</p>
+<p>Finally, latency and cost are coupled. Output tokens cost the most money
+and the most time, so many latency fixes (shorter answers, smaller models,
+cached prefixes) also cut the bill, which is covered in
+<a href="../cost-optimization-for-llm-apps/">cost optimization for LLM apps</a>.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>OpenAI latency guide.</strong> The
+  <a href="https://developers.openai.com/api/docs/guides/latency-optimization">latency optimization guide</a>
+  organizes the work into seven principles: "Process tokens faster.
+  Generate fewer tokens. Use fewer input tokens. Make fewer requests.
+  Parallelize. Make your users wait less." and "Don't default to an LLM."
+  It notes that "a long prompt can delay the first token, especially when
+  much of the input is new".</li>
+<li><strong>OpenAI prompt caching.</strong> The
+  <a href="https://developers.openai.com/api/docs/guides/prompt-caching">prompt caching guide</a>
+  lists among the benefits to "reduce the time spent processing input
+  before the response starts", states that prompt caching is enabled by
+  default for supported models, and that caches "cannot be reused across
+  regional processing boundaries".</li>
+<li><strong>Speculative decoding.</strong> Leviathan, Kalman, and Matias,
+  <a href="https://arxiv.org/abs/2211.17192">Fast Inference from Transformers via Speculative Decoding</a>,
+  show that a small draft model's guesses can be verified by the large
+  model in parallel, reporting "a 2X-3X acceleration compared to the
+  standard T5X implementation, with identical outputs".</li>
+<li><strong>vLLM speculative decoding.</strong> The
+  <a href="https://docs.vllm.ai/en/latest/features/speculative_decoding/">vLLM guide</a>
+  positions the feature for reducing "inter-token latency under
+  medium-to-low QPS (queries per second), memory-bound workloads", and
+  ranks model-based methods (EAGLE, MTP, draft models) above simpler n-gram
+  and suffix methods for latency.</li>
+<li><strong>Disaggregated serving.</strong> The DistServe paper,
+  <a href="https://arxiv.org/abs/2401.09670">Disaggregating Prefill and Decoding for Goodput-optimized Large Language Model Serving</a>,
+  shows that running prefill and decode on the same GPUs makes them
+  interfere, and that separating them lets a system meet time-to-first-token
+  and time-per-output-token targets at higher load.</li>
+</ul>
+<p><strong>Popular tools and providers:</strong> streaming in every provider SDK; prompt
+caching at OpenAI, Anthropic, and Google; priority or fast service tiers at
+hosted providers; regional and global endpoints at cloud AI platforms;
+vLLM and SGLang for self-hosted speculative decoding and chunked prefill;
+OpenTelemetry and Prometheus for measuring each stage.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="where-the-time-goes">Where the time goes<a class="headerlink" href="#where-the-time-goes" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: two to-scale timelines of the same meeting-notes summary; before optimization, about 0.1 s of network, 0.2 s of queueing, and 0.9 s of prefill for a long prompt put the first token at 1.2 s, then 399 more tokens at 40 tokens per second take 10 s, for 11.2 s in total; after optimization, a cached prefix and smaller context cut prefill to 0.3 s so the first token arrives at 0.6 s, and a five-bullet limit cuts output to 150 tokens, so decoding takes 3.7 s and the request ends at 4.3 s; decode time dominates both runs, and streaming lets the user read from the first token." src="../llm-latency-waterfall.svg" /></p>
+<p>One request to a model passes through these stages:</p>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>What happens</th>
+<th>Grows with</th>
+<th>Typical lever</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Network and TLS</td>
+<td>Connect, send the prompt, receive bytes</td>
+<td>Distance, new connections</td>
+<td>Keep-alive, nearby region</td>
+</tr>
+<tr>
+<td>Queueing</td>
+<td>Wait for a provider or GPU slot</td>
+<td>Load, rate limits, capacity</td>
+<td>Capacity, priority tiers, fewer requests</td>
+</tr>
+<tr>
+<td>Prefill</td>
+<td>Process every input token, produce the first token</td>
+<td>Input tokens not already cached</td>
+<td>Shorter prompts, prompt caching</td>
+</tr>
+<tr>
+<td>Decode</td>
+<td>Generate the remaining tokens one by one</td>
+<td>Output tokens (and reasoning tokens)</td>
+<td>Fewer output tokens, faster models, speculative decoding</td>
+</tr>
+<tr>
+<td>Application work</td>
+<td>Retrieval, tool calls, validation, rendering</td>
+<td>Number of sequential steps</td>
+<td>Parallel calls, fewer round trips</td>
+</tr>
+</tbody>
+</table>
+<p>Two derived numbers describe most of it:</p>
+<div class="highlight"><pre><span></span><code>TTFT  (time to first token)   = network + queue + prefill
+TPOT  (time per output token) = average gap between tokens after the first
+end-to-end latency            = TTFT + (output tokens - 1) x TPOT
+
+Meeting summary, before: TTFT 1.2 s, 400 output tokens at 40 tokens/s (TPOT 25 ms)
+  1.2 s + 399 x 0.025 s = 11.2 s
+After: cached prefix and less context (TTFT 0.6 s), five bullets (150 tokens)
+  0.6 s + 149 x 0.025 s = 4.3 s
+</code></pre></div>
+<p>The arithmetic explains the most common surprise: for answers longer than a
+few sentences, decode time dominates. Halving the prompt improves TTFT;
+halving the answer halves the whole request.</p>
+<h3 id="the-metrics-to-collect">The metrics to collect<a class="headerlink" href="#the-metrics-to-collect" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Measures</th>
+<th>Where</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TTFT</td>
+<td>Time until the first token arrives</td>
+<td>Client side, per request</td>
+</tr>
+<tr>
+<td>TPOT, also called inter-token latency (ITL)</td>
+<td>Smoothness of streaming</td>
+<td>Client or engine metrics</td>
+</tr>
+<tr>
+<td>Output tokens per second, per stream</td>
+<td>How fast one user's text appears</td>
+<td>Client side</td>
+</tr>
+<tr>
+<td>Aggregate tokens per second</td>
+<td>Throughput of a server or account</td>
+<td>Engine metrics, provider dashboards</td>
+</tr>
+<tr>
+<td>End-to-end latency</td>
+<td>What the user waited in total</td>
+<td>Client and backend traces</td>
+</tr>
+<tr>
+<td>Queue time</td>
+<td>Waiting before processing starts</td>
+<td>Engine metrics (<code>vllm:request_queue_time_seconds</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>Measure percentiles (p50, p95, p99), split by feature and by model, and
+measure both at the client and at the server: a fast server with a slow
+client connection or a blocking retrieval step still feels slow. Per-stream
+speed and aggregate throughput move in opposite directions under load,
+because a server that admits more concurrent streams gives each one a
+smaller share of every decode step. Tracing each stage is covered in
+<a href="../../evaluation-and-monitoring/llm-observability-and-tracing/">LLM observability and tracing</a>.</p>
+<h3 id="generate-fewer-tokens">Generate fewer tokens<a class="headerlink" href="#generate-fewer-tokens" title="Permanent link">&para;</a></h3>
+<p>Output tokens are the most expensive part of a request in time and money,
+so start here:</p>
+<ul>
+<li><strong>Ask for the length the UI needs.</strong> "Return five bullets" or "reply with
+  one sentence" shortens answers more reliably than hoping.</li>
+<li><strong>Set an output limit</strong> (<code>max_output_tokens</code> in OpenAI's Responses API,
+  <code>max_tokens</code> in Chat Completions-style servers and the Anthropic Messages
+  API). It caps the worst case, though a capped answer is truncated, so
+  check the finish reason.</li>
+<li><strong>Keep structured output compact.</strong> Task creation needs a small JSON
+  object, not prose around it; short field names and no echoed input save
+  tokens on every call (see
+  <a href="../../prompting-and-structured-output/structured-output-and-validation/">structured output and validation</a>).</li>
+<li><strong>Control reasoning.</strong> Reasoning models generate hidden reasoning tokens
+  before the answer; they cost time even though the user never sees them.
+  Use a lower reasoning effort for simple tasks, as described in
+  <a href="../../prompting-and-structured-output/reasoning-models-and-thinking/">reasoning models and thinking</a>.</li>
+</ul>
+<h3 id="send-fewer-more-cacheable-input-tokens">Send fewer, more cacheable input tokens<a class="headerlink" href="#send-fewer-more-cacheable-input-tokens" title="Permanent link">&para;</a></h3>
+<p>Prefill time grows with the input tokens that must be processed. Two
+levers apply:</p>
+<ol>
+<li><strong>Send less.</strong> Retrieve fewer, better passages for project Q&amp;A, trim old
+   conversation turns, and strip markup the model does not need.</li>
+<li><strong>Make the rest cacheable.</strong> Hosted providers and self-hosted engines
+   reuse the work for a prompt prefix they have seen recently. Put stable
+   content first (instructions, tool definitions, shared documents) and the
+   variable part last, and keep the stable part byte-for-byte identical. A
+   timestamp in the first line of the system prompt defeats caching for
+   every request.</li>
+</ol>
+<p>Provider details differ and change; check the current documentation:</p>
+<table>
+<thead>
+<tr>
+<th>Provider</th>
+<th>How caching is triggered (November 2026)</th>
+<th>How to see hits</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OpenAI</td>
+<td>Automatic for supported models; minimum 1,024 input tokens on recent models</td>
+<td><code>usage.input_tokens_details.cached_tokens</code></td>
+</tr>
+<tr>
+<td>Anthropic</td>
+<td>A top-level <code>cache_control</code> field (automatic) or explicit breakpoints (up to 4); 5-minute default lifetime, optional 1 hour</td>
+<td><code>usage.cache_read_input_tokens</code></td>
+</tr>
+<tr>
+<td>Google Gemini API</td>
+<td>Implicit caching on by default for Gemini 2.5 and newer; explicit caches on some models</td>
+<td><code>usageMetadata.cachedContentTokenCount</code></td>
+</tr>
+<tr>
+<td>vLLM, SGLang</td>
+<td>Automatic prefix caching (vLLM default on)</td>
+<td><code>vllm:prefix_cache_hits</code>, <code>vllm:prefix_cache_queries</code></td>
+</tr>
+</tbody>
+</table>
+<p>Caching affects cost as well as latency, which
+<a href="../../hosted-model-apis/prompt-caching-and-batch-processing/">prompt caching and batch processing</a>
+covers in depth.</p>
+<h3 id="stream-to-cut-perceived-latency">Stream to cut perceived latency<a class="headerlink" href="#stream-to-cut-perceived-latency" title="Permanent link">&para;</a></h3>
+<p>Streaming sends tokens as they are generated (server-sent events for most
+providers). It does not make the model faster; it moves the moment the user
+sees something from the end of the request to the first token. For the
+meeting summary above, that is 0.6 s instead of 4.3 s. Stream any answer a
+person reads; do not bother for calls whose output is parsed as a whole,
+such as task-creation JSON, unless you parse partial output deliberately.
+The backend relay is covered in
+<a href="../../hosted-model-apis/streaming-responses-end-to-end/">streaming responses end to end</a>
+and the UI side in
+<a href="../../building-ai-applications/frontend-patterns-for-ai-features/">frontend patterns for AI features</a>.</p>
+<h3 id="make-fewer-requests-and-run-independent-ones-in-parallel">Make fewer requests, and run independent ones in parallel<a class="headerlink" href="#make-fewer-requests-and-run-independent-ones-in-parallel" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: two timelines for answering a project question; sequentially, a document search of 1.2 s, an open-tasks lookup of 0.8 s, a permission check of 0.3 s, and a streamed model call with a 0.6 s time to first token and 1.9 s of decoding take 4.8 s, with the first visible text at 2.9 s; in parallel, the three lookups start together and finish when the slowest, the 1.2 s search, ends, so the model call starts at 1.2 s, the first text appears at 1.8 s, and the answer ends at 3.7 s; only steps with no data dependency can overlap." src="../sequential-vs-parallel-calls.svg" /></p>
+<p>Every sequential step adds its full latency. Two habits remove most of it:</p>
+<ul>
+<li><strong>Combine steps</strong> when one call has all the information it needs. A
+  separate "rewrite the question" call before every search costs a whole
+  round trip; folding it into the main call, or skipping it for short
+  questions, often works as well.</li>
+<li><strong>Run independent work concurrently.</strong> Retrieval, a user-profile lookup,
+  and a permission check do not depend on each other, so they can start
+  together. Bound the concurrency so a burst does not exhaust connection
+  pools or provider rate limits.</li>
+</ul>
+<p>Agents need special care: each tool round trip is another model call.
+Allowing parallel tool calls, giving tools coarse operations ("create
+these three tasks") instead of fine ones, and capping the number of steps
+keep agent latency predictable (see
+<a href="../../tool-calling-and-agents/agent-orchestration-patterns/">agent orchestration patterns</a>).</p>
+<h3 id="smaller-faster-models-and-tiers">Smaller, faster models and tiers<a class="headerlink" href="#smaller-faster-models-and-tiers" title="Permanent link">&para;</a></h3>
+<p>A smaller model has fewer weights to read per token, so it decodes faster
+and usually starts faster. For classification, routing, extraction, and
+short task creation, a small model is often as accurate as a large one for
+a fraction of the latency; measure it on an evaluation set before
+switching. Routing between models is covered in
+<a href="../cost-optimization-for-llm-apps/">cost optimization for LLM apps</a>.</p>
+<p>Hosted providers also sell processing tiers. OpenAI's <code>service_tier</code>
+parameter, for example, accepts <code>priority</code> (or <code>fast</code>) for faster, more
+expensive processing and <code>flex</code> for slower, cheaper processing with
+occasional unavailability. Use a fast tier only for the few
+latency-critical paths that justify the price.</p>
+<h3 id="regional-placement">Regional placement<a class="headerlink" href="#regional-placement" title="Permanent link">&para;</a></h3>
+<p>Network distance adds a floor that no model change removes: light in fiber
+covers about 200 km per millisecond, so a backend in Europe calling a model
+endpoint in North America pays at least 50-60 ms per round trip before any
+processing, and realistic routes add more. An agent that makes eight
+sequential calls pays that eight times. Options:</p>
+<ul>
+<li><strong>Put the backend next to the model endpoint.</strong> Most latency-sensitive
+  traffic is backend-to-model, not browser-to-backend, and an agent
+  multiplies it.</li>
+<li><strong>Use the provider's regional or global endpoints deliberately.</strong> Azure's
+  Microsoft Foundry offers global, data zone, and regional deployment
+  types;
+  Amazon Bedrock offers cross-Region inference profiles for a geography or
+  globally; Google Cloud offers regional endpoints and a global endpoint
+  that "provide higher availability and reliability than single regions";
+  Anthropic's API lets you set <code>inference_geo</code> per request. Global options
+  usually improve capacity and availability but do not guarantee where data
+  is processed, so check data residency rules first.</li>
+<li><strong>Keep connections warm.</strong> SDK clients reuse HTTP connections; creating a
+  new client per request pays a fresh TCP and TLS handshake each time.</li>
+<li><strong>Self-hosted:</strong> run GPUs in the region where the backend runs, and use
+  <a href="../../../08-devops-and-deployment/load-balancing-and-multi-server/global-traffic-management/">global traffic management</a>
+  when users are spread across continents.</li>
+</ul>
+<h3 id="speculative-decoding">Speculative decoding<a class="headerlink" href="#speculative-decoding" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: a small draft model proposes four tokens, &quot;is&quot;, &quot;due&quot;, &quot;on&quot;, and &quot;Monday&quot;; the large target model checks all four in one forward pass, accepts &quot;is&quot;, &quot;due&quot;, and &quot;on&quot;, rejects &quot;Monday&quot;, and supplies its own token &quot;Friday&quot; in its place, so one target pass yields four tokens instead of one; with a per-token acceptance rate of 0.7 and four drafted tokens, the expected yield is about 2.8 tokens per target pass, and the output distribution matches the target model's." src="../speculative-decoding-steps.svg" /></p>
+<p>Decode is memory-bound: verifying several proposed tokens in one forward
+pass costs about the same as generating one. Speculative decoding exploits
+that. A cheap proposer (a small draft model, extra prediction heads, or an
+n-gram lookup in the prompt) guesses the next k tokens; the target model
+scores them all at once and keeps the longest prefix it agrees with, then
+adds one token of its own. With the right acceptance rule the output
+follows the target model's distribution, so quality does not change.</p>
+<div class="highlight"><pre><span></span><code>Expected tokens per target pass, with acceptance rate a and k drafted tokens
+(from Leviathan and colleagues):
+  (1 - a^(k+1)) / (1 - a)
+
+a = 0.7, k = 4:  (1 - 0.7^5) / 0.3 = (1 - 0.168) / 0.3 = 2.77 tokens per pass
+a = 0.3, k = 4:  (1 - 0.3^5) / 0.7 = 1.42 tokens per pass, minus the drafting cost
+</code></pre></div>
+<p>It helps most when the server is lightly loaded (decode steps are not
+already full of other users' work) and when the output is predictable, such
+as code edits or answers that copy text from the prompt. Under heavy load
+the extra verification work competes with other requests, which is why
+vLLM recommends it for low to medium QPS. Hosted providers apply such
+techniques internally; OpenAI exposes a related feature, Predicted Outputs,
+for edits where most of the output is known in advance. It is supported
+only on some model families, and rejected prediction tokens are still
+billed as output.</p>
+<h3 id="engine-settings-for-self-hosted-models">Engine settings for self-hosted models<a class="headerlink" href="#engine-settings-for-self-hosted-models" title="Permanent link">&para;</a></h3>
+<p>On vLLM or SGLang, a few settings trade time to first token against
+smoothness and throughput:</p>
+<ul>
+<li><strong>Chunked prefill and <code>--max-num-batched-tokens</code>.</strong> Smaller chunks keep
+  other users' streams smooth while a long prompt is read; larger chunks
+  give that prompt a faster first token.</li>
+<li><strong><code>--max-num-seqs</code>.</strong> More concurrent sequences raise throughput and slow
+  each stream; fewer do the opposite.</li>
+<li><strong>Prefix caching</strong> (on by default in vLLM) shortens TTFT for shared
+  prefixes.</li>
+<li><strong>Quantized weights and an FP8 cache</strong> reduce the bytes read per decode
+  step, which speeds up memory-bound decoding; see
+  <a href="../gpu-capacity-and-scaling/">GPU capacity and scaling</a>.</li>
+</ul>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Technique</th>
+<th>Watch out for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Blank screen for seconds, then fast text</td>
+<td>Shorter or cached prompt, streaming, a nearby region</td>
+<td>Caching needs an identical prefix</td>
+</tr>
+<tr>
+<td>Text starts fast but finishes slowly</td>
+<td>Fewer output tokens, smaller or faster model</td>
+<td>Truncated answers if limits are too tight</td>
+</tr>
+<tr>
+<td>Agent takes many seconds before acting</td>
+<td>Fewer steps, parallel tool calls, coarse tools</td>
+<td>Parallel side effects need idempotency</td>
+</tr>
+<tr>
+<td>Several independent lookups before the model call</td>
+<td>Run them concurrently with a limit</td>
+<td>Rate limits and connection pools</td>
+</tr>
+<tr>
+<td>Only a few critical paths are too slow</td>
+<td>A priority or fast tier for those paths</td>
+<td>It costs more per token</td>
+</tr>
+<tr>
+<td>Self-hosted, low load, predictable output</td>
+<td>Speculative decoding</td>
+<td>Gains shrink or reverse at high load</td>
+</tr>
+<tr>
+<td>Self-hosted, many users, long prompts</td>
+<td>Chunked prefill tuning, more replicas</td>
+<td>Trading one user's TTFT for others' smoothness</td>
+</tr>
+<tr>
+<td>Output parsed as a whole (task JSON)</td>
+<td>Do not stream; shrink the output instead</td>
+<td>Partial JSON is not useful to users</td>
+</tr>
+</tbody>
+</table>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="measuring-ttft-and-tokens-per-second">Measuring TTFT and tokens per second<a class="headerlink" href="#measuring-ttft-and-tokens-per-second" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// scripts/measure-latency.ts</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">CHAT_MODEL</span><span class="p">,</span><span class="w"> </span><span class="nx">llm</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"../src/ai/llm-client.js"</span><span class="p">;</span>
+
+<span class="kd">interface</span><span class="w"> </span><span class="nx">Sample</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">ttftMs</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">totalMs</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">outputTokens</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">tokensPerSecond</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">measureOnce</span><span class="p">(</span><span class="nx">prompt</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="nb">Promise</span><span class="o">&lt;</span><span class="nx">Sample</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">started</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">performance</span><span class="p">.</span><span class="nx">now</span><span class="p">();</span>
+<span class="w">  </span><span class="kd">let</span><span class="w"> </span><span class="nx">firstTokenAt</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="kc">undefined</span><span class="p">;</span>
+<span class="w">  </span><span class="kd">let</span><span class="w"> </span><span class="nx">outputTokens</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0</span><span class="p">;</span>
+
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">stream</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">llm</span><span class="p">.</span><span class="nx">chat</span><span class="p">.</span><span class="nx">completions</span><span class="p">.</span><span class="nx">create</span><span class="p">({</span>
+<span class="w">    </span><span class="nx">model</span><span class="o">:</span><span class="w"> </span><span class="kt">CHAT_MODEL</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">messages</span><span class="o">:</span><span class="w"> </span><span class="p">[{</span><span class="w"> </span><span class="nx">role</span><span class="o">:</span><span class="w"> </span><span class="s2">"user"</span><span class="p">,</span><span class="w"> </span><span class="nx">content</span><span class="o">:</span><span class="w"> </span><span class="kt">prompt</span><span class="w"> </span><span class="p">}],</span>
+<span class="w">    </span><span class="nx">max_tokens</span><span class="o">:</span><span class="w"> </span><span class="kt">300</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">stream</span><span class="o">:</span><span class="w"> </span><span class="kt">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">stream_options</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">include_usage</span><span class="o">:</span><span class="w"> </span><span class="kt">true</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="c1">// the last chunk carries token usage</span>
+<span class="w">  </span><span class="p">});</span>
+
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="nx">chunk</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="nx">stream</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">firstTokenAt</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="kc">undefined</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nx">chunk</span><span class="p">.</span><span class="nx">choices</span><span class="p">[</span><span class="mf">0</span><span class="p">]</span><span class="o">?</span><span class="p">.</span><span class="nx">delta</span><span class="o">?</span><span class="p">.</span><span class="nx">content</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">firstTokenAt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">performance</span><span class="p">.</span><span class="nx">now</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">chunk</span><span class="p">.</span><span class="nx">usage</span><span class="p">)</span><span class="w"> </span><span class="nx">outputTokens</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">chunk</span><span class="p">.</span><span class="nx">usage</span><span class="p">.</span><span class="nx">completion_tokens</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">ended</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">performance</span><span class="p">.</span><span class="nx">now</span><span class="p">();</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">first</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">firstTokenAt</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="nx">ended</span><span class="p">;</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">decodeSeconds</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nx">ended</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nx">first</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1000</span><span class="p">;</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">ttftMs</span><span class="o">:</span><span class="w"> </span><span class="kt">first</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nx">started</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">totalMs</span><span class="o">:</span><span class="w"> </span><span class="kt">ended</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nx">started</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">outputTokens</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">tokensPerSecond</span><span class="o">:</span><span class="w"> </span><span class="kt">outputTokens</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nx">decodeSeconds</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">0</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="p">(</span><span class="nx">outputTokens</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">1</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nx">decodeSeconds</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">0</span><span class="p">,</span>
+<span class="w">  </span><span class="p">};</span>
+<span class="p">}</span>
+
+<span class="kd">function</span><span class="w"> </span><span class="nx">percentile</span><span class="p">(</span><span class="nx">values</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">[],</span><span class="w"> </span><span class="nx">p</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">sorted</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[...</span><span class="nx">values</span><span class="p">].</span><span class="nx">sort</span><span class="p">((</span><span class="nx">a</span><span class="p">,</span><span class="w"> </span><span class="nx">b</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">a</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nx">b</span><span class="p">);</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Math</span><span class="p">.</span><span class="nx">min</span><span class="p">(</span><span class="nx">sorted</span><span class="p">.</span><span class="nx">length</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">1</span><span class="p">,</span><span class="w"> </span><span class="nb">Math</span><span class="p">.</span><span class="nx">max</span><span class="p">(</span><span class="mf">0</span><span class="p">,</span><span class="w"> </span><span class="nb">Math</span><span class="p">.</span><span class="nx">ceil</span><span class="p">((</span><span class="nx">p</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">100</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nx">sorted</span><span class="p">.</span><span class="nx">length</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">1</span><span class="p">));</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">sorted</span><span class="p">[</span><span class="nx">index</span><span class="p">]</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="nb">Number</span><span class="p">.</span><span class="kc">NaN</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">prompt</span><span class="w"> </span><span class="o">=</span>
+<span class="w">  </span><span class="nx">process</span><span class="p">.</span><span class="nx">argv</span><span class="p">[</span><span class="mf">2</span><span class="p">]</span><span class="w"> </span><span class="o">??</span>
+<span class="w">  </span><span class="s2">"Summarize these meeting notes in five bullets: Ana will draft the release notes by Friday."</span><span class="p">;</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">runs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Number</span><span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">RUNS</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="mf">20</span><span class="p">);</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">samples</span><span class="o">:</span><span class="w"> </span><span class="kt">Sample</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[];</span>
+<span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">let</span><span class="w"> </span><span class="nx">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0</span><span class="p">;</span><span class="w"> </span><span class="nx">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="nx">runs</span><span class="p">;</span><span class="w"> </span><span class="nx">i</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mf">1</span><span class="p">)</span><span class="w"> </span><span class="nx">samples</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="k">await</span><span class="w"> </span><span class="nx">measureOnce</span><span class="p">(</span><span class="nx">prompt</span><span class="p">));</span>
+
+<span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="nx">key</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="p">[</span><span class="s2">"ttftMs"</span><span class="p">,</span><span class="w"> </span><span class="s2">"totalMs"</span><span class="p">,</span><span class="w"> </span><span class="s2">"tokensPerSecond"</span><span class="p">]</span><span class="w"> </span><span class="kr">as</span><span class="w"> </span><span class="kd">const</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">samples</span><span class="p">.</span><span class="nx">map</span><span class="p">((</span><span class="nx">s</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">s</span><span class="p">[</span><span class="nx">key</span><span class="p">]);</span>
+<span class="w">  </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span>
+<span class="w">    </span><span class="sb">`</span><span class="si">${</span><span class="nx">key</span><span class="p">.</span><span class="nx">padEnd</span><span class="p">(</span><span class="mf">16</span><span class="p">)</span><span class="si">}</span><span class="sb"> p50=</span><span class="si">${</span><span class="nx">percentile</span><span class="p">(</span><span class="nx">values</span><span class="p">,</span><span class="w"> </span><span class="mf">50</span><span class="p">).</span><span class="nx">toFixed</span><span class="p">(</span><span class="mf">0</span><span class="p">)</span><span class="si">}</span><span class="sb"> p95=</span><span class="si">${</span><span class="nx">percentile</span><span class="p">(</span><span class="nx">values</span><span class="p">,</span><span class="w"> </span><span class="mf">95</span><span class="p">).</span><span class="nx">toFixed</span><span class="p">(</span><span class="mf">0</span><span class="p">)</span><span class="si">}</span><span class="sb">`</span><span class="p">,</span>
+<span class="w">  </span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code># Output from a run against a local OpenAI-compatible stub server configured
+# for about 30 ms of prefill and 20 ms per token (Windows timers stretch the
+# 20 ms sleeps); real numbers depend on the model, hardware, and load
+ttftMs           p50=47 p95=49
+totalMs          p50=635 p95=668
+tokensPerSecond  p50=32 p95=33
+</code></pre></div>
+<ul>
+<li>The first chunk with text marks TTFT; chunks before it can carry only a
+  role or nothing.</li>
+<li><code>stream_options.include_usage</code> makes OpenAI-compatible servers send a
+  final chunk with token counts, so tokens per second uses real counts
+  rather than chunk counts (one chunk can hold several tokens).</li>
+<li>The script runs requests one at a time, so it measures latency without
+  load. Latency under concurrent load is a load test; see
+  <a href="../../../08-devops-and-deployment/performance-and-reliability-testing/load-testing-with-k6/">load testing with k6</a>.</li>
+<li>Point the same script at the hosted API and at a self-hosted server by
+  changing <code>LLM_BASE_URL</code>, and compare like with like: same prompt, same
+  output limit.</li>
+</ul>
+<h3 id="running-independent-calls-in-parallel-with-a-limit">Running independent calls in parallel with a limit<a class="headerlink" href="#running-independent-calls-in-parallel-with-a-limit" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/ai/parallel.ts</span>
+<span class="c1">// Run fn over items with at most `limit` calls in flight; keeps result order.</span>
+<span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">mapWithLimit</span><span class="o">&lt;</span><span class="nx">T</span><span class="p">,</span><span class="w"> </span><span class="nx">R</span><span class="o">&gt;</span><span class="p">(</span>
+<span class="w">  </span><span class="nx">items</span><span class="o">:</span><span class="w"> </span><span class="kt">readonly</span><span class="w"> </span><span class="nx">T</span><span class="p">[],</span>
+<span class="w">  </span><span class="nx">limit</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">fn</span><span class="o">:</span><span class="w"> </span><span class="p">(</span><span class="nx">item</span><span class="o">:</span><span class="w"> </span><span class="kt">T</span><span class="p">,</span><span class="w"> </span><span class="nx">index</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nb">Promise</span><span class="o">&lt;</span><span class="nx">R</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="nb">Promise</span><span class="o">&lt;</span><span class="nx">R</span><span class="p">[]</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">results</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Array</span><span class="o">&lt;</span><span class="nx">R</span><span class="o">&gt;</span><span class="p">(</span><span class="nx">items</span><span class="p">.</span><span class="nx">length</span><span class="p">);</span>
+<span class="w">  </span><span class="kd">let</span><span class="w"> </span><span class="nx">next</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0</span><span class="p">;</span>
+
+<span class="w">  </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">worker</span><span class="p">()</span><span class="o">:</span><span class="w"> </span><span class="nb">Promise</span><span class="o">&lt;</span><span class="ow">void</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="nx">next</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="nx">items</span><span class="p">.</span><span class="nx">length</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="kd">const</span><span class="w"> </span><span class="nx">index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">next</span><span class="p">;</span>
+<span class="w">      </span><span class="nx">next</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mf">1</span><span class="p">;</span>
+<span class="w">      </span><span class="nx">results</span><span class="p">[</span><span class="nx">index</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">fn</span><span class="p">(</span><span class="nx">items</span><span class="p">[</span><span class="nx">index</span><span class="p">]</span><span class="w"> </span><span class="kr">as</span><span class="w"> </span><span class="nx">T</span><span class="p">,</span><span class="w"> </span><span class="nx">index</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="k">await</span><span class="w"> </span><span class="nb">Promise</span><span class="p">.</span><span class="nx">all</span><span class="p">(</span><span class="nb">Array</span><span class="p">.</span><span class="kr">from</span><span class="p">({</span><span class="w"> </span><span class="nx">length</span><span class="o">:</span><span class="w"> </span><span class="kt">Math.min</span><span class="p">(</span><span class="nx">limit</span><span class="p">,</span><span class="w"> </span><span class="nx">items</span><span class="p">.</span><span class="nx">length</span><span class="p">)</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">worker</span><span class="p">()));</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">results</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1">// scripts/parallel-demo.ts</span>
+<span class="c1">// Three independent lookups before a project Q&amp;A answer, run two ways.</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">mapWithLimit</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"../src/ai/parallel.js"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">sleep</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nx">ms</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Promise</span><span class="p">((</span><span class="nx">resolve</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">setTimeout</span><span class="p">(</span><span class="nx">resolve</span><span class="p">,</span><span class="w"> </span><span class="nx">ms</span><span class="p">));</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">lookups</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span>
+<span class="w">  </span><span class="p">{</span><span class="w"> </span><span class="nx">name</span><span class="o">:</span><span class="w"> </span><span class="s2">"search project docs"</span><span class="p">,</span><span class="w"> </span><span class="nx">ms</span><span class="o">:</span><span class="w"> </span><span class="kt">120</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="p">{</span><span class="w"> </span><span class="nx">name</span><span class="o">:</span><span class="w"> </span><span class="s2">"list open tasks"</span><span class="p">,</span><span class="w"> </span><span class="nx">ms</span><span class="o">:</span><span class="w"> </span><span class="kt">80</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="p">{</span><span class="w"> </span><span class="nx">name</span><span class="o">:</span><span class="w"> </span><span class="s2">"check permissions"</span><span class="p">,</span><span class="w"> </span><span class="nx">ms</span><span class="o">:</span><span class="w"> </span><span class="kt">30</span><span class="w"> </span><span class="p">},</span>
+<span class="p">];</span>
+
+<span class="kd">let</span><span class="w"> </span><span class="nx">started</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">performance</span><span class="p">.</span><span class="nx">now</span><span class="p">();</span>
+<span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="nx">lookup</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="nx">lookups</span><span class="p">)</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">sleep</span><span class="p">(</span><span class="nx">lookup</span><span class="p">.</span><span class="nx">ms</span><span class="p">);</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`sequential: </span><span class="si">${</span><span class="nb">Math</span><span class="p">.</span><span class="nx">round</span><span class="p">(</span><span class="nx">performance</span><span class="p">.</span><span class="nx">now</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nx">started</span><span class="p">)</span><span class="si">}</span><span class="sb"> ms`</span><span class="p">);</span>
+
+<span class="nx">started</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">performance</span><span class="p">.</span><span class="nx">now</span><span class="p">();</span>
+<span class="k">await</span><span class="w"> </span><span class="nx">mapWithLimit</span><span class="p">(</span><span class="nx">lookups</span><span class="p">,</span><span class="w"> </span><span class="mf">3</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nx">lookup</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">sleep</span><span class="p">(</span><span class="nx">lookup</span><span class="p">.</span><span class="nx">ms</span><span class="p">));</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`parallel:   </span><span class="si">${</span><span class="nb">Math</span><span class="p">.</span><span class="nx">round</span><span class="p">(</span><span class="nx">performance</span><span class="p">.</span><span class="nx">now</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nx">started</span><span class="p">)</span><span class="si">}</span><span class="sb"> ms`</span><span class="p">);</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code># Output from a local run
+sequential: 257 ms
+parallel:   135 ms
+</code></pre></div>
+<p>The parallel version finishes when the slowest lookup does. In real code
+each lookup should also carry a timeout (<code>AbortSignal.timeout(ms)</code> passed to
+<code>fetch</code> or the SDK call), so one slow dependency cannot stall the whole
+answer.</p>
+<h3 id="laying-out-a-prompt-for-caching-and-checking-hits">Laying out a prompt for caching and checking hits<a class="headerlink" href="#laying-out-a-prompt-for-caching-and-checking-hits" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/ai/project-qa.ts</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">CHAT_MODEL</span><span class="p">,</span><span class="w"> </span><span class="nx">llm</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"./llm-client.js"</span><span class="p">;</span>
+
+<span class="c1">// Stable for every request: identical text first, so the provider can reuse it.</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">QA_INSTRUCTIONS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span>
+<span class="w">  </span><span class="s2">"You answer questions about one TaskFlow project."</span><span class="p">,</span>
+<span class="w">  </span><span class="s2">"Use only the passages provided. Cite passage ids like [p3]."</span><span class="p">,</span>
+<span class="w">  </span><span class="s2">"If the passages do not contain the answer, say so in one sentence."</span><span class="p">,</span>
+<span class="p">].</span><span class="nx">join</span><span class="p">(</span><span class="s2">"\n"</span><span class="p">);</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">answerProjectQuestion</span><span class="p">(</span><span class="nx">question</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="nx">passages</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">[])</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">response</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">llm</span><span class="p">.</span><span class="nx">responses</span><span class="p">.</span><span class="nx">create</span><span class="p">({</span>
+<span class="w">    </span><span class="nx">model</span><span class="o">:</span><span class="w"> </span><span class="kt">CHAT_MODEL</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">instructions</span><span class="o">:</span><span class="w"> </span><span class="kt">QA_INSTRUCTIONS</span><span class="p">,</span><span class="w"> </span><span class="c1">// stable prefix</span>
+<span class="w">    </span><span class="nx">input</span><span class="o">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nx">role</span><span class="o">:</span><span class="w"> </span><span class="s2">"user"</span><span class="p">,</span><span class="w"> </span><span class="nx">content</span><span class="o">:</span><span class="w"> </span><span class="sb">`Passages:\n</span><span class="si">${</span><span class="nx">passages</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s2">"\n\n"</span><span class="p">)</span><span class="si">}</span><span class="sb">`</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nx">role</span><span class="o">:</span><span class="w"> </span><span class="s2">"user"</span><span class="p">,</span><span class="w"> </span><span class="nx">content</span><span class="o">:</span><span class="w"> </span><span class="sb">`Question: </span><span class="si">${</span><span class="nx">question</span><span class="si">}</span><span class="sb">`</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="c1">// variable part last</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">    </span><span class="nx">max_output_tokens</span><span class="o">:</span><span class="w"> </span><span class="kt">300</span><span class="p">,</span>
+<span class="w">  </span><span class="p">});</span>
+
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">cached</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">response</span><span class="p">.</span><span class="nx">usage</span><span class="o">?</span><span class="p">.</span><span class="nx">input_tokens_details</span><span class="p">.</span><span class="nx">cached_tokens</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="mf">0</span><span class="p">;</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">input</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">response</span><span class="p">.</span><span class="nx">usage</span><span class="o">?</span><span class="p">.</span><span class="nx">input_tokens</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="mf">0</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">console</span><span class="p">.</span><span class="nx">info</span><span class="p">({</span><span class="w"> </span><span class="nx">feature</span><span class="o">:</span><span class="w"> </span><span class="s2">"project-qa"</span><span class="p">,</span><span class="w"> </span><span class="nx">input</span><span class="p">,</span><span class="w"> </span><span class="nx">cached</span><span class="p">,</span><span class="w"> </span><span class="nx">hitRatio</span><span class="o">:</span><span class="w"> </span><span class="kt">input</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="nx">cached</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nx">input</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">0</span><span class="w"> </span><span class="p">});</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">response</span><span class="p">.</span><span class="nx">output_text</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>This uses OpenAI's Responses API; vLLM also serves <code>/v1/responses</code>. Watch
+the hit ratio per feature: a sudden drop after a deploy usually means
+someone put changing text (a date, a request id, a shuffled list) into the
+stable prefix. With Anthropic, mark the end of the stable part with a
+<code>cache_control</code> breakpoint; with Gemini, implicit caching works the same
+way for long, identical prefixes.</p>
+<h3 id="turning-on-speculative-decoding-in-vllm">Turning on speculative decoding in vLLM<a class="headerlink" href="#turning-on-speculative-decoding-in-vllm" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># n-gram speculation: proposes tokens by matching earlier text in the prompt.</span>
+<span class="c1"># Cheap to enable; best when answers copy from the input (edits, extraction).</span>
+vllm<span class="w"> </span>serve<span class="w"> </span><span class="s2">"</span><span class="nv">$MODEL_ID</span><span class="s2">"</span><span class="w"> </span>--served-model-name<span class="w"> </span>taskflow-chat<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--speculative-config<span class="w"> </span><span class="s1">'{"method": "ngram", "num_speculative_tokens": 4, "prompt_lookup_min": 2, "prompt_lookup_max": 5}'</span>
+
+<span class="c1"># Compare inter-token latency and acceptance before and after, at your real load</span>
+curl<span class="w"> </span>-s<span class="w"> </span>http://127.0.0.1:8000/metrics<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-E<span class="w"> </span><span class="s2">"^vllm:(inter_token_latency_seconds_(sum|count)|spec_decode_)"</span>
+</code></pre></div>
+<p>Benchmark at the load you actually run. If acceptance is low or the server
+is busy, speculation adds verification work without saving steps; switch
+to a model-based method (EAGLE or MTP where the model supports it) or turn
+it off.</p>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Measure TTFT, TPOT, and end-to-end latency per feature at p50 and p95
+  before changing anything.</li>
+<li>Shorten outputs first: explicit length instructions, output limits, and
+  compact structured output.</li>
+<li>Keep prompts lean and put stable content first; watch cache hit ratios
+  after every deploy.</li>
+<li>Stream answers people read; do not stream output you parse as a whole.</li>
+<li>Remove sequential round trips, and run independent lookups concurrently
+  with a limit and timeouts.</li>
+<li>Use a small model where an evaluation shows it is good enough.</li>
+<li>Place the backend near the model endpoint and reuse SDK clients.</li>
+<li>Reserve priority tiers for the few paths that need them.</li>
+<li>On self-hosted engines, tune chunked prefill and concurrency against
+  measured TTFT and TPOT targets; try speculative decoding at low load.</li>
+<li>Budget latency per feature (for example "first text in 1 s, done in 6 s")
+  and alert on p95, not the average.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>The Assistant got slower after a prompt change, with no traffic
+  change.</strong> <em>Detect:</em> TTFT p50 doubled after a deploy; cached tokens per
+  request fell to zero. <em>Cause:</em> a timestamp or per-user detail moved into
+  the top of the instructions, so the prefix no longer matches. <em>Fix:</em> move
+  variable content after the stable prefix and alert on cache hit ratio.</li>
+<li><strong>Meeting summaries take twenty seconds.</strong> <em>Detect:</em> output tokens per
+  request are far above the UI's needs; TTFT is normal. <em>Cause:</em> no length
+  instruction or output limit, so the model writes long summaries. <em>Fix:</em>
+  ask for a fixed format and length, set an output limit, and check the
+  finish reason.</li>
+<li><strong>Agent runs feel stuck before the first visible action.</strong> <em>Detect:</em>
+  traces show five or more sequential model calls before the first tool
+  result. <em>Cause:</em> fine-grained tools and a planning call on every step.
+  <em>Fix:</em> coarser tools, parallel tool calls, a step cap, and streaming a
+  status update early.</li>
+<li><strong>Latency is fine in tests but p95 explodes at peak.</strong> <em>Detect:</em> queue
+  time or provider rate-limit errors rise with traffic; per-request
+  processing time is flat. <em>Cause:</em> capacity or quota exhaustion, made
+  worse by retries. <em>Fix:</em> request higher limits or add replicas, cap
+  concurrency per feature, and retry with backoff and jitter.</li>
+<li><strong>Self-hosted streams stutter whenever someone uploads a long
+  document.</strong> <em>Detect:</em> inter-token latency spikes coincide with long
+  prompts. <em>Cause:</em> large prefill work shares decode steps with everyone.
+  <em>Fix:</em> smaller prefill chunks (<code>--max-num-batched-tokens</code>), a separate
+  pool for long-document work, or more replicas.</li>
+<li><strong>Speculative decoding made things slower.</strong> <em>Detect:</em> higher
+  inter-token latency at peak after enabling it; low acceptance metrics.
+  <em>Cause:</em> busy server and unpredictable output, so verification work is
+  wasted. <em>Fix:</em> disable it at high load or switch to a better-matched
+  method; benchmark at real concurrency.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>TTFT (time to first token):</strong> Time from sending a request to receiving
+  the first output token.</li>
+<li><strong>TPOT / ITL (time per output token, inter-token latency):</strong> The average
+  gap between output tokens after the first.</li>
+<li><strong>End-to-end latency:</strong> Total time until the last token and any
+  application work finish.</li>
+<li><strong>Prefill:</strong> Processing the input tokens; sets most of TTFT.</li>
+<li><strong>Decode:</strong> Generating output tokens one at a time; sets most of the rest.</li>
+<li><strong>Prompt caching:</strong> Reusing processed work for a repeated prompt prefix.</li>
+<li><strong>Streaming:</strong> Sending tokens to the client as they are generated.</li>
+<li><strong>Speculative decoding:</strong> Drafting several tokens cheaply and verifying
+  them in one pass of the large model.</li>
+<li><strong>Acceptance rate:</strong> The share of drafted tokens the target model keeps.</li>
+<li><strong>Service tier:</strong> A provider option that trades price for speed or
+  availability.</li>
+<li><strong>Tail latency:</strong> High percentiles (p95, p99) of the latency
+  distribution.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Optimizing the prompt when the answer length is the real cost.</li>
+<li>Believing streaming makes generation faster.</li>
+<li>Reporting average latency instead of percentiles.</li>
+<li>Putting dates or request ids at the top of a cached prompt.</li>
+<li>Chaining calls that do not depend on each other.</li>
+<li>Assuming a bigger model is needed for every feature.</li>
+<li>Enabling speculative decoding without benchmarking at real load.</li>
+<li>Creating a new SDK client per request and paying new handshakes.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Define TTFT and TPOT. Which stages of a request does each include?</li>
+<li>A request has a TTFT of 0.8 s and generates 600 tokens at 50 tokens per
+   second. What is its end-to-end latency, and what is it if the answer is
+   cut to 200 tokens? (0.8 + 599 x 0.02 = 12.8 s; 0.8 + 199 x 0.02 = 4.8 s.)</li>
+<li>Why does prompt caching need an identical prefix, and how should a
+   prompt be laid out to benefit from it?</li>
+<li>When does streaming help, and when is it pointless?</li>
+<li>Three independent lookups take 400 ms, 250 ms, and 900 ms before a model
+   call. What do you save by running them in parallel? (Sequential 1,550 ms;
+   parallel 900 ms; saving 650 ms.)</li>
+<li>Explain speculative decoding and why its output matches the target
+   model. With an acceptance rate of 0.8 and 3 drafted tokens, how many
+   tokens does one target pass yield on average? ((1 - 0.8^4) / 0.2 = 2.95.)</li>
+<li>Why can speculative decoding hurt at high load?</li>
+<li>How does regional placement affect an agent that makes many sequential
+   model calls?</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://developers.openai.com/api/docs/guides/latency-optimization">OpenAI: Latency optimization</a></li>
+<li><a href="https://developers.openai.com/api/docs/guides/prompt-caching">OpenAI: Prompt caching</a></li>
+<li><a href="https://developers.openai.com/api/docs/guides/predicted-outputs">OpenAI: Predicted Outputs</a></li>
+<li><a href="https://platform.claude.com/docs/en/build-with-claude/prompt-caching">Anthropic: Prompt caching</a></li>
+<li><a href="https://aistudio.google.com/docs/caching">Gemini API: Context caching</a></li>
+<li><a href="https://docs.vllm.ai/en/latest/features/speculative_decoding/">vLLM: Speculative decoding</a></li>
+<li><a href="https://arxiv.org/abs/2302.01318">Chen and colleagues: Accelerating Large Language Model Decoding with Speculative Sampling</a></li>
+<li><a href="https://arxiv.org/abs/2401.15077">Li and colleagues: EAGLE</a></li>
+<li>Next: <a href="../cost-optimization-for-llm-apps/">cost optimization for LLM apps</a>. Back to the <a href="../">deployment cost and performance overview</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../serving-open-models/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Serving Open Models">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Serving Open Models</span>
+      </a>
+    
+    
+      <a href="../cost-optimization-for-llm-apps/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: Cost Optimization for LLM Apps">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">Cost Optimization for LLM Apps</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,4849 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../running-apps-with-systemd-and-nginx/">
+      
+      
+        <link rel="next" href="../scheduled-jobs-and-log-rotation/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Troubleshooting CPU, Memory, Disk, and Network - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#troubleshooting-cpu-memory-disk-and-network" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Troubleshooting CPU, Memory, Disk, and Network
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../05-application-architecture/" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../06-ai-and-machine-learning/" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+          <span class="md-ellipsis">&larr; Back to DevOps</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../05-application-architecture/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../06-ai-and-machine-learning/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI and Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
+        
+          
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-label="DevOps module lessons" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+                  <span class="md-ellipsis">&larr; Back to DevOps</span>
+                </a>
+              
+            </div>
+          
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                  
+  
+  
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+    
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_10" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_10" id="__nav_9_10_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Linux Server Operations
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_10_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_10">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Linux Server Operations
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_10_2" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_10_2" id="__nav_9_10_2_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Access and Setup
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_10_2_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_10_2">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Access and Setup
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ssh-and-remote-access/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SSH and Remote Access
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../setting-up-a-production-server/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Setting Up a Production Server
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_10_3" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_10_3" id="__nav_9_10_3_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Running Applications
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_10_3_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_10_3">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Running Applications
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../running-apps-with-systemd-and-nginx/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Running Apps with systemd and nginx
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_10_4" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_10_4" id="__nav_9_10_4_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day-to-Day Operations
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_10_4_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_10_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Day-to-Day Operations
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting CPU, Memory, Disk, and Network
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting CPU, Memory, Disk, and Network
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-method-before-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A method before commands
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-first-minute" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The first minute
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cpu-load-average-is-not-cpu-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CPU: load average is not CPU usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#memory-free-available-swap-and-the-oom-killer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Memory: free, available, swap, and the OOM killer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#disk-space-inodes-and-files-that-are-deleted-but-still-open" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Disk: space, inodes, and files that are deleted but still open
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#network-listening-connecting-resolving-and-the-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Network: listening, connecting, resolving, and the path
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#too-many-open-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Too many open files
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-one-minute-snapshot-script" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A one-minute snapshot script
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reading-vmstat" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading vmstat
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#confirming-an-oom-kill" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Confirming an OOM kill
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#finding-what-fills-the-disk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding what fills the disk
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#who-is-listening-and-who-is-connected" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Who is listening, and who is connected
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#timing-an-https-request" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timing an HTTPS request
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dns-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DNS checks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#path-checks-with-mtr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Path checks with mtr
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#checking-file-descriptor-limits-and-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checking file descriptor limits and usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../scheduled-jobs-and-log-rotation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scheduled Jobs and Log Rotation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-method-before-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A method before commands
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-first-minute" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The first minute
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cpu-load-average-is-not-cpu-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CPU: load average is not CPU usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#memory-free-available-swap-and-the-oom-killer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Memory: free, available, swap, and the OOM killer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#disk-space-inodes-and-files-that-are-deleted-but-still-open" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Disk: space, inodes, and files that are deleted but still open
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#network-listening-connecting-resolving-and-the-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Network: listening, connecting, resolving, and the path
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#too-many-open-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Too many open files
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-one-minute-snapshot-script" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A one-minute snapshot script
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reading-vmstat" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading vmstat
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#confirming-an-oom-kill" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Confirming an OOM kill
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#finding-what-fills-the-disk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding what fills the disk
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#who-is-listening-and-who-is-connected" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Who is listening, and who is connected
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#timing-an-https-request" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timing an HTTPS request
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dns-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DNS checks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#path-checks-with-mtr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Path checks with mtr
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#checking-file-descriptor-limits-and-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checking file descriptor limits and usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="troubleshooting-cpu-memory-disk-and-network">Troubleshooting CPU, Memory, Disk, and Network<a class="headerlink" href="#troubleshooting-cpu-memory-disk-and-network" title="Permanent link">&para;</a></h1>
+<p>When the TaskFlow API slows down or starts failing, the server itself is
+one of the first suspects and one of the fastest to rule in or out. This
+lesson is a working method for that: a one-minute snapshot of the whole
+machine, then a focused look at the resource that is short. It covers
+load average versus CPU utilization, <code>top</code>, <code>vmstat</code>, and <code>pidstat</code>;
+memory as <code>free</code> really reports it, swap, and the OOM killer; disk space,
+inodes, deleted-but-open files, and I/O latency; and the network from
+listening sockets to DNS, TCP, TLS, and the path between, with <code>ss</code>,
+<code>curl</code>, <code>dig</code>, and <code>mtr</code>. It ends with the "too many open files" family
+of failures.</p>
+<p>Application-level profiling under load (CPU profiles, event-loop lag,
+slow queries during a load test) is covered in
+<a href="../../performance-and-reliability-testing/finding-bottlenecks/">finding bottlenecks</a>;
+this lesson stays on the host.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>During an incident, guessing is expensive. Restarting the app, resizing
+the VM, or blaming the network each takes minutes and destroys evidence,
+and each is right only some of the time. A few commands answer the real
+questions within a minute: is a resource saturated, which one, and which
+process is responsible.</p>
+<p>Most host-level incidents are also repeats of a handful of patterns: a
+disk filled by logs, a memory leak ending in an OOM kill, a single-threaded
+process pinned at 100% of one core, a slow DNS lookup, a file descriptor
+limit. Recognizing the pattern from one or two numbers is what separates
+a ten-minute incident from a two-hour one.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Netflix: the first 60 seconds.</strong> In
+  <a href="https://netflixtechblog.com/linux-performance-analysis-in-60-000-milliseconds-accc10403c55">Linux Performance Analysis in 60,000 Milliseconds</a>,
+  Netflix's performance engineering team lists the ten commands they run
+  first on a misbehaving Linux instance: <code>uptime</code>, <code>dmesg | tail</code>,
+  <code>vmstat 1</code>, <code>mpstat -P ALL 1</code>, <code>pidstat 1</code>, <code>iostat -xz 1</code>, <code>free -m</code>,
+  <code>sar -n DEV 1</code>, <code>sar -n TCP,ETCP 1</code>, and <code>top</code>. This lesson's snapshot
+  script is built on that list.</li>
+<li><strong>The USE method.</strong> Brendan Gregg's
+  <a href="https://www.brendangregg.com/usemethod.html">USE method</a> checks every
+  resource for utilization, saturation, and errors, which turns "the
+  server is slow" into a short, complete checklist instead of a hunt.</li>
+<li><strong>Linux load averages.</strong> Gregg's
+  <a href="https://www.brendangregg.com/blog/2017-08-08/linux-load-averages.html">Linux Load Averages: Solving the Mystery</a>
+  explains that Linux load averages "track not just runnable tasks, but
+  also tasks in the uninterruptible sleep state", so a high load can mean
+  slow disks rather than busy CPUs.</li>
+<li><strong>Google SRE book.</strong> The
+  <a href="https://sre.google/sre-book/effective-troubleshooting/">Effective Troubleshooting</a>
+  chapter frames debugging as forming and testing hypotheses, and insists
+  that the first goal is to "make the system work as well as it can under
+  the circumstances" before hunting for the root cause.</li>
+<li><strong>Linux kernel documentation.</strong>
+  <a href="https://docs.kernel.org/accounting/psi.html">Pressure stall information</a>
+  reports the share of time tasks were stalled waiting for CPU, memory,
+  or I/O, a direct measure of saturation.</li>
+</ul>
+<p><strong>Popular tools and providers:</strong> procps (<code>top</code>, <code>vmstat</code>, <code>free</code>),
+sysstat (<code>mpstat</code>, <code>pidstat</code>, <code>iostat</code>, <code>sar</code>), <code>htop</code>, <code>iproute2</code> (<code>ss</code>),
+<code>lsof</code>, <code>curl</code>, <code>dig</code>, <code>mtr</code>, and on the platform side the Prometheus node
+exporter, Netdata, CloudWatch, and Datadog for the same signals over time.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="a-method-before-commands">A method before commands<a class="headerlink" href="#a-method-before-commands" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: a triage flowchart. Users report slow or failing requests; in the first minute run uptime, dmesg -T piped to tail, and vmstat 1 5. If there are OOM kills or I/O errors in the kernel log, investigate memory or hardware with journalctl -k and systemctl status. Otherwise, if the run queue is above the CPU count or us plus sy is near 100 percent, investigate CPU with top and pidstat, where one core at 100 percent means the event loop is saturated. Otherwise, if wa is high or tasks are blocked, investigate disk with iostat -xz 1, df -h, df -i, and lsof +L1. Otherwise, if si or so stay above 0 for minutes, investigate memory pressure with free -h, swap, MemoryHigh, and leaks. Otherwise, if there are connection errors or DNS, TCP, or TLS is slow, investigate the network with ss -tulpn, curl -w timings, dig, and mtr. Otherwise the problem is inside the app: logs, event-loop delay, and slow queries." src="../server-triage-flowchart.svg" /></p>
+<p>Three habits make host-level debugging fast:</p>
+<ol>
+<li><strong>Stop the bleeding first.</strong> If one instance is broken, take it out of
+   the load balancer or restart it after capturing evidence; if the disk
+   is full, free space before investigating why.</li>
+<li><strong>Capture before you change.</strong> A snapshot script (below) records the
+   state in a file, so a restart does not erase the answer.</li>
+<li><strong>Work through resources, not hunches.</strong> For CPU, memory, disk, and
+   network, ask the USE questions: how busy is it (utilization), is work
+   queueing (saturation), and are there errors?</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Resource</th>
+<th>Utilization</th>
+<th>Saturation</th>
+<th>Errors</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CPU</td>
+<td><code>top</code> / <code>mpstat</code> us + sy</td>
+<td><code>vmstat</code> r above the CPU count; <code>/proc/pressure/cpu</code></td>
+<td>Rare; kernel log</td>
+</tr>
+<tr>
+<td>Memory</td>
+<td><code>free -h</code> used versus available</td>
+<td><code>vmstat</code> si / so; <code>/proc/pressure/memory</code></td>
+<td>OOM kills in <code>journalctl -k</code></td>
+</tr>
+<tr>
+<td>Disk I/O</td>
+<td><code>iostat -xz</code> %util (for spinning or serial devices)</td>
+<td><code>aqu-sz</code>, <code>await</code>, <code>vmstat</code> b and wa</td>
+<td>I/O errors in the kernel log</td>
+</tr>
+<tr>
+<td>Disk capacity</td>
+<td><code>df -h</code>, <code>df -i</code></td>
+<td>n/a</td>
+<td><code>ENOSPC</code>: "No space left on device"</td>
+</tr>
+<tr>
+<td>Network</td>
+<td><code>sar -n DEV 1</code> throughput</td>
+<td>TCP retransmits (<code>sar -n TCP,ETCP 1</code>), listen queue overflows</td>
+<td>Connection refused or reset, DNS failures</td>
+</tr>
+</tbody>
+</table>
+<h3 id="the-first-minute">The first minute<a class="headerlink" href="#the-first-minute" title="Permanent link">&para;</a></h3>
+<p>The snapshot uses the Netflix list. <code>mpstat</code>, <code>pidstat</code>, <code>iostat</code>, and
+<code>sar</code> come from the <code>sysstat</code> package (<code>sudo apt-get install sysstat</code>);
+the rest are installed on Ubuntu Server.</p>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>What it tells you</th>
+<th>What bad looks like</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>uptime</code></td>
+<td>Load averages over 1, 5, and 15 minutes</td>
+<td>Load well above the CPU count, or a 1-minute value far above the 15-minute one (it is getting worse)</td>
+</tr>
+<tr>
+<td><code>sudo dmesg -T</code> (read the last lines)</td>
+<td>Recent kernel messages</td>
+<td>OOM kills, I/O errors, dropped packets</td>
+</tr>
+<tr>
+<td><code>vmstat 1 5</code></td>
+<td>Run queue, blocked tasks, swap, I/O, CPU split</td>
+<td>High <code>r</code>, non-zero <code>b</code>, <code>si</code>/<code>so</code> above 0, high <code>wa</code> or <code>st</code></td>
+</tr>
+<tr>
+<td><code>mpstat -P ALL 1</code></td>
+<td>Per-CPU utilization</td>
+<td>One CPU at 100% while others idle: a single-threaded bottleneck</td>
+</tr>
+<tr>
+<td><code>pidstat 1</code></td>
+<td>CPU per process</td>
+<td>Which process is busy</td>
+</tr>
+<tr>
+<td><code>iostat -xz 1</code></td>
+<td>Per-device latency, queue, utilization</td>
+<td>High <code>r_await</code>/<code>w_await</code>, growing <code>aqu-sz</code></td>
+</tr>
+<tr>
+<td><code>free -h</code></td>
+<td>Memory, including available</td>
+<td><code>available</code> near zero</td>
+</tr>
+<tr>
+<td><code>sar -n DEV 1</code></td>
+<td>Network throughput per interface</td>
+<td>Close to the instance's bandwidth limit</td>
+</tr>
+<tr>
+<td><code>sar -n TCP,ETCP 1</code></td>
+<td>Connections and retransmits</td>
+<td>Many retransmits</td>
+</tr>
+<tr>
+<td><code>top</code></td>
+<td>Everything at once, per process</td>
+<td>Confirms the suspect</td>
+</tr>
+</tbody>
+</table>
+<p>The first line of <code>vmstat</code> and <code>iostat</code> output reports averages since
+boot; read the following lines, which cover each interval.</p>
+<h3 id="cpu-load-average-is-not-cpu-usage">CPU: load average is not CPU usage<a class="headerlink" href="#cpu-load-average-is-not-cpu-usage" title="Permanent link">&para;</a></h3>
+<p>On Linux, the load average counts tasks that are running, waiting to
+run, or in <strong>uninterruptible sleep</strong> (state <code>D</code>, usually waiting for disk
+or network storage). The three numbers are exponentially damped averages
+with 1, 5, and 15 minute time constants, so a load spike shows up in the
+first number before the others. Compare them with the number of CPUs
+(<code>nproc</code>):</p>
+<ul>
+<li><strong>Load 7.9 on 2 vCPUs, <code>vmstat</code> shows <code>us 85 sy 10</code>:</strong> the CPUs are
+  saturated and work is queueing. Find the process with <code>top</code> or
+  <code>pidstat 1</code>.</li>
+<li><strong>Load 7.9 on 2 vCPUs, <code>vmstat</code> shows <code>us 5 wa 80</code> and <code>b 6</code>:</strong> the
+  CPUs are mostly idle; tasks are stuck waiting for the disk. This is an
+  I/O problem, and adding CPUs would change nothing.</li>
+<li><strong>Load 1.1 on 8 vCPUs, the API is slow, and <code>top</code> shows one <code>node</code>
+  process at 100%:</strong> the machine is 12% busy, but Node.js runs JavaScript
+  on one thread, so that instance is saturated. Add instances (one per
+  core) or move CPU-heavy work to worker threads
+  (<a href="../../../03-backend-development/nodejs/worker-threads-child-processes-and-cluster/">worker threads, child processes, and cluster</a>).
+  <code>mpstat -P ALL 1</code>, or pressing <code>1</code> in <code>top</code>, shows the pinned core.</li>
+</ul>
+<p>The CPU split in <code>top</code> and <code>vmstat</code> is diagnostic in itself:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+<th>When it is high</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>us</code></td>
+<td>Running user code</td>
+<td>Application work: profile the process</td>
+</tr>
+<tr>
+<td><code>sy</code></td>
+<td>Running kernel code</td>
+<td>Many system calls, context switches, or network packets</td>
+</tr>
+<tr>
+<td><code>wa</code></td>
+<td>Idle while waiting for I/O</td>
+<td>Slow or saturated disks</td>
+</tr>
+<tr>
+<td><code>st</code></td>
+<td>Time "stolen from this VM by the hypervisor"</td>
+<td>The host or instance type is not giving you the CPU you ask for; check the provider's CPU credit or throttling metrics</td>
+</tr>
+</tbody>
+</table>
+<h3 id="memory-free-available-swap-and-the-oom-killer">Memory: free, available, swap, and the OOM killer<a class="headerlink" href="#memory-free-available-swap-and-the-oom-killer" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: two bars for a server with 3.8 GiB of RAM. Healthy: processes use 1.2 GiB, 0.2 GiB of cache cannot be dropped, 2.1 GiB is reclaimable page cache, and 0.3 GiB is free; free -h reports used 1.4 GiB as total minus available, buff/cache 2.3 GiB, free 0.3 GiB, and available 2.4 GiB, which is free plus the reclaimable cache. Under pressure: a leaking process grows to 3.4 GiB, the cache has already been reclaimed, and available falls to about 0.2 GiB; the kernel reclaims cache, then swaps, which shows as si and so in vmstat, and finally the OOM killer ends the process with the highest score." src="../memory-free-vs-available.svg" /></p>
+<p>Linux uses otherwise idle RAM as <strong>page cache</strong> for file data, so <code>free</code>
+is normally small on a healthy server. The column that matters is
+<strong>available</strong>, which the <code>free</code> manual defines as an "Estimation of how
+much memory is available for starting new applications, without
+swapping": free memory plus cache the kernel can drop. In the procps
+version on Ubuntu 26.04, <code>used</code> is calculated as total minus available.</p>
+<p>When available memory runs out, the kernel tries, in order, to:</p>
+<ol>
+<li><strong>Reclaim page cache</strong>, which costs re-reading files later.</li>
+<li><strong>Swap</strong> anonymous memory out, if swap exists. <code>vmstat</code> shows it as
+   non-zero <code>si</code> (swapped in) and <code>so</code> (swapped out). A little swap use
+   is harmless; continuous <code>si</code>/<code>so</code> means the working set no longer fits
+   and everything slows down.</li>
+<li><strong>Kill a process.</strong> The <strong>OOM killer</strong> picks the process with the
+   highest badness score (roughly its share of memory, adjusted by
+   <code>/proc/&lt;pid&gt;/oom_score_adj</code> from -1000 to +1000, where -1000 disables
+   OOM killing for that process; systemd sets it with
+   <code>OOMScoreAdjust=</code>).</li>
+</ol>
+<p>There are two kinds of OOM kill, and the kernel log says which:</p>
+<ul>
+<li><strong><code>Out of memory: Killed process ...</code></strong> is the whole machine running out.</li>
+<li><strong><code>Memory cgroup out of memory: Killed process ...</code></strong> is one service
+  reaching its own <code>MemoryMax=</code>. systemd then reports the unit's result
+  as <code>oom-kill</code>, and the rest of the machine is fine.</li>
+</ul>
+<p>Two Ubuntu 26.04 details: <code>/tmp</code> is a <code>tmpfs</code>, so large files there use
+RAM (they appear in the <code>shared</code> column); and on Ubuntu, reading the
+kernel ring buffer with <code>dmesg</code> needs <code>sudo</code>, while <code>journalctl -k</code> reads
+the same messages from the journal. For a Node.js process, the RSS
+includes the V8 heap plus buffers and native memory; a heap that grows
+steadily across garbage collections is a leak, diagnosed with heap
+snapshots as described in
+<a href="../../../03-backend-development/nodejs/errors-debugging-and-performance/">errors, debugging, and performance</a>.</p>
+<h3 id="disk-space-inodes-and-files-that-are-deleted-but-still-open">Disk: space, inodes, and files that are deleted but still open<a class="headerlink" href="#disk-space-inodes-and-files-that-are-deleted-but-still-open" title="Permanent link">&para;</a></h3>
+<p>A full disk breaks more than the app: MongoDB stops accepting writes,
+journald and nginx cannot write logs, nginx cannot buffer large request
+bodies to temporary files, and <code>apt</code> fails halfway through an upgrade.
+Four checks cover nearly every case:</p>
+<ul>
+<li><strong>Space:</strong> <code>df -h</code> per file system. ext4 reserves 5% of blocks for root
+  by default, so that root-owned daemons keep working after ordinary
+  processes can no longer write; <code>df</code>'s <code>Avail</code> column already excludes
+  that reserve.</li>
+<li><strong>Inodes:</strong> <code>df -i</code>. Millions of small files (cache entries, session
+  files, mail queues) can exhaust inodes while gigabytes are free, with
+  the same "No space left on device" error.</li>
+<li><strong>Where it went:</strong> <code>du -xh -d1 / | sort -h</code> walks one file system level
+  by level. Usual suspects: <code>/var/log</code> (application files, the journal),
+  <code>/var/lib/docker</code> (images, containers, unrotated container logs), old
+  releases, <code>/var/lib/apt</code> caches, and core dumps.</li>
+<li><strong>Deleted but open:</strong> when <code>df</code> says the disk is full but <code>du</code> cannot
+  find the space, a process is holding a deleted file open.</li>
+</ul>
+<p><img alt="Diagram: after rm /var/log/taskflow/api.log, the directory entry is gone but inode 4711, holding 8.2 GB of data blocks with a link count of 0, is still open as file descriptor 3 by node with PID 4123, which keeps appending, and ls -l /proc/4123/fd/3 shows api.log as deleted. du -sh /var/log reports about 1 GB because it walks directory entries and cannot see a file without a name, while df -h reports 97 percent used because it counts allocated blocks, including inode 4711. Find it with sudo lsof +L1; fix it by restarting the process, making it reopen its log, or truncating through /proc/4123/fd/3; prevent it by logging to stdout or rotating with logrotate, never with a bare rm." src="../deleted-but-open-file.svg" /></p>
+<p>A file's name is only a directory entry pointing at an <strong>inode</strong>; the
+blocks are freed when the last name is removed <strong>and</strong> the last open
+file descriptor is closed. Deleting a log file that a process still
+writes to removes the name, so <code>du</code> stops counting it, but the process
+keeps the inode alive and growing. <code>lsof +L1</code> lists open files whose link
+count is below one, that is, deleted ones. Restarting the process (or
+signalling it to reopen its logs) releases the space; truncating the file
+through <code>/proc/&lt;pid&gt;/fd/&lt;n&gt;</code> frees it immediately without a restart.</p>
+<p><strong>I/O latency</strong> is the other disk problem. <code>iostat -xz 1</code> reports
+<code>r_await</code> and <code>w_await</code> (average milliseconds per request, queue time
+included) and <code>aqu-sz</code> (average queue length). <code>%util</code> near 100% means
+saturation only for devices that serve one request at a time; for SSDs
+and RAID arrays the manual warns it "does not reflect their performance
+limits", so trust latency and queue length instead. Cloud volumes also
+have provisioned IOPS and throughput limits; when you hit them, latency
+rises while <code>%util</code> looks unremarkable.</p>
+<h3 id="network-listening-connecting-resolving-and-the-path">Network: listening, connecting, resolving, and the path<a class="headerlink" href="#network-listening-connecting-resolving-and-the-path" title="Permanent link">&para;</a></h3>
+<p>Work from the inside out:</p>
+<ul>
+<li><strong>Is the service listening where you think?</strong> <code>ss -tulpn</code> lists
+  listening TCP and UDP sockets with the owning process. A service bound
+  to <code>127.0.0.1:3001</code> is unreachable from other machines by design; one
+  bound to <code>0.0.0.0</code> is reachable from everywhere the firewall allows.</li>
+<li><strong>What are the connections doing?</strong> <code>ss -s</code> summarizes sockets by
+  state. Thousands of <code>TIME-WAIT</code> sockets are normal on a busy proxy;
+  sockets piling up in <code>CLOSE-WAIT</code> mean the local application received
+  the peer's close but never closed its side, which is a bug in the app
+  or a library and eventually exhausts file descriptors.</li>
+<li><strong>Refused or timed out?</strong> "Connection refused" means a host answered
+  with a reset: nothing listens on that port, or a firewall rejects
+  rather than drops. A timeout means packets disappear: a firewall or
+  security group drops them, routing is wrong, or the host is down.</li>
+<li><strong>Where does the time go?</strong> <code>curl -w</code> prints cumulative timestamps for
+  each phase of a request.</li>
+</ul>
+<p><img alt="Diagram: a waterfall for one request to https://api.example.com/tasks measured with curl -w. DNS lookup ends at 0.012 s, 12 ms; TCP connect ends at 0.048 s, 36 ms or about one round trip; the TLS 1.3 handshake ends at 0.084 s, another 36 ms; the first byte arrives at 0.312 s, 228 ms later, of which one round trip is network time and about 192 ms is spent in nginx, the app, and the database; the download ends at 0.320 s, 8 ms. Most of the time is server processing." src="../curl-timing-waterfall.svg" /></p>
+<p>Subtracting consecutive timestamps separates DNS, TCP, TLS, server time,
+and transfer. TCP's handshake costs one round trip and TLS 1.3 one more,
+so both should be close to the ping time; if the wait for the first byte
+dominates, as here, look at the server, its logs, and its queries rather
+than the network.</p>
+<ul>
+<li><strong>Is DNS the problem?</strong> On Ubuntu, applications ask the
+  systemd-resolved stub at <code>127.0.0.53</code>, which forwards to the configured
+  upstream servers; <code>resolvectl status</code> shows which. <code>dig</code> queries a
+  server directly: compare the stub with a public resolver, and use
+  <code>+trace</code> to follow delegation from the root. The resolution process
+  itself is covered in <a href="../../../01-networking-and-protocols/dns/">DNS</a>.</li>
+<li><strong>Where on the path?</strong> <code>mtr</code> combines <code>traceroute</code> and <code>ping</code>, showing
+  loss and latency per hop over many cycles. Loss at an intermediate hop
+  that does not continue to later hops is usually a router rate-limiting
+  its own ICMP replies, not real loss; loss that starts at a hop and
+  persists to the destination is real. <code>mtr -T -P 443</code> probes with TCP
+  to the port you care about, which survives firewalls that drop ICMP
+  (see <a href="../../../01-networking-and-protocols/icmp/">ICMP</a>).</li>
+</ul>
+<h3 id="too-many-open-files">Too many open files<a class="headerlink" href="#too-many-open-files" title="Permanent link">&para;</a></h3>
+<p>Every socket, file, and pipe a process holds is a <strong>file descriptor</strong>,
+and each process has a soft and a hard limit on how many it may hold
+(<code>RLIMIT_NOFILE</code>). Errors look like <code>EMFILE: too many open files</code> in
+Node.js or <code>socket() failed (24: Too many open files)</code> in nginx.</p>
+<ul>
+<li><strong>Read the limit that applies.</strong> <code>ulimit -n</code> shows only your shell's
+  limit. For a service, read <code>/proc/&lt;pid&gt;/limits</code>, which shows the soft
+  limit, hard limit, and units for each resource.</li>
+<li><strong>Count the descriptors.</strong> <code>ls /proc/&lt;pid&gt;/fd | wc -l</code>, watched over
+  time. A count that only grows is a leak (often sockets left in
+  <code>CLOSE-WAIT</code>), and raising the limit only delays the failure.</li>
+<li><strong>Raise it at the right layer.</strong> systemd's default is <code>1024:524288</code>
+  (soft:hard) for services. Node.js raises its own soft limit to the hard
+  limit at startup, so a Node.js service mostly fails only when the hard
+  limit is low (set with <code>LimitNOFILE=</code>) or there is a leak. nginx does
+  not do this: its <code>worker_connections</code> (768 in Ubuntu's <code>nginx.conf</code>)
+  counts both client and upstream connections, and its open-file limit is
+  raised with <code>worker_rlimit_nofile</code>. When workers run out of connection
+  slots, nginx logs "worker_connections are not enough".</li>
+<li><strong>System-wide limits</strong> are rarely the cause on modern kernels:
+  <code>/proc/sys/fs/file-nr</code> shows allocated handles against <code>fs.file-max</code>,
+  and <code>fs.nr_open</code> (default 1048576) caps how high any process's limit can
+  be raised.</li>
+</ul>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Start with</th>
+<th>Then</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Everything is slow</td>
+<td><code>uptime</code>, <code>vmstat 1 5</code></td>
+<td>Follow the flowchart</td>
+</tr>
+<tr>
+<td>One API endpoint is slow</td>
+<td>Request logs with timings, <code>curl -w</code></td>
+<td><a href="../../performance-and-reliability-testing/finding-bottlenecks/">Finding bottlenecks</a> and query profiling</td>
+</tr>
+<tr>
+<td>The service keeps restarting</td>
+<td><code>systemctl status</code>, <code>journalctl -u ... -b</code></td>
+<td>Result <code>oom-kill</code>, exit codes, start limit</td>
+</tr>
+<tr>
+<td>"No space left on device"</td>
+<td><code>df -h</code>, <code>df -i</code></td>
+<td><code>du</code>, <code>lsof +L1</code>, journal and Docker cleanup</td>
+</tr>
+<tr>
+<td>Clients cannot connect</td>
+<td><code>ss -tulpn</code> on the server, <code>curl -v</code> from the client</td>
+<td>Firewall and security group rules, DNS</td>
+</tr>
+<tr>
+<td>Intermittent timeouts to an external service</td>
+<td><code>curl -w</code> timings, <code>dig</code>, <code>mtr -T</code></td>
+<td>Retries and timeouts in the app</td>
+</tr>
+</tbody>
+</table>
+<p>Host tools show the present moment. For "why was it slow at 03:00
+yesterday", you need metrics collected over time (node exporter,
+CloudWatch, or similar), as described in
+<a href="../../monitoring-and-logging/metrics-and-dashboards/">metrics and dashboards</a>,
+and <code>sar</code>'s own history once the sysstat collector is enabled.</p>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="a-one-minute-snapshot-script">A one-minute snapshot script<a class="headerlink" href="#a-one-minute-snapshot-script" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="ch">#!/usr/bin/env bash</span>
+<span class="c1"># /usr/local/sbin/snapshot: capture the server's state to a file before changing anything</span>
+<span class="nb">set</span><span class="w"> </span>-u
+<span class="nv">out</span><span class="o">=</span><span class="s2">"/var/tmp/snapshot-</span><span class="k">$(</span>hostname<span class="k">)</span><span class="s2">-</span><span class="k">$(</span>date<span class="w"> </span>-u<span class="w"> </span>+%Y%m%dT%H%M%SZ<span class="k">)</span><span class="s2">.txt"</span>
+<span class="o">{</span>
+<span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"== uptime"</span><span class="p">;</span><span class="w">         </span>uptime
+<span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"== dmesg (tail)"</span><span class="p">;</span><span class="w">   </span>dmesg<span class="w"> </span>-T<span class="w"> </span><span class="p">|</span><span class="w"> </span>tail<span class="w"> </span>-n<span class="w"> </span><span class="m">25</span>
+<span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"== vmstat 1 5"</span><span class="p">;</span><span class="w">     </span>vmstat<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="m">5</span>
+<span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"== mpstat"</span><span class="p">;</span><span class="w">         </span>mpstat<span class="w"> </span>-P<span class="w"> </span>ALL<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="m">3</span>
+<span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"== pidstat"</span><span class="p">;</span><span class="w">        </span>pidstat<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="m">3</span>
+<span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"== iostat"</span><span class="p">;</span><span class="w">         </span>iostat<span class="w"> </span>-xz<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="m">3</span>
+<span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"== free"</span><span class="p">;</span><span class="w">           </span>free<span class="w"> </span>-h
+<span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"== pressure"</span><span class="p">;</span><span class="w">       </span>grep<span class="w"> </span>-H<span class="w"> </span>.<span class="w"> </span>/proc/pressure/*<span class="w"> </span><span class="m">2</span>&gt;/dev/null
+<span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"== df"</span><span class="p">;</span><span class="w">             </span>df<span class="w"> </span>-hT<span class="w"> </span>-x<span class="w"> </span>tmpfs<span class="w"> </span>-x<span class="w"> </span>devtmpfs<span class="p">;</span><span class="w"> </span>df<span class="w"> </span>-i<span class="w"> </span>-x<span class="w"> </span>tmpfs<span class="w"> </span>-x<span class="w"> </span>devtmpfs
+<span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"== sockets"</span><span class="p">;</span><span class="w">        </span>ss<span class="w"> </span>-s<span class="p">;</span><span class="w"> </span>ss<span class="w"> </span>-tulpn
+<span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"== top"</span><span class="p">;</span><span class="w">            </span>top<span class="w"> </span>-b<span class="w"> </span>-n<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>head<span class="w"> </span>-n<span class="w"> </span><span class="m">25</span>
+<span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"== failed units"</span><span class="p">;</span><span class="w">   </span>systemctl<span class="w"> </span>--failed<span class="w"> </span>--no-pager
+<span class="o">}</span><span class="w"> </span>&gt;<span class="w"> </span><span class="s2">"</span><span class="nv">$out</span><span class="s2">"</span><span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">"saved </span><span class="nv">$out</span><span class="s2">"</span>
+</code></pre></div>
+<p>Run it with <code>sudo</code> as the first thing in an incident and attach the file
+to the incident record. <code>/var/tmp</code> survives reboots, unlike <code>/tmp</code> on
+Ubuntu 26.04.</p>
+<h3 id="reading-vmstat">Reading vmstat<a class="headerlink" href="#reading-vmstat" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>vmstat<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="m">5</span>
+</code></pre></div>
+<p>Example output on a 2-vCPU server that is waiting on its disk:</p>
+<div class="highlight"><pre><span></span><code>procs -----------memory---------- ---swap-- -----io---- -system-- ---------cpu---------
+ r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu
+ 1  0      0 312840  61200 2398112    0    0    35   220  410  690  4  2 93  1  0  0
+ 0  6      0 309112  61204 2398530    0    0 18432  9210 1890 2410  3  4 12 81  0  0
+ 1  5      0 306904  61210 2399010    0    0 17920  8800 1822 2302  5  3 10 82  0  0
+ 0  7      0 305760  61212 2399420    0    0 19104  9312 1950 2501  2  4  9 85  0  0
+ 2  6      0 304120  61218 2399808    0    0 18560  9001 1875 2390  4  3 11 82  0  0
+</code></pre></div>
+<p>Ignore the first line (averages since boot). Then: <code>b</code> 5 to 7 tasks
+blocked, <code>wa</code> above 80%, heavy <code>bi</code>/<code>bo</code>, and <code>si</code>/<code>so</code> at zero. The
+disk is the bottleneck, not CPU or memory; <code>iostat -xz 1</code> and <code>pidstat -d
+1</code> (I/O per process) show which device and which process.</p>
+<h3 id="confirming-an-oom-kill">Confirming an OOM kill<a class="headerlink" href="#confirming-an-oom-kill" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Kernel messages about OOM kills today (the journal keeps them across reboots)</span>
+journalctl<span class="w"> </span>-k<span class="w"> </span>--since<span class="w"> </span>today<span class="w"> </span>-g<span class="w"> </span><span class="s1">'Out of memory|oom-kill|invoked oom-killer'</span>
+
+<span class="c1"># Did systemd see it for this unit, and how often has it restarted?</span>
+systemctl<span class="w"> </span>show<span class="w"> </span>taskflow-api@3001<span class="w"> </span>-p<span class="w"> </span>Result<span class="w"> </span>-p<span class="w"> </span>NRestarts
+</code></pre></div>
+<p>Example output:</p>
+<div class="highlight"><pre><span></span><code>Nov 13 07:41:07 taskflow-app-1 kernel: node invoked oom-killer: gfp_mask=0xcc0(GFP_KERNEL), order=0, oom_score_adj=0
+Nov 13 07:41:08 taskflow-app-1 kernel: Memory cgroup out of memory: Killed process 4123 (node) total-vm:22941268kB, anon-rss:705312kB, file-rss:51200kB, shmem-rss:0kB, UID:998 pgtables:3104kB oom_score_adj:0
+Result=oom-kill
+NRestarts=3
+</code></pre></div>
+<p>"Memory cgroup out of memory" and <code>Result=oom-kill</code> mean the instance hit
+its own <code>MemoryMax=</code>; the machine as a whole was fine. A large
+<code>total-vm</code> is normal for V8 (reserved address space); <code>anon-rss</code> is the
+memory it actually used.</p>
+<h3 id="finding-what-fills-the-disk">Finding what fills the disk<a class="headerlink" href="#finding-what-fills-the-disk" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>df<span class="w"> </span>-hT<span class="w"> </span>-x<span class="w"> </span>tmpfs<span class="w"> </span>-x<span class="w"> </span>devtmpfs<span class="w">          </span><span class="c1"># which file system is full</span>
+df<span class="w"> </span>-i<span class="w"> </span>-x<span class="w"> </span>tmpfs<span class="w"> </span>-x<span class="w"> </span>devtmpfs<span class="w">           </span><span class="c1"># or out of inodes?</span>
+sudo<span class="w"> </span>du<span class="w"> </span>-xh<span class="w"> </span>-d1<span class="w"> </span>/<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span>-h<span class="w"> </span><span class="p">|</span><span class="w"> </span>tail<span class="w"> </span>-n<span class="w"> </span><span class="m">10</span>
+sudo<span class="w"> </span>du<span class="w"> </span>-xh<span class="w"> </span>-d1<span class="w"> </span>/var<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span>-h<span class="w"> </span><span class="p">|</span><span class="w"> </span>tail<span class="w"> </span>-n<span class="w"> </span><span class="m">10</span>
+
+<span class="c1"># The usual suspects</span>
+sudo<span class="w"> </span>journalctl<span class="w"> </span>--disk-usage
+sudo<span class="w"> </span>ls<span class="w"> </span>-lt<span class="w"> </span>/var/lib/systemd/coredump/<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="p">|</span><span class="w"> </span>head
+ls<span class="w"> </span>-1t<span class="w"> </span>/srv/taskflow/releases/<span class="w"> </span><span class="p">|</span><span class="w"> </span>wc<span class="w"> </span>-l
+docker<span class="w"> </span>system<span class="w"> </span>df<span class="w"> </span><span class="m">2</span>&gt;/dev/null
+
+<span class="c1"># Deleted files still held open</span>
+sudo<span class="w"> </span>lsof<span class="w"> </span>+L1
+</code></pre></div>
+<p>Example output of <code>lsof +L1</code>:</p>
+<div class="highlight"><pre><span></span><code>COMMAND  PID     USER   FD   TYPE DEVICE   SIZE/OFF NLINK    NODE NAME
+node    4123 taskflow    3w   REG  259,1 8804682752     0    4711 /var/log/taskflow/api.log (deleted)
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1"># Free the space now, without restarting: truncate the deleted file through the open descriptor</span>
+sudo<span class="w"> </span>truncate<span class="w"> </span>-s<span class="w"> </span><span class="m">0</span><span class="w"> </span>/proc/4123/fd/3
+
+<span class="c1"># Then fix the cause: log to stdout and let journald or logrotate handle files</span>
+</code></pre></div>
+<p><code>NLINK 0</code> means no directory entry points at the file any more; <code>FD 3w</code>
+is descriptor 3, open for writing. After truncation <code>df</code> shows the space
+again, and the process keeps writing at its current offset, so the file
+may later look sparse; restarting the process is the clean end state.</p>
+<h3 id="who-is-listening-and-who-is-connected">Who is listening, and who is connected<a class="headerlink" href="#who-is-listening-and-who-is-connected" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Listening sockets with their processes</span>
+sudo<span class="w"> </span>ss<span class="w"> </span>-tulpn
+
+<span class="c1"># Socket counts by state, and established connections to MongoDB</span>
+ss<span class="w"> </span>-s
+ss<span class="w"> </span>-tn<span class="w"> </span>state<span class="w"> </span>established<span class="w"> </span><span class="s1">'( dport = :27017 )'</span>
+
+<span class="c1"># Connections the app has not closed (a growing count is a leak)</span>
+ss<span class="w"> </span>-tn<span class="w"> </span>state<span class="w"> </span>close-wait<span class="w"> </span><span class="p">|</span><span class="w"> </span>wc<span class="w"> </span>-l
+</code></pre></div>
+<p>Example output of <code>ss -tulpn</code> (IPv6 listeners trimmed):</p>
+<div class="highlight"><pre><span></span><code>Netid State  Recv-Q Send-Q Local Address:Port  Peer Address:Port Process
+udp   UNCONN 0      0         127.0.0.54:53         0.0.0.0:*     users:(("systemd-resolve",pid=612,fd=16))
+udp   UNCONN 0      0      127.0.0.53%lo:53         0.0.0.0:*     users:(("systemd-resolve",pid=612,fd=14))
+tcp   LISTEN 0      511          0.0.0.0:443        0.0.0.0:*     users:(("nginx",pid=1180,fd=8),("nginx",pid=1179,fd=8))
+tcp   LISTEN 0      511          0.0.0.0:80         0.0.0.0:*     users:(("nginx",pid=1180,fd=6),("nginx",pid=1179,fd=6))
+tcp   LISTEN 0      4096         0.0.0.0:22         0.0.0.0:*     users:(("sshd",pid=938,fd=3),("systemd",pid=1,fd=86))
+tcp   LISTEN 0      511        127.0.0.1:3001       0.0.0.0:*     users:(("node",pid=41873,fd=21))
+tcp   LISTEN 0      511        127.0.0.1:3002       0.0.0.0:*     users:(("node",pid=41902,fd=21))
+</code></pre></div>
+<p>The app listens only on loopback, nginx on all interfaces, and port 22 is
+held by systemd itself (socket activation) as well as <code>sshd</code>. For
+listening sockets, <code>Send-Q</code> shows the backlog limit and <code>Recv-Q</code> the
+number of connections waiting to be accepted; a <code>Recv-Q</code> near the limit
+means the process is not accepting fast enough.</p>
+<h3 id="timing-an-https-request">Timing an HTTPS request<a class="headerlink" href="#timing-an-https-request" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code># curl-format.txt: one line per phase, cumulative seconds since the request started
+   namelookup: %{time_namelookup}\n
+      connect: %{time_connect}\n
+   appconnect: %{time_appconnect}\n
+starttransfer: %{time_starttransfer}\n
+        total: %{time_total}\n
+         code: %{http_code}  remote: %{remote_ip}\n
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-s<span class="w"> </span>-o<span class="w"> </span>/dev/null<span class="w"> </span>-w<span class="w"> </span><span class="s2">"@curl-format.txt"</span><span class="w"> </span>https://api.example.com/tasks
+
+<span class="c1"># Bypass DNS to test one specific server behind the name</span>
+curl<span class="w"> </span>-s<span class="w"> </span>-o<span class="w"> </span>/dev/null<span class="w"> </span>-w<span class="w"> </span><span class="s2">"@curl-format.txt"</span><span class="w"> </span>--resolve<span class="w"> </span>api.example.com:443:203.0.113.10<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>https://api.example.com/tasks
+
+<span class="c1"># Every step of the conversation: DNS answer, TCP, TLS certificate, request and response headers</span>
+curl<span class="w"> </span>-v<span class="w"> </span>https://api.example.com/readyz
+</code></pre></div>
+<p>Example output of the first command:</p>
+<div class="highlight"><pre><span></span><code>   namelookup: 0.012021
+      connect: 0.048113
+   appconnect: 0.084220
+starttransfer: 0.312456
+        total: 0.320030
+         code: 200  remote: 203.0.113.10
+</code></pre></div>
+<p>DNS took 12 ms, TCP 36 ms, TLS 36 ms, and the server about 190 ms after
+subtracting one round trip for the request itself. <code>--resolve</code> pins the
+name to an address, which tests one server behind a load balancer and
+rules DNS out of the measurement.</p>
+<h3 id="dns-checks">DNS checks<a class="headerlink" href="#dns-checks" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># What the system resolver returns, and which upstream servers it uses</span>
+resolvectl<span class="w"> </span>query<span class="w"> </span>api.example.com
+resolvectl<span class="w"> </span>status<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-E<span class="w"> </span><span class="s1">'Current DNS Server|DNS Servers'</span>
+
+<span class="c1"># Ask specific resolvers directly and compare</span>
+dig<span class="w"> </span>+short<span class="w"> </span>api.example.com<span class="w"> </span>A
+dig<span class="w"> </span>+short<span class="w"> </span>@1.1.1.1<span class="w"> </span>api.example.com<span class="w"> </span>A
+dig<span class="w"> </span>+noall<span class="w"> </span>+answer<span class="w"> </span>api.example.com<span class="w"> </span>A<span class="w">     </span><span class="c1"># includes the remaining TTL</span>
+
+<span class="c1"># Follow delegation from the root servers (useful right after DNS changes)</span>
+dig<span class="w"> </span>+trace<span class="w"> </span>api.example.com
+</code></pre></div>
+<p>If the stub and a public resolver disagree right after a change, cached
+answers have not expired yet; the TTL in <code>+noall +answer</code> output tells you
+for how much longer. DNS changes and migrations are covered in
+<a href="../../domains-dns-and-email/dns-migrations-and-troubleshooting/">DNS migrations and troubleshooting</a>.</p>
+<h3 id="path-checks-with-mtr">Path checks with mtr<a class="headerlink" href="#path-checks-with-mtr" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># 50 cycles, wide report, no DNS lookups for hop names</span>
+mtr<span class="w"> </span>-rwc<span class="w"> </span><span class="m">50</span><span class="w"> </span>-n<span class="w"> </span>mongo.internal.example.com
+
+<span class="c1"># TCP SYN probes to port 443, for paths that drop ICMP</span>
+mtr<span class="w"> </span>-rwc<span class="w"> </span><span class="m">50</span><span class="w"> </span>-T<span class="w"> </span>-P<span class="w"> </span><span class="m">443</span><span class="w"> </span>api.example.com
+</code></pre></div>
+<p>Example output:</p>
+<div class="highlight"><pre><span></span><code>HOST: taskflow-app-1         Loss%   Snt   Last   Avg  Best  Wrst StDev
+  1.|-- 10.0.2.1              0.0%    50    0.3   0.3   0.2   0.6   0.1
+  2.|-- 198.51.100.1         40.0%    50    1.1   1.2   0.9   2.0   0.2
+  3.|-- 198.51.100.33         0.0%    50    1.4   1.5   1.2   2.3   0.2
+  4.|-- 203.0.113.10          0.0%    50    1.8   1.9   1.6   2.6   0.2
+</code></pre></div>
+<p>The 40% loss at hop 2 does not continue to hops 3 and 4, so it is that
+router limiting its own replies, not packet loss on the path.</p>
+<h3 id="checking-file-descriptor-limits-and-usage">Checking file descriptor limits and usage<a class="headerlink" href="#checking-file-descriptor-limits-and-usage" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="nv">pid</span><span class="o">=</span><span class="k">$(</span>systemctl<span class="w"> </span>show<span class="w"> </span>-p<span class="w"> </span>MainPID<span class="w"> </span>--value<span class="w"> </span>taskflow-api@3001<span class="k">)</span>
+
+grep<span class="w"> </span><span class="s1">'open files'</span><span class="w"> </span>/proc/<span class="nv">$pid</span>/limits<span class="w">      </span><span class="c1"># soft and hard limit for this process</span>
+sudo<span class="w"> </span>ls<span class="w"> </span>/proc/<span class="nv">$pid</span>/fd<span class="w"> </span><span class="p">|</span><span class="w"> </span>wc<span class="w"> </span>-l<span class="w">            </span><span class="c1"># descriptors in use right now</span>
+cat<span class="w"> </span>/proc/sys/fs/file-nr<span class="w">                 </span><span class="c1"># system-wide: allocated, unused, maximum</span>
+
+<span class="c1"># What kinds of descriptors? (sockets, regular files, pipes)</span>
+sudo<span class="w"> </span>lsof<span class="w"> </span>-p<span class="w"> </span><span class="s2">"</span><span class="nv">$pid</span><span class="s2">"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>awk<span class="w"> </span><span class="s1">'NR &gt; 1 { print $5 }'</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span><span class="p">|</span><span class="w"> </span>uniq<span class="w"> </span>-c<span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span>-rn
+</code></pre></div>
+<p>Example output of the first two commands:</p>
+<div class="highlight"><pre><span></span><code>Max open files            65536                65536                files
+1873
+</code></pre></div>
+<p>If the count climbs steadily between samples while traffic is flat,
+something is leaking; <code>ss -tnp | grep "pid=$pid"</code> shows whether the
+descriptors are sockets and to where.</p>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Capture a snapshot before restarting or resizing anything.</li>
+<li>Read the kernel log and <code>vmstat</code> first; they rule whole resources in or
+  out.</li>
+<li>Compare load with the CPU count, and always look at the CPU split
+  (<code>us</code>, <code>sy</code>, <code>wa</code>, <code>st</code>) and per-core usage.</li>
+<li>Judge memory by <code>available</code>, swap activity, and OOM messages, never by
+  <code>free</code>.</li>
+<li>Alert on disk usage and inode usage well before 100%, and keep logs
+  bounded (journald limits, logrotate, Docker log options).</li>
+<li>Never delete a log file a process has open; rotate it or truncate it.</li>
+<li>Time network requests by phase with <code>curl -w</code> before blaming "the
+  network".</li>
+<li>Treat a steadily growing descriptor count as a leak, not a limit
+  problem.</li>
+<li>Install <code>sysstat</code> and a metrics agent before you need them; history
+  answers questions that a live view cannot.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Load average of 12 on a 4-vCPU server, but CPU is mostly idle.</strong>
+  <em>Detect:</em> <code>vmstat</code> shows high <code>wa</code>, non-zero <code>b</code>; <code>iostat -xz</code> shows
+  <code>w_await</code> in the hundreds of milliseconds. <em>Cause:</em> the volume hit its
+  IOPS or throughput limit, often during a backup or log burst.
+  <em>Fix:</em> find the process with <code>pidstat -d 1</code>, move heavy jobs off peak,
+  or provision a faster volume.</li>
+<li><strong>The API is slow while the server shows 13% CPU.</strong>
+  <em>Detect:</em> <code>top</code> shows one <code>node</code> process at about 100%; <code>mpstat -P ALL</code>
+  shows one core pegged. <em>Cause:</em> the single JavaScript thread of one
+  instance is saturated (a synchronous loop, JSON parsing of a huge
+  payload, or simply too little capacity). <em>Fix:</em> profile it, move CPU
+  work to worker threads, and run one instance per core.</li>
+<li><strong>An instance dies every few hours.</strong>
+  <em>Detect:</em> <code>Result=oom-kill</code> and "Memory cgroup out of memory" in
+  <code>journalctl -k</code>. <em>Cause:</em> the process grows until it reaches
+  <code>MemoryMax=</code>, usually a leak. <em>Fix:</em> keep the limit (it protects the
+  rest of the server), take heap snapshots, and fix the leak.</li>
+<li><strong>"No space left on device", but <code>du</code> finds only a few gigabytes.</strong>
+  <em>Detect:</em> <code>df -h</code> shows 100% used; <code>lsof +L1</code> lists a large deleted
+  file. <em>Cause:</em> someone deleted a log the app still had open.
+  <em>Fix:</em> truncate it through <code>/proc/&lt;pid&gt;/fd/&lt;n&gt;</code> or restart the
+  process, then use proper log rotation.</li>
+<li><strong>"No space left on device" with plenty of free space.</strong>
+  <em>Detect:</em> <code>df -i</code> shows 100% inode use. <em>Cause:</em> millions of small
+  files, such as a cache directory nobody prunes. <em>Fix:</em> delete the
+  files (or the directory), and add expiry to whatever creates them.</li>
+<li><strong>Requests to an external API intermittently take 5 seconds longer.</strong>
+  <em>Detect:</em> <code>curl -w</code> shows <code>namelookup</code> near 5 s on some runs.
+  <em>Cause:</em> one configured DNS server times out and the resolver waits
+  before trying the next. <em>Fix:</em> check <code>resolvectl status</code>, remove or
+  fix the bad server, and give app HTTP clients sensible timeouts.</li>
+<li><strong>Users get intermittent "connection reset" errors and the app logs
+  EMFILE.</strong> <em>Detect:</em> the descriptor count in <code>/proc/&lt;pid&gt;/fd</code> is at the
+  limit; <code>ss -tn state close-wait</code> shows thousands of sockets.
+  <em>Cause:</em> the app leaks sockets that peers already closed. <em>Fix:</em> find
+  the code path that never closes (often an HTTP client without
+  timeouts), and only then consider raising <code>LimitNOFILE=</code>.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Load average:</strong> Exponentially damped averages of runnable plus
+  uninterruptible tasks over 1, 5, and 15 minutes.</li>
+<li><strong>Uninterruptible sleep (D state):</strong> A task waiting in the kernel,
+  usually for I/O, that cannot be interrupted by signals.</li>
+<li><strong>iowait (wa):</strong> CPU time spent idle while I/O is outstanding.</li>
+<li><strong>Steal time (st):</strong> Time the hypervisor gave your vCPU's turn to
+  someone else.</li>
+<li><strong>Page cache:</strong> File data cached in RAM; reclaimable when memory is
+  needed.</li>
+<li><strong>Available memory:</strong> The kernel's estimate of memory usable for new
+  work without swapping.</li>
+<li><strong>OOM killer:</strong> The kernel mechanism that kills a process when memory
+  cannot be reclaimed; global or per cgroup.</li>
+<li><strong>Inode:</strong> The file system object that holds a file's metadata and data
+  blocks; names are directory entries pointing to it.</li>
+<li><strong>File descriptor:</strong> A process's handle to an open file, socket, or
+  pipe.</li>
+<li><strong>CLOSE-WAIT:</strong> The TCP state of a socket whose peer has closed while
+  the local application has not.</li>
+<li><strong>PSI (pressure stall information):</strong> Kernel counters of time lost to
+  CPU, memory, and I/O contention.</li>
+<li><strong>USE method:</strong> Checking utilization, saturation, and errors for every
+  resource.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Reading load average as CPU usage, or comparing it without knowing the
+  CPU count.</li>
+<li>Panicking at a small <code>free</code> number while <code>available</code> is large.</li>
+<li>Restarting the app first and losing the evidence.</li>
+<li>Deleting a large log file to free space while the writer is running.</li>
+<li>Raising <code>LimitNOFILE</code> to hide a descriptor leak.</li>
+<li>Trusting <code>%util</code> on SSDs and cloud volumes as a saturation measure.</li>
+<li>Treating loss at a single intermediate <code>mtr</code> hop as packet loss.</li>
+<li>Running <code>ulimit -n</code> in a shell and assuming a service has the same
+  limit.</li>
+<li>Blaming the network without measuring DNS, TCP, TLS, and server time
+  separately.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Why can a server with a load average of 8 on 4 CPUs have mostly idle
+   CPUs, and which two numbers in <code>vmstat</code> prove it?</li>
+<li><code>free -h</code> shows 0.2 GiB free and 2.6 GiB available on a 4 GiB server.
+   Is it short of memory? What would make you say yes?</li>
+<li>What is the difference between "Out of memory: Killed process" and
+   "Memory cgroup out of memory: Killed process", and what does each
+   tell you to fix?</li>
+<li><code>df</code> reports 97% used but <code>du</code> adds up to 30%. Give the most likely
+   cause, the command that proves it, and two ways to release the space.</li>
+<li><code>curl -w</code> shows namelookup 0.004, connect 0.110, appconnect 0.215,
+   starttransfer 0.330, total 0.335. How long did each phase take, and
+   where would you look first? (DNS 4 ms; TCP 106 ms; TLS 105 ms; first
+   byte 115 ms after TLS; transfer 5 ms. TCP and TLS each cost about one
+   round trip of roughly 105 ms, so the client is far from the server;
+   the server's own time is small. Look at geography: a CDN or a closer
+   region, not the app.)</li>
+<li>Why does a Node.js service rarely hit the 1024 soft file limit under
+   systemd, while nginx can?</li>
+<li>In <code>mtr</code>, hop 3 shows 30% loss and hops 4 to 8 show 0%. Is there
+   packet loss on the path?</li>
+<li>What does a growing number of <code>CLOSE-WAIT</code> sockets tell you about the
+   application?</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://www.brendangregg.com/usemethod.html">Brendan Gregg: The USE Method</a></li>
+<li><a href="https://www.brendangregg.com/linuxperf.html">Brendan Gregg: Linux Performance</a></li>
+<li><a href="https://docs.kernel.org/accounting/psi.html">Linux kernel: Pressure stall information</a></li>
+<li><a href="https://manpages.ubuntu.com/manpages/resolute/man1/free.1.html">free(1) on Ubuntu 26.04</a></li>
+<li><a href="https://manpages.ubuntu.com/manpages/resolute/man8/vmstat.8.html">vmstat(8) on Ubuntu 26.04</a></li>
+<li><a href="https://manpages.ubuntu.com/manpages/resolute/man8/ss.8.html">ss(8) on Ubuntu 26.04</a></li>
+<li><a href="https://curl.se/docs/manpage.html#-w">curl: --write-out variables</a></li>
+<li>Next: <a href="../scheduled-jobs-and-log-rotation/">scheduled jobs and log rotation</a>. Back to the <a href="../">Linux server operations overview</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../running-apps-with-systemd-and-nginx/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Running Apps with systemd and nginx">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Running Apps with systemd and nginx</span>
+      </a>
+    
+    
+      <a href="../scheduled-jobs-and-log-rotation/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: Scheduled Jobs and Log Rotation">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">Scheduled Jobs and Log Rotation</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

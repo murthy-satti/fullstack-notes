@@ -1,0 +1,4938 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../troubleshooting-cpu-memory-disk-and-network/">
+      
+      
+        <link rel="next" href="../cheat-sheet/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Scheduled Jobs and Log Rotation - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#scheduled-jobs-and-log-rotation" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Scheduled Jobs and Log Rotation
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../05-application-architecture/" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../06-ai-and-machine-learning/" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+          <span class="md-ellipsis">&larr; Back to DevOps</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../05-application-architecture/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../06-ai-and-machine-learning/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI and Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
+        
+          
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-label="DevOps module lessons" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+                  <span class="md-ellipsis">&larr; Back to DevOps</span>
+                </a>
+              
+            </div>
+          
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                  
+  
+  
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+    
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_10" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_10" id="__nav_9_10_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Linux Server Operations
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_10_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_10">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Linux Server Operations
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_10_2" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_10_2" id="__nav_9_10_2_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Access and Setup
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_10_2_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_10_2">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Access and Setup
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ssh-and-remote-access/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SSH and Remote Access
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../setting-up-a-production-server/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Setting Up a Production Server
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_10_3" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_10_3" id="__nav_9_10_3_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Running Applications
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_10_3_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_10_3">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Running Applications
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../running-apps-with-systemd-and-nginx/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Running Apps with systemd and nginx
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_10_4" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_10_4" id="__nav_9_10_4_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day-to-Day Operations
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_10_4_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_10_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Day-to-Day Operations
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../troubleshooting-cpu-memory-disk-and-network/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting CPU, Memory, Disk, and Network
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scheduled Jobs and Log Rotation
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scheduled Jobs and Log Rotation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cron-where-jobs-live-and-what-a-line-means" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cron: where jobs live and what a line means
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#crons-traps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cron's traps
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#systemd-timers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        systemd timers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#running-a-job-once-across-several-servers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running a job once across several servers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#log-rotation-with-logrotate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Log rotation with logrotate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#journald-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        journald limits
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#disk-full-incidents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Disk-full incidents
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-cron-file-done-right" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A cron file done right
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-same-idea-as-a-systemd-timer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The same idea as a systemd timer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-failure-notifier-for-any-unit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A failure notifier for any unit
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#running-once-across-servers-with-a-mongodb-lock" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running once across servers with a MongoDB lock
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#logrotate-for-an-app-that-writes-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        logrotate for an app that writes files
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rotate-busy-logs-hourly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rotate busy logs hourly
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cap-the-journal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cap the journal
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-disk-full-runbook" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A disk-full runbook
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cron-where-jobs-live-and-what-a-line-means" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cron: where jobs live and what a line means
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#crons-traps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cron's traps
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#systemd-timers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        systemd timers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#running-a-job-once-across-several-servers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running a job once across several servers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#log-rotation-with-logrotate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Log rotation with logrotate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#journald-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        journald limits
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#disk-full-incidents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Disk-full incidents
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-cron-file-done-right" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A cron file done right
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-same-idea-as-a-systemd-timer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The same idea as a systemd timer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-failure-notifier-for-any-unit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A failure notifier for any unit
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#running-once-across-servers-with-a-mongodb-lock" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running once across servers with a MongoDB lock
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#logrotate-for-an-app-that-writes-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        logrotate for an app that writes files
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rotate-busy-logs-hourly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rotate busy logs hourly
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cap-the-journal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cap the journal
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-disk-full-runbook" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A disk-full runbook
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="scheduled-jobs-and-log-rotation">Scheduled Jobs and Log Rotation<a class="headerlink" href="#scheduled-jobs-and-log-rotation" title="Permanent link">&para;</a></h1>
+<p>Every production server runs work nobody triggers by hand: nightly
+reports, database dumps, cleanup of expired sessions, certificate
+renewal, and the rotation of the logs all of that produces. This lesson
+covers the two schedulers on an Ubuntu server, cron and systemd timers:
+cron's syntax and its classic traps (a minimal environment, <code>PATH</code>, the
+<code>%</code> sign, time zones and daylight saving time, overlapping runs), timers
+and why they are the better default, how to run a job exactly once when
+the same server image runs three times, log rotation with logrotate,
+journald's size limits, and how disk-full incidents happen and are
+handled.</p>
+<p>Scheduling inside the application (job queues such as BullMQ, Agenda,
+and delayed jobs) is covered in
+<a href="../../../03-backend-development/backend-concepts/background-jobs-and-scheduling/">background jobs and scheduling</a>,
+and Kubernetes CronJobs in
+<a href="../../kubernetes/stateful-workloads-and-jobs/">stateful workloads and jobs</a>.
+This lesson is about the operating system's schedulers.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>Scheduled jobs fail quietly. A cron job whose output goes nowhere can
+fail every night for months; nobody notices until the backup that was
+never taken is needed. Jobs also fail in ways interactive commands
+never do: a script that works in your shell cannot find <code>node</code> under
+cron, a job scheduled at 02:30 runs twice or not at all on the night the
+clocks change, and a job that usually takes 4 minutes takes 20 one day
+and piles up behind itself.</p>
+<p>Logs are the other slow-motion failure. Without rotation and limits, a
+single chatty process fills the disk, and a full disk takes down the
+database, the web server, and the logging that would have explained it.
+Both problems are cheap to prevent and expensive to discover in
+production.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>systemd timers.</strong> The
+  <a href="https://www.freedesktop.org/software/systemd/man/latest/systemd.timer.html">systemd.timer</a>
+  manual documents <code>Persistent=</code> (catch up on runs missed while the
+  machine was off), <code>RandomizedDelaySec=</code> (spread load), and a built-in
+  rule against overlap: if the unit is still running when the timer
+  elapses, "it is not restarted, but simply left running. There is no
+  concept of spawning new service instances in this case."</li>
+<li><strong>Kubernetes CronJobs.</strong> The
+  <a href="https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/">CronJob documentation</a>
+  warns that "there are certain circumstances where two Jobs might be
+  created, or no Job might be created", and concludes that "the Jobs
+  that you define should be idempotent". The same advice applies to every
+  scheduler.</li>
+<li><strong>Managed schedulers.</strong>
+  <a href="https://docs.cloud.google.com/scheduler/docs/overview">Google Cloud Scheduler</a>
+  is "designed to provide at-least-once delivery", and
+  <a href="https://docs.aws.amazon.com/scheduler/latest/UserGuide/what-is-scheduler.html">Amazon EventBridge Scheduler</a>
+  provides "at-least-once event delivery to targets" with retries.
+  Moving a job to a managed scheduler removes the "which server runs
+  it" question but not the need for idempotent jobs.</li>
+<li><strong>logrotate.</strong> The
+  <a href="https://manpages.ubuntu.com/manpages/resolute/man8/logrotate.8.html">logrotate manual</a>
+  states the cost of the convenient <code>copytruncate</code> option plainly: "there
+  is a very small time slice between copying the file and truncating it,
+  so some logging data might be lost".</li>
+</ul>
+<p><strong>Popular tools and providers:</strong> cron, systemd timers, anacron,
+logrotate, systemd-journald, Kubernetes CronJobs, Amazon EventBridge
+Scheduler, Google Cloud Scheduler, BullMQ and Agenda for in-app
+scheduling, and dead man's switch monitors such as Healthchecks.io and
+Cronitor.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="cron-where-jobs-live-and-what-a-line-means">cron: where jobs live and what a line means<a class="headerlink" href="#cron-where-jobs-live-and-what-a-line-means" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: the cron line 30 2 * * 1-5 taskflow report.sh broken into fields: minute 30 (0 to 59), hour 2 (0 to 23), day of month * (1 to 31), month * (1 to 12 or jan to dec), day of week 1-5 (0 to 7, where 0 and 7 are Sunday), the user taskflow, which exists only in /etc/crontab and /etc/cron.d, and the command, run by /bin/sh; it means 02:30 Monday to Friday in the server's time zone, the same as OnCalendar=Mon..Fri *-*-* 02:30:00. Examples: */15 * * * * every 15 minutes; 0 */6 * * * at 00:00, 06:00, 12:00, and 18:00; 0 3 1 * * at 03:00 on the first of every month. Traps: 0 0 13 * 5 runs on the 13th and on every Friday, and a % in the command must be written as \%." src="../cron-schedule-anatomy.svg" /></p>
+<p>Ubuntu 26.04 ships the classic Debian <code>cron</code> daemon. Jobs can live in
+four places:</p>
+<table>
+<thead>
+<tr>
+<th>Location</th>
+<th>Format</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>crontab -e</code> (per user, stored under <code>/var/spool/cron/crontabs/</code>)</td>
+<td>Five time fields and a command</td>
+<td>Runs as that user</td>
+</tr>
+<tr>
+<td><code>/etc/crontab</code></td>
+<td>Five time fields, a <strong>user</strong>, and a command</td>
+<td>Edited by hand; avoid, packages own it</td>
+</tr>
+<tr>
+<td><code>/etc/cron.d/&lt;name&gt;</code></td>
+<td>Like <code>/etc/crontab</code></td>
+<td>Best place for your own system jobs; file must be owned by root, not group- or world-writable, and its <strong>name must not contain dots</strong></td>
+</tr>
+<tr>
+<td><code>/etc/cron.hourly/</code>, <code>daily</code>, <code>weekly</code>, <code>monthly</code></td>
+<td>Executable scripts run by <code>run-parts</code></td>
+<td>Names may contain only letters, digits, underscores, and hyphens, so <code>backup.sh</code> here is silently ignored</td>
+</tr>
+</tbody>
+</table>
+<p>Cron checks its tables every minute and reloads changed files by
+itself, so it never needs a restart after an edit. When both
+day-of-month and day-of-week are restricted, a job runs when <strong>either</strong>
+matches, which is how <code>0 0 13 * 5</code> runs every Friday as well as on the
+13th.</p>
+<h3 id="crons-traps">cron's traps<a class="headerlink" href="#crons-traps" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>A minimal environment.</strong> Cron runs commands with <code>sh</code> (on Ubuntu,
+  <code>dash</code>, not <code>bash</code>), takes <code>HOME</code> and <code>LOGNAME</code> from the user's
+  <code>/etc/passwd</code> entry, and sets <code>PATH</code> to <code>/usr/bin:/bin</code> when the crontab
+  does not set one. Nothing from your login profile is loaded. A script
+  that calls <code>node</code>, <code>aws</code>, or anything in <code>/usr/local/bin</code> works in your
+  shell and fails under cron. Use absolute paths or set <code>PATH=</code> at the
+  top of the crontab.</li>
+<li><strong>The <code>%</code> sign.</strong> In the command field, an unescaped <code>%</code> ends the
+  command and everything after it is passed to the command on standard
+  input. <code>date +%F</code> must be written <code>date +\%F</code>.</li>
+<li><strong>Output goes nowhere useful.</strong> Output is mailed to the crontab owner
+  (or <code>MAILTO</code>). A typical cloud server has no mail transfer agent, so
+  cron discards the output and logs "No MTA installed, discarding
+  output". Send output to the journal instead (<code>systemd-cat -t name
+  command</code>) and monitor success separately.</li>
+<li><strong>One time zone.</strong> Debian's cron runs every job in the system time
+  zone (<code>/etc/localtime</code>); it "does not support per-user timezones", and
+  setting <code>TZ</code> in a crontab affects only the commands' environment, not
+  when they run.</li>
+<li><strong>Daylight saving time.</strong> For clock changes of less than three hours,
+  Debian's cron runs jobs that fell into a skipped hour "soon after the
+  change" and does not re-run jobs in a repeated hour; jobs with
+  wildcards in the hour or minute fields simply follow the new time. A
+  server on UTC never meets this logic, which is one more reason to keep
+  servers on UTC.</li>
+<li><strong>Overlap.</strong> Cron starts a new copy on schedule whether or not the
+  previous one finished.</li>
+</ul>
+<p><img alt="Diagram: a job scheduled every 5 minutes takes 12 minutes. With plain cron, runs start at 0, 5, 10, 15, 20, and 25 minutes and up to three copies run at once. With flock -n, run 1 holds the lock from 0 to 12, the attempts at 5 and 10 exit immediately, run 2 holds the lock from 15 to 27, and the attempts at 20 and 25 exit. A systemd timer behaves the same way, because a still-active service is left running and no second instance starts." src="../cron-overlap-flock.svg" /></p>
+<p><code>flock</code> from util-linux prevents overlap: <code>flock -n /path/to/lockfile
+command</code> takes an exclusive lock on the file and runs the command, or
+fails immediately (<code>-n</code>) with exit code 1 if another process holds it.
+The kernel releases the lock when the process exits, even if it crashes,
+so there are no stale lock files to clean up. <code>flock -w 60</code> waits up to
+60 seconds instead of giving up immediately.</p>
+<h3 id="systemd-timers">systemd timers<a class="headerlink" href="#systemd-timers" title="Permanent link">&para;</a></h3>
+<p>A timer is a <code>.timer</code> unit that starts a <code>.service</code> unit (by default the
+one with the same name) on a schedule. That split is the reason timers
+beat cron for anything important:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>cron</th>
+<th>systemd timer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Schedule syntax</td>
+<td>Five fields</td>
+<td><code>OnCalendar=</code> calendar events, plus <code>OnBootSec=</code> and <code>OnUnitActiveSec=</code> for relative times</td>
+</tr>
+<tr>
+<td>Testing the schedule</td>
+<td>Reading carefully</td>
+<td><code>systemd-analyze calendar --iterations=5 'expression'</code></td>
+</tr>
+<tr>
+<td>Environment</td>
+<td>Minimal, set by cron</td>
+<td>Exactly what the unit declares: <code>EnvironmentFile=</code>, <code>LoadCredential=</code>, <code>WorkingDirectory=</code></td>
+</tr>
+<tr>
+<td>Overlap</td>
+<td>New copy every time</td>
+<td>A still-running service is left running</td>
+</tr>
+<tr>
+<td>Missed runs (machine off)</td>
+<td>Lost (unless anacron)</td>
+<td><code>Persistent=true</code> runs once at the next boot</td>
+</tr>
+<tr>
+<td>Spreading load</td>
+<td>By hand</td>
+<td><code>RandomizedDelaySec=</code></td>
+</tr>
+<tr>
+<td>Logs</td>
+<td>Mail or nothing</td>
+<td>The journal, per unit: <code>journalctl -u name</code></td>
+</tr>
+<tr>
+<td>Failure handling</td>
+<td>Exit code lost</td>
+<td>Unit result recorded; <code>OnFailure=</code> starts another unit</td>
+</tr>
+<tr>
+<td>Limits and sandbox</td>
+<td>None</td>
+<td>Every <code>systemd.exec</code> and resource-control setting</td>
+</tr>
+<tr>
+<td>Time zones</td>
+<td>System zone only</td>
+<td>Optional zone per expression, for example <code>... 02:30:00 Europe/Berlin</code></td>
+</tr>
+<tr>
+<td>Running it now</td>
+<td>Copy the command</td>
+<td><code>systemctl start name.service</code></td>
+</tr>
+</tbody>
+</table>
+<p>Calendar expressions read <code>DayOfWeek Year-Month-Day Hour:Minute:Second</code>,
+with <code>*</code> for any value, <code>..</code> for ranges, <code>,</code> for lists, and <code>/</code> for
+repetition: <code>Mon..Fri *-*-* 02:30:00</code>, <code>*:0/15</code> (every 15 minutes), or
+shorthands such as <code>daily</code> (<code>*-*-* 00:00:00</code>). Two defaults surprise
+people: <code>AccuracySec=</code> is one minute, so systemd may start a timer up to
+a minute late to group wake-ups (lower it, down to <code>1us</code>, when precision
+matters), and the start timeout is disabled for <code>Type=oneshot</code> services,
+so a hung job runs forever unless you set <code>TimeoutStartSec=</code>.</p>
+<h3 id="running-a-job-once-across-several-servers">Running a job once across several servers<a class="headerlink" href="#running-a-job-once-across-several-servers" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: on the left, the same timer runs at 02:30 on app-1, app-2, and app-3, so the weekly digest job runs three times and every user gets three emails. On the right, the three timers fire but each run first calls updateOne on a MongoDB locks collection, filtering on the job name and an expired expiresAt, with upsert; app-1 inserts the lock and runs the job once, while app-2 and app-3 get duplicate key error E11000 and exit. Alternatively one managed scheduler calls one endpoint; delivery is at least once, so the job must still be idempotent." src="../run-once-across-servers.svg" /></p>
+<p>When the API scales from one server to three built from the same image,
+every timer and crontab runs three times. Options, from simplest to most
+robust:</p>
+<table>
+<thead>
+<tr>
+<th>Approach</th>
+<th>How it works</th>
+<th>Trade-off</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A designated job server</td>
+<td>Only one machine gets the timers (a role in the provisioning code)</td>
+<td>Simple; if that server is down, jobs do not run</td>
+</tr>
+<tr>
+<td>A lock in a shared store</td>
+<td>Every server tries; whoever takes a lock in MongoDB or Redis runs</td>
+<td>No single point of failure; the lock must expire, and a job outliving its lock can run twice</td>
+</tr>
+<tr>
+<td>A managed or cluster scheduler</td>
+<td>EventBridge Scheduler, Cloud Scheduler, or a Kubernetes CronJob calls one endpoint or starts one job</td>
+<td>Reliable and observable; at-least-once delivery still means possible duplicates</td>
+</tr>
+<tr>
+<td>A job queue with repeatable jobs</td>
+<td>BullMQ, Agenda, or similar schedule jobs into a queue that one worker consumes</td>
+<td>Fits apps that already use a queue; the queue becomes critical infrastructure</td>
+</tr>
+</tbody>
+</table>
+<p>Whatever chooses the runner, design the job to be <strong>idempotent</strong>: a
+digest records which users already received this week's email, a report
+overwrites the same output, a cleanup deletes by condition. Duplicates
+then cost a little work instead of a second charge or a second email.
+Statelessness across servers more broadly is covered in
+<a href="../../load-balancing-and-multi-server/from-one-server-to-many/">from one server to many</a>.</p>
+<h3 id="log-rotation-with-logrotate">Log rotation with logrotate<a class="headerlink" href="#log-rotation-with-logrotate" title="Permanent link">&para;</a></h3>
+<p>Applications that log to stdout under systemd need no rotation of their
+own: journald stores, compresses, and caps their output. Files written
+by nginx, by older programs, or by apps configured to write files are
+rotated by logrotate. On Ubuntu, <code>logrotate.timer</code> runs <code>logrotate
+/etc/logrotate.conf</code> once a day (<code>OnCalendar=daily</code> with up to an hour of
+random delay and <code>Persistent=true</code>), and that file includes every rule in
+<code>/etc/logrotate.d/</code>. Its state file, <code>/var/lib/logrotate/status</code>, records
+when each log was last rotated.</p>
+<p><img alt="Diagram: two rotation methods. create: 1, rename worker.log to worker.log.1 while the app still writes to it through its open descriptor; 2, create a new empty worker.log with mode 0640 owned by taskflow and adm; 3, postrotate sends SIGHUP and the app reopens worker.log; 4, on the next run worker.log.1 is compressed, which delaycompress postpones by one cycle. No lines are lost, but the app must support reopening. copytruncate: 1, copy worker.log to worker.log.1 while the app keeps writing; 2, lines written between the copy and the truncate are lost; 3, truncate worker.log to 0 bytes, which is clean only if the app opened it in append mode. It works with any app but loses a little data, briefly needs a full copy on disk, and can leave a sparse file." src="../logrotate-create-vs-copytruncate.svg" /></p>
+<p>Renaming a file does not affect a process that has it open: the process
+keeps writing to the same inode under the new name. So with the default
+<strong>create</strong> method, rotation must end by telling the program to reopen its
+log. nginx's own rule on Ubuntu does exactly that:</p>
+<div class="highlight"><pre><span></span><code># /etc/logrotate.d/nginx (as shipped in Ubuntu's nginx package)
+/var/log/nginx/*.log {
+    daily
+    missingok
+    rotate 14
+    compress
+    delaycompress
+    notifempty
+    create 0640 www-data adm
+    sharedscripts
+    prerotate
+        if [ -d /etc/logrotate.d/httpd-prerotate ]; then \
+            run-parts /etc/logrotate.d/httpd-prerotate; \
+        fi \
+    endscript
+    postrotate
+        invoke-rc.d nginx rotate &gt;/dev/null 2&gt;&amp;1
+    endscript
+}
+</code></pre></div>
+<p><code>invoke-rc.d nginx rotate</code> makes the nginx master process reopen its
+logs (the <code>USR1</code> signal), after which "old files are almost immediately
+available for post processing, such as compression". <code>delaycompress</code>
+keeps yesterday's file uncompressed for one more day in case a process
+wrote to it late, and <code>sharedscripts</code> runs the <code>postrotate</code> script once
+for all matching files instead of once per file.</p>
+<table>
+<thead>
+<tr>
+<th>Directive</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>daily</code>, <code>weekly</code>, <code>monthly</code></td>
+<td>Rotation interval (checked only when logrotate runs)</td>
+</tr>
+<tr>
+<td><code>rotate 14</code></td>
+<td>Keep 14 rotated files, delete older ones</td>
+</tr>
+<tr>
+<td><code>maxsize 200M</code></td>
+<td>Also rotate as soon as the file exceeds 200 MB, even before the interval has passed</td>
+</tr>
+<tr>
+<td><code>size 200M</code></td>
+<td>Rotate by size only, ignoring the interval</td>
+</tr>
+<tr>
+<td><code>compress</code>, <code>delaycompress</code></td>
+<td>gzip rotated files, starting with the second-newest</td>
+</tr>
+<tr>
+<td><code>missingok</code>, <code>notifempty</code></td>
+<td>Skip missing or empty logs without errors</td>
+</tr>
+<tr>
+<td><code>create 0640 taskflow adm</code></td>
+<td>Mode, owner, and group of the new file</td>
+</tr>
+<tr>
+<td><code>copytruncate</code></td>
+<td>Copy then truncate in place, for programs that cannot reopen (lossy)</td>
+</tr>
+<tr>
+<td><code>su taskflow adm</code></td>
+<td>Rotate as this user and group; recommended when root rotates logs in a directory an unprivileged user controls</td>
+</tr>
+<tr>
+<td><code>dateext</code></td>
+<td>Suffix rotated files with a date (<code>-20261114</code>) instead of a number</td>
+</tr>
+<tr>
+<td><code>postrotate</code> ... <code>endscript</code></td>
+<td>Shell commands after rotation, typically a reopen signal</td>
+</tr>
+</tbody>
+</table>
+<p>Size limits are only as fresh as the timer: <code>maxsize 200M</code> with a daily
+run can still let a log grow to several gigabytes in a bad hour. For
+busy logs, run logrotate hourly (an override of <code>logrotate.timer</code> shown
+below) rather than relying on daily runs.</p>
+<h3 id="journald-limits">journald limits<a class="headerlink" href="#journald-limits" title="Permanent link">&para;</a></h3>
+<p>The journal is size-capped by default, but the defaults are relative to
+the file system, so check what they mean on your disk:</p>
+<table>
+<thead>
+<tr>
+<th>Setting (<code>journald.conf</code>)</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Storage=</code></td>
+<td><code>persistent</code> (recent systemd)</td>
+<td>Keep the journal under <code>/var/log/journal</code> across reboots</td>
+</tr>
+<tr>
+<td><code>SystemMaxUse=</code></td>
+<td>10% of the file system, at most 4 GiB</td>
+<td>Total disk the journal may use</td>
+</tr>
+<tr>
+<td><code>SystemKeepFree=</code></td>
+<td>15% of the file system, at most 4 GiB</td>
+<td>Free space journald leaves for everything else</td>
+</tr>
+<tr>
+<td><code>SystemMaxFileSize=</code></td>
+<td>One eighth of <code>SystemMaxUse=</code>, at most 128 MiB</td>
+<td>Size at which one journal file is rotated</td>
+</tr>
+<tr>
+<td><code>MaxRetentionSec=</code></td>
+<td>0 (off)</td>
+<td>Delete entries older than this</td>
+</tr>
+<tr>
+<td><code>MaxFileSec=</code></td>
+<td>1 month</td>
+<td>Rotate journal files at least this often</td>
+</tr>
+<tr>
+<td><code>RateLimitIntervalSec=</code>, <code>RateLimitBurst=</code></td>
+<td>10,000 messages per 30 s per service</td>
+<td>Drop floods of messages and record how many</td>
+</tr>
+</tbody>
+</table>
+<p>Override them with a drop-in in <code>/etc/systemd/journald.conf.d/</code> and
+restart <code>systemd-journald</code>. <code>journalctl --disk-usage</code> shows the current
+size, and <code>journalctl --vacuum-size=</code> or <code>--vacuum-time=</code> deletes old
+data immediately, but only from archived files; combine with <code>--rotate</code>
+to archive the active files first.</p>
+<h3 id="disk-full-incidents">Disk-full incidents<a class="headerlink" href="#disk-full-incidents" title="Permanent link">&para;</a></h3>
+<p>Disks fill gradually and then everything fails at once: MongoDB stops
+accepting writes, nginx cannot buffer uploads or write its logs, journald
+stops persisting, <code>apt</code> breaks mid-upgrade, and some applications crash
+on their first failed write. The usual causes on an app server, roughly
+in order:</p>
+<ol>
+<li>Application or web server logs without rotation or limits, including
+   Docker's default <code>json-file</code> log driver, which does not rotate unless
+   configured (see <a href="../../monitoring-and-logging/structured-logging/">structured logging</a>).</li>
+<li>Database dumps and backups written to the local disk and never
+   removed, or kept only there.</li>
+<li>Old release directories, container images, and package caches.</li>
+<li>A deleted log file still held open by a process (found with
+   <code>lsof +L1</code>, see the <a href="../troubleshooting-cpu-memory-disk-and-network/">troubleshooting lesson</a>).</li>
+<li>Core dumps from a crash-looping process.</li>
+</ol>
+<p>Prevention is a set of caps plus an alert: logs rotated or capped
+everywhere, backups shipped off the machine and pruned locally, the
+deploy script keeping a fixed number of releases, alerts on disk and
+inode usage at around 80% and 90%, and, on servers with large data, a
+separate volume for data so logs cannot starve the database.</p>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Need</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A job on one server that needs the app's configuration or secrets</td>
+<td>A systemd timer with a service that declares <code>EnvironmentFile=</code> and <code>LoadCredential=</code></td>
+</tr>
+<tr>
+<td>A trivial job (call a local endpoint, prune a cache directory)</td>
+<td>cron in <code>/etc/cron.d/</code>, with absolute paths, <code>flock</code>, and journal output, or a timer</td>
+</tr>
+<tr>
+<td>A job that must run exactly once across a fleet</td>
+<td>A lock in the shared database, a managed scheduler, or a queue; plus an idempotent job</td>
+</tr>
+<tr>
+<td>Many jobs, retries, and visibility</td>
+<td>A job queue in the app, or a workflow tool, instead of OS schedulers</td>
+</tr>
+<tr>
+<td>Kubernetes</td>
+<td>CronJobs with <code>concurrencyPolicy: Forbid</code> and a <code>.spec.timeZone</code></td>
+</tr>
+<tr>
+<td>Logs from services under systemd</td>
+<td>stdout to journald, with size limits and a log shipper</td>
+</tr>
+<tr>
+<td>Logs written to files</td>
+<td>logrotate with <code>create</code> and a reopen signal; <code>copytruncate</code> only when unavoidable</td>
+</tr>
+</tbody>
+</table>
+<p>Do not run important jobs from a developer's personal crontab, depend on
+cron mail on a server without mail, or schedule the same job on every
+instance of an autoscaling group without a lock.</p>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="a-cron-file-done-right">A cron file done right<a class="headerlink" href="#a-cron-file-done-right" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code># /etc/cron.d/taskflow: system crontab format (the sixth field is the user)
+SHELL=/bin/bash
+PATH=/usr/local/bin:/usr/bin:/bin
+MAILTO=""
+
+# Every 15 minutes: ask the local API to expire old sessions; never two at once
+*/15 * * * *  taskflow  systemd-cat -t taskflow-expire flock -n /srv/taskflow/shared/.expire.lock curl -fsS --max-time 600 -X POST http://127.0.0.1:3001/internal/jobs/expire-sessions
+
+# 02:30 UTC on weekdays: % must be escaped as \% inside crontabs
+30 2 * * 1-5  root  systemd-cat -t taskflow-archive tar -czf /var/backups/taskflow-uploads-$(date -u +\%F).tar.gz -C /srv/taskflow/shared uploads
+</code></pre></div>
+<ul>
+<li>The file name has no dot, it is owned by root, and it is not
+  group- or world-writable, or cron ignores it.</li>
+<li><code>PATH</code> and <code>SHELL</code> are set explicitly; <code>MAILTO=""</code> disables mail
+  because output goes to the journal through <code>systemd-cat</code>
+  (<code>journalctl -t taskflow-expire</code>).</li>
+<li><code>flock -n</code> makes an overlapping run exit immediately instead of
+  stacking up.</li>
+<li>The first job calls an endpoint, so it uses the app's configuration
+  without cron ever seeing a secret. The <code>/internal/</code> path must never be
+  reachable from outside: the nginx site in
+  <a href="../running-apps-with-systemd-and-nginx/#the-nginx-site">running apps with systemd and nginx</a>
+  answers it with 404, so only local callers on <code>127.0.0.1</code> reach it.</li>
+<li>The archive job writes a local file; a real backup must also copy it
+  off the server.</li>
+</ul>
+<h3 id="the-same-idea-as-a-systemd-timer">The same idea as a systemd timer<a class="headerlink" href="#the-same-idea-as-a-systemd-timer" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># /etc/systemd/system/taskflow-nightly-report.service</span>
+<span class="k">[Unit]</span>
+<span class="na">Description</span><span class="o">=</span><span class="s">TaskFlow nightly report</span>
+<span class="na">After</span><span class="o">=</span><span class="s">network-online.target</span>
+<span class="na">Wants</span><span class="o">=</span><span class="s">network-online.target</span>
+<span class="na">OnFailure</span><span class="o">=</span><span class="s">notify-failure@%n.service</span>
+
+<span class="k">[Service]</span>
+<span class="na">Type</span><span class="o">=</span><span class="s">oneshot</span>
+<span class="na">User</span><span class="o">=</span><span class="s">taskflow</span>
+<span class="na">Group</span><span class="o">=</span><span class="s">taskflow</span>
+<span class="na">WorkingDirectory</span><span class="o">=</span><span class="s">/srv/taskflow/current</span>
+<span class="na">EnvironmentFile</span><span class="o">=</span><span class="s">/etc/taskflow/api.env</span>
+<span class="na">LoadCredential</span><span class="o">=</span><span class="s">mongodb-uri:/etc/taskflow/credentials/mongodb-uri</span>
+<span class="na">ExecStart</span><span class="o">=</span><span class="s">/usr/bin/node scripts/nightly-report.js</span>
+<span class="c1"># A hung run must not last forever (oneshot services have no start timeout by default)</span>
+<span class="na">TimeoutStartSec</span><span class="o">=</span><span class="s">30min</span>
+<span class="na">Nice</span><span class="o">=</span><span class="s">10</span>
+<span class="na">NoNewPrivileges</span><span class="o">=</span><span class="s">yes</span>
+<span class="na">ProtectSystem</span><span class="o">=</span><span class="s">strict</span>
+<span class="na">ReadWritePaths</span><span class="o">=</span><span class="s">/srv/taskflow/shared</span>
+<span class="na">ProtectHome</span><span class="o">=</span><span class="s">yes</span>
+<span class="na">PrivateTmp</span><span class="o">=</span><span class="s">yes</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1"># /etc/systemd/system/taskflow-nightly-report.timer</span>
+<span class="k">[Unit]</span>
+<span class="na">Description</span><span class="o">=</span><span class="s">Run the TaskFlow nightly report at 02:30 UTC on weekdays</span>
+
+<span class="k">[Timer]</span>
+<span class="na">OnCalendar</span><span class="o">=</span><span class="s">Mon..Fri *-*-* 02:30:00 UTC</span>
+<span class="na">Persistent</span><span class="o">=</span><span class="s">true</span>
+<span class="na">RandomizedDelaySec</span><span class="o">=</span><span class="s">5min</span>
+
+<span class="k">[Install]</span>
+<span class="na">WantedBy</span><span class="o">=</span><span class="s">timers.target</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1"># Check the schedule, then enable the TIMER (not the service)</span>
+systemd-analyze<span class="w"> </span>calendar<span class="w"> </span>--iterations<span class="o">=</span><span class="m">3</span><span class="w"> </span><span class="s1">'Mon..Fri *-*-* 02:30:00 UTC'</span>
+sudo<span class="w"> </span>systemctl<span class="w"> </span>daemon-reload
+sudo<span class="w"> </span>systemctl<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>--now<span class="w"> </span>taskflow-nightly-report.timer
+
+systemctl<span class="w"> </span>list-timers<span class="w"> </span><span class="s1">'taskflow-*'</span>
+sudo<span class="w"> </span>systemctl<span class="w"> </span>start<span class="w"> </span>taskflow-nightly-report.service<span class="w">     </span><span class="c1"># run it now, once</span>
+journalctl<span class="w"> </span>-u<span class="w"> </span>taskflow-nightly-report<span class="w"> </span>--since<span class="w"> </span>today
+</code></pre></div>
+<p>Example output of <code>systemd-analyze calendar</code> (run on Saturday 2026-11-14):</p>
+<div class="highlight"><pre><span></span><code>  Original form: Mon..Fri *-*-* 02:30:00 UTC
+Normalized form: Mon..Fri *-*-* 02:30:00 UTC
+    Next elapse: Mon 2026-11-16 02:30:00 UTC
+       From now: 1 day 14h left
+       Iter. #2: Tue 2026-11-17 02:30:00 UTC
+       Iter. #3: Wed 2026-11-18 02:30:00 UTC
+</code></pre></div>
+<p>The service declares the same environment file, credential, user, and
+sandbox as the API, so the job runs with exactly the app's
+configuration. <code>Persistent=true</code> runs a missed report once after a
+reboot, <code>RandomizedDelaySec=5min</code> keeps several servers from starting at
+the same second, and <code>OnFailure=</code> starts the notifier below whenever the
+job fails. The same pattern runs the nightly <code>mongodump</code> from
+<a href="../../backups/database-backups-and-point-in-time-recovery/">database backups and point-in-time recovery</a>.</p>
+<h3 id="a-failure-notifier-for-any-unit">A failure notifier for any unit<a class="headerlink" href="#a-failure-notifier-for-any-unit" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># /etc/systemd/system/notify-failure@.service: started by OnFailure= with the failed unit's name</span>
+<span class="k">[Unit]</span>
+<span class="na">Description</span><span class="o">=</span><span class="s">Report the failure of %i</span>
+
+<span class="k">[Service]</span>
+<span class="na">Type</span><span class="o">=</span><span class="s">oneshot</span>
+<span class="na">EnvironmentFile</span><span class="o">=</span><span class="s">/etc/taskflow/alerts.env</span>
+<span class="na">ExecStart</span><span class="o">=</span><span class="s">/usr/local/sbin/notify-failure %i</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="ch">#!/usr/bin/env bash</span>
+<span class="c1"># /usr/local/sbin/notify-failure: post the failed unit and its last log lines to a chat webhook</span>
+<span class="nb">set</span><span class="w"> </span>-euo<span class="w"> </span>pipefail
+<span class="nv">unit</span><span class="o">=</span><span class="s2">"</span><span class="nv">$1</span><span class="s2">"</span>
+<span class="nv">lines</span><span class="o">=</span><span class="s2">"</span><span class="k">$(</span>journalctl<span class="w"> </span>-u<span class="w"> </span><span class="s2">"</span><span class="nv">$unit</span><span class="s2">"</span><span class="w"> </span>-n<span class="w"> </span><span class="m">15</span><span class="w"> </span>--no-pager<span class="w"> </span>-o<span class="w"> </span>cat<span class="w"> </span><span class="p">|</span><span class="w"> </span>tail<span class="w"> </span>-c<span class="w"> </span><span class="m">1500</span><span class="k">)</span><span class="s2">"</span>
+<span class="nv">payload</span><span class="o">=</span><span class="s2">"</span><span class="k">$(</span>jq<span class="w"> </span>-n<span class="w"> </span>--arg<span class="w"> </span>text<span class="w"> </span><span class="s2">"</span><span class="k">$(</span>hostname<span class="k">)</span><span class="s2">: </span><span class="nv">$unit</span><span class="s2"> failed"</span><span class="s1">$'\n'</span><span class="s2">"</span><span class="nv">$lines</span><span class="s2">"</span><span class="w"> </span><span class="s1">'{text: $text}'</span><span class="k">)</span><span class="s2">"</span>
+curl<span class="w"> </span>-fsS<span class="w"> </span>--max-time<span class="w"> </span><span class="m">10</span><span class="w"> </span>-H<span class="w"> </span><span class="s1">'Content-Type: application/json'</span><span class="w"> </span>-d<span class="w"> </span><span class="s2">"</span><span class="nv">$payload</span><span class="s2">"</span><span class="w"> </span><span class="s2">"</span><span class="nv">$ALERT_WEBHOOK_URL</span><span class="s2">"</span>
+</code></pre></div>
+<p><code>%i</code> carries the failed unit's name into the notifier (<code>OnFailure=</code> in
+the job used <code>%n</code>, the job's own full name). <code>ALERT_WEBHOOK_URL</code> lives in
+a root-only environment file, because a webhook URL is a credential.
+<code>jq</code> (<code>sudo apt-get install jq</code>) builds valid JSON from arbitrary log
+text. For jobs that silently
+stop running, add a dead man's switch: the job pings a monitoring URL
+on success, and the monitor alerts when the ping does not arrive.</p>
+<h3 id="running-once-across-servers-with-a-mongodb-lock">Running once across servers with a MongoDB lock<a class="headerlink" href="#running-once-across-servers-with-a-mongodb-lock" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// scripts/lib/run-once.js: let exactly one server run a scheduled job at a time</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">hostname</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:os"</span><span class="p">;</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">withLock</span><span class="p">(</span><span class="nx">db</span><span class="p">,</span><span class="w"> </span><span class="nx">name</span><span class="p">,</span><span class="w"> </span><span class="nx">ttlMs</span><span class="p">,</span><span class="w"> </span><span class="nx">job</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">locks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">db</span><span class="p">.</span><span class="nx">collection</span><span class="p">(</span><span class="s2">"locks"</span><span class="p">);</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">owner</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sb">`</span><span class="si">${</span><span class="nx">hostname</span><span class="p">()</span><span class="si">}</span><span class="sb">:</span><span class="si">${</span><span class="nx">process</span><span class="p">.</span><span class="nx">pid</span><span class="si">}</span><span class="sb">`</span><span class="p">;</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">now</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Date</span><span class="p">();</span>
+
+<span class="w">  </span><span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Matches only a missing or expired lock; otherwise the upsert's insert hits the unique _id</span>
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="nx">locks</span><span class="p">.</span><span class="nx">updateOne</span><span class="p">(</span>
+<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nx">_id</span><span class="o">:</span><span class="w"> </span><span class="nx">name</span><span class="p">,</span><span class="w"> </span><span class="nx">expiresAt</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">$lt</span><span class="o">:</span><span class="w"> </span><span class="nx">now</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nx">$set</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">owner</span><span class="p">,</span><span class="w"> </span><span class="nx">expiresAt</span><span class="o">:</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Date</span><span class="p">(</span><span class="nx">now</span><span class="p">.</span><span class="nx">getTime</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nx">ttlMs</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nx">upsert</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="nx">err</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nx">code</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="mf">11000</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nb">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">({</span><span class="w"> </span><span class="nx">level</span><span class="o">:</span><span class="w"> </span><span class="mf">30</span><span class="p">,</span><span class="w"> </span><span class="nx">msg</span><span class="o">:</span><span class="w"> </span><span class="sb">`lock </span><span class="si">${</span><span class="nx">name</span><span class="si">}</span><span class="sb"> is held elsewhere; skipping`</span><span class="w"> </span><span class="p">}));</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">throw</span><span class="w"> </span><span class="nx">err</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="nx">job</span><span class="p">();</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span><span class="w"> </span><span class="k">finally</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="nx">locks</span><span class="p">.</span><span class="nx">deleteOne</span><span class="p">({</span><span class="w"> </span><span class="nx">_id</span><span class="o">:</span><span class="w"> </span><span class="nx">name</span><span class="p">,</span><span class="w"> </span><span class="nx">owner</span><span class="w"> </span><span class="p">});</span><span class="w"> </span><span class="c1">// release only our own lock</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1">// scripts/nightly-report.js (excerpt)</span>
+<span class="k">await</span><span class="w"> </span><span class="nx">withLock</span><span class="p">(</span><span class="nx">db</span><span class="p">,</span><span class="w"> </span><span class="s2">"nightly-report"</span><span class="p">,</span><span class="w"> </span><span class="mf">30</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">60</span><span class="nx">_000</span><span class="p">,</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">await</span><span class="w"> </span><span class="nx">buildAndStoreReport</span><span class="p">(</span><span class="nx">db</span><span class="p">,</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Date</span><span class="p">());</span><span class="w"> </span><span class="c1">// idempotent: overwrites the report for that date</span>
+<span class="p">});</span>
+</code></pre></div>
+<p>If the lock document is missing or expired, the filter matches (or the
+upsert inserts) and this server owns the lock. If another server holds a
+live lock, the filter does not match, the upsert tries to insert a
+second document with the same <code>_id</code>, and MongoDB rejects it with error
+11000. Choose a TTL longer than the job's worst-case runtime, and keep
+server clocks synchronized, because expiry is computed from each
+server's clock; even so, keep the job idempotent, since a job that
+outlives its lock can overlap with the next one.</p>
+<h3 id="logrotate-for-an-app-that-writes-files">logrotate for an app that writes files<a class="headerlink" href="#logrotate-for-an-app-that-writes-files" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code># /etc/logrotate.d/taskflow-worker
+/var/log/taskflow/worker.log {
+    daily
+    maxsize 200M
+    rotate 14
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0640 taskflow adm
+    su taskflow adm
+    postrotate
+        systemctl kill --signal=SIGHUP --kill-whom=main taskflow-worker.service
+    endscript
+}
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/logger.js (worker): a pino file destination that reopens on SIGHUP after rotation</span>
+<span class="k">import</span><span class="w"> </span><span class="nx">pino</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"pino"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">destination</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">pino</span><span class="p">.</span><span class="nx">destination</span><span class="p">({</span><span class="w"> </span><span class="nx">dest</span><span class="o">:</span><span class="w"> </span><span class="s2">"/var/log/taskflow/worker.log"</span><span class="p">,</span><span class="w"> </span><span class="nx">sync</span><span class="o">:</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="p">});</span>
+<span class="nx">process</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">"SIGHUP"</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">destination</span><span class="p">.</span><span class="nx">reopen</span><span class="p">());</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">logger</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">pino</span><span class="p">(</span><span class="nx">destination</span><span class="p">);</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1"># Dry run: show what would happen, change nothing</span>
+sudo<span class="w"> </span>logrotate<span class="w"> </span>-d<span class="w"> </span>/etc/logrotate.d/taskflow-worker
+
+<span class="c1"># Force one rotation now to test the whole cycle, including the reopen signal</span>
+sudo<span class="w"> </span>logrotate<span class="w"> </span>-f<span class="w"> </span>/etc/logrotate.d/taskflow-worker
+ls<span class="w"> </span>-l<span class="w"> </span>/var/log/taskflow/
+</code></pre></div>
+<p><code>SIGHUP</code> is used because Node.js reserves <code>SIGUSR1</code> for its debugger, and
+pino's documentation uses the same signal for reopening. <code>su taskflow
+adm</code> makes logrotate rotate as the directory's owner, which its manual
+recommends when root rotates logs in a directory controlled by an
+unprivileged user (logrotate also refuses to work in a group- or
+world-writable directory without it). If the program cannot reopen its
+file, replace <code>create</code> and the <code>postrotate</code> block with <code>copytruncate</code>
+and accept the small loss.</p>
+<h3 id="rotate-busy-logs-hourly">Rotate busy logs hourly<a class="headerlink" href="#rotate-busy-logs-hourly" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># /etc/systemd/system/logrotate.timer.d/override.conf (create with: sudo systemctl edit logrotate.timer)</span>
+<span class="k">[Timer]</span>
+<span class="na">OnCalendar</span><span class="o">=</span>
+<span class="na">OnCalendar</span><span class="o">=</span><span class="s">hourly</span>
+</code></pre></div>
+<p>The empty <code>OnCalendar=</code> clears the packaged daily schedule before adding
+the hourly one. Rules with <code>daily</code> still rotate once a day; rules with
+<code>maxsize</code> or <code>size</code> are now checked every hour.</p>
+<h3 id="cap-the-journal">Cap the journal<a class="headerlink" href="#cap-the-journal" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># /etc/systemd/journald.conf.d/50-limits.conf</span>
+<span class="k">[Journal]</span>
+<span class="na">SystemMaxUse</span><span class="o">=</span><span class="s">2G</span>
+<span class="na">SystemKeepFree</span><span class="o">=</span><span class="s">4G</span>
+<span class="na">MaxRetentionSec</span><span class="o">=</span><span class="s">30d</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>systemctl<span class="w"> </span>restart<span class="w"> </span>systemd-journald
+journalctl<span class="w"> </span>--disk-usage
+
+<span class="c1"># One-off cleanup: archive the active files, then delete down to 1 GiB</span>
+sudo<span class="w"> </span>journalctl<span class="w"> </span>--rotate<span class="w"> </span>--vacuum-size<span class="o">=</span>1G
+</code></pre></div>
+<p>On a 40 GB root file system, the defaults would allow 4 GiB for the
+journal (10% is 4 GB, at the 4 GiB cap) and keep 4 GiB free (15% is
+6 GB, capped at 4 GiB); the drop-in halves the journal's share and adds
+a 30-day retention.</p>
+<h3 id="a-disk-full-runbook">A disk-full runbook<a class="headerlink" href="#a-disk-full-runbook" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># 1. What is full: blocks or inodes?</span>
+df<span class="w"> </span>-hT<span class="w"> </span>-x<span class="w"> </span>tmpfs<span class="w"> </span>-x<span class="w"> </span>devtmpfs<span class="p">;</span><span class="w"> </span>df<span class="w"> </span>-i<span class="w"> </span>-x<span class="w"> </span>tmpfs<span class="w"> </span>-x<span class="w"> </span>devtmpfs
+
+<span class="c1"># 2. Fast, safe wins (each prints or frees space it can account for)</span>
+sudo<span class="w"> </span>journalctl<span class="w"> </span>--rotate<span class="w"> </span>--vacuum-size<span class="o">=</span>500M
+sudo<span class="w"> </span>apt-get<span class="w"> </span>clean
+sudo<span class="w"> </span>lsof<span class="w"> </span>+L1<span class="w">                       </span><span class="c1"># deleted files still held open: restart or truncate them</span>
+
+<span class="c1"># 3. Find the rest</span>
+sudo<span class="w"> </span>du<span class="w"> </span>-xh<span class="w"> </span>-d1<span class="w"> </span>/var<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span>-h<span class="w"> </span><span class="p">|</span><span class="w"> </span>tail<span class="w"> </span>-n<span class="w"> </span><span class="m">10</span>
+ls<span class="w"> </span>-1t<span class="w"> </span>/srv/taskflow/releases/<span class="w">      </span><span class="c1"># the deploy script should keep only five</span>
+docker<span class="w"> </span>system<span class="w"> </span>df<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w">        </span><span class="c1"># images, containers, volumes, build cache</span>
+
+<span class="c1"># 4. Confirm the services are healthy again, then fix the cause and add the missing cap or alert</span>
+systemctl<span class="w"> </span>--failed
+</code></pre></div>
+<p>Free space before you investigate deeply, and never delete files you
+cannot explain, such as a database's data files or the newest backup.
+After the incident, the fix is a limit or a rotation rule plus an alert,
+not a manual cleanup that will be needed again next month.</p>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Prefer systemd timers for anything that matters: the service declares
+  its environment, user, limits, and sandbox, and the journal keeps its
+  output.</li>
+<li>In cron, set <code>PATH</code> and <code>SHELL</code>, use absolute paths, escape <code>%</code>, send
+  output to the journal, and wrap jobs in <code>flock -n</code>.</li>
+<li>Keep servers on UTC so daylight saving time never touches your
+  schedules; use per-timer time zones only when a business rule needs
+  local time.</li>
+<li>Make every scheduled job idempotent, and choose one runner explicitly
+  when several servers exist.</li>
+<li>Set <code>TimeoutStartSec=</code> on oneshot services and alert on failure with
+  <code>OnFailure=</code>; add a dead man's switch for jobs that must run.</li>
+<li>Log to stdout under systemd; rotate files with <code>create</code> plus a reopen
+  signal; reserve <code>copytruncate</code> for programs that cannot reopen.</li>
+<li>Cap the journal explicitly, run logrotate hourly for busy logs, and
+  alert on disk and inode usage before 90%.</li>
+<li>Ship backups and logs off the server; local copies are a cache.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>A nightly job "works when I run it" but fails under cron.</strong>
+  <em>Detect:</em> <code>journalctl -t &lt;identifier&gt;</code> shows <code>node: not found</code> or a
+  missing environment variable. <em>Cause:</em> cron's minimal <code>PATH</code> and
+  environment. <em>Fix:</em> absolute paths, <code>PATH=</code> in the cron file, or move
+  the job to a timer whose service declares its environment.</li>
+<li><strong>A report ran twice on the night the clocks changed, or not at all.</strong>
+  <em>Detect:</em> two runs (or none) at about 02:00 local time on the DST
+  date. <em>Cause:</em> a server in a local time zone; jobs in skipped or
+  repeated hours behave specially. <em>Fix:</em> run servers on UTC, or set an
+  explicit time zone in the timer's <code>OnCalendar=</code> and test it with
+  <code>systemd-analyze calendar</code>.</li>
+<li><strong>Database load spikes every 5 minutes and grows through the night.</strong>
+  <em>Detect:</em> <code>ps</code> shows several copies of the same job; their start times
+  are 5 minutes apart. <em>Cause:</em> runs take longer than the interval and
+  cron starts new copies. <em>Fix:</em> <code>flock -n</code>, or a timer, and look at why
+  the job slowed down.</li>
+<li><strong>Users receive the weekly digest three times.</strong>
+  <em>Detect:</em> three runs logged at the same time, one per server.
+  <em>Cause:</em> the same timer on every instance. <em>Fix:</em> a lock or a single
+  scheduler, and record which users were already sent the digest.</li>
+<li><strong>The disk fills overnight although logrotate is configured.</strong>
+  <em>Detect:</em> one log file is many gigabytes; <code>/var/lib/logrotate/status</code>
+  shows it was last rotated yesterday. <em>Cause:</em> rotation is daily and
+  <code>maxsize</code> is only checked when logrotate runs. <em>Fix:</em> run logrotate
+  hourly, lower the log level, and alert on disk usage.</li>
+<li><strong>After rotation, the app keeps writing to <code>worker.log.1</code> and the new
+  <code>worker.log</code> stays empty.</strong> <em>Detect:</em> <code>ls -l</code> shows the rotated file
+  growing; <code>lsof -p &lt;pid&gt;</code> shows <code>worker.log.1</code> open. <em>Cause:</em> <code>create</code>
+  without a reopen signal. <em>Fix:</em> add a <code>postrotate</code> signal the program
+  handles, or use <code>copytruncate</code> for programs that cannot reopen.</li>
+<li><strong>A backup timer has failed silently for weeks.</strong>
+  <em>Detect:</em> <code>systemctl list-timers</code> shows it ran; <code>systemctl status</code>
+  shows <code>Result: exit-code</code> from the last run, and no recent backup
+  exists. <em>Cause:</em> nobody watched the result. <em>Fix:</em> <code>OnFailure=</code>
+  notifications plus a dead man's switch on success, and periodic
+  restore tests.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>cron / crontab:</strong> The classic scheduler daemon and its tables of
+  jobs.</li>
+<li><strong>System crontab:</strong> <code>/etc/crontab</code> and <code>/etc/cron.d/</code> files, which
+  include a user field.</li>
+<li><strong>run-parts:</strong> The tool that runs every valid executable in a
+  directory, used for <code>/etc/cron.daily</code> and friends.</li>
+<li><strong>systemd timer:</strong> A <code>.timer</code> unit that starts a service on a calendar
+  or relative schedule.</li>
+<li><strong>Calendar event:</strong> systemd's schedule syntax, such as
+  <code>Mon..Fri *-*-* 02:30:00 UTC</code>.</li>
+<li><strong>Persistent timer:</strong> A timer that catches up on runs missed while the
+  machine was off.</li>
+<li><strong>flock:</strong> A command that runs another command while holding a file
+  lock.</li>
+<li><strong>Idempotent job:</strong> A job that produces the same result when run more
+  than once.</li>
+<li><strong>Dead man's switch:</strong> A monitor that alerts when an expected success
+  signal does not arrive.</li>
+<li><strong>Log rotation:</strong> Renaming, compressing, and deleting old logs on a
+  schedule or size.</li>
+<li><strong>copytruncate:</strong> Rotation by copying a log and truncating the
+  original in place.</li>
+<li><strong>Vacuuming:</strong> Deleting archived journal files to meet a size or age
+  target.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Assuming cron runs commands with your login shell, <code>PATH</code>, and
+  environment.</li>
+<li>Writing <code>date +%F</code> in a crontab.</li>
+<li>Naming a file <code>backup.sh</code> in <code>/etc/cron.daily</code> or <code>taskflow.cron</code> in
+  <code>/etc/cron.d</code>, which are silently ignored.</li>
+<li>Relying on cron mail on a server without a mail transfer agent.</li>
+<li>Scheduling local-time jobs between 01:00 and 03:00 on a server that
+  observes daylight saving time.</li>
+<li>Deploying the same scheduled job to every server in a fleet.</li>
+<li>Enabling the <code>.service</code> of a timer instead of the <code>.timer</code>.</li>
+<li>Deleting a log file that a process still has open instead of
+  rotating it.</li>
+<li>Believing journald grows without bound, or that its defaults suit
+  every disk size.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>When does <code>0 0 13 * 5</code> run, and why?</li>
+<li>Name four ways a command can behave differently under cron than in
+   your shell.</li>
+<li>Why are systemd timers safer than cron for a job that needs the app's
+   database credentials?</li>
+<li>A job runs every 10 minutes and occasionally takes 25 minutes. What
+   happens under cron, under cron with <code>flock -n</code>, and under a systemd
+   timer?</li>
+<li>Three servers run the same nightly timer. Describe two ways to make
+   the job run once, and why the job should be idempotent anyway.</li>
+<li>Explain the difference between logrotate's <code>create</code> and
+   <code>copytruncate</code>, and what each requires from the application.</li>
+<li>With default settings, how much space may the journal use on a 20 GB
+   root file system, and how much free space will journald leave?
+   (10% of 20 GB is 2 GB, and 15% is 3 GB; neither reaches the 4 GiB
+   cap, so about 2 GB for the journal while keeping about 3 GB free.)</li>
+<li>A server's disk is 100% full at 03:00. List your first five commands
+   and what each tells you.</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://www.freedesktop.org/software/systemd/man/latest/systemd.timer.html">systemd.timer</a></li>
+<li><a href="https://www.freedesktop.org/software/systemd/man/latest/systemd.time.html">systemd.time: calendar events</a></li>
+<li><a href="https://www.freedesktop.org/software/systemd/man/latest/journald.conf.html">journald.conf</a></li>
+<li><a href="https://manpages.ubuntu.com/manpages/resolute/man8/logrotate.8.html">logrotate(8) on Ubuntu 26.04</a></li>
+<li><a href="https://manpages.ubuntu.com/manpages/resolute/man1/flock.1.html">flock(1) on Ubuntu 26.04</a></li>
+<li><a href="https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/">Kubernetes: CronJob</a></li>
+<li>Next: <a href="../interview-questions-and-answers/">Linux server operations interview questions and answers</a>. Back to the <a href="../">Linux server operations overview</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../troubleshooting-cpu-memory-disk-and-network/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Troubleshooting CPU, Memory, Disk, and Network">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Troubleshooting CPU, Memory, Disk, and Network</span>
+      </a>
+    
+    
+      <a href="../cheat-sheet/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: Cheat Sheet">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">Cheat Sheet</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

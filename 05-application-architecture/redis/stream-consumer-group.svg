@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="520" viewBox="0 0 780 520" role="img" aria-labelledby="scg-title scg-desc">
+  <title id="scg-title">A stream consumer group with acknowledgments and recovery</title>
+  <desc id="scg-desc">A producer appends entries to the stream orders with XADD. The consumer group billing tracks its last-delivered ID and hands each new entry to one consumer: worker-2 gets the entry for order 1001 with XREADGROUP and acknowledges it with XACK, which removes it from the pending entries list. worker-1 gets order 1002 but crashes before XACK, so the entry stays pending and idle. After 60 seconds of idleness, worker-2 runs XAUTOCLAIM orders billing worker-2 60000 0-0 COUNT 10, takes over the entry, processes it and acknowledges it; its delivery count rises with each delivery, and entries that fail too often are moved to a dead-letter stream. A second group, shipping, reads the same entries independently.</desc>
+  <defs>
+    <marker id="scg-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#40566b"/>
+    </marker>
+    <marker id="scg-err" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#b5473a"/>
+    </marker>
+  </defs>
+  <rect width="780" height="520" rx="14" fill="#f5f7fb"/>
+  <g font-family="Arial, sans-serif" text-anchor="middle">
+    <rect x="24" y="20" width="170" height="60" rx="8" fill="#fff0d9" stroke="#bd7a20" stroke-width="2"/>
+    <text x="109" y="40" font-size="14" font-weight="700" fill="#66400f">Producer</text>
+    <text x="109" y="58" font-size="11.5" fill="#66400f">XADD orders * orderId</text>
+    <text x="109" y="72" font-size="11.5" fill="#66400f">1001 / 1002 / 1003</text>
+
+    <rect x="236" y="20" width="520" height="60" rx="8" fill="#eef1f5" stroke="#8a96a3" stroke-width="2"/>
+    <text x="278" y="46" font-size="13" font-weight="700" fill="#36424e">stream</text>
+    <text x="278" y="62" font-size="13" font-weight="700" fill="#36424e">orders</text>
+    <g fill="#ffffff" stroke="#8a96a3" stroke-width="1.5">
+      <rect x="326" y="30" width="136" height="40" rx="5"/>
+      <rect x="470" y="30" width="136" height="40" rx="5"/>
+      <rect x="614" y="30" width="134" height="40" rx="5"/>
+    </g>
+    <g font-size="11" fill="#36424e">
+      <text x="394" y="46">1730900000000-0</text>
+      <text x="394" y="62">orderId=1001</text>
+      <text x="538" y="46">1730900000123-0</text>
+      <text x="538" y="62">orderId=1002</text>
+      <text x="681" y="46">1730900000456-0</text>
+      <text x="681" y="62">orderId=1003</text>
+    </g>
+
+    <rect x="24" y="110" width="530" height="360" rx="10" fill="#faf7fe" stroke="#8062a8" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <text x="40" y="132" font-size="13" font-weight="700" fill="#463365" text-anchor="start">consumer group billing</text>
+    <text x="538" y="132" font-size="11.5" fill="#463365" text-anchor="end">tracks the last-delivered ID</text>
+
+    <rect x="580" y="110" width="176" height="62" rx="8" fill="#eef1f5" stroke="#8a96a3" stroke-width="2"/>
+    <text x="668" y="130" font-size="14" font-weight="700" fill="#36424e">group shipping</text>
+    <text x="668" y="148" font-size="11.5" fill="#36424e">own last-delivered ID;</text>
+    <text x="668" y="163" font-size="11.5" fill="#36424e">reads every entry too</text>
+
+    <rect x="44" y="168" width="220" height="48" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="154" y="188" font-size="14" font-weight="700" fill="#263e5a">worker-2</text>
+    <text x="154" y="205" font-size="11.5" fill="#263e5a">XREADGROUP ... &gt; gets 1001</text>
+    <rect x="314" y="168" width="220" height="48" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="424" y="188" font-size="14" font-weight="700" fill="#263e5a">worker-1</text>
+    <text x="424" y="205" font-size="11.5" fill="#263e5a">XREADGROUP ... &gt; gets 1002</text>
+    <path d="M512 222 528 238M528 222 512 238" stroke="#b5473a" stroke-width="2.5" stroke-linecap="round"/>
+
+    <rect x="44" y="282" width="490" height="78" rx="8" fill="#ffffff" stroke="#8062a8" stroke-width="2"/>
+    <text x="289" y="300" font-size="13" font-weight="700" fill="#463365">Pending entries list (PEL)</text>
+    <rect x="56" y="308" width="220" height="44" rx="6" fill="#e8f5e9" stroke="#53845b" stroke-width="1.5"/>
+    <text x="166" y="326" font-size="11.5" font-weight="700" fill="#294a2e">1001: worker-2</text>
+    <text x="166" y="342" font-size="11.5" fill="#294a2e">acknowledged, removed</text>
+    <rect x="302" y="308" width="220" height="44" rx="6" fill="#fff0d9" stroke="#bd7a20" stroke-width="1.5"/>
+    <text x="412" y="326" font-size="11.5" font-weight="700" fill="#66400f">1002: worker-1</text>
+    <text x="412" y="342" font-size="11.5" fill="#66400f">never acked, idle, count 1</text>
+
+    <rect x="44" y="392" width="490" height="62" rx="8" fill="#e8f5e9" stroke="#53845b" stroke-width="2"/>
+    <text x="289" y="412" font-size="14" font-weight="700" fill="#294a2e">worker-2 rescues it after 60 s idle</text>
+    <text x="289" y="430" font-size="11.5" fill="#294a2e">XAUTOCLAIM orders billing worker-2 60000 0-0 COUNT 10</text>
+    <text x="289" y="445" font-size="11.5" fill="#294a2e">processes 1002, then XACK; delivery count is now 2</text>
+
+    <rect x="580" y="282" width="176" height="110" rx="8" fill="#fde8e6" stroke="#b5473a" stroke-width="2"/>
+    <text x="668" y="302" font-size="14" font-weight="700" fill="#6b241c">Dead-letter stream</text>
+    <text x="668" y="322" font-size="11.5" fill="#6b241c">if the delivery count</text>
+    <text x="668" y="337" font-size="11.5" fill="#6b241c">gets too high, XADD the</text>
+    <text x="668" y="352" font-size="11.5" fill="#6b241c">entry to a dead-letter</text>
+    <text x="668" y="367" font-size="11.5" fill="#6b241c">stream and XACK it</text>
+
+    <g fill="none" stroke="#40566b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M194 50H234" marker-end="url(#scg-arrow)"/>
+      <path d="M394 80 300 108" marker-end="url(#scg-arrow)"/>
+      <path d="M681 80 672 108" marker-end="url(#scg-arrow)"/>
+      <path d="M154 142V166" marker-end="url(#scg-arrow)"/>
+      <path d="M424 142V166" marker-end="url(#scg-arrow)"/>
+      <path d="M154 216V306" marker-end="url(#scg-arrow)"/>
+      <path d="M412 352V390" marker-end="url(#scg-arrow)"/>
+      <path d="M522 330H578" marker-end="url(#scg-arrow)"/>
+    </g>
+    <path d="M424 216V306" fill="none" stroke="#b5473a" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#scg-err)"/>
+    <text x="164" y="262" font-size="11.5" font-style="italic" fill="#40566b" text-anchor="start">XACK orders billing</text>
+    <text x="164" y="277" font-size="11.5" font-style="italic" fill="#40566b" text-anchor="start">1730900000000-0</text>
+    <text x="434" y="262" font-size="11.5" font-style="italic" fill="#b5473a" text-anchor="start">crashes</text>
+    <text x="434" y="277" font-size="11.5" font-style="italic" fill="#b5473a" text-anchor="start">before XACK</text>
+
+    <text x="390" y="500" font-size="13" fill="#40566b">At-least-once: an entry can be processed twice, so handlers must be idempotent.</text>
+  </g>
+</svg>

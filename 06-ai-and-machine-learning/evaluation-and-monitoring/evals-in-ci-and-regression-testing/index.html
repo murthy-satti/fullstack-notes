@@ -1,0 +1,4726 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../llm-as-judge-and-automated-evals/">
+      
+      
+        <link rel="next" href="../llm-observability-and-tracing/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Evals in CI and Regression Testing - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#evals-in-ci-and-regression-testing" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Evals in CI and Regression Testing
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../05-application-architecture/" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../08-devops-and-deployment/" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to AI and Machine Learning">
+          <span class="md-ellipsis">&larr; Back to AI</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../05-application-architecture/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        
+          
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-label="AI module lessons" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to AI and Machine Learning">
+                  <span class="md-ellipsis">&larr; Back to AI</span>
+                </a>
+              
+            </div>
+          
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                  
+  
+  
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+    
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+  
+
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_8" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_7_8" id="__nav_7_8_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Production
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_8_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_7_8">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Production
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_8_1" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_7_8_1" id="__nav_7_8_1_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evaluation and Monitoring
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_7_8_1_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_7_8_1">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Evaluation and Monitoring
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../building-evaluation-sets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Building Evaluation Sets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../llm-as-judge-and-automated-evals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM-as-Judge and Automated Evals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evals in CI and Regression Testing
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evals in CI and Regression Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#where-evals-run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where evals run
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#eval-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Eval tools
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#promptfoo-in-a-taskflow-repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        promptfoo in a TaskFlow repository
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gates-and-thresholds" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gates and thresholds
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#handling-nondeterminism" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Handling nondeterminism
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#controlling-cost" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Controlling cost
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#secrets-and-safety-in-ci" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Secrets and safety in CI
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-promptfoo-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The promptfoo configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-provider-running-the-real-code-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The provider: running the real code path
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#loading-the-versioned-dataset-as-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Loading the versioned dataset as tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reusing-the-code-based-checks-as-an-assertion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reusing the code-based checks as an assertion
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#running-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running it
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-regression-gate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The regression gate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-github-actions-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The GitHub Actions workflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../llm-observability-and-tracing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM Observability and Tracing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_8_2" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_7_8_2" id="__nav_7_8_2_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security, Privacy, and Responsible AI
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_7_8_2_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_7_8_2">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Security, Privacy, and Responsible AI
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security-privacy-and-responsible-ai/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security-privacy-and-responsible-ai/prompt-injection-and-defenses/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Prompt Injection and Defenses
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security-privacy-and-responsible-ai/guardrails-and-content-moderation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guardrails and Content Moderation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security-privacy-and-responsible-ai/privacy-pii-and-data-retention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Privacy, PII, and Data Retention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security-privacy-and-responsible-ai/ai-regulation-and-governance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Regulation and Governance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security-privacy-and-responsible-ai/cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security-privacy-and-responsible-ai/interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_8_3" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_7_8_3" id="__nav_7_8_3_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment, Cost, and Performance
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_7_8_3_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_7_8_3">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Deployment, Cost, and Performance
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment-cost-and-performance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment-cost-and-performance/serving-open-models/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Serving Open Models
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment-cost-and-performance/latency-optimization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Latency Optimization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment-cost-and-performance/cost-optimization-for-llm-apps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cost Optimization for LLM Apps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment-cost-and-performance/gpu-capacity-and-scaling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GPU Capacity and Scaling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment-cost-and-performance/cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment-cost-and-performance/interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_8_4" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_7_8_4" id="__nav_7_8_4_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MLOps and Model Lifecycle
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_7_8_4_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_7_8_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    MLOps and Model Lifecycle
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mlops-and-model-lifecycle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mlops-and-model-lifecycle/experiment-tracking-and-model-registry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Experiment Tracking and Model Registry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mlops-and-model-lifecycle/llmops-prompt-and-model-versioning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLMOps: Prompt and Model Versioning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mlops-and-model-lifecycle/production-monitoring-and-drift/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Production Monitoring and Drift
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mlops-and-model-lifecycle/cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mlops-and-model-lifecycle/interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../08-devops-and-deployment/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DevOps and Deployment
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#where-evals-run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where evals run
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#eval-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Eval tools
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#promptfoo-in-a-taskflow-repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        promptfoo in a TaskFlow repository
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gates-and-thresholds" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gates and thresholds
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#handling-nondeterminism" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Handling nondeterminism
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#controlling-cost" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Controlling cost
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#secrets-and-safety-in-ci" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Secrets and safety in CI
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-promptfoo-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The promptfoo configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-provider-running-the-real-code-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The provider: running the real code path
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#loading-the-versioned-dataset-as-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Loading the versioned dataset as tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reusing-the-code-based-checks-as-an-assertion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reusing the code-based checks as an assertion
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#running-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running it
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-regression-gate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The regression gate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-github-actions-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The GitHub Actions workflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="evals-in-ci-and-regression-testing">Evals in CI and Regression Testing<a class="headerlink" href="#evals-in-ci-and-regression-testing" title="Permanent link">&para;</a></h1>
+<p>An evaluation set and a set of graders are only useful if they run every
+time something that affects the model's behavior changes: the prompt
+template, the model ID, the retrieval settings, a tool definition, or
+the code that parses the output. Running them by hand means they run
+before the big release and are skipped for the "small" change that
+breaks production. Running them in CI makes them a gate, like unit
+tests, with one important difference: the system under test is not
+deterministic, so a failing number is evidence, not proof.</p>
+<p>This lesson wires the TaskFlow Assistant's evaluation set into GitHub
+Actions. It compares eval tools (promptfoo in depth, plus DeepEval,
+Braintrust, the OpenAI Evals API, and Inspect), shows how to
+turn the versioned dataset and the code-based checks from the previous
+lessons into a promptfoo suite, designs gates and thresholds that catch
+real regressions without blocking on noise, handles nondeterminism with
+repeats and paired comparisons, and keeps the bill under control with
+caching and tiered runs.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>LLM regressions are quiet. A prompt edit that fixes one complaint
+changes behavior on hundreds of other inputs, and nothing crashes: the
+API still returns 200, the JSON still parses, and the drafts are just a
+little more often wrong. Model updates are worse, because they change
+behavior without any change in your repository. The only reliable way to
+notice is to rerun the same cases and compare.</p>
+<p>At the same time, a naive gate does harm. If the gate is "pass rate must
+not drop", it fails on random fluctuation, people learn to rerun it until
+it is green, and the gate becomes noise. If the gate calls a paid model
+for 2,000 cases on every push, the eval bill outgrows the feature's. The
+techniques in this lesson are what make an LLM gate both trustworthy and
+affordable.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>promptfoo.</strong> The open-source (MIT) eval runner used in this lesson
+  documents its CI use in
+  <a href="https://www.promptfoo.dev/docs/integrations/ci-cd/">CI/CD integration</a>,
+  including caching the promptfoo cache directory keyed on the prompt
+  files and configuration, and publishes a
+  <a href="https://github.com/promptfoo/promptfoo-action">GitHub Action</a> that
+  evaluates a pull request and posts a summary comment. On March 9, 2026,
+  OpenAI announced that it would
+  <a href="https://openai.com/index/openai-to-acquire-promptfoo/">acquire Promptfoo</a>
+  and said it would keep developing the open-source project; check the
+  project's repository for its current status before you depend on it.</li>
+<li><strong>Error bars for evals.</strong> Evan Miller's
+  <a href="https://arxiv.org/abs/2411.00640">Adding Error Bars to Evals</a> (2024)
+  argues that evaluations are experiments and recommends standard errors,
+  clustered standard errors for related questions, variance reduction by
+  resampling, analysis of question-level paired differences when
+  comparing two models, and power analysis to size an eval.</li>
+<li><strong>pass^k.</strong> The tau-bench paper,
+  <a href="https://arxiv.org/abs/2406.12045">tau-bench</a> (2024), proposed the
+  pass^k metric for the reliability of agent behavior over multiple
+  trials: a task counts only if it succeeds in all k attempts, which is
+  closer to what users experience than a single lucky run.</li>
+<li><strong>OpenAI.</strong> <a href="https://developers.openai.com/api/docs/guides/evaluation-best-practices">Evaluation best practices</a>
+  recommends eval-driven development ("evaluate early and often"), scoped
+  tests at every stage, and structuring evaluations for automated scoring.</li>
+<li><strong>DeepEval.</strong> The <a href="https://deepeval.com/docs/getting-started">DeepEval quickstart</a>
+  shows the Python side of the same idea: DeepEval plugs into Pytest, so
+  <code>deepeval test run</code> collects eval files and runs them like tests, which
+  is what makes it easy to drop into an existing CI job.</li>
+</ul>
+<p><strong>Popular tools and providers:</strong> promptfoo, DeepEval, Braintrust, the
+OpenAI Evals API, Inspect, LangSmith and Langfuse experiments,
+and GitHub Actions or any CI system that can run Node.js or Python.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="where-evals-run">Where evals run<a class="headerlink" href="#where-evals-run" title="Permanent link">&para;</a></h3>
+<p>Evals run at several points, each with a different budget:</p>
+<table>
+<thead>
+<tr>
+<th>Where</th>
+<th>What runs</th>
+<th>Budget</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Every commit</td>
+<td>Unit tests: prompt rendering, parsers, code checks, judge plumbing with stubs</td>
+<td>Seconds, free</td>
+<td>Catch broken code, not model behavior</td>
+</tr>
+<tr>
+<td>Pull request touching AI code</td>
+<td>The test split with code checks and a few judge criteria, cached</td>
+<td>Minutes, low</td>
+<td>Block clear regressions before merge</td>
+</tr>
+<tr>
+<td>Nightly on <code>main</code></td>
+<td>The full suite, no cache, several repeats per case, all judge criteria</td>
+<td>Tens of minutes, moderate</td>
+<td>Detect drift from model updates; measure flakiness</td>
+</tr>
+<tr>
+<td>Before a model or provider switch</td>
+<td>Full suite on old and new, paired comparison, human review of differences</td>
+<td>Hours, planned</td>
+<td>Decide the switch with evidence</td>
+</tr>
+<tr>
+<td>Production</td>
+<td>Code checks on all traffic, a judge on a sample, user feedback</td>
+<td>Continuous</td>
+<td>Catch what offline sets miss (see <a href="../llm-observability-and-tracing/">LLM observability and tracing</a>)</td>
+</tr>
+</tbody>
+</table>
+<p><img alt="Diagram: two lanes. The pull-request lane: a pull request that changes src/ai or evals passes a path filter, runs unit tests including the judge plumbing with stubs, checks the dataset manifest, restores the response cache keyed on the model and the prompt and dataset hashes, runs the promptfoo suite on the test split, and compares the results with the committed baseline. The gate either blocks the merge, when a critical case regressed or the drop is significant, or passes, and the results are uploaded as an artifact. Pull requests from forks skip the eval job because they get no secrets. The nightly lane on main: a schedule runs the full suite with no cache and three repeats per case, compares with the baseline to detect drift from model updates and to list flaky cases, and uploads the report. A reviewed pull request updates the baseline when a change in scores is intended." src="../eval-ci-pipeline.svg" /></p>
+<p>Keep unit tests and evals separate. Unit tests must be deterministic
+and never call a model; they belong in <code>npm test</code>. Evals call models,
+cost money, and are noisy; they get their own job, their own gate, and
+their own schedule.</p>
+<h3 id="eval-tools">Eval tools<a class="headerlink" href="#eval-tools" title="Permanent link">&para;</a></h3>
+<p>All of these run cases, apply graders, and report scores; they differ in
+language, where results live, and how much they assume about your app:</p>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Language and style</th>
+<th>Where results live</th>
+<th>Good fit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>promptfoo</td>
+<td>YAML config with JavaScript, TypeScript, or Python extensions; CLI</td>
+<td>Local files and a local web viewer; optional sharing</td>
+<td>Any stack; prompt and model comparisons; red teaming</td>
+</tr>
+<tr>
+<td>DeepEval</td>
+<td>Python, Pytest-style test files</td>
+<td>Local, optional hosted platform</td>
+<td>Python services and RAG pipelines</td>
+</tr>
+<tr>
+<td>Braintrust</td>
+<td>TypeScript or Python SDK (<code>Eval()</code> with data, task, scores), autoevals library</td>
+<td>Hosted platform</td>
+<td>Teams that want hosted experiment tracking</td>
+</tr>
+<tr>
+<td>OpenAI Evals API</td>
+<td>Hosted evals: data source config plus testing criteria (graders)</td>
+<td>OpenAI platform</td>
+<td>Apps already on the OpenAI platform</td>
+</tr>
+<tr>
+<td>Inspect</td>
+<td>Python framework from the UK AI Security Institute and Meridian Labs; <code>inspect eval</code></td>
+<td>Local logs and viewer</td>
+<td>Capability and agentic evaluations</td>
+</tr>
+<tr>
+<td>evalite</td>
+<td>TypeScript, built on Vitest, local UI; deprecated and archived on November 9, 2026, with Langfuse as the maintainer's suggested replacement</td>
+<td>Local</td>
+<td>Existing suites only; plan a migration</td>
+</tr>
+<tr>
+<td>LangSmith, Langfuse</td>
+<td>SDKs that run experiments over hosted datasets</td>
+<td>Their platforms</td>
+<td>Teams already tracing with them</td>
+</tr>
+</tbody>
+</table>
+<p>A good rule is to keep the dataset and the checks in your repository,
+in your own formats, and treat the tool as a runner. The case schema and
+<code>checkDraft</code> from the earlier lessons stay the same whichever runner you
+choose; only the glue changes.</p>
+<h3 id="promptfoo-in-a-taskflow-repository">promptfoo in a TaskFlow repository<a class="headerlink" href="#promptfoo-in-a-taskflow-repository" title="Permanent link">&para;</a></h3>
+<p>promptfoo reads a configuration with prompts, providers, and tests, runs
+every test against every provider, applies each test's assertions, and
+writes results. For an application feature, the most faithful setup
+does not let promptfoo call the model directly. It uses a <strong>custom
+provider</strong> that calls the same code path production uses, here
+<code>draftTaskAsText</code> from
+<a href="../../prompting-and-structured-output/prompt-design-and-templates/">prompt design and templates</a>,
+so the eval exercises the real template, the real parameters, and the
+real parsing.</p>
+<p>The pieces:</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>promptfooconfig.yaml</code></td>
+<td>Wires the provider, the test generator, and options together</td>
+</tr>
+<tr>
+<td><code>taskflow-provider.ts</code></td>
+<td>Calls the app's code for each case, with a response cache</td>
+</tr>
+<tr>
+<td><code>load-cases.ts</code></td>
+<td>Turns the versioned JSONL dataset into promptfoo tests, with metadata for filtering</td>
+</tr>
+<tr>
+<td><code>assert-draft.ts</code></td>
+<td>Reuses the code-based checks as a promptfoo <code>javascript</code> assertion</td>
+</tr>
+<tr>
+<td><code>llm-rubric</code> assertions</td>
+<td>Judge criteria where code cannot decide, graded by the model given with <code>--grader</code></td>
+</tr>
+</tbody>
+</table>
+<p>Exit codes make it CI-friendly. <code>promptfoo eval</code> exits with code 100
+when the pass rate is below <code>PROMPTFOO_PASS_RATE_THRESHOLD</code> (default
+100%, so any failure fails the job); setting the threshold to <code>0</code> leaves
+the decision to a separate gate script, while errors such as a failed
+provider call still fail the run. Useful flags for CI are <code>-o</code> (JSON,
+HTML, JUnit XML, and other formats; repeatable), <code>--repeat</code>,
+<code>-j</code>/<code>--max-concurrency</code>, <code>--filter-metadata</code>, <code>--filter-sample</code>,
+<code>--no-cache</code>, and <code>--no-share</code>.</p>
+<h3 id="gates-and-thresholds">Gates and thresholds<a class="headerlink" href="#gates-and-thresholds" title="Permanent link">&para;</a></h3>
+<p>A gate turns a run into a merge decision. Four kinds of rules work well
+together:</p>
+<table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>Example for the Assistant</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Critical cases always pass</td>
+<td><code>late-evening-tz</code>, <code>injection-in-request</code></td>
+<td>Known incidents and security cases must never regress, whatever the average does</td>
+</tr>
+<tr>
+<td>Absolute floors</td>
+<td>Schema validity 100%; overall pass rate at least 88%</td>
+<td>Catches a collapse, even without a baseline</td>
+</tr>
+<tr>
+<td>Paired regression against the baseline</td>
+<td>Fail if the pass rate drops more than 2 points and the paired test says the drop is unlikely to be chance</td>
+<td>Compares like with like, case by case</td>
+</tr>
+<tr>
+<td>Operational budgets</td>
+<td>Median output tokens and p95 latency within 20% of the baseline</td>
+<td>Quality changes often come with cost or latency changes</td>
+</tr>
+</tbody>
+</table>
+<p>The baseline is a committed results file for the current <code>main</code>
+(<code>evals/baseline/task-assistant.json</code>). Comparing against a baseline on
+the same dataset version, case by case, is much more sensitive than
+comparing two pass rates: a change that fixes 5 cases and breaks 7 has
+almost the same average, but the list of 7 regressions is exactly what a
+reviewer needs. When a change in scores is intended (a new model, a
+corrected label), update the baseline in the same reviewed pull request
+that causes it, never automatically.</p>
+<p><img alt="Diagram: the regression gate as a flowchart. Start with the candidate results and the baseline on the same dataset version. First decision: did any critical case regress? If yes, block the merge. Second decision: did code checks such as schema validity fall below their floors? If yes, block. Third decision: did the pass rate drop more than 2 points? If no, pass. If yes, fourth decision: is the drop significant in the paired McNemar test, with p below 0.05? If yes, block and list the regressions; if no, pass with a warning that asks a reviewer to read the regressed cases. Example from a run of 240 paired cases: 16 regressions against 3 fixes, a drop from 90.8 to 85.4 percent, McNemar p of 0.004, so the gate fails." src="../regression-gate.svg" /></p>
+<h3 id="handling-nondeterminism">Handling nondeterminism<a class="headerlink" href="#handling-nondeterminism" title="Permanent link">&para;</a></h3>
+<p>The same prompt, model, and input can give different outputs. Sources
+of variation include sampling, provider-side batching and hardware
+effects, silent model updates behind an alias, and timing in tool-using
+agents. You cannot remove all of it, so design the evals to measure
+through it:</p>
+<ul>
+<li><strong>Pin what you can.</strong> Read a specific model snapshot from
+  configuration rather than a moving alias, and record it with each run.
+  Most behavior changes "with no code change" turn out to be a model
+  alias that moved.</li>
+<li><strong>Do not rely on sampling parameters.</strong> Setting a low temperature
+  reduces variation where it is supported, but it is not a guarantee of
+  identical outputs, and support differs by provider and API version:
+  OpenAI's Responses API accepts <code>temperature</code> but has no <code>seed</code>
+  parameter, and Anthropic's API version <code>2026-10-21</code> removed
+  <code>temperature</code>, <code>top_p</code>, and <code>top_k</code> entirely (requests that send them
+  get a 400 error). Check the current API reference instead of copying
+  old settings.</li>
+<li><strong>Repeat cases and choose an aggregation deliberately.</strong> With <code>k</code>
+  runs per case, <em>pass@k</em> (at least one success) measures what is
+  possible, <em>pass^k</em> (all succeed) measures reliability, and the mean
+  pass rate estimates a typical single run. For a user-facing feature,
+  pass^k or the mean is the honest number; pass@k flatters.</li>
+<li><strong>Know the noise band.</strong> The 95% margin of a pass rate on <code>n</code>
+  cases is about <code>1.96 * sqrt(p * (1 - p) / n)</code>. With 240 cases at 90%,
+  that is plus or minus 3.8 points, so a run that scores 88.3% instead of
+  90.8% has not regressed by itself.</li>
+<li><strong>Compare pairs, not averages.</strong> When two versions run on the same
+  cases, only the cases where they disagree carry information. McNemar's
+  test asks whether the regressions and fixes are too unbalanced to be
+  chance; it is far more sensitive than comparing two independent pass
+  rates, which is the point Miller's paper makes about paired analysis.</li>
+<li><strong>Track flaky cases.</strong> A case that passes on some repeats and fails on
+  others is either ambiguous (fix the label or the guide) or sitting on a
+  real weakness. List flaky cases in every nightly report; do not
+  silently drop them.</li>
+</ul>
+<p><img alt="Diagram: two panels about nondeterminism. Left panel, one case run five times with outcomes pass, pass, fail, pass, pass: the mean pass rate is 80 percent, pass at 5, at least one success, is a pass, and pass hat 5, all five succeed, is a fail. Right panel, the noise band: the same suite of 240 cases at about 90 percent has a 95 percent margin of plus or minus 3.8 points, so two runs scoring 90.8 and 88.3 percent with no code change sit inside the band; a paired comparison of the same cases asks instead whether regressions and fixes are balanced, such as 16 regressions against 3 fixes, McNemar p equals 0.004, which is not chance. Measure through the noise: repeat, aggregate deliberately, and compare pairs." src="../eval-noise-and-repeats.svg" /></p>
+<h3 id="controlling-cost">Controlling cost<a class="headerlink" href="#controlling-cost" title="Permanent link">&para;</a></h3>
+<p>Eval cost is the number of cases, times repeats, times calls per case
+(the feature plus each judge criterion), times tokens per call. Every
+lever reduces one of those factors:</p>
+<table>
+<thead>
+<tr>
+<th>Lever</th>
+<th>How</th>
+<th>Trade-off</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Path filters</td>
+<td>Run evals only when <code>src/ai/**</code>, <code>evals/**</code>, or dependencies change</td>
+<td>Model alias changes are invisible to it, so keep the nightly run</td>
+</tr>
+<tr>
+<td>Response cache on pull requests</td>
+<td>Cache outputs keyed on prompt hash, model, and input; reruns are nearly free</td>
+<td>Cached outputs hide nondeterminism, so the nightly run disables the cache</td>
+</tr>
+<tr>
+<td>Code checks first</td>
+<td>Skip judge calls for cases whose code checks already failed</td>
+<td>None; it is pure saving</td>
+</tr>
+<tr>
+<td>Tiered suites</td>
+<td>Critical and smoke cases on pull requests, the full suite nightly (<code>--filter-metadata</code>)</td>
+<td>Some regressions are found the next morning instead of before merge</td>
+</tr>
+<tr>
+<td>Sampling</td>
+<td><code>--filter-sample</code> with a fixed seed on very large suites</td>
+<td>Wider confidence intervals</td>
+</tr>
+<tr>
+<td>Cheaper judges</td>
+<td>A smaller judge model once it is calibrated for a criterion</td>
+<td>Needs re-calibration; see the <a href="../llm-as-judge-and-automated-evals/">judge lesson</a></td>
+</tr>
+<tr>
+<td>Batch APIs</td>
+<td>Nightly runs through a provider's batch endpoint</td>
+<td>Slower turnaround; see <a href="../../hosted-model-apis/prompt-caching-and-batch-processing/">prompt caching and batch processing</a></td>
+</tr>
+<tr>
+<td>Concurrency limits</td>
+<td><code>--max-concurrency</code> keeps runs under rate limits</td>
+<td>Longer runs</td>
+</tr>
+</tbody>
+</table>
+<p>The broader cost picture for LLM features is in
+<a href="../../deployment-cost-and-performance/cost-optimization-for-llm-apps/">cost optimization for LLM apps</a>.</p>
+<h3 id="secrets-and-safety-in-ci">Secrets and safety in CI<a class="headerlink" href="#secrets-and-safety-in-ci" title="Permanent link">&para;</a></h3>
+<p>Eval jobs need provider API keys, which makes them a target. Store keys
+as encrypted secrets, scope them to the eval job, and use a separate key
+with its own spending limit for evals so a runaway job cannot exhaust
+production quota. Pull requests from forks do not receive secrets in
+GitHub Actions, so the workflow skips the eval job for them instead of
+failing. Keep model IDs in repository variables, not secrets, so they
+are visible in logs and reviews. The general practices are in
+<a href="../../../08-devops-and-deployment/environment-variables/secrets-management/">secrets management</a>
+and <a href="../../../08-devops-and-deployment/ci-cd/github-actions-in-depth/">GitHub Actions in depth</a>.</p>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Situation</th>
+<th>Approach</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Prompt, model, retrieval, or tool definition changes</td>
+<td>Pull-request evals with a paired gate against the baseline</td>
+</tr>
+<tr>
+<td>Provider or model upgrade</td>
+<td>Full suite with repeats on both, paired comparison, and a human read of the differences</td>
+</tr>
+<tr>
+<td>Nothing changed in the repository</td>
+<td>Nightly runs to detect upstream model drift</td>
+</tr>
+<tr>
+<td>Purely deterministic code around the model</td>
+<td>Unit tests only; evals add cost without information</td>
+</tr>
+<tr>
+<td>Tiny prototype with a handful of cases</td>
+<td>Run evals locally before merging; add CI once the set has dozens of cases</td>
+</tr>
+<tr>
+<td>Very large suites (thousands of cases)</td>
+<td>Sampled or tiered pull-request runs, full runs nightly or before releases</td>
+</tr>
+</tbody>
+</table>
+<p>Do not gate merges on a single unrepeated run of a judge-graded
+criterion with a tight threshold; it will block on noise. Do not let
+evals call production systems with side effects (sending email,
+creating real tasks); stub the side effects in the provider or point it
+at a test project.</p>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="the-promptfoo-configuration">The promptfoo configuration<a class="headerlink" href="#the-promptfoo-configuration" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># evals/promptfoo/promptfooconfig.yaml: TaskFlow Assistant regression suite</span>
+<span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TaskFlow Assistant on the task-assistant dataset</span>
+<span class="nt">prompts</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"{{request}}"</span><span class="w">            </span><span class="c1"># the provider renders the real, versioned template itself</span>
+<span class="nt">providers</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">file://taskflow-provider.ts</span>
+<span class="nt">tests</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">file://load-cases.ts</span>
+<span class="w">    </span><span class="nt">config</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">split</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test</span>
+<span class="nt">evaluateOptions</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">maxConcurrency</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4</span>
+</code></pre></div>
+<p>The prompt entry exists because promptfoo requires one; the provider
+ignores it and renders the real template. File paths in the
+configuration are resolved relative to the configuration file.</p>
+<h3 id="the-provider-running-the-real-code-path">The provider: running the real code path<a class="headerlink" href="#the-provider-running-the-real-code-path" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// evals/promptfoo/taskflow-provider.ts: run the real Assistant code path for each test case</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">createHash</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:crypto"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">existsSync</span><span class="p">,</span><span class="w"> </span><span class="nx">mkdirSync</span><span class="p">,</span><span class="w"> </span><span class="nx">readFileSync</span><span class="p">,</span><span class="w"> </span><span class="nx">writeFileSync</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:fs"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">join</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:path"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="kr">type</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">ApiProvider</span><span class="p">,</span><span class="w"> </span><span class="nx">CallApiContextParams</span><span class="p">,</span><span class="w"> </span><span class="nx">ProviderResponse</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"promptfoo"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="kr">type</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">EvalCase</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"../case-schema.js"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">draftTaskAsText</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"../../src/ai/assistant-client.js"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">PROMPT_HASH</span><span class="p">,</span><span class="w"> </span><span class="nx">PROMPT_ID</span><span class="p">,</span><span class="w"> </span><span class="nx">PROMPT_VERSION</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"../../src/ai/prompts/task-assistant.js"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">CACHE_DIR</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">EVAL_CACHE_DIR</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="s2">".eval-cache"</span><span class="p">;</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">default</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nx">TaskAssistantProvider</span><span class="w"> </span><span class="k">implements</span><span class="w"> </span><span class="nx">ApiProvider</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">id</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="sb">`taskflow:</span><span class="si">${</span><span class="nx">PROMPT_ID</span><span class="si">}</span><span class="sb">@</span><span class="si">${</span><span class="nx">PROMPT_VERSION</span><span class="si">}</span><span class="sb">#</span><span class="si">${</span><span class="nx">PROMPT_HASH</span><span class="si">}</span><span class="sb">`</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="k">async</span><span class="w"> </span><span class="nx">callApi</span><span class="p">(</span><span class="nx">_prompt</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="nx">context?</span><span class="o">:</span><span class="w"> </span><span class="kt">CallApiContextParams</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="nb">Promise</span><span class="o">&lt;</span><span class="nx">ProviderResponse</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">context</span><span class="o">?</span><span class="p">.</span><span class="nx">vars</span><span class="p">.</span><span class="nx">evalCase</span><span class="w"> </span><span class="kr">as</span><span class="w"> </span><span class="nx">unknown</span><span class="w"> </span><span class="kr">as</span><span class="w"> </span><span class="nx">EvalCase</span><span class="p">;</span>
+<span class="w">    </span><span class="c1">// Same prompt, model, and input give the same cache key; a prompt or model change misses.</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">createHash</span><span class="p">(</span><span class="s2">"sha256"</span><span class="p">)</span>
+<span class="w">      </span><span class="p">.</span><span class="nx">update</span><span class="p">(</span><span class="nb">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">([</span><span class="nx">PROMPT_HASH</span><span class="p">,</span><span class="w"> </span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">CHAT_MODEL</span><span class="p">,</span><span class="w"> </span><span class="nx">c</span><span class="p">.</span><span class="nx">request</span><span class="p">,</span><span class="w"> </span><span class="nx">c</span><span class="p">.</span><span class="nx">members</span><span class="p">,</span><span class="w"> </span><span class="nx">c</span><span class="p">.</span><span class="nx">now</span><span class="p">,</span><span class="w"> </span><span class="nx">c</span><span class="p">.</span><span class="nx">tz</span><span class="p">]))</span>
+<span class="w">      </span><span class="p">.</span><span class="nx">digest</span><span class="p">(</span><span class="s2">"hex"</span><span class="p">);</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">join</span><span class="p">(</span><span class="nx">CACHE_DIR</span><span class="p">,</span><span class="w"> </span><span class="sb">`</span><span class="si">${</span><span class="nx">key</span><span class="si">}</span><span class="sb">.json`</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">EVAL_NO_CACHE</span><span class="w"> </span><span class="o">!==</span><span class="w"> </span><span class="s2">"1"</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nx">existsSync</span><span class="p">(</span><span class="nx">file</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">output</span><span class="o">:</span><span class="w"> </span><span class="kt">JSON.parse</span><span class="p">(</span><span class="nx">readFileSync</span><span class="p">(</span><span class="nx">file</span><span class="p">,</span><span class="w"> </span><span class="s2">"utf8"</span><span class="p">)).</span><span class="nx">output</span><span class="p">,</span><span class="w"> </span><span class="nx">cached</span><span class="o">:</span><span class="w"> </span><span class="kt">true</span><span class="w"> </span><span class="p">};</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">started</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Date</span><span class="p">.</span><span class="nx">now</span><span class="p">();</span>
+<span class="w">    </span><span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="kd">const</span><span class="w"> </span><span class="nx">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">draftTaskAsText</span><span class="p">(</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nx">projectName</span><span class="o">:</span><span class="w"> </span><span class="s2">"Eval project"</span><span class="p">,</span><span class="w"> </span><span class="nx">currentUser</span><span class="o">:</span><span class="w"> </span><span class="kt">c.members</span><span class="p">[</span><span class="mf">0</span><span class="p">]</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="s2">"Eval user"</span><span class="p">,</span><span class="w"> </span><span class="nx">members</span><span class="o">:</span><span class="w"> </span><span class="kt">c.members</span><span class="p">,</span><span class="w"> </span><span class="nx">now</span><span class="o">:</span><span class="w"> </span><span class="kt">new</span><span class="w"> </span><span class="nb">Date</span><span class="p">(</span><span class="nx">c</span><span class="p">.</span><span class="nx">now</span><span class="p">),</span><span class="w"> </span><span class="nx">timeZone</span><span class="o">:</span><span class="w"> </span><span class="kt">c.tz</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nx">c</span><span class="p">.</span><span class="nx">request</span><span class="p">,</span>
+<span class="w">      </span><span class="p">);</span>
+<span class="w">      </span><span class="nx">mkdirSync</span><span class="p">(</span><span class="nx">CACHE_DIR</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">recursive</span><span class="o">:</span><span class="w"> </span><span class="kt">true</span><span class="w"> </span><span class="p">});</span>
+<span class="w">      </span><span class="nx">writeFileSync</span><span class="p">(</span><span class="nx">file</span><span class="p">,</span><span class="w"> </span><span class="nb">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">({</span><span class="w"> </span><span class="nx">output</span><span class="w"> </span><span class="p">}));</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">output</span><span class="p">,</span><span class="w"> </span><span class="nx">latencyMs</span><span class="o">:</span><span class="w"> </span><span class="kt">Date.now</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nx">started</span><span class="w"> </span><span class="p">};</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="nx">err</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">error</span><span class="o">:</span><span class="w"> </span><span class="sb">`assistant call failed: </span><span class="si">${</span><span class="p">(</span><span class="nx">err</span><span class="w"> </span><span class="kr">as</span><span class="w"> </span><span class="ne">Error</span><span class="p">).</span><span class="nx">message</span><span class="si">}</span><span class="sb">`</span><span class="w"> </span><span class="p">};</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>The provider id includes the prompt's id, version, and hash, so every
+result records exactly which template produced it. The cache key
+includes the prompt hash and <code>CHAT_MODEL</code>, so editing the template or
+switching the model invalidates the cache automatically; <code>EVAL_NO_CACHE=1</code>
+turns it off for nightly runs. promptfoo's own disk cache covers its
+built-in providers; a custom provider is responsible for its own, which
+is why this one implements a small file cache.</p>
+<h3 id="loading-the-versioned-dataset-as-tests">Loading the versioned dataset as tests<a class="headerlink" href="#loading-the-versioned-dataset-as-tests" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// evals/promptfoo/load-cases.ts: turn the versioned JSONL dataset into promptfoo test cases</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">readFileSync</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:fs"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">parseCases</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"../case-schema.js"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">DATASET</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">URL</span><span class="p">(</span><span class="s2">"../datasets/task-assistant/cases.jsonl"</span><span class="p">,</span><span class="w"> </span><span class="k">import</span><span class="p">.</span><span class="nx">meta</span><span class="p">.</span><span class="nx">url</span><span class="p">);</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">default</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">loadCases</span><span class="p">(</span><span class="nx">config</span><span class="o">?:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">split</span><span class="o">?:</span><span class="w"> </span><span class="s2">"dev"</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">"test"</span><span class="w"> </span><span class="p">})</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">split</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">config</span><span class="o">?</span><span class="p">.</span><span class="nx">split</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="s2">"test"</span><span class="p">;</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">cases</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">parseCases</span><span class="p">(</span><span class="nx">readFileSync</span><span class="p">(</span><span class="nx">DATASET</span><span class="p">,</span><span class="w"> </span><span class="s2">"utf8"</span><span class="p">),</span><span class="w"> </span><span class="s2">"cases.jsonl"</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="nx">filter</span><span class="p">((</span><span class="nx">c</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">c</span><span class="p">.</span><span class="nx">status</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">"active"</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nx">c</span><span class="p">.</span><span class="nx">split</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="nx">split</span><span class="p">);</span>
+
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">cases</span><span class="p">.</span><span class="nx">map</span><span class="p">((</span><span class="nx">c</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">({</span>
+<span class="w">    </span><span class="nx">description</span><span class="o">:</span><span class="w"> </span><span class="kt">c.id</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">vars</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">request</span><span class="o">:</span><span class="w"> </span><span class="kt">c.request</span><span class="p">,</span><span class="w"> </span><span class="nx">evalCase</span><span class="o">:</span><span class="w"> </span><span class="kt">c</span><span class="w"> </span><span class="p">},</span><span class="w">   </span><span class="c1">// array vars would expand into extra tests, so pass the case whole</span>
+<span class="w">    </span><span class="nx">metadata</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">critical</span><span class="o">:</span><span class="w"> </span><span class="kt">String</span><span class="p">(</span><span class="nx">c</span><span class="p">.</span><span class="nx">critical</span><span class="p">),</span><span class="w"> </span><span class="p">...</span><span class="nx">c</span><span class="p">.</span><span class="nx">slices</span><span class="w"> </span><span class="p">},</span><span class="w">     </span><span class="c1">// for --filter-metadata and reports</span>
+<span class="w">    </span><span class="nx">assert</span><span class="o">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="kr">type</span><span class="o">:</span><span class="w"> </span><span class="s2">"javascript"</span><span class="p">,</span><span class="w"> </span><span class="nx">value</span><span class="o">:</span><span class="w"> </span><span class="s2">"file://assert-draft.ts"</span><span class="p">,</span><span class="w"> </span><span class="nx">metric</span><span class="o">:</span><span class="w"> </span><span class="s2">"contract"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="p">...(</span><span class="nx">c</span><span class="p">.</span><span class="nx">expect</span><span class="p">.</span><span class="nx">clarifyingQuestion</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">"present"</span>
+<span class="w">        </span><span class="o">?</span><span class="w"> </span><span class="p">[{</span>
+<span class="w">            </span><span class="kr">type</span><span class="o">:</span><span class="w"> </span><span class="s2">"llm-rubric"</span><span class="p">,</span>
+<span class="w">            </span><span class="nx">metric</span><span class="o">:</span><span class="w"> </span><span class="s2">"clarifying-question"</span><span class="p">,</span>
+<span class="w">            </span><span class="nx">value</span><span class="o">:</span><span class="w"> </span><span class="s2">"The clarifyingQuestion asks who should own the task, and the draft does not assign it to anyone."</span><span class="p">,</span>
+<span class="w">          </span><span class="p">}]</span>
+<span class="w">        </span><span class="o">:</span><span class="w"> </span><span class="p">[]),</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">  </span><span class="p">}));</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Two details matter. The case is passed as one object, because promptfoo
+expands array-valued variables into one test per element: passing
+<code>members</code> as an array would have multiplied the tests. And the slices and
+the <code>critical</code> flag go into <code>metadata</code>, which makes
+<code>--filter-metadata critical=true</code> a ready-made smoke suite and lets
+reports group results by slice. The <code>llm-rubric</code> assertion is added only
+to cases where code cannot judge the quality of the clarifying question.</p>
+<h3 id="reusing-the-code-based-checks-as-an-assertion">Reusing the code-based checks as an assertion<a class="headerlink" href="#reusing-the-code-based-checks-as-an-assertion" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// evals/promptfoo/assert-draft.ts: a promptfoo assertion that applies the code-based checks</span>
+<span class="k">import</span><span class="w"> </span><span class="kr">type</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">AssertionValueFunctionContext</span><span class="p">,</span><span class="w"> </span><span class="nx">GradingResult</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"promptfoo"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="kr">type</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">EvalCase</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"../case-schema.js"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">checkDraft</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"../draft-checks.js"</span><span class="p">;</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">default</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">assertDraft</span><span class="p">(</span><span class="nx">output</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="nx">context</span><span class="o">:</span><span class="w"> </span><span class="kt">AssertionValueFunctionContext</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="nx">GradingResult</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">evalCase</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">context</span><span class="p">.</span><span class="nx">vars</span><span class="p">.</span><span class="nx">evalCase</span><span class="w"> </span><span class="kr">as</span><span class="w"> </span><span class="nx">unknown</span><span class="w"> </span><span class="kr">as</span><span class="w"> </span><span class="nx">EvalCase</span><span class="p">;</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">pass</span><span class="p">,</span><span class="w"> </span><span class="nx">checks</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">checkDraft</span><span class="p">(</span><span class="nx">output</span><span class="p">,</span><span class="w"> </span><span class="nx">evalCase</span><span class="p">);</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">failed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">checks</span><span class="p">.</span><span class="nx">filter</span><span class="p">((</span><span class="nx">x</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="o">!</span><span class="nx">x</span><span class="p">.</span><span class="nx">pass</span><span class="p">);</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">pass</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">score</span><span class="o">:</span><span class="w"> </span><span class="p">(</span><span class="nx">checks</span><span class="p">.</span><span class="nx">length</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nx">failed</span><span class="p">.</span><span class="nx">length</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nx">checks</span><span class="p">.</span><span class="nx">length</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">reason</span><span class="o">:</span><span class="w"> </span><span class="kt">pass</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="sb">`</span><span class="si">${</span><span class="nx">checks</span><span class="p">.</span><span class="nx">length</span><span class="si">}</span><span class="sb"> checks passed`</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="nx">failed</span><span class="p">.</span><span class="nx">map</span><span class="p">((</span><span class="nx">x</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="sb">`</span><span class="si">${</span><span class="nx">x</span><span class="p">.</span><span class="nx">name</span><span class="si">}</span><span class="sb">: </span><span class="si">${</span><span class="nx">x</span><span class="p">.</span><span class="nx">detail</span><span class="si">}</span><span class="sb">`</span><span class="p">).</span><span class="nx">join</span><span class="p">(</span><span class="s2">"; "</span><span class="p">),</span>
+<span class="w">  </span><span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><code>checkDraft</code> is the function from the
+<a href="../llm-as-judge-and-automated-evals/">LLM-as-judge lesson</a>; the
+assertion only adapts its result to promptfoo's <code>GradingResult</code> shape.</p>
+<h3 id="running-it">Running it<a class="headerlink" href="#running-it" title="Permanent link">&para;</a></h3>
+<p>A dry run in a scratch copy of the repository, with the Assistant client
+replaced by a stub that returns canned drafts (including a deliberate
+time-zone bug) and <code>llm-rubric</code> graded by a stub grader, so no API key is
+needed:</p>
+<div class="highlight"><pre><span></span><code>$ npx promptfoo eval -c evals/promptfoo/promptfooconfig.yaml --grader file://stub-grader.ts \
+    -o results.json --no-progress-bar --no-share --no-table
+Running 5 test cases (up to 4 at a time)...
+✓ Eval complete (ID: eval-K1N-2026-11-14T15:16:32)
+
+Results:
+  ✓ 4 passed (80.00%)
+  ✗ 1 failed (20.00%)
+  0 errors (0%)
+$ echo $?
+100
+</code></pre></div>
+<p>The failure in <code>results.json</code> is <code>late-evening-tz</code> with the reason
+<code>dueDate: got 2026-11-15, expected 2026-11-14</code>, the time-zone bug the
+critical case exists to catch. In the same dry run, rerunning used the
+response cache for every case; <code>--filter-metadata critical=true</code> ran
+only the two critical cases; <code>PROMPTFOO_PASS_RATE_THRESHOLD=75</code> turned
+the 80% run into exit code 0; and on the dev split the <code>llm-rubric</code>
+assertion produced a separate <code>clarifying-question</code> metric next to
+<code>contract</code>. In CI, <code>--grader "openai:responses:$JUDGE_MODEL"</code> replaces
+the stub with a real judge model chosen from the provider's current
+model list.</p>
+<h3 id="the-regression-gate">The regression gate<a class="headerlink" href="#the-regression-gate" title="Permanent link">&para;</a></h3>
+<p>The gate compares the candidate run with the committed baseline, case by
+case. With <code>--repeat</code>, a case passes only if all its repeats pass
+(pass^k), and cases whose repeats disagree are listed as flaky:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// evals/compare-runs.ts: paired comparison of a candidate eval run against the baseline</span>
+<span class="c1">// Usage: npx tsx evals/compare-runs.ts evals/baseline/task-assistant.json results.json</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">readFileSync</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:fs"</span><span class="p">;</span>
+
+<span class="kd">interface</span><span class="w"> </span><span class="nx">Row</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">testCase</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">description</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span><span class="w"> </span><span class="nx">metadata?</span><span class="o">:</span><span class="w"> </span><span class="kt">Record</span><span class="o">&lt;</span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="o">&gt;</span><span class="w"> </span><span class="p">};</span><span class="w"> </span><span class="nx">success</span><span class="o">:</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="p">}</span>
+<span class="kd">interface</span><span class="w"> </span><span class="nx">CaseResult</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">passes</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">;</span><span class="w"> </span><span class="nx">runs</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">;</span><span class="w"> </span><span class="nx">critical</span><span class="o">:</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="p">}</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">MAX_DROP</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.02</span><span class="p">;</span><span class="w">          </span><span class="c1">// tolerated drop in pass rate, in absolute terms</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">ALPHA</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.05</span><span class="p">;</span><span class="w">             </span><span class="c1">// significance level for the paired test</span>
+
+<span class="kd">function</span><span class="w"> </span><span class="nx">load</span><span class="p">(</span><span class="nx">file</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="nb">Map</span><span class="o">&lt;</span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="nx">CaseResult</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">rows</span><span class="o">:</span><span class="w"> </span><span class="kt">Row</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">readFileSync</span><span class="p">(</span><span class="nx">file</span><span class="p">,</span><span class="w"> </span><span class="s2">"utf8"</span><span class="p">)).</span><span class="nx">results</span><span class="p">.</span><span class="nx">results</span><span class="p">;</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">byCase</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Map</span><span class="o">&lt;</span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="nx">CaseResult</span><span class="o">&gt;</span><span class="p">();</span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="nx">r</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="nx">rows</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">        </span><span class="c1">// with --repeat N, each case appears N times</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">r</span><span class="p">.</span><span class="nx">testCase</span><span class="p">.</span><span class="nx">description</span><span class="p">;</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">byCase</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">id</span><span class="p">)</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">passes</span><span class="o">:</span><span class="w"> </span><span class="kt">0</span><span class="p">,</span><span class="w"> </span><span class="nx">runs</span><span class="o">:</span><span class="w"> </span><span class="kt">0</span><span class="p">,</span><span class="w"> </span><span class="nx">critical</span><span class="o">:</span><span class="w"> </span><span class="kt">r.testCase.metadata?.critical</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">"true"</span><span class="w"> </span><span class="p">};</span>
+<span class="w">    </span><span class="nx">c</span><span class="p">.</span><span class="nx">runs</span><span class="o">++</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nx">success</span><span class="p">)</span><span class="w"> </span><span class="nx">c</span><span class="p">.</span><span class="nx">passes</span><span class="o">++</span><span class="p">;</span>
+<span class="w">    </span><span class="nx">byCase</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nx">id</span><span class="p">,</span><span class="w"> </span><span class="nx">c</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">byCase</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="cm">/** Two-sided exact McNemar test: are regressions and fixes too unbalanced to be chance? */</span>
+<span class="kd">function</span><span class="w"> </span><span class="nx">mcnemarP</span><span class="p">(</span><span class="nx">regressions</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">,</span><span class="w"> </span><span class="nx">fixes</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">regressions</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nx">fixes</span><span class="p">;</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">n</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="mf">0</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="mf">1</span><span class="p">;</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Math</span><span class="p">.</span><span class="nx">min</span><span class="p">(</span><span class="nx">regressions</span><span class="p">,</span><span class="w"> </span><span class="nx">fixes</span><span class="p">);</span>
+<span class="w">  </span><span class="kd">let</span><span class="w"> </span><span class="nx">logC</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0</span><span class="p">,</span><span class="w"> </span><span class="nx">tail</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0</span><span class="p">;</span><span class="w">                       </span><span class="c1">// sum of C(n, i) / 2^n for i = 0..k</span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">let</span><span class="w"> </span><span class="nx">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0</span><span class="p">;</span><span class="w"> </span><span class="nx">i</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="nx">k</span><span class="p">;</span><span class="w"> </span><span class="nx">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">i</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">0</span><span class="p">)</span><span class="w"> </span><span class="nx">logC</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="nb">Math</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">n</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nx">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">1</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nb">Math</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">i</span><span class="p">);</span>
+<span class="w">    </span><span class="nx">tail</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="nb">Math</span><span class="p">.</span><span class="nx">exp</span><span class="p">(</span><span class="nx">logC</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nx">n</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nb">Math</span><span class="p">.</span><span class="nx">LN2</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nb">Math</span><span class="p">.</span><span class="nx">min</span><span class="p">(</span><span class="mf">1</span><span class="p">,</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nx">tail</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="p">[</span><span class="nx">baseFile</span><span class="p">,</span><span class="w"> </span><span class="nx">candFile</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">process</span><span class="p">.</span><span class="nx">argv</span><span class="p">.</span><span class="nx">slice</span><span class="p">(</span><span class="mf">2</span><span class="p">);</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">base</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">load</span><span class="p">(</span><span class="nx">baseFile</span><span class="p">),</span><span class="w"> </span><span class="nx">cand</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">load</span><span class="p">(</span><span class="nx">candFile</span><span class="p">);</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">shared</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[...</span><span class="nx">cand</span><span class="p">.</span><span class="nx">keys</span><span class="p">()].</span><span class="nx">filter</span><span class="p">((</span><span class="nx">id</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">base</span><span class="p">.</span><span class="nx">has</span><span class="p">(</span><span class="nx">id</span><span class="p">));</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">passed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nx">c</span><span class="o">:</span><span class="w"> </span><span class="kt">CaseResult</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">c</span><span class="p">.</span><span class="nx">passes</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="nx">c</span><span class="p">.</span><span class="nx">runs</span><span class="p">;</span><span class="w">   </span><span class="c1">// strict: every repeat must pass (pass^k)</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">regressions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">shared</span><span class="p">.</span><span class="nx">filter</span><span class="p">((</span><span class="nx">id</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">passed</span><span class="p">(</span><span class="nx">base</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">id</span><span class="p">)</span><span class="o">!</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="nx">passed</span><span class="p">(</span><span class="nx">cand</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">id</span><span class="p">)</span><span class="o">!</span><span class="p">));</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">fixes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">shared</span><span class="p">.</span><span class="nx">filter</span><span class="p">((</span><span class="nx">id</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="o">!</span><span class="nx">passed</span><span class="p">(</span><span class="nx">base</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">id</span><span class="p">)</span><span class="o">!</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nx">passed</span><span class="p">(</span><span class="nx">cand</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">id</span><span class="p">)</span><span class="o">!</span><span class="p">));</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">flaky</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">shared</span><span class="p">.</span><span class="nx">filter</span><span class="p">((</span><span class="nx">id</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">cand</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">id</span><span class="p">)</span><span class="o">!</span><span class="p">;</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="nx">c</span><span class="p">.</span><span class="nx">passes</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">0</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nx">c</span><span class="p">.</span><span class="nx">passes</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="nx">c</span><span class="p">.</span><span class="nx">runs</span><span class="p">;</span><span class="w"> </span><span class="p">});</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">rate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nx">m</span><span class="o">:</span><span class="w"> </span><span class="kt">Map</span><span class="o">&lt;</span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="nx">CaseResult</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">shared</span><span class="p">.</span><span class="nx">filter</span><span class="p">((</span><span class="nx">id</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">passed</span><span class="p">(</span><span class="nx">m</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">id</span><span class="p">)</span><span class="o">!</span><span class="p">)).</span><span class="nx">length</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nx">shared</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">drop</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">rate</span><span class="p">(</span><span class="nx">base</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nx">rate</span><span class="p">(</span><span class="nx">cand</span><span class="p">);</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">mcnemarP</span><span class="p">(</span><span class="nx">regressions</span><span class="p">.</span><span class="nx">length</span><span class="p">,</span><span class="w"> </span><span class="nx">fixes</span><span class="p">.</span><span class="nx">length</span><span class="p">);</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">criticalRegressions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">regressions</span><span class="p">.</span><span class="nx">filter</span><span class="p">((</span><span class="nx">id</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">cand</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">id</span><span class="p">)</span><span class="o">!</span><span class="p">.</span><span class="nx">critical</span><span class="p">);</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`paired cases: </span><span class="si">${</span><span class="nx">shared</span><span class="p">.</span><span class="nx">length</span><span class="si">}</span><span class="sb">; pass rate </span><span class="si">${</span><span class="p">(</span><span class="mf">100</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nx">rate</span><span class="p">(</span><span class="nx">base</span><span class="p">)).</span><span class="nx">toFixed</span><span class="p">(</span><span class="mf">1</span><span class="p">)</span><span class="si">}</span><span class="sb">% -&gt; </span><span class="si">${</span><span class="p">(</span><span class="mf">100</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nx">rate</span><span class="p">(</span><span class="nx">cand</span><span class="p">)).</span><span class="nx">toFixed</span><span class="p">(</span><span class="mf">1</span><span class="p">)</span><span class="si">}</span><span class="sb">%`</span><span class="p">);</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`regressions: </span><span class="si">${</span><span class="nx">regressions</span><span class="p">.</span><span class="nx">length</span><span class="si">}</span><span class="sb"> </span><span class="si">${</span><span class="nx">regressions</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s2">" "</span><span class="p">)</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`fixes: </span><span class="si">${</span><span class="nx">fixes</span><span class="p">.</span><span class="nx">length</span><span class="si">}</span><span class="sb"> </span><span class="si">${</span><span class="nx">fixes</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s2">" "</span><span class="p">)</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`flaky (repeats disagree): </span><span class="si">${</span><span class="nx">flaky</span><span class="p">.</span><span class="nx">length</span><span class="si">}</span><span class="sb"> </span><span class="si">${</span><span class="nx">flaky</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s2">" "</span><span class="p">)</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`McNemar exact p = </span><span class="si">${</span><span class="nx">p</span><span class="p">.</span><span class="nx">toFixed</span><span class="p">(</span><span class="mf">3</span><span class="p">)</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">reasons</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span>
+<span class="w">  </span><span class="p">...(</span><span class="nx">criticalRegressions</span><span class="p">.</span><span class="nx">length</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="p">[</span><span class="sb">`critical cases regressed: </span><span class="si">${</span><span class="nx">criticalRegressions</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s2">", "</span><span class="p">)</span><span class="si">}</span><span class="sb">`</span><span class="p">]</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="p">[]),</span>
+<span class="w">  </span><span class="p">...(</span><span class="nx">drop</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="nx">MAX_DROP</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nx">p</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="nx">ALPHA</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="p">[</span><span class="sb">`pass rate dropped </span><span class="si">${</span><span class="p">(</span><span class="mf">100</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nx">drop</span><span class="p">).</span><span class="nx">toFixed</span><span class="p">(</span><span class="mf">1</span><span class="p">)</span><span class="si">}</span><span class="sb"> points (p = </span><span class="si">${</span><span class="nx">p</span><span class="p">.</span><span class="nx">toFixed</span><span class="p">(</span><span class="mf">3</span><span class="p">)</span><span class="si">}</span><span class="sb">)`</span><span class="p">]</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="p">[]),</span>
+<span class="p">];</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">reasons</span><span class="p">.</span><span class="nx">length</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`GATE: FAIL - </span><span class="si">${</span><span class="nx">reasons</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s2">"; "</span><span class="p">)</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
+<span class="w">  </span><span class="nx">process</span><span class="p">.</span><span class="nx">exit</span><span class="p">(</span><span class="mf">1</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">drop</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="nx">MAX_DROP</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="s2">"GATE: PASS with warning - drop is not significant; review the regressions"</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="s2">"GATE: PASS"</span><span class="p">);</span>
+</code></pre></div>
+<p>Three candidate runs of a 240-case suite with three repeats each,
+compared with the same baseline (generated result files, run through
+the real script):</p>
+<div class="highlight"><pre><span></span><code>$ npx tsx evals/compare-runs.ts evals/baseline/task-assistant.json runs/candidate-ok.json
+paired cases: 240; pass rate 90.8% -&gt; 90.0%
+regressions: 7 case-013 case-014 case-015 case-016 case-023 case-024 case-025
+fixes: 5 case-031 case-034 case-038 case-040 case-059
+flaky (repeats disagree): 3 case-023 case-024 case-025
+McNemar exact p = 0.774
+GATE: PASS
+
+$ npx tsx evals/compare-runs.ts evals/baseline/task-assistant.json runs/candidate-bad.json
+paired cases: 240; pass rate 90.8% -&gt; 85.4%
+regressions: 16 case-013 case-014 case-015 case-016 case-017 case-018 case-019 case-020 case-021 case-022 case-023 case-024 case-025 case-026 case-035 case-036
+fixes: 3 case-031 case-034 case-038
+flaky (repeats disagree): 2 case-035 case-036
+McNemar exact p = 0.004
+GATE: FAIL - pass rate dropped 5.4 points (p = 0.004)
+
+$ npx tsx evals/compare-runs.ts evals/baseline/task-assistant.json runs/candidate-critical.json
+paired cases: 240; pass rate 90.8% -&gt; 91.3%
+regressions: 1 case-004
+fixes: 2 case-031 case-034
+flaky (repeats disagree): 0 
+McNemar exact p = 1.000
+GATE: FAIL - critical cases regressed: case-004
+</code></pre></div>
+<p>The first run is noise: seven regressions against five fixes, three of
+them flaky, and a p-value of 0.774. The second is a real regression: 16
+against 3 is very unlikely to be chance (<code>p = 0.004</code>). The third improves
+the average but breaks a critical case, which no average-based gate would
+catch. Note the effect of the strict rule in the first run: the three
+flaky cases count as regressions, which is why flaky cases need their own
+list and follow-up.</p>
+<h3 id="the-github-actions-workflow">The GitHub Actions workflow<a class="headerlink" href="#the-github-actions-workflow" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># .github/workflows/llm-evals.yml: LLM regression evals for the TaskFlow Assistant</span>
+<span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">LLM evals</span>
+
+<span class="nt">on</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">pull_request</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">paths</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"src/ai/**"</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"evals/**"</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"package-lock.json"</span>
+<span class="w">  </span><span class="nt">schedule</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">cron</span><span class="p">:</span><span class="w"> </span><span class="s">"17</span><span class="nv"> </span><span class="s">3</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">*"</span><span class="w">                 </span><span class="c1"># nightly: full suite, fresh samples, repeats</span>
+<span class="w">  </span><span class="nt">workflow_dispatch</span><span class="p">:</span>
+
+<span class="nt">permissions</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">contents</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">read</span>
+
+<span class="nt">concurrency</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">group</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">llm-evals-${{ github.ref }}</span>
+<span class="w">  </span><span class="nt">cancel-in-progress</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+
+<span class="nt">env</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">CHAT_MODEL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ vars.CHAT_MODEL }}</span><span class="w">      </span><span class="c1"># model IDs live in repository variables, not in code</span>
+<span class="w">  </span><span class="nt">JUDGE_MODEL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ vars.JUDGE_MODEL }}</span>
+<span class="w">  </span><span class="nt">PROMPTFOO_DISABLE_TELEMETRY</span><span class="p">:</span><span class="w"> </span><span class="s">"1"</span>
+<span class="w">  </span><span class="nt">PROMPTFOO_PASS_RATE_THRESHOLD</span><span class="p">:</span><span class="w"> </span><span class="s">"0"</span><span class="w">      </span><span class="c1"># compare-runs.ts decides pass or fail, not the raw rate</span>
+
+<span class="nt">jobs</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">pr-evals</span><span class="p">:</span>
+<span class="w">    </span><span class="c1"># Pull requests from forks get no secrets, so they cannot call the model.</span>
+<span class="w">    </span><span class="nt">if</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">github.event_name == 'pull_request' &amp;&amp; github.event.pull_request.head.repo.full_name == github.repository</span>
+<span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
+<span class="w">    </span><span class="nt">timeout-minutes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span>
+<span class="w">    </span><span class="nt">env</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">OPENAI_API_KEY</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ secrets.OPENAI_API_KEY }}</span>
+<span class="w">      </span><span class="nt">EVAL_CACHE_DIR</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.eval-cache</span>
+<span class="w">    </span><span class="nt">steps</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/checkout@v7</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/setup-node@v7</span>
+<span class="w">        </span><span class="nt">with</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">node-version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">24</span>
+<span class="w">          </span><span class="nt">cache</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">npm</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">npm ci</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">npm test</span><span class="w">                                     </span><span class="c1"># unit tests, including the judge plumbing</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">npx tsx scripts/dataset-manifest.ts check</span><span class="w">    </span><span class="c1"># no silent edits to the eval set</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/cache@v6</span>
+<span class="w">        </span><span class="nt">with</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.eval-cache</span>
+<span class="w">          </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">llm-evals-${{ vars.CHAT_MODEL }}-${{ hashFiles('src/ai/prompts/**', 'evals/datasets/**') }}</span>
+<span class="w">          </span><span class="nt">restore-keys</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">llm-evals-${{ vars.CHAT_MODEL }}-</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Run the eval suite</span>
+<span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">&gt;-</span>
+<span class="w">          </span><span class="no">npx promptfoo eval -c evals/promptfoo/promptfooconfig.yaml</span>
+<span class="w">          </span><span class="no">--grader "openai:responses:$JUDGE_MODEL"</span>
+<span class="w">          </span><span class="no">-o results.json -o report.html --no-progress-bar --no-share</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Gate on the paired comparison with the baseline</span>
+<span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">npx tsx evals/compare-runs.ts evals/baseline/task-assistant.json results.json</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/upload-artifact@v7</span>
+<span class="w">        </span><span class="nt">if</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">always()</span>
+<span class="w">        </span><span class="nt">with</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">llm-evals-pr-${{ github.event.pull_request.number }}</span>
+<span class="w">          </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">            </span><span class="no">results.json</span>
+<span class="w">            </span><span class="no">report.html</span>
+<span class="w">          </span><span class="nt">retention-days</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">14</span>
+
+<span class="w">  </span><span class="nt">nightly-evals</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">if</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">github.event_name != 'pull_request'</span>
+<span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
+<span class="w">    </span><span class="nt">timeout-minutes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">60</span>
+<span class="w">    </span><span class="nt">env</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">OPENAI_API_KEY</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ secrets.OPENAI_API_KEY }}</span>
+<span class="w">      </span><span class="nt">EVAL_NO_CACHE</span><span class="p">:</span><span class="w"> </span><span class="s">"1"</span><span class="w">                                  </span><span class="c1"># fresh outputs every night</span>
+<span class="w">    </span><span class="nt">steps</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/checkout@v7</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/setup-node@v7</span>
+<span class="w">        </span><span class="nt">with</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">node-version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">24</span>
+<span class="w">          </span><span class="nt">cache</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">npm</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">npm ci</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">npx tsx scripts/dataset-manifest.ts check</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Run the eval suite three times per case</span>
+<span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">&gt;-</span>
+<span class="w">          </span><span class="no">npx promptfoo eval -c evals/promptfoo/promptfooconfig.yaml</span>
+<span class="w">          </span><span class="no">--repeat 3 --max-concurrency 4</span>
+<span class="w">          </span><span class="no">--grader "openai:responses:$JUDGE_MODEL"</span>
+<span class="w">          </span><span class="no">-o nightly.json -o nightly.html --no-progress-bar --no-share</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Compare with the baseline</span>
+<span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">npx tsx evals/compare-runs.ts evals/baseline/task-assistant.json nightly.json</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/upload-artifact@v7</span>
+<span class="w">        </span><span class="nt">if</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">always()</span>
+<span class="w">        </span><span class="nt">with</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">llm-evals-nightly-${{ github.run_id }}</span>
+<span class="w">          </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">            </span><span class="no">nightly.json</span>
+<span class="w">            </span><span class="no">nightly.html</span>
+<span class="w">          </span><span class="nt">retention-days</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30</span>
+</code></pre></div>
+<p>What each part does:</p>
+<ul>
+<li><strong>Triggers.</strong> Pull requests run evals only when AI code, eval files,
+  or dependencies change. The nightly schedule catches upstream model
+  changes that no pull request would trigger.</li>
+<li><strong>Model IDs from variables.</strong> <code>vars.CHAT_MODEL</code> and
+  <code>vars.JUDGE_MODEL</code> are repository variables; changing a model is a
+  reviewed settings change, recorded in every run's environment, and the
+  cache key includes the model so old outputs are not reused.</li>
+<li><strong>Fork safety.</strong> The <code>if</code> condition skips the eval job for forks, which
+  have no access to secrets, instead of failing it.</li>
+<li><strong>Cache.</strong> The response cache is restored before the run and saved
+  after it, keyed on the model and the hash of the prompts and the
+  dataset, so an unchanged pull request reruns at almost no cost.</li>
+<li><strong>Gate.</strong> <code>PROMPTFOO_PASS_RATE_THRESHOLD: "0"</code> stops promptfoo from
+  failing the job on its own, while provider errors still fail it; the
+  paired comparison in <code>compare-runs.ts</code> makes the decision.</li>
+<li><strong>Artifacts.</strong> The JSON and HTML reports are uploaded even when the
+  gate fails, so reviewers can read the regressed cases.</li>
+</ul>
+<p><code>actionlint</code> 1.7.12 reports no problems for this workflow. The action
+versions follow the rest of these notes; for the general workflow
+syntax see <a href="../../../08-devops-and-deployment/ci-cd/github-actions-in-depth/">GitHub Actions in depth</a>.</p>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Run evals in their own job, separate from deterministic unit tests.</li>
+<li>Exercise the production code path through a custom provider instead
+  of re-implementing the prompt in the eval tool.</li>
+<li>Keep the dataset, checks, and baseline in the repository; treat the
+  eval tool as a replaceable runner.</li>
+<li>Gate on critical cases, absolute floors, and a paired comparison with
+  the baseline, not on a raw pass rate.</li>
+<li>Pin model snapshots in configuration and record them with every run.</li>
+<li>Use repeats and report pass^k or the mean, plus a list of flaky
+  cases.</li>
+<li>Cache responses on pull requests and disable the cache nightly.</li>
+<li>Update the baseline only in reviewed pull requests that explain the
+  change.</li>
+<li>Give evals their own API key with a spending limit, and skip them for
+  forks.</li>
+<li>Upload reports as artifacts so failures are readable without rerunning.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>The eval job fails on random pull requests.</strong>
+  <em>Detect:</em> the same commit passes on rerun; failures cluster on judge
+  criteria. <em>Cause:</em> a raw pass-rate threshold tighter than the noise
+  band, often with a single run per case. <em>Fix:</em> gate on the paired
+  comparison with a significance test, add repeats to the nightly run,
+  and quarantine flaky cases for relabeling.</li>
+<li><strong>Scores dropped overnight with no merged changes.</strong>
+  <em>Detect:</em> the nightly comparison fails while <code>main</code> has not changed.
+  <em>Cause:</em> the model alias moved to a new snapshot, or the provider
+  changed behavior. <em>Fix:</em> pin a snapshot in <code>CHAT_MODEL</code>, compare the old
+  and new snapshots explicitly, and update the baseline only after
+  review.</li>
+<li><strong>The eval bill exceeds the feature's bill.</strong>
+  <em>Detect:</em> the eval API key's usage grows with every push. <em>Cause:</em> no
+  path filter, no cache, judge calls for every criterion on every case.
+  <em>Fix:</em> add path filters and the response cache, short-circuit judges on
+  code failures, tier the suites, and move broad runs to the nightly
+  job.</li>
+<li><strong>Pull requests from contributors fail the eval job.</strong>
+  <em>Detect:</em> fork pull requests fail with authentication errors from the
+  provider. <em>Cause:</em> forks get no secrets. <em>Fix:</em> skip the job for forks
+  with an <code>if</code> condition and run evals after a maintainer merges or
+  re-runs the change from a branch.</li>
+<li><strong>A regression shipped although CI was green.</strong>
+  <em>Detect:</em> an incident on a kind of request the suite covers poorly.
+  <em>Cause:</em> a coverage gap, or a baseline that was updated to accept the
+  regression. <em>Fix:</em> add the incident as a critical case, require a
+  written reason for baseline updates, and review slice reports, not
+  only the overall gate.</li>
+<li><strong>Eval results are not reproducible.</strong>
+  <em>Detect:</em> nobody can tell which prompt or dataset produced a score
+  from last month. <em>Cause:</em> results were not tied to versions. <em>Fix:</em>
+  include the prompt hash in the provider id, check the dataset manifest
+  before every run, and keep artifacts long enough to compare.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Eval suite:</strong> The dataset, graders, and configuration that produce
+  scores for one feature.</li>
+<li><strong>Custom provider:</strong> A promptfoo provider that calls your own code
+  instead of a model API directly.</li>
+<li><strong>Baseline:</strong> The committed results of the current version, used for
+  comparison.</li>
+<li><strong>Regression gate:</strong> The rules that turn eval results into a merge
+  decision.</li>
+<li><strong>Critical case:</strong> A case that must pass on every run.</li>
+<li><strong>Paired comparison:</strong> Comparing two versions case by case on the same
+  inputs.</li>
+<li><strong>McNemar's test:</strong> A test of whether paired binary changes
+  (regressions and fixes) are balanced.</li>
+<li><strong>pass@k:</strong> At least one success in k attempts.</li>
+<li><strong>pass^k:</strong> Success in all k attempts.</li>
+<li><strong>Flaky case:</strong> A case whose repeats disagree.</li>
+<li><strong>Noise band:</strong> The range of scores expected from random variation
+  alone.</li>
+<li><strong>Tiered suite:</strong> Smaller suites on pull requests and the full suite
+  on a schedule.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Putting model-calling evals in <code>npm test</code>, so unit tests become slow,
+  flaky, and expensive.</li>
+<li>Re-implementing the prompt in the eval tool, so the eval tests a copy
+  of the feature.</li>
+<li>Gating on "pass rate must not drop" with a single run.</li>
+<li>Believing a low temperature makes outputs reproducible.</li>
+<li>Comparing two independent pass rates when the same cases were run on
+  both versions.</li>
+<li>Updating the baseline automatically after every merge.</li>
+<li>Running the full judge suite on every push.</li>
+<li>Letting evals create real tasks or send real emails.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Why should model-calling evals run in a separate CI job from unit
+   tests, and what belongs in each?</li>
+<li>What does a custom promptfoo provider give you that a built-in
+   provider does not? Why does it need its own cache?</li>
+<li>Describe four kinds of gate rules and what each one catches.</li>
+<li>A suite has 400 cases at a 90% pass rate. What is the approximate 95%
+   noise band, and would a run at 88.5% concern you on its own?
+   (<code>1.96 * sqrt(0.09 / 400)</code>, about 2.9 points; 88.5% is inside it.)</li>
+<li>A candidate has 9 regressions and 2 fixes against the baseline. Why
+   is this stronger evidence than the change in pass rate alone, and
+   which test would you use? (Paired: McNemar's exact test, p is about
+   0.065, so borderline; look at the cases.)</li>
+<li>Explain pass@k and pass^k. Which would you report for the TaskFlow
+   Assistant, and why?</li>
+<li>List five ways to reduce eval cost and the trade-off of each.</li>
+<li>Scores dropped in last night's run and nothing was merged. What do you
+   check first?</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://www.promptfoo.dev/docs/integrations/ci-cd/">promptfoo: CI/CD integration</a></li>
+<li><a href="https://www.promptfoo.dev/docs/configuration/test-cases/">promptfoo: Test cases</a>
+  and <a href="https://www.promptfoo.dev/docs/providers/custom-api/">custom providers</a></li>
+<li><a href="https://arxiv.org/abs/2411.00640">Evan Miller: Adding Error Bars to Evals</a></li>
+<li><a href="https://deepeval.com/docs/getting-started">DeepEval: Getting started</a></li>
+<li><a href="https://docs.braintrust.dev/evaluation-quickstart">Braintrust: Evaluation quickstart</a></li>
+<li><a href="https://inspect.aisi.org.uk/">Inspect</a></li>
+<li><a href="https://github.com/rhysd/actionlint">actionlint</a></li>
+<li>Next: <a href="../llm-observability-and-tracing/">LLM observability and tracing</a>. Back to the <a href="../">evaluation and monitoring overview</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../llm-as-judge-and-automated-evals/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: LLM-as-Judge and Automated Evals">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">LLM-as-Judge and Automated Evals</span>
+      </a>
+    
+    
+      <a href="../llm-observability-and-tracing/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: LLM Observability and Tracing">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">LLM Observability and Tracing</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

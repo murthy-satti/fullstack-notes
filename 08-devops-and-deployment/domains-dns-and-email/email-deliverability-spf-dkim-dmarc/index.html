@@ -1,0 +1,4908 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../cdn-setup-and-edge-caching/">
+      
+      
+        <link rel="next" href="../cheat-sheet/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Email Deliverability: SPF, DKIM and DMARC - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#email-deliverability-spf-dkim-and-dmarc" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Email Deliverability: SPF, DKIM and DMARC
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../05-application-architecture/" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../06-ai-and-machine-learning/" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+          <span class="md-ellipsis">&larr; Back to DevOps</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../05-application-architecture/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../06-ai-and-machine-learning/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI and Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
+        
+          
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-label="DevOps module lessons" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+                  <span class="md-ellipsis">&larr; Back to DevOps</span>
+                </a>
+              
+            </div>
+          
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                  
+  
+  
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+    
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_11" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_11" id="__nav_9_11_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Domains, DNS and Email
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_11_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_11">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Domains, DNS and Email
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_11_2" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_11_2" id="__nav_9_11_2_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Foundations
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_11_2_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_11_2">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Foundations
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../domains-and-dns-records/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Domains and DNS Records
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_11_3" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_11_3" id="__nav_9_11_3_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Web Traffic
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_11_3_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_11_3">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Web Traffic
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../connecting-domains-to-hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Connecting Domains to Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dns-migrations-and-troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DNS Migrations and Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cdn-setup-and-edge-caching/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CDN Setup and Edge Caching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_11_4" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_11_4" id="__nav_9_11_4_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Email
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_11_4_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_11_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Email
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Email Deliverability: SPF, DKIM and DMARC
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Email Deliverability: SPF, DKIM and DMARC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-application-email-lands-in-spam" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why application email lands in spam
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#transactional-and-marketing-email" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Transactional and marketing email
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#choosing-a-sending-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Choosing a sending provider
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-three-identities-in-every-message" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The three identities in every message
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#spf-which-servers-may-send" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SPF: which servers may send
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dkim-a-signature-from-your-domain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DKIM: a signature from your domain
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dmarc-alignment-policy-and-reports" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DMARC: alignment, policy, and reports
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rolling-dmarc-out-safely" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rolling DMARC out safely
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-gmail-yahoo-and-outlookcom-require" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Gmail, Yahoo, and Outlook.com require
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bounces-complaints-and-suppression-lists" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bounces, complaints, and suppression lists
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shared-and-dedicated-ips-and-warm-up" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Shared and dedicated IPs, and warm-up
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#taskflows-email-dns-records" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TaskFlow's email DNS records
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sending-through-ses-with-unsubscribe-headers-nodejs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sending through SES with unsubscribe headers (Node.js)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-one-click-unsubscribe-endpoint-express" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The one-click unsubscribe endpoint (Express)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#handling-ses-bounce-and-complaint-events-lambda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Handling SES bounce and complaint events (Lambda)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reading-the-verdict-on-a-received-message" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading the verdict on a received message
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reading-an-aggregate-report" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading an aggregate report
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-application-email-lands-in-spam" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why application email lands in spam
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#transactional-and-marketing-email" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Transactional and marketing email
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#choosing-a-sending-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Choosing a sending provider
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-three-identities-in-every-message" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The three identities in every message
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#spf-which-servers-may-send" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SPF: which servers may send
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dkim-a-signature-from-your-domain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DKIM: a signature from your domain
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dmarc-alignment-policy-and-reports" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DMARC: alignment, policy, and reports
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rolling-dmarc-out-safely" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rolling DMARC out safely
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-gmail-yahoo-and-outlookcom-require" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Gmail, Yahoo, and Outlook.com require
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bounces-complaints-and-suppression-lists" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bounces, complaints, and suppression lists
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shared-and-dedicated-ips-and-warm-up" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Shared and dedicated IPs, and warm-up
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#taskflows-email-dns-records" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TaskFlow's email DNS records
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sending-through-ses-with-unsubscribe-headers-nodejs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sending through SES with unsubscribe headers (Node.js)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-one-click-unsubscribe-endpoint-express" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The one-click unsubscribe endpoint (Express)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#handling-ses-bounce-and-complaint-events-lambda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Handling SES bounce and complaint events (Lambda)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reading-the-verdict-on-a-received-message" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading the verdict on a received message
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reading-an-aggregate-report" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading an aggregate report
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="email-deliverability-spf-dkim-and-dmarc">Email Deliverability: SPF, DKIM and DMARC<a class="headerlink" href="#email-deliverability-spf-dkim-and-dmarc" title="Permanent link">&para;</a></h1>
+<p>TaskFlow sends invitations, password resets, and "tasks due today"
+reminders. Whether those messages reach the inbox depends less on the
+code that sends them than on DNS records, sending reputation, and how
+bounces and complaints are handled. This lesson covers why application
+email lands in spam, transactional versus marketing email, choosing a
+sending provider (Amazon SES, SendGrid, Postmark, Mailgun, Resend), SPF
+and its 10-lookup limit, DKIM signing, DMARC alignment, policies, reports,
+and a safe rollout, the 2026 update to the DMARC standard, the sender
+requirements of Gmail, Yahoo, and Outlook.com, bounce and complaint
+handling, and dedicated IPs and warm-up.</p>
+<p>How mail moves between servers (SMTP, MX lookups, IMAP) is covered in
+<a href="../../../01-networking-and-protocols/email-protocols/">email protocols</a>,
+and designing a notification service with queues, retries, and provider
+failover in
+<a href="../../../05-application-architecture/system-design/case-study-notification-system/">the notification system case study</a>.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>A password reset that lands in spam is an outage for that user, and
+support usually hears about it before monitoring does. Mailbox providers
+decide where a message goes from two kinds of evidence: <strong>authentication</strong>
+(is this message really from <code>example.com</code>?) and <strong>reputation</strong> (does mail
+from this domain and these IPs get marked as spam, bounce, or hit spam
+traps?). Since 2024 Gmail and Yahoo, and since 2025 Outlook.com, require
+authentication from bulk senders and reject or junk mail that lacks it.</p>
+<p>There is a security side too. Without SPF, DKIM, and an enforced DMARC
+policy, anyone can send phishing email that claims to come from
+<code>example.com</code>, and your users have no way to tell.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Gmail's sender guidelines.</strong> Google's
+  <a href="https://support.google.com/a/answer/81126">Email sender guidelines</a>
+  require every sender to personal Gmail accounts to use SPF or DKIM,
+  valid forward and reverse DNS, TLS, and a spam rate below 0.3%; bulk
+  senders (close to 5,000 or more messages a day to Gmail accounts) also
+  need SPF and DKIM, a DMARC policy (at least <code>p=none</code>), alignment, and
+  one-click unsubscribe. The
+  <a href="https://support.google.com/a/answer/14229414">FAQ</a> adds that bulk
+  status is permanent and that from November 2025 Gmail is ramping up
+  enforcement, with temporary and permanent rejections.</li>
+<li><strong>Yahoo's Sender Hub.</strong> Yahoo's
+  <a href="https://senders.yahooinc.com/best-practices/">sender best practices</a>
+  set the same baseline: SPF or DKIM for everyone; SPF, DKIM, and a
+  passing DMARC policy of at least <code>p=none</code> for bulk senders; one-click
+  unsubscribe honored within two days; and a spam rate below 0.3%.</li>
+<li><strong>Outlook.com high-volume senders.</strong> Microsoft's
+  <a href="https://techcommunity.microsoft.com/blog/microsoftdefenderforoffice365blog/strengthening-email-ecosystem-outlook%E2%80%99s-new-requirements-for-high%E2%80%90volume-senders/4399730">announcement</a>
+  requires domains sending more than 5,000 messages a day to Outlook.com
+  consumer addresses (outlook.com, hotmail.com, live.com) to pass SPF and
+  DKIM and publish DMARC of at least <code>p=none</code>, aligned with SPF or DKIM,
+  from May 5, 2025. An April 2025 update dropped the planned Junk-folder
+  stage: non-compliant mail is rejected with <code>550 5.7.515</code>.</li>
+<li><strong>DMARC as a proposed standard.</strong> The original DMARC specification,
+  RFC 7489, was published as an informational document in 2015. In May
+  2026 the IETF published
+  <a href="https://www.rfc-editor.org/info/rfc9989">RFC 9989</a> ("DMARCbis") on the
+  Standards Track, obsoleting RFC 7489 and RFC 9091, with aggregate and
+  failure reporting split into RFC 9990 and RFC 9991.</li>
+</ul>
+<p><strong>Popular tools and providers:</strong> Amazon SES, SendGrid, Postmark, Mailgun,
+and Resend for sending; Google Postmaster Tools, Yahoo's Sender Hub, and
+Microsoft's SNDS for reputation data; DMARC report processors such as the
+open-source parsedmarc or a hosted service; and DNSControl's
+<code>SPF_BUILDER</code> for managing SPF records in code.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="why-application-email-lands-in-spam">Why application email lands in spam<a class="headerlink" href="#why-application-email-lands-in-spam" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Signal</th>
+<th>What receivers look at</th>
+<th>What you control</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Authentication</td>
+<td>SPF, DKIM, DMARC results and alignment with the visible <code>From</code></td>
+<td>DNS records and provider configuration</td>
+</tr>
+<tr>
+<td>Domain and IP reputation</td>
+<td>Spam complaints, bounces, spam traps, history of the domain and IPs</td>
+<td>List quality, consent, volume patterns, shared or dedicated IPs</td>
+</tr>
+<tr>
+<td>Engagement</td>
+<td>Opens, replies, deletions without reading, "not spam" clicks</td>
+<td>Sending only mail people asked for and want</td>
+</tr>
+<tr>
+<td>Infrastructure</td>
+<td>Reverse DNS, TLS, standards-compliant messages</td>
+<td>Mostly the provider's job</td>
+</tr>
+<tr>
+<td>Content</td>
+<td>Links, formatting, misleading subjects</td>
+<td>Honest, plain templates</td>
+</tr>
+</tbody>
+</table>
+<p>Authentication is the entry ticket; reputation decides the folder.
+Google asks senders to keep the spam rate reported in Postmaster Tools
+below 0.1% and never to reach 0.3%.</p>
+<h3 id="transactional-and-marketing-email">Transactional and marketing email<a class="headerlink" href="#transactional-and-marketing-email" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Transactional</th>
+<th>Marketing (broadcast)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Examples</td>
+<td>Password reset, invitation, receipt, security alert</td>
+<td>Newsletter, product announcement, promotion</td>
+</tr>
+<tr>
+<td>Trigger</td>
+<td>One user's action</td>
+<td>A campaign to many people</td>
+</tr>
+<tr>
+<td>Expectation</td>
+<td>Must arrive within seconds</td>
+<td>Can wait; must respect consent</td>
+</tr>
+<tr>
+<td>Unsubscribe</td>
+<td>Not for security mail; offer it for optional notifications</td>
+<td>Required, including one-click for bulk senders</td>
+</tr>
+<tr>
+<td>Risk</td>
+<td>Low complaint rate when done right</td>
+<td>Higher complaint rate</td>
+</tr>
+</tbody>
+</table>
+<p>Keep the two apart so a campaign's complaints cannot sink password
+resets: send marketing from its own subdomain (for example
+<code>news.example.com</code>) and its own provider stream or IP pool. Postmark,
+for example, runs transactional and broadcast message streams on
+separate infrastructure. Note that Gmail counts mail from subdomains
+toward the primary domain when deciding whether you are a bulk sender.</p>
+<h3 id="choosing-a-sending-provider">Choosing a sending provider<a class="headerlink" href="#choosing-a-sending-provider" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Provider</th>
+<th>DNS you add</th>
+<th>Notable details</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Amazon SES</td>
+<td>Three Easy DKIM CNAMEs (2048-bit keys by default); a custom MAIL FROM subdomain with an MX to <code>feedback-smtp.&lt;region&gt;.amazonses.com</code> and SPF <code>include:amazonses.com</code></td>
+<td>New accounts start in a sandbox (verified recipients only, 200 messages a day, 1 per second); account-level suppression list on by default; review at 5% bounces or 0.1% complaints, possible pause at 10% or 0.5%</td>
+</tr>
+<tr>
+<td>SendGrid</td>
+<td>Domain authentication with automated security: CNAMEs <code>em&lt;number&gt;</code>, <code>s1._domainkey</code>, <code>s2._domainkey</code>, plus link-branding CNAMEs</td>
+<td>SendGrid updates the SPF and DKIM targets behind the CNAMEs for you</td>
+</tr>
+<tr>
+<td>Postmark</td>
+<td>A DKIM TXT record; a custom Return-Path CNAME such as <code>pm-bounces</code> pointing to <code>pm.mtasv.net</code></td>
+<td>Separate transactional and broadcast streams on separate IP pools</td>
+</tr>
+<tr>
+<td>Mailgun</td>
+<td>A sending subdomain such as <code>mg.example.com</code> with SPF <code>include:mailgun.org</code>, a DKIM TXT key, and an optional tracking CNAME</td>
+<td>Mailgun recommends a subdomain rather than the root domain</td>
+</tr>
+<tr>
+<td>Resend</td>
+<td>DKIM and SPF records (TXT and MX or CNAME) generated per domain; Return-Path defaults to <code>send.&lt;your domain&gt;</code></td>
+<td>Recommends sending from subdomains; do not proxy its CNAMEs through Cloudflare</td>
+</tr>
+</tbody>
+</table>
+<p>Whichever you choose, the pattern is the same: prove the domain with
+DKIM, give the provider a bounce (Return-Path) subdomain so SPF aligns,
+and publish DMARC yourself.</p>
+<h3 id="the-three-identities-in-every-message">The three identities in every message<a class="headerlink" href="#the-three-identities-in-every-message" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: a sequence of one TaskFlow email. TaskFlow API asks the sending service to send a reminder from reminders@example.com. The sending service signs it with DKIM using d=example.com and selector s1, and sends it from 198.51.100.25 with the envelope MAIL FROM bounce@bounce.example.com. The receiving mail server, for example Gmail, makes three DNS lookups: the SPF record of bounce.example.com, which lists the sending service, so SPF passes; the DKIM public key at s1._domainkey.example.com, which verifies the signature, so DKIM passes; and the DMARC policy at _dmarc.example.com. It then checks alignment: both bounce.example.com and the DKIM domain example.com belong to the same organizational domain as the visible From address, example.com, so DMARC passes and the message goes to the inbox. Had both failed or not aligned, the published policy would decide: none delivers, quarantine sends to spam, reject refuses it. Once a day the receiver sends an aggregate report to the address in the rua tag." src="../email-authentication-flow.svg" /></p>
+<ul>
+<li><strong>Header <code>From</code></strong> (<code>reminders@example.com</code>): what the user sees. DMARC
+  protects this domain.</li>
+<li><strong>Envelope <code>MAIL FROM</code></strong> (the Return-Path, <code>bounce@bounce.example.com</code>):
+  where bounces go. <strong>SPF</strong> checks this domain, not the header <code>From</code>.</li>
+<li><strong>DKIM signing domain</strong> (<code>d=example.com</code> in the <code>DKIM-Signature</code>
+  header): the domain whose key signed the message.</li>
+</ul>
+<h3 id="spf-which-servers-may-send">SPF: which servers may send<a class="headerlink" href="#spf-which-servers-may-send" title="Permanent link">&para;</a></h3>
+<p>An SPF record is a TXT record on the envelope sender's domain:</p>
+<div class="highlight"><pre><span></span><code>bounce.example.com.  TXT  "v=spf1 include:amazonses.com ~all"
+example.com.         TXT  "v=spf1 include:_spf.mail.example.net -all"
+</code></pre></div>
+<ul>
+<li>Mechanisms are checked left to right: <code>ip4:</code> and <code>ip6:</code> ranges,
+  <code>include:</code> another domain's SPF, <code>a</code> and <code>mx</code> (the domain's own hosts),
+  and <code>all</code> at the end. The qualifier on <code>all</code> decides the default:
+  <code>-all</code> fails anything not listed, <code>~all</code> soft-fails it.</li>
+<li>One SPF record per name. Two records make every check a permanent
+  error.</li>
+<li>SPF breaks when mail is forwarded, because the forwarder's IP is not in
+  your record. DKIM survives forwarding, which is why DMARC accepts
+  either.</li>
+</ul>
+<p><strong>The 10-lookup limit.</strong> RFC 7208 caps the DNS lookups an SPF check may
+trigger at 10. The <code>include</code>, <code>a</code>, <code>mx</code>, <code>ptr</code>, and <code>exists</code> mechanisms
+and the <code>redirect</code> modifier each count, <em>including those inside included
+records</em>; <code>ip4</code>, <code>ip6</code>, and <code>all</code> do not. Going over the limit is a
+<code>permerror</code>, so SPF fails for every message, not just the last sender.
+RFC 7208 also asks receivers to allow at most two "void" lookups (names
+that return nothing).</p>
+<p><img alt="Diagram: counting SPF lookups for a domain with ten slots. The record v=spf1 a mx include:_spf.mail.example.net include:_spf.support.example.net include:_spf.crm.example.net -all uses one lookup for a, one for mx, four for the mail provider's include (one plus three nested includes), three for the support desk (one plus two nested), and two for the CRM (one plus one nested): eleven lookups, one over the limit, so every SPF check returns permerror. The fix removes a and mx, which the domain does not send from, saving two, and moves the CRM to its own subdomain crm.example.com with its own SPF record and its own budget of ten, leaving seven lookups at example.com." src="../spf-lookup-budget.svg" /></p>
+<p>Ways to stay under the limit: remove mechanisms for hosts that do not
+send mail (<code>a</code>, <code>mx</code>), never use <code>ptr</code>, give each third-party sender its
+own subdomain (each name has its own budget of 10), and use the custom
+MAIL FROM or Return-Path subdomain your provider offers. Flattening
+includes into IP ranges works but breaks silently when the provider
+changes its IPs; DNSControl's documentation recommends flattening only
+when it is the only way under 10.</p>
+<h3 id="dkim-a-signature-from-your-domain">DKIM: a signature from your domain<a class="headerlink" href="#dkim-a-signature-from-your-domain" title="Permanent link">&para;</a></h3>
+<p>The provider signs selected headers and a hash of the body with a
+private key and adds a header such as:</p>
+<div class="highlight"><pre><span></span><code>DKIM-Signature: v=1; a=rsa-sha256; d=example.com; s=s1; c=relaxed/relaxed;
+        h=from:to:subject:date:message-id:list-unsubscribe:list-unsubscribe-post;
+        bh=&lt;body-hash&gt;; b=&lt;signature&gt;
+</code></pre></div>
+<p>The receiver fetches the public key from <code>s1._domainkey.example.com</code>:</p>
+<div class="highlight"><pre><span></span><code>s1._domainkey.example.com.  TXT  "v=DKIM1; k=rsa; p=MIIBIjANBgkq...truncated...IDAQAB"
+</code></pre></div>
+<ul>
+<li><strong>Key size:</strong> RFC 8301 requires at least 1024-bit RSA keys and
+  recommends 2048; <code>rsa-sha1</code> must no longer be used. SES Easy DKIM uses
+  2048-bit keys by default.</li>
+<li><strong>Selectors</strong> (<code>s=</code>) let several keys coexist, which is how keys are
+  rotated: publish a new selector, switch signing to it, and remove the
+  old key after mail in transit has been delivered. When the provider
+  gives you CNAMEs for the selectors (SES, SendGrid), it can rotate keys
+  without you touching DNS.</li>
+<li><strong>What breaks DKIM:</strong> anything that changes signed headers or the body,
+  such as mailing lists that add footers. ARC (RFC 8617) lets such
+  intermediaries vouch for the original results.</li>
+</ul>
+<h3 id="dmarc-alignment-policy-and-reports">DMARC: alignment, policy, and reports<a class="headerlink" href="#dmarc-alignment-policy-and-reports" title="Permanent link">&para;</a></h3>
+<p>DMARC is a TXT record at <code>_dmarc.&lt;domain&gt;</code>:</p>
+<div class="highlight"><pre><span></span><code>_dmarc.example.com.  TXT  "v=DMARC1; p=quarantine; sp=quarantine; adkim=r; aspf=r; rua=mailto:dmarc-reports@example.com"
+</code></pre></div>
+<p>A message passes DMARC when SPF <strong>or</strong> DKIM passes <strong>and</strong> the passing
+domain aligns with the header <code>From</code> domain.</p>
+<p><img alt="Diagram: alignment checks for mail with the visible From address reminders@example.com. Case 1: envelope MAIL FROM bounce.example.com with SPF pass, DKIM d=example.com with pass: under relaxed alignment both align, because they share the organizational domain example.com; under strict alignment only DKIM aligns, because bounce.example.com is not exactly example.com; DMARC passes either way. Case 2: the provider's default MAIL FROM amazonses.com with SPF pass, and DKIM d=provider.example.net with pass: neither domain belongs to example.com, so nothing aligns and DMARC fails although both checks passed. Case 3: a forwarded message where SPF fails at the forwarder but DKIM d=example.com still passes: DMARC passes through DKIM." src="../dmarc-alignment.svg" /></p>
+<table>
+<thead>
+<tr>
+<th>Tag</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>p</code></td>
+<td>Policy for the domain: <code>none</code> (monitor), <code>quarantine</code> (treat as suspicious, usually the spam folder), <code>reject</code></td>
+</tr>
+<tr>
+<td><code>sp</code></td>
+<td>Policy for existing subdomains (defaults to <code>p</code>)</td>
+</tr>
+<tr>
+<td><code>np</code></td>
+<td>Policy for subdomains that do not exist (from RFC 9091, now part of RFC 9989)</td>
+</tr>
+<tr>
+<td><code>adkim</code>, <code>aspf</code></td>
+<td>Alignment mode: <code>r</code> relaxed (same organizational domain, the default) or <code>s</code> strict (exact match)</td>
+</tr>
+<tr>
+<td><code>rua</code></td>
+<td>Where to send daily aggregate reports</td>
+</tr>
+<tr>
+<td><code>ruf</code></td>
+<td>Where to send per-message failure reports (few receivers send them)</td>
+</tr>
+<tr>
+<td><code>t</code></td>
+<td>Test mode in RFC 9989: <code>t=y</code> asks receivers to apply the next weaker policy</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Reports</strong> are what make DMARC safe to enforce. Aggregate reports are
+XML files, usually daily, listing every IP that sent mail as your domain
+with counts and SPF and DKIM results. They reveal the CRM, the support
+desk, and the forgotten script that send as <code>example.com</code>. If <code>rua</code>
+points at another domain (a reporting service), that domain must
+publish a record authorizing it, which hosted services set up for you.</p>
+<p><strong>What changed in RFC 9989.</strong> The <code>pct</code> tag (apply the policy to a
+percentage of mail) was removed because receivers rarely applied it
+accurately except at 0 and 100; <code>t=y</code> replaces its main use. The <code>rf</code>
+and <code>ri</code> tags were removed, <code>np</code> and <code>psd</code> were added, and receivers now
+find the organizational domain with a DNS tree walk instead of the Public
+Suffix List. It also makes explicit (Section 7.4) that domains whose
+users might post to mailing lists should not publish <code>p=reject</code>; any
+such domain that still wants it should first run <code>p=none</code>, then
+<code>p=quarantine</code>, for at least a month each. Receivers ignore tags they
+do not know, so existing records keep parsing, but receivers that
+still implement RFC 7489 ignore <code>t</code>, so treat every step to a stricter
+<code>p</code> as real.</p>
+<h3 id="rolling-dmarc-out-safely">Rolling DMARC out safely<a class="headerlink" href="#rolling-dmarc-out-safely" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: a DMARC rollout over several months. Stage 1, weeks 0 to 4: publish p=none with a rua address, collect aggregate reports, and inventory every service that sends as example.com. Stage 2: fix each legitimate sender, adding DKIM with d=example.com or a custom return path so SPF aligns, or moving it to its own subdomain. Stage 3: publish p=quarantine with t=y as a test, then p=quarantine, watching reports for legitimate mail that fails. Stage 4: publish p=reject with t=y, then p=reject, with sp and np for subdomains. Reports keep arriving and are monitored for good. Each step forward happens only when reports show all legitimate mail aligned; any new failing source sends you back to fixing it." src="../dmarc-rollout-timeline.svg" /></p>
+<ol>
+<li>Publish <code>p=none</code> with <code>rua</code> and collect reports for a few weeks.</li>
+<li>For each legitimate source, make it align: DKIM with <code>d=example.com</code>
+   (or the subdomain it sends from) and a custom Return-Path where
+   possible. Move hard-to-fix senders to their own subdomain.</li>
+<li>Move to <code>p=quarantine</code> (optionally first with <code>t=y</code>), and watch.</li>
+<li>Move to <code>p=reject</code> (optionally first with <code>t=y</code>), and set <code>sp</code> and
+   <code>np</code> deliberately.</li>
+<li>Keep reading reports; a new SaaS tool sending as your domain shows up
+   there first.</li>
+</ol>
+<p>Domains that never send mail should go straight to <code>p=reject</code> together
+with a null MX and <code>v=spf1 -all</code>, as shown in
+<a href="../domains-and-dns-records/">domains and DNS records</a>.</p>
+<h3 id="what-gmail-yahoo-and-outlookcom-require">What Gmail, Yahoo, and Outlook.com require<a class="headerlink" href="#what-gmail-yahoo-and-outlookcom-require" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Requirement</th>
+<th>Gmail (personal accounts)</th>
+<th>Yahoo</th>
+<th>Outlook.com (consumer)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Who is covered</td>
+<td>All senders; extra rules for bulk senders (close to 5,000+ messages a day, status permanent)</td>
+<td>All senders; extra rules for bulk senders</td>
+<td>Domains sending more than 5,000 messages a day</td>
+</tr>
+<tr>
+<td>SPF and DKIM</td>
+<td>All: SPF or DKIM. Bulk: both</td>
+<td>All: SPF or DKIM. Bulk: both</td>
+<td>SPF must pass and DKIM must pass</td>
+</tr>
+<tr>
+<td>DMARC</td>
+<td>Bulk: published (<code>p=none</code> allowed), with alignment</td>
+<td>Bulk: at least <code>p=none</code>, must pass; relaxed alignment is fine</td>
+<td>At least <code>p=none</code>, aligned with SPF or DKIM</td>
+</tr>
+<tr>
+<td>Unsubscribe</td>
+<td>Bulk marketing and subscribed mail: one-click (RFC 8058) plus a visible link; honor within 48 hours</td>
+<td>Bulk: one-click (<code>POST</code> highly recommended, <code>mailto</code> accepted) plus a visible link; honor within 2 days</td>
+<td>A clear, working unsubscribe is recommended</td>
+</tr>
+<tr>
+<td>Spam rate</td>
+<td>Below 0.3%, aim below 0.1%</td>
+<td>Below 0.3%</td>
+<td>Not stated as a number</td>
+</tr>
+<tr>
+<td>Other</td>
+<td>Valid forward and reverse DNS, TLS, RFC 5322 format</td>
+<td>Valid forward and reverse DNS, RFC 5321 and 5322</td>
+<td>Valid, reply-capable From or Reply-To</td>
+</tr>
+<tr>
+<td>Enforcement</td>
+<td>Since February 2024; ramping up from November 2025 with rejections</td>
+<td>Since February 2024</td>
+<td>Since May 5, 2025: rejected with <code>550 5.7.515</code></td>
+</tr>
+</tbody>
+</table>
+<p>These rules do not apply to mail sent to Google Workspace business
+accounts, but meeting them everywhere is simpler than tracking
+exceptions.</p>
+<h3 id="bounces-complaints-and-suppression-lists">Bounces, complaints, and suppression lists<a class="headerlink" href="#bounces-complaints-and-suppression-lists" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Meaning</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hard bounce</td>
+<td>Permanent failure, such as an address that does not exist</td>
+<td>Stop sending to the address immediately</td>
+</tr>
+<tr>
+<td>Soft bounce</td>
+<td>Temporary failure, such as a full mailbox</td>
+<td>Retry; suppress after repeated failures</td>
+</tr>
+<tr>
+<td>Complaint</td>
+<td>The recipient marked the message as spam (reported through a feedback loop)</td>
+<td>Stop sending that kind of mail to them immediately</td>
+</tr>
+<tr>
+<td>Unsubscribe</td>
+<td>The recipient opted out of a category</td>
+<td>Stop that category; keep security mail</td>
+</tr>
+</tbody>
+</table>
+<p>Providers keep their own suppression lists (SES's account-level list
+holds addresses that hard-bounced or complained until you remove them),
+but keep yours too, per message category, so it survives a provider
+change. Two details matter. SES places an account under review at a 5%
+bounce rate or a 0.1% complaint rate, and recommends staying below 2%
+bounces. And Gmail does not send complaint data to SES, so for Gmail
+users your signals are the spam rate in Postmaster Tools and the
+unsubscribes you receive, which is one more reason to offer one-click
+unsubscribe on optional mail.</p>
+<h3 id="shared-and-dedicated-ips-and-warm-up">Shared and dedicated IPs, and warm-up<a class="headerlink" href="#shared-and-dedicated-ips-and-warm-up" title="Permanent link">&para;</a></h3>
+<p>Providers send most customers' mail from shared IP pools whose
+reputation they manage. A dedicated IP gives you your own reputation,
+good or bad, and needs steady volume: SES advises sending around 1,000
+emails a day to each mailbox provider you want to keep a good reputation
+with. New IPs have no history, so they must be <strong>warmed up</strong>: volume
+rises gradually over weeks (SES's automatic warm-up for standard
+dedicated IPs takes 45 days, and mailbox providers need roughly two to
+six weeks), starting with the most engaged recipients. Choose dedicated
+IPs only for high, steady volume; for most applications a reputable
+shared pool plus good domain reputation is the better choice.</p>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Situation</th>
+<th>Recommended setup</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Password resets and invitations for TaskFlow</td>
+<td>A transactional provider (Postmark, SES, Resend, SendGrid, or Mailgun) on a shared pool, DKIM with <code>d=example.com</code>, a custom Return-Path, DMARC</td>
+</tr>
+<tr>
+<td>Optional reminders and digests</td>
+<td>The transactional setup plus <code>List-Unsubscribe</code> and <code>List-Unsubscribe-Post</code> headers and per-category preferences</td>
+</tr>
+<tr>
+<td>Newsletters and announcements</td>
+<td>A separate subdomain and broadcast stream, explicit consent, one-click unsubscribe</td>
+</tr>
+<tr>
+<td>High, steady volume</td>
+<td>Dedicated IPs with warm-up and monitoring per mailbox provider</td>
+</tr>
+<tr>
+<td>Third-party tools sending as you (CRM, help desk)</td>
+<td>Their custom DKIM for your domain, or their own subdomain</td>
+</tr>
+<tr>
+<td>Domains that send no mail</td>
+<td>Null MX, <code>v=spf1 -all</code>, DMARC <code>p=reject</code></td>
+</tr>
+</tbody>
+</table>
+<p>Do not:</p>
+<ul>
+<li>Send marketing through the transactional stream or IPs.</li>
+<li>Buy, rent, or scrape lists; spam traps and complaints follow.</li>
+<li>Send from a <code>no-reply</code> address that bounces replies; Microsoft asks
+  for a valid, reply-capable From or Reply-To.</li>
+<li>Jump to <code>p=reject</code> before reports show every legitimate sender aligned.</li>
+</ul>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="taskflows-email-dns-records">TaskFlow's email DNS records<a class="headerlink" href="#taskflows-email-dns-records" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>; Inbound mail (a hosted mailbox provider)
+example.com.                    MX     10 mx1.mail.example.net.
+example.com.                    MX     20 mx2.mail.example.net.
+; Only the mailbox provider sends directly as @example.com
+example.com.                    TXT    "v=spf1 include:_spf.mail.example.net -all"
+
+; Transactional mail through Amazon SES, From: reminders@example.com
+; Easy DKIM: three CNAMEs; copy the exact names and targets from the SES console
+&lt;token1&gt;._domainkey.example.com. CNAME  &lt;token1&gt;.dkim.amazonses.com.
+&lt;token2&gt;._domainkey.example.com. CNAME  &lt;token2&gt;.dkim.amazonses.com.
+&lt;token3&gt;._domainkey.example.com. CNAME  &lt;token3&gt;.dkim.amazonses.com.
+; Custom MAIL FROM, so SPF aligns with example.com
+bounce.example.com.             MX     10 feedback-smtp.us-east-1.amazonses.com.
+bounce.example.com.             TXT    "v=spf1 include:amazonses.com ~all"
+
+; Newsletters from a separate subdomain and provider
+news.example.com.               TXT    "v=spf1 include:_spf.news-provider.example.net -all"
+nl1._domainkey.news.example.com. TXT   "v=DKIM1; k=rsa; p=MIIBIjANBgkq...truncated...IDAQAB"
+
+; One DMARC policy for the domain and its subdomains
+_dmarc.example.com.             TXT    "v=DMARC1; p=quarantine; sp=quarantine; np=reject; rua=mailto:dmarc-reports@example.com"
+</code></pre></div>
+<ul>
+<li>SES's MAIL FROM subdomain must be used only for that purpose (not for
+  sending from or receiving mail) and must have exactly one MX record.</li>
+<li><code>news.example.com</code> has its own SPF budget and its own reputation, and
+  the <code>_dmarc</code> record at <code>example.com</code> covers it through <code>sp</code>.</li>
+<li><code>np=reject</code> tells receivers to reject mail from subdomains that do not
+  exist, which phishers like to invent; receivers that only implement
+  RFC 7489 ignore it.</li>
+</ul>
+<h3 id="sending-through-ses-with-unsubscribe-headers-nodejs">Sending through SES with unsubscribe headers (Node.js)<a class="headerlink" href="#sending-through-ses-with-unsubscribe-headers-nodejs" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/email/send-reminder.js: send a "tasks due today" email via Amazon SES (API v2)</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">SESv2Client</span><span class="p">,</span><span class="w"> </span><span class="nx">SendEmailCommand</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"@aws-sdk/client-sesv2"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">isSuppressed</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"./suppressions.js"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">renderReminder</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"./templates.js"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">ses</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">SESv2Client</span><span class="p">({</span><span class="w"> </span><span class="nx">region</span><span class="o">:</span><span class="w"> </span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">AWS_REGION</span><span class="w"> </span><span class="p">});</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">sendReminder</span><span class="p">({</span><span class="w"> </span><span class="nx">to</span><span class="p">,</span><span class="w"> </span><span class="nx">tasks</span><span class="p">,</span><span class="w"> </span><span class="nx">unsubscribeUrl</span><span class="w"> </span><span class="p">})</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="k">await</span><span class="w"> </span><span class="nx">isSuppressed</span><span class="p">(</span><span class="nx">to</span><span class="p">,</span><span class="w"> </span><span class="s2">"reminders"</span><span class="p">))</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w"> </span><span class="c1">// bounced, complained, or opted out</span>
+
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">subject</span><span class="p">,</span><span class="w"> </span><span class="nx">text</span><span class="p">,</span><span class="w"> </span><span class="nx">html</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">renderReminder</span><span class="p">(</span><span class="nx">tasks</span><span class="p">,</span><span class="w"> </span><span class="nx">unsubscribeUrl</span><span class="p">);</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">ses</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="ow">new</span><span class="w"> </span><span class="nx">SendEmailCommand</span><span class="p">({</span>
+<span class="w">    </span><span class="nx">FromEmailAddress</span><span class="o">:</span><span class="w"> </span><span class="s2">"TaskFlow &lt;reminders@example.com&gt;"</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">ReplyToAddresses</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"support@example.com"</span><span class="p">],</span>
+<span class="w">    </span><span class="nx">Destination</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">ToAddresses</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="nx">to</span><span class="p">]</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nx">ConfigurationSetName</span><span class="o">:</span><span class="w"> </span><span class="s2">"taskflow-transactional"</span><span class="p">,</span><span class="w"> </span><span class="c1">// publishes bounce and complaint events</span>
+<span class="w">    </span><span class="nx">Content</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">Simple</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nx">Subject</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Data</span><span class="o">:</span><span class="w"> </span><span class="nx">subject</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nx">Body</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Text</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Data</span><span class="o">:</span><span class="w"> </span><span class="nx">text</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="nx">Html</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Data</span><span class="o">:</span><span class="w"> </span><span class="nx">html</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nx">Headers</span><span class="o">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">          </span><span class="p">{</span><span class="w"> </span><span class="nx">Name</span><span class="o">:</span><span class="w"> </span><span class="s2">"List-Unsubscribe"</span><span class="p">,</span><span class="w"> </span><span class="nx">Value</span><span class="o">:</span><span class="w"> </span><span class="sb">`&lt;</span><span class="si">${</span><span class="nx">unsubscribeUrl</span><span class="si">}</span><span class="sb">&gt;`</span><span class="w"> </span><span class="p">},</span>
+<span class="w">          </span><span class="p">{</span><span class="w"> </span><span class="nx">Name</span><span class="o">:</span><span class="w"> </span><span class="s2">"List-Unsubscribe-Post"</span><span class="p">,</span><span class="w"> </span><span class="nx">Value</span><span class="o">:</span><span class="w"> </span><span class="s2">"List-Unsubscribe=One-Click"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="p">],</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">  </span><span class="p">}));</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">result</span><span class="p">.</span><span class="nx">MessageId</span><span class="p">;</span><span class="w"> </span><span class="c1">// store it to match later bounce and complaint events</span>
+<span class="p">}</span>
+</code></pre></div>
+<ul>
+<li>The unsubscribe headers go on optional mail such as reminders, never on
+  password resets or security alerts.</li>
+<li>RFC 8058 requires both headers to be covered by the DKIM signature, and
+  receivers should not offer one-click unsubscribe otherwise. Check the
+  <code>h=</code> list in the <code>DKIM-Signature</code> of a delivered message to confirm
+  your provider signs them.</li>
+<li>Run sends from a background job with retries rather than inside the
+  HTTP request, as described in
+  <a href="../../../03-backend-development/backend-concepts/background-jobs-and-scheduling/">background jobs and scheduling</a>.</li>
+</ul>
+<h3 id="the-one-click-unsubscribe-endpoint-express">The one-click unsubscribe endpoint (Express)<a class="headerlink" href="#the-one-click-unsubscribe-endpoint-express" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/routes/unsubscribe.js: RFC 8058 one-click unsubscribe plus a page for humans</span>
+<span class="k">import</span><span class="w"> </span><span class="nx">express</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"express"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">verifyUnsubscribeToken</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"../email/tokens.js"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Preferences</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"../models/preferences.js"</span><span class="p">;</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">router</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">express</span><span class="p">.</span><span class="nx">Router</span><span class="p">();</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">CATEGORIES</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Map</span><span class="p">([[</span><span class="s2">"reminders"</span><span class="p">,</span><span class="w"> </span><span class="s2">"task reminders"</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="s2">"digests"</span><span class="p">,</span><span class="w"> </span><span class="s2">"weekly digests"</span><span class="p">]]);</span>
+
+<span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">optOut</span><span class="p">(</span><span class="nx">req</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">category</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">req</span><span class="p">.</span><span class="nx">params</span><span class="p">;</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">CATEGORIES</span><span class="p">.</span><span class="nx">has</span><span class="p">(</span><span class="nx">category</span><span class="p">))</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span><span class="w"> </span><span class="c1">// never use raw input as a field name</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">userId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">verifyUnsubscribeToken</span><span class="p">(</span><span class="nx">req</span><span class="p">.</span><span class="nx">query</span><span class="p">.</span><span class="nx">t</span><span class="p">,</span><span class="w"> </span><span class="nx">category</span><span class="p">);</span><span class="w"> </span><span class="c1">// signed, expiring token</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">userId</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span>
+<span class="w">  </span><span class="k">await</span><span class="w"> </span><span class="nx">Preferences</span><span class="p">.</span><span class="nx">updateOne</span><span class="p">(</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nx">userId</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nx">$set</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">[</span><span class="sb">`email.</span><span class="si">${</span><span class="nx">category</span><span class="si">}</span><span class="sb">`</span><span class="p">]</span><span class="o">:</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nx">upsert</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="p">);</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c1">// Mail clients POST the body "List-Unsubscribe=One-Click" with no cookies or login</span>
+<span class="nx">router</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s2">"/unsubscribe/:category"</span><span class="p">,</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="nx">req</span><span class="p">,</span><span class="w"> </span><span class="nx">res</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">res</span><span class="p">.</span><span class="nx">status</span><span class="p">((</span><span class="k">await</span><span class="w"> </span><span class="nx">optOut</span><span class="p">(</span><span class="nx">req</span><span class="p">))</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mf">200</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mf">400</span><span class="p">).</span><span class="nx">end</span><span class="p">();</span><span class="w"> </span><span class="c1">// no redirect: RFC 8058 forbids one</span>
+<span class="p">});</span>
+
+<span class="c1">// The visible link in the email body opens a confirmation page instead</span>
+<span class="nx">router</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">"/unsubscribe/:category"</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nx">req</span><span class="p">,</span><span class="w"> </span><span class="nx">res</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">label</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">CATEGORIES</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">req</span><span class="p">.</span><span class="nx">params</span><span class="p">.</span><span class="nx">category</span><span class="p">);</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">label</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="nx">res</span><span class="p">.</span><span class="nx">status</span><span class="p">(</span><span class="mf">404</span><span class="p">).</span><span class="nx">end</span><span class="p">();</span>
+<span class="w">  </span><span class="nx">res</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="sb">`&lt;form method="post"&gt;&lt;button&gt;Unsubscribe from </span><span class="si">${</span><span class="nx">label</span><span class="si">}</span><span class="sb">&lt;/button&gt;&lt;/form&gt;`</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre></div>
+<p>The token in the URL identifies the user and category, because the
+request carries no cookies or authentication. Categories come from an
+allowlist, so URL input is never echoed into HTML or used as a database
+field name. The <code>GET</code> route does not unsubscribe by itself: link scanners
+and prefetchers follow links in emails, and must not opt users out. The
+form has no <code>action</code>, so it posts back to the same URL, token included.</p>
+<h3 id="handling-ses-bounce-and-complaint-events-lambda">Handling SES bounce and complaint events (Lambda)<a class="headerlink" href="#handling-ses-bounce-and-complaint-events-lambda" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/email/ses-events.js: SES events delivered through SNS to a Lambda function</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Suppressions</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"../models/suppressions.js"</span><span class="p">;</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">handler</span><span class="p">(</span><span class="nx">event</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="nx">record</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="nx">event</span><span class="p">.</span><span class="nx">Records</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">record</span><span class="p">.</span><span class="nx">Sns</span><span class="p">.</span><span class="nx">Message</span><span class="p">);</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">msg</span><span class="p">.</span><span class="nx">eventType</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="nx">msg</span><span class="p">.</span><span class="nx">notificationType</span><span class="p">;</span><span class="w"> </span><span class="c1">// configuration set events vs identity notifications</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">type</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">"Bounce"</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nx">msg</span><span class="p">.</span><span class="nx">bounce</span><span class="p">.</span><span class="nx">bounceType</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">"Permanent"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="nx">r</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="nx">msg</span><span class="p">.</span><span class="nx">bounce</span><span class="p">.</span><span class="nx">bouncedRecipients</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">await</span><span class="w"> </span><span class="nx">suppress</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nx">emailAddress</span><span class="p">,</span><span class="w"> </span><span class="s2">"hard-bounce"</span><span class="p">,</span><span class="w"> </span><span class="nx">msg</span><span class="p">.</span><span class="nx">mail</span><span class="p">.</span><span class="nx">messageId</span><span class="p">);</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">type</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">"Complaint"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="nx">r</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="nx">msg</span><span class="p">.</span><span class="nx">complaint</span><span class="p">.</span><span class="nx">complainedRecipients</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">await</span><span class="w"> </span><span class="nx">suppress</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nx">emailAddress</span><span class="p">,</span><span class="w"> </span><span class="s2">"complaint"</span><span class="p">,</span><span class="w"> </span><span class="nx">msg</span><span class="p">.</span><span class="nx">mail</span><span class="p">.</span><span class="nx">messageId</span><span class="p">);</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="c1">// Transient bounces are retried by SES; count them and suppress after repeats</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">suppress</span><span class="p">(</span><span class="nx">email</span><span class="p">,</span><span class="w"> </span><span class="nx">reason</span><span class="p">,</span><span class="w"> </span><span class="nx">messageId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">await</span><span class="w"> </span><span class="nx">Suppressions</span><span class="p">.</span><span class="nx">updateOne</span><span class="p">(</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nx">email</span><span class="o">:</span><span class="w"> </span><span class="nx">email</span><span class="p">.</span><span class="nx">toLowerCase</span><span class="p">()</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nx">$setOnInsert</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">reason</span><span class="p">,</span><span class="w"> </span><span class="nx">messageId</span><span class="p">,</span><span class="w"> </span><span class="nx">createdAt</span><span class="o">:</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Date</span><span class="p">()</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nx">upsert</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>SES reports <code>bounceType</code> as <code>Permanent</code>, <code>Transient</code>, or <code>Undetermined</code>.
+Many mailbox providers redact who complained, so <code>complainedRecipients</code>
+lists every recipient of that message on the complaining domain; for
+one-recipient transactional mail that is exactly the person.</p>
+<h3 id="reading-the-verdict-on-a-received-message">Reading the verdict on a received message<a class="headerlink" href="#reading-the-verdict-on-a-received-message" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>; Example header added by a receiving server
+Authentication-Results: mx.receiver.example.org;
+       dkim=pass header.i=@example.com header.s=s1;
+       spf=pass smtp.mailfrom=bounce.example.com;
+       dmarc=pass (p=QUARANTINE sp=QUARANTINE) header.from=example.com
+</code></pre></div>
+<p>Send a test message to a mailbox you control and open the raw headers:
+all three should pass, and the domains after <code>header.i</code>,
+<code>smtp.mailfrom</code>, and <code>header.from</code> should share <code>example.com</code>.</p>
+<h3 id="reading-an-aggregate-report">Reading an aggregate report<a class="headerlink" href="#reading-an-aggregate-report" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>; Excerpt of a DMARC aggregate report (XML), one record
+&lt;record&gt;
+  &lt;row&gt;
+    &lt;source_ip&gt;203.0.113.77&lt;/source_ip&gt;
+    &lt;count&gt;1250&lt;/count&gt;
+    &lt;policy_evaluated&gt;&lt;disposition&gt;none&lt;/disposition&gt;&lt;dkim&gt;fail&lt;/dkim&gt;&lt;spf&gt;fail&lt;/spf&gt;&lt;/policy_evaluated&gt;
+  &lt;/row&gt;
+  &lt;identifiers&gt;&lt;header_from&gt;example.com&lt;/header_from&gt;&lt;/identifiers&gt;
+  &lt;auth_results&gt;
+    &lt;dkim&gt;&lt;domain&gt;crm.example.net&lt;/domain&gt;&lt;result&gt;pass&lt;/result&gt;&lt;/dkim&gt;
+    &lt;spf&gt;&lt;domain&gt;crm.example.net&lt;/domain&gt;&lt;result&gt;pass&lt;/result&gt;&lt;/spf&gt;
+  &lt;/auth_results&gt;
+&lt;/record&gt;
+</code></pre></div>
+<p>1,250 messages claiming to be from <code>example.com</code> came from a CRM: SPF
+and DKIM passed for the CRM's own domain, but neither aligned, so DMARC
+failed (<code>disposition</code> is <code>none</code> only because the policy was still
+<code>p=none</code>). Enabling the CRM's custom DKIM for <code>example.com</code>, or moving it
+to <code>crm.example.com</code>, fixes it before enforcement.</p>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Authenticate everything: DKIM with your domain, a custom Return-Path
+  for SPF alignment, and DMARC with <code>rua</code> reporting.</li>
+<li>Roll DMARC out from <code>none</code> to <code>reject</code> on evidence from reports, and
+  give non-sending domains <code>p=reject</code> from day one.</li>
+<li>Separate transactional and marketing mail by subdomain and stream.</li>
+<li>Keep each name's SPF under 10 lookups; prefer subdomains to
+  flattening.</li>
+<li>Use 2048-bit DKIM keys and rotate them through selectors.</li>
+<li>Add one-click unsubscribe to optional mail and honor it within two
+  days.</li>
+<li>Suppress hard bounces and complaints immediately, in your own store as
+  well as the provider's.</li>
+<li>Watch Postmaster Tools, your provider's reputation metrics, and DMARC
+  reports; alert on bounce and complaint rates.</li>
+<li>Use dedicated IPs only with steady volume and a warm-up plan.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Password resets go to spam at Gmail only.</strong>
+  <em>Detect:</em> raw headers show <code>dmarc=fail</code> or <code>spf=pass</code> with
+  <code>smtp.mailfrom</code> on the provider's domain; Postmaster Tools shows a
+  rising spam rate. <em>Cause:</em> no alignment (default provider Return-Path
+  and DKIM signed with the provider's domain), or a marketing stream
+  sharing the domain and IPs. <em>Fix:</em> custom DKIM and Return-Path for
+  <code>example.com</code>, separate marketing onto its own subdomain and stream.</li>
+<li><strong>Every message fails SPF after a new tool was added.</strong>
+  <em>Detect:</em> reports and headers show <code>spf=permerror</code>. <em>Cause:</em> the new
+  <code>include</code> pushed the record past 10 lookups, or a second SPF record was
+  created. <em>Fix:</em> merge into one record, remove unused mechanisms, and
+  move the tool to its own subdomain.</li>
+<li><strong>Mail to Outlook.com addresses bounces with <code>550 5.7.515</code>.</strong>
+  <em>Detect:</em> bounce events carry that code for hotmail.com and outlook.com
+  recipients. <em>Cause:</em> the domain sends more than 5,000 messages a day and
+  fails SPF, DKIM, or aligned DMARC. <em>Fix:</em> make both SPF and DKIM pass
+  and publish an aligned DMARC record.</li>
+<li><strong>The provider pauses sending.</strong>
+  <em>Detect:</em> an account review or pause notice; SES's <code>Reputation.BounceRate</code>
+  above 5%. <em>Cause:</em> sending to stale or imported addresses, or ignoring
+  bounce events. <em>Fix:</em> suppress bounces automatically, confirm addresses
+  with double opt-in, and stop sending to inactive recipients.</li>
+<li><strong>Legitimate mail is rejected right after moving to <code>p=reject</code>.</strong>
+  <em>Detect:</em> complaints from a team whose tool's mail vanished; reports
+  show a source with failing alignment. <em>Cause:</em> a sender that was never
+  fixed during the <code>p=none</code> phase. <em>Fix:</em> step back to <code>quarantine</code>, fix
+  the sender, and only advance when reports are clean.</li>
+<li><strong>Email stops entirely after a DNS migration.</strong>
+  <em>Detect:</em> DKIM <code>fail (no key)</code> or missing SPF in headers. <em>Cause:</em> DKIM
+  selectors, SPF, or the MAIL FROM MX were not copied to the new DNS
+  provider. <em>Fix:</em> restore them; include underscore names in every zone
+  inventory (see <a href="../dns-migrations-and-troubleshooting/">DNS migrations and troubleshooting</a>).</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Header From:</strong> The address the recipient sees; DMARC protects its
+  domain.</li>
+<li><strong>Envelope MAIL FROM (Return-Path):</strong> The bounce address used in SMTP;
+  SPF checks its domain.</li>
+<li><strong>SPF:</strong> A TXT record listing which servers may send for a domain.</li>
+<li><strong>DKIM:</strong> A signature over headers and body, verified with a public key
+  published under a selector.</li>
+<li><strong>Selector:</strong> The label (<code>s=</code>) that tells receivers which DKIM key to
+  fetch.</li>
+<li><strong>DMARC:</strong> A policy that requires SPF or DKIM to pass and align with
+  the header From domain, plus reporting.</li>
+<li><strong>Alignment:</strong> The authenticated domain matching the From domain,
+  exactly (strict) or by organizational domain (relaxed).</li>
+<li><strong>Aggregate report (rua):</strong> Daily XML summaries of authentication
+  results per sending IP.</li>
+<li><strong>One-click unsubscribe:</strong> RFC 8058's <code>List-Unsubscribe-Post</code> mechanism
+  that lets mail clients unsubscribe with one <code>POST</code>.</li>
+<li><strong>Hard and soft bounce:</strong> Permanent and temporary delivery failures.</li>
+<li><strong>Feedback loop:</strong> A mailbox provider's channel for reporting spam
+  complaints to the sender.</li>
+<li><strong>IP warm-up:</strong> Gradually increasing volume on a new IP to build
+  reputation.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Believing SPF protects the visible From address; it checks the
+  envelope sender, and only DMARC ties authentication to the From.</li>
+<li>Publishing two SPF records, or one with more than 10 lookups.</li>
+<li>Letting providers sign with their own domain, so DKIM passes but
+  DMARC fails.</li>
+<li>Jumping to <code>p=reject</code> without reading aggregate reports.</li>
+<li>Sending newsletters and password resets from the same stream.</li>
+<li>Treating "accepted by the provider" as "delivered to the inbox".</li>
+<li>Unsubscribing users on <code>GET</code> requests that link scanners trigger.</li>
+<li>Assuming a dedicated IP improves deliverability by itself.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Name the three domains involved in authenticating one message and
+   which check uses each.</li>
+<li>Why can a message pass both SPF and DKIM and still fail DMARC?</li>
+<li>Count the lookups in <code>v=spf1 a mx include:x.example.net -all</code> if
+   <code>x.example.net</code> includes two more records, one of which includes one
+   more. Is it under the limit? (a 1, mx 1, x 1, its two includes 2, the
+   nested one 1: 6 lookups, under 10.)</li>
+<li>Describe a safe DMARC rollout from <code>p=none</code> to <code>p=reject</code>, and what
+   evidence allows each step.</li>
+<li>What did RFC 9989 change compared with RFC 7489, and what replaces
+   <code>pct</code>?</li>
+<li>Which headers does RFC 8058 require, and why must the <code>GET</code> handler
+   for an unsubscribe link not unsubscribe by itself?</li>
+<li>TaskFlow sends 8,000 reminders a day to Gmail users. Which Gmail
+   requirements apply, and how long does that status last?</li>
+<li>When is a dedicated IP worth it, and how would you warm one up?</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://www.rfc-editor.org/rfc/rfc7208">RFC 7208: Sender Policy Framework (SPF)</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc6376">RFC 6376: DomainKeys Identified Mail (DKIM) Signatures</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc9989">RFC 9989: Domain-Based Message Authentication, Reporting, and Conformance (DMARC)</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc8058">RFC 8058: Signaling One-Click Functionality for List Email Headers</a></li>
+<li><a href="https://support.google.com/a/answer/14668346">Google: Postmaster Tools dashboards</a></li>
+<li><a href="https://docs.aws.amazon.com/ses/latest/dg/send-email-authentication-dkim.html">Amazon SES: Authenticating email with DKIM</a></li>
+<li><a href="https://docs.aws.amazon.com/ses/latest/dg/mail-from.html">Amazon SES: Using a custom MAIL FROM domain</a></li>
+<li><a href="https://postmarkapp.com/message-streams">Postmark: Message streams</a></li>
+<li>Next: <a href="../interview-questions-and-answers/">domains, DNS and email interview questions and answers</a>. Back to the <a href="../">domains, DNS and email overview</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../cdn-setup-and-edge-caching/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: CDN Setup and Edge Caching">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">CDN Setup and Edge Caching</span>
+      </a>
+    
+    
+      <a href="../cheat-sheet/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: Cheat Sheet">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">Cheat Sheet</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

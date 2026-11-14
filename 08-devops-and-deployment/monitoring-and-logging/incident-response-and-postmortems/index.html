@@ -1,0 +1,4674 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../error-tracking-and-uptime-monitoring/">
+      
+      
+        <link rel="next" href="../cheat-sheet/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Incident Response and Postmortems - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#incident-response-and-postmortems" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Incident Response and Postmortems
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../05-application-architecture/" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../06-ai-and-machine-learning/" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+          <span class="md-ellipsis">&larr; Back to DevOps</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../05-application-architecture/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../06-ai-and-machine-learning/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI and Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
+        
+          
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-label="DevOps module lessons" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+                  <span class="md-ellipsis">&larr; Back to DevOps</span>
+                </a>
+              
+            </div>
+          
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                  
+  
+  
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+    
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_16" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_16" id="__nav_9_16_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monitoring and Logging
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_16_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_16">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Monitoring and Logging
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_16_2" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_16_2" id="__nav_9_16_2_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Foundations
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_16_2_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_16_2">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Foundations
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../observability-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Observability Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_16_3" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_16_3" id="__nav_9_16_3_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The Signals
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_16_3_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_16_3">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    The Signals
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../structured-logging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Structured Logging
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../metrics-and-dashboards/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metrics and Dashboards
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../distributed-tracing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Distributed Tracing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_16_4" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_16_4" id="__nav_9_16_4_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reliability Practice
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_16_4_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_16_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Reliability Practice
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../slis-slos-and-error-budgets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SLIs, SLOs, and Error Budgets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../alerting-and-on-call/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Alerting and On-Call
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../error-tracking-and-uptime-monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error Tracking and Uptime Monitoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Incident Response and Postmortems
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Incident Response and Postmortems
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-counts-as-an-incident" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What counts as an incident
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#severity-levels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Severity levels
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-incident-lifecycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The incident lifecycle
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#roles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Roles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#communication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Communication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mitigate-first-then-find-the-root-cause" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mitigate first, then find the root cause
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blameless-postmortems" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Blameless postmortems
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#root-causes-contributing-factors-and-the-5-whys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Root causes, contributing factors, and the "5 whys"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#action-items-that-get-done" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Action items that get done
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#declaring-an-incident-a-checklist-for-the-first-10-minutes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Declaring an incident: a checklist for the first 10 minutes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#status-update-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Status update templates
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-blameless-postmortem-for-taskflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A blameless postmortem for TaskFlow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#postmortem-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Postmortem template
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-counts-as-an-incident" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What counts as an incident
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#severity-levels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Severity levels
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-incident-lifecycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The incident lifecycle
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#roles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Roles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#communication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Communication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mitigate-first-then-find-the-root-cause" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mitigate first, then find the root cause
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blameless-postmortems" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Blameless postmortems
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#root-causes-contributing-factors-and-the-5-whys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Root causes, contributing factors, and the "5 whys"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#action-items-that-get-done" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Action items that get done
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#declaring-an-incident-a-checklist-for-the-first-10-minutes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Declaring an incident: a checklist for the first 10 minutes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#status-update-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Status update templates
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-blameless-postmortem-for-taskflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A blameless postmortem for TaskFlow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#postmortem-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Postmortem template
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="incident-response-and-postmortems">Incident Response and Postmortems<a class="headerlink" href="#incident-response-and-postmortems" title="Permanent link">&para;</a></h1>
+<p>Alerts and dashboards tell you something is wrong. What happens next, in
+the minutes when users are affected and everyone is under pressure,
+decides whether an outage lasts ten minutes or three hours. Incident
+response is the practised process for that moment: declare the incident,
+assign clear roles, communicate on a schedule, mitigate first, and fix the
+root cause later. The <strong>postmortem</strong> afterwards turns the incident into
+lasting improvements without blaming individuals. This lesson covers what
+counts as an incident, severity levels, the lifecycle (detect, triage,
+mitigate, resolve, learn), roles, communication, blameless postmortems
+with a complete worked example, the "5 whys" and its limits, and tracking
+action items to completion.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>Unmanaged incidents follow a familiar pattern: five engineers debug in
+parallel in different directions, two of them restart the same service,
+nobody updates customers, the support team learns about the outage from
+social media, and the one person who knows the database is not told. The
+technical problem may be simple; the coordination failure makes it long.
+Google's SRE book opens its incident chapter with exactly such a story.</p>
+<p>After the incident, the instinct is to find who made the mistake. That
+teaches people to hide mistakes, so the next postmortem has less
+information and the same failure happens again. Organizations that learn
+fastest from failure treat incidents as evidence about the <em>system</em>
+(tooling, processes, defaults, alerts) and fix that.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Google SRE (managing incidents).</strong> The chapter
+  <a href="https://sre.google/sre-book/managing-incidents/">Managing Incidents</a>
+  describes an incident management process based on the Incident Command
+  System, with separate incident commander, operations, communication, and
+  planning roles, a live incident document, and clear handoffs.</li>
+<li><strong>Google SRE (postmortem culture).</strong> The chapter
+  <a href="https://sre.google/sre-book/postmortem-culture/">Postmortem Culture: Learning from Failure</a>
+  explains blameless postmortems, when to write them, and how to review
+  and share them; the book also includes an
+  <a href="https://sre.google/sre-book/example-postmortem/">example postmortem</a>.</li>
+<li><strong>PagerDuty Incident Response.</strong> PagerDuty's open documentation on
+  <a href="https://response.pagerduty.com/before/different_roles/">incident roles</a>
+  defines the incident commander, deputy, scribe, subject matter experts,
+  and customer and internal liaisons, and is widely reused as a starting
+  point.</li>
+<li><strong>Public postmortems.</strong> GitLab's
+  <a href="https://about.gitlab.com/blog/2017/02/10/postmortem-of-database-outage-of-january-31/">postmortem of its January 31, 2017 database outage</a>
+  and Amazon's
+  <a href="https://aws.amazon.com/message/41926/">summary of the February 2017 S3 disruption</a>
+  show real timelines, contributing factors, and action items. The AWS
+  summary also notes that the service health dashboard itself could not be
+  updated at first because it depended on the failing service.</li>
+</ul>
+<p><strong>Popular tools and providers:</strong> PagerDuty, incident.io, FireHydrant,
+Rootly, Jira Service Management, Atlassian Statuspage, chat tools (Slack,
+Microsoft Teams) with incident channels, and shared documents for the
+live incident record.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="what-counts-as-an-incident">What counts as an incident<a class="headerlink" href="#what-counts-as-an-incident" title="Permanent link">&para;</a></h3>
+<p>An <strong>incident</strong> is an unplanned event that disrupts or threatens a service
+and needs a coordinated response. Write the declaration criteria down so
+nobody has to argue in the moment. For TaskFlow, declare an incident when
+any of these is true:</p>
+<ul>
+<li>A user-facing SLO is burning fast (a burn-rate page fired), or users
+  cannot complete a core journey (sign in, create or view tasks).</li>
+<li>Data may be lost, corrupted, or exposed, or there is a suspected
+  security breach.</li>
+<li>The problem needs more than one person or team to fix.</li>
+<li>It is not clearly mitigated within 15 to 30 minutes of the first page.</li>
+</ul>
+<p>The rule of thumb from experienced teams: <strong>declare early, downgrade
+later</strong>. Declaring costs a channel and a few messages; not declaring costs
+coordination when it matters most.</p>
+<h3 id="severity-levels">Severity levels<a class="headerlink" href="#severity-levels" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Severity</th>
+<th>Definition</th>
+<th>TaskFlow example</th>
+<th>Response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>SEV1</strong> (critical)</td>
+<td>Most users cannot use the product, data loss or a security breach</td>
+<td>API down for everyone; tasks deleted</td>
+<td>All hands; IC and comms lead immediately; status page within 15 minutes; updates every 30 minutes; executive notification</td>
+</tr>
+<tr>
+<td><strong>SEV2</strong> (major)</td>
+<td>A core feature broken or severely degraded for many users</td>
+<td>Creating tasks fails for 30% of requests</td>
+<td>IC and responders; status page; updates every 30 to 60 minutes</td>
+</tr>
+<tr>
+<td><strong>SEV3</strong> (minor)</td>
+<td>Partial degradation with a workaround, or a small group affected</td>
+<td>Reminder emails delayed by 20 minutes</td>
+<td>On-call handles in working hours; internal updates</td>
+</tr>
+<tr>
+<td><strong>SEV4</strong> (low)</td>
+<td>Cosmetic or internal-only issues</td>
+<td>An admin report is slow</td>
+<td>Normal ticket</td>
+</tr>
+</tbody>
+</table>
+<p>Severity can change during an incident; say so explicitly in the channel
+when it does. Severity drives response, communication, and whether a
+postmortem is required, not blame.</p>
+<h3 id="the-incident-lifecycle">The incident lifecycle<a class="headerlink" href="#the-incident-lifecycle" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: five phases in order: Detect (alert, probe, or customer report), Triage (declare, set severity, assign roles), Mitigate (stop user impact: roll back, fail over), Resolve (fix the cause, verify, close), and Learn (postmortem, action items), with a dashed loop from Learn back to Detect because action items improve detection, response, and prevention. Below, an example TaskFlow SEV2 after a bad deploy, in UTC and not to scale: 14:02 deploy 1.42.0; 14:05 the alert fires; 14:08 acknowledged; 14:12 SEV2 declared; 14:29 dropping a faulty index mitigates; 15:40 fix shipped and resolved; two days later the postmortem review. Detection took 3 minutes, response and mitigation 24 minutes, and users were affected for 27 minutes." src="../incident-lifecycle.svg" /></p>
+<ol>
+<li><strong>Detect.</strong> An alert, a synthetic check, an error-tracker spike, or a
+   customer report. Good monitoring makes this minutes, not hours.</li>
+<li><strong>Triage.</strong> Acknowledge, assess impact, declare the incident, set the
+   severity, open the incident channel, and assign an incident commander.</li>
+<li><strong>Mitigate.</strong> Stop or reduce user impact as fast as possible, even
+   before the cause is understood.</li>
+<li><strong>Resolve.</strong> Fix the underlying cause (or make the mitigation
+   permanent), verify the SLIs are back to normal, and close the incident.</li>
+<li><strong>Learn.</strong> Write and review a blameless postmortem, and complete its
+   action items.</li>
+</ol>
+<p>Measure the clocks: <strong>time to detect</strong> (impact start to first alert),
+<strong>time to acknowledge</strong>, <strong>time to mitigate</strong> (impact start to user
+impact ending), and <strong>time to resolve</strong>. "MTTR" is used for both
+"mitigate/restore" and "resolve", so define which you mean.</p>
+<h3 id="roles">Roles<a class="headerlink" href="#roles" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: the incident commander is at the centre and coordinates and decides but does not debug. They exchange tasks and status with the operations lead, who directs the fix with subject experts for the database, app, and network. They give facts and the next update time to the communications lead, who owns all updates and posts to the status page for customers every 30 minutes and briefs support and leadership. Decisions go to the scribe, who records the timeline. Every update goes to the incident channel and shared document, the single record." src="../incident-roles-communication.svg" /></p>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Responsibilities</th>
+<th>Does not</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Incident commander (IC)</strong></td>
+<td>Owns the incident: sets priorities, assigns work, makes decisions (roll back or not), keeps the big picture, declares severity changes and the end of the incident, hands off explicitly</td>
+<td>Debug or type commands; that is how coordination gets lost</td>
+</tr>
+<tr>
+<td><strong>Communications lead</strong></td>
+<td>Writes status page updates and internal briefings on a fixed cadence, handles support and stakeholder questions, shields responders from interruptions</td>
+<td>Speculate about causes in public</td>
+</tr>
+<tr>
+<td><strong>Operations lead and subject matter experts</strong></td>
+<td>Investigate and change production: roll back, fail over, scale, run queries; report findings to the IC</td>
+<td>Make large changes without telling the IC</td>
+</tr>
+<tr>
+<td><strong>Scribe</strong></td>
+<td>Keeps the timeline in the incident document: what was observed, decided, and done, with UTC timestamps</td>
+<td>Filter out "unimportant" events; the postmortem needs them</td>
+</tr>
+</tbody>
+</table>
+<p>In a small team, the first responder is IC until someone takes over, and
+one person may hold several roles in a SEV3. For SEV1 and SEV2, separate
+the IC from the people fixing. Handoffs are explicit ("I am handing IC to
+Priya; Priya, please confirm"), and long incidents rotate people before
+they are exhausted.</p>
+<h3 id="communication">Communication<a class="headerlink" href="#communication" title="Permanent link">&para;</a></h3>
+<p>Communication has two audiences with different needs:</p>
+<ul>
+<li><strong>Internal (the incident channel):</strong> every observation, hypothesis,
+  action, and decision, posted in one place so newcomers can catch up by
+  reading. Side conversations in direct messages are how facts get lost.</li>
+<li><strong>External (status page, customer support, leadership):</strong> what users
+  experience, what you are doing, and when you will update next. No
+  internal jargon, no blame, no guesses about root cause.</li>
+</ul>
+<p>A status update always includes the <strong>current impact</strong>, <strong>what is being
+done</strong>, and <strong>the time of the next update</strong>, and the next update is sent
+on time even if there is nothing new ("still investigating" is
+information). Cadence by severity: every 30 minutes for SEV1, every 30
+to 60 minutes for SEV2.</p>
+<h3 id="mitigate-first-then-find-the-root-cause">Mitigate first, then find the root cause<a class="headerlink" href="#mitigate-first-then-find-the-root-cause" title="Permanent link">&para;</a></h3>
+<p>The first goal is to stop user pain, not to understand it. Common
+mitigations, roughly in order of preference:</p>
+<ol>
+<li><strong>Roll back</strong> the most recent deploy or configuration change (the most
+   common cause of incidents is change).</li>
+<li><strong>Turn off a feature flag</strong> for the new code path.</li>
+<li><strong>Fail over</strong> to a healthy replica, zone, or region.</li>
+<li><strong>Scale out</strong> or add capacity when the problem is load.</li>
+<li><strong>Shed or block traffic</strong>: rate-limit an abusive client, disable a
+   non-essential feature, serve a degraded page.</li>
+</ol>
+<p>Mitigation buys time to find the real cause calmly. Two cautions:</p>
+<ul>
+<li><strong>Preserve evidence</strong> before destroying state: take a heap snapshot or
+  a few thread dumps, save logs, snapshot a disk, before restarting
+  everything.</li>
+<li><strong>Know what cannot be rolled back.</strong> A database migration that dropped a
+  column makes a code rollback unsafe; that is why migrations are written
+  to be backward compatible (see
+  <a href="../../deployment-strategies/zero-downtime-database-migrations/">zero-downtime database migrations</a>).</li>
+</ul>
+<h3 id="blameless-postmortems">Blameless postmortems<a class="headerlink" href="#blameless-postmortems" title="Permanent link">&para;</a></h3>
+<p>A <strong>postmortem</strong> (also called an incident review or retrospective) is a
+written record of an incident: what happened, its impact, why it
+happened, and what will change. <strong>Blameless</strong> means it focuses on how the
+system (code, tools, processes, defaults, incentives) allowed or amplified
+the failure, and assumes people acted reasonably with the information they
+had at the time.</p>
+<p>Why blameless works: engineers who fear punishment hide details, and the
+details are what make the analysis useful. "An engineer ran the wrong
+command" is never the end of the analysis; the questions are why the
+command was possible, why it looked right, and why nothing stopped it.
+Blameless does not mean nobody is accountable: owners are accountable for
+completing the action items.</p>
+<p>When to write one (agree on this in advance): every SEV1 and SEV2, any
+data loss, any incident needing on-call intervention beyond a runbook
+step, any incident where monitoring failed to detect the problem, and any
+incident consuming more than a set share (for example 20%) of the error
+budget.</p>
+<p>A postmortem template:</p>
+<ol>
+<li><strong>Summary:</strong> two or three sentences anyone in the company can
+   understand.</li>
+<li><strong>Impact:</strong> who and what was affected, for how long, with numbers
+   (failed requests, users, error budget consumed, revenue or support
+   tickets where relevant).</li>
+<li><strong>Timeline:</strong> UTC timestamps from the triggering change through
+   detection, response, mitigation, and resolution.</li>
+<li><strong>Root causes and contributing factors:</strong> the conditions that together
+   produced the incident, including detection and response gaps.</li>
+<li><strong>What went well:</strong> practices to keep (fast rollback, a good runbook).</li>
+<li><strong>What went wrong and where we got lucky.</strong></li>
+<li><strong>Action items:</strong> each with an owner, a priority, a due date, and a
+   tracking link, grouped as detect, mitigate, and prevent.</li>
+<li><strong>Lessons learned and supporting information:</strong> graphs, links to the
+   incident channel and document.</li>
+</ol>
+<h3 id="root-causes-contributing-factors-and-the-5-whys">Root causes, contributing factors, and the "5 whys"<a class="headerlink" href="#root-causes-contributing-factors-and-the-5-whys" title="Permanent link">&para;</a></h3>
+<p>The <strong>5 whys</strong> technique repeatedly asks "why?" to move from a symptom to
+deeper causes:</p>
+<div class="highlight"><pre><span></span><code>Why did task creation fail?        The API returned 500 for POST /tasks.
+Why did it return 500?             A new index made inserts violate a unique constraint.
+Why was the index unique?          The migration defined it as unique by mistake.
+Why was the mistake not caught?    Tests ran on an empty database with no duplicates.
+Why do tests use empty data?       No realistic test data set exists for migrations.
+</code></pre></div>
+<p>It is useful for pushing past the first answer, but it has known limits:</p>
+<ul>
+<li>It produces a <strong>single linear chain</strong>, while real incidents almost
+  always have several contributing factors that were each necessary and
+  only jointly sufficient (the code bug, <em>and</em> the missing test data,
+  <em>and</em> the deploy at peak traffic, <em>and</em> an alert that took 10 minutes).</li>
+<li>Different people asking the same "why" reach different answers, and the
+  chain tends to stop at whatever the facilitator already believed.</li>
+<li>It easily stops at <strong>"human error"</strong>, which is a starting point for
+  analysis, not a cause.</li>
+</ul>
+<p>Better practice is to list <strong>contributing factors</strong> across categories
+(technical trigger, detection, response, process, organizational) and ask
+"what made this action make sense at the time?" for every human decision
+in the timeline. Richard Cook's short paper
+<a href="https://how.complexsystems.fail/">How Complex Systems Fail</a> explains why
+post-accident attribution to a single "root cause" is fundamentally wrong
+for complex systems.</p>
+<h3 id="action-items-that-get-done">Action items that get done<a class="headerlink" href="#action-items-that-get-done" title="Permanent link">&para;</a></h3>
+<p>Postmortems that produce no change are ceremonies. Good action items are:</p>
+<ul>
+<li><strong>Specific and verifiable:</strong> "Add a migration test that runs against a
+  sanitized copy of production data", not "be more careful with
+  migrations".</li>
+<li><strong>Owned and dated:</strong> one owner (a person, not a team), a due date, a
+  priority, and a ticket in the normal backlog.</li>
+<li><strong>Balanced:</strong> some improve detection (an alert that would have fired
+  sooner), some mitigation (a faster rollback), some prevention (a
+  guardrail that makes the failure impossible).</li>
+<li><strong>Tracked:</strong> a recurring review of open postmortem actions, and a
+  metric for completion rate. Repeat incidents with the same contributing
+  factor are a sign that actions are not being completed.</li>
+</ul>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Situation</th>
+<th>Response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SLO burn-rate page, users affected</td>
+<td>Declare an incident; IC; status page for SEV1/SEV2</td>
+</tr>
+<tr>
+<td>Suspected security breach or data exposure</td>
+<td>Declare; involve the security team; follow the security incident process, including legal and regulatory notification duties</td>
+</tr>
+<tr>
+<td>A bug found in development or staging</td>
+<td>Normal bug process, not an incident</td>
+</tr>
+<tr>
+<td>A single failed background job retried successfully</td>
+<td>Ticket; no incident</td>
+</tr>
+<tr>
+<td>Near miss: a dangerous situation caught before impact</td>
+<td>Short postmortem is worthwhile; near misses are cheap lessons</td>
+</tr>
+<tr>
+<td>Planned maintenance</td>
+<td>Change management and status page notice, not an incident (unless it goes wrong)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="declaring-an-incident-a-checklist-for-the-first-10-minutes">Declaring an incident: a checklist for the first 10 minutes<a class="headerlink" href="#declaring-an-incident-a-checklist-for-the-first-10-minutes" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>1. Acknowledge the page. Look at the SLO and RED dashboards: what is the user impact?
+2. Declare: open #inc-&lt;date&gt;-&lt;short-name&gt;, post "Declaring SEV2: &lt;impact&gt;. I am IC until handoff."
+3. Assign roles: ops lead, comms lead (SEV1/SEV2), scribe. Page experts you need.
+4. Start the incident doc from the template; pin it in the channel.
+5. Ask: "What changed?" Check deploys, config changes, feature flags, and infrastructure events.
+6. Choose the fastest safe mitigation (roll back, flag off, fail over). Say it, then do it.
+7. Comms lead posts the first status update and sets the next update time.
+8. Every 15 minutes the IC summarizes: impact, current hypothesis, actions in flight, next steps.
+</code></pre></div>
+<h3 id="status-update-templates">Status update templates<a class="headerlink" href="#status-update-templates" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>Internal update (incident channel), SEV2, 14:30 UTC
+Impact: ~30% of POST /tasks requests failed from 14:02 to 14:29 UTC. Reads unaffected.
+Current state: Mitigated at 14:29 by dropping a unique index added by release 1.42.0.
+               Error ratio back to baseline. App rolled back to 1.41.3 (did not help alone).
+Working on: confirming no tasks were lost; preparing a corrected migration.
+Next update: 15:00 UTC or sooner if anything changes.
+IC: &lt;name&gt;  Ops: &lt;name&gt;  Comms: &lt;name&gt;
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>Status page update, 14:35 UTC: Monitoring
+Between 14:02 and 14:29 UTC, some attempts to create tasks failed with an error.
+We have applied a fix and task creation is working normally. Existing tasks were not affected.
+We are monitoring closely and will post another update by 15:30 UTC.
+</code></pre></div>
+<h3 id="a-blameless-postmortem-for-taskflow">A blameless postmortem for TaskFlow<a class="headerlink" href="#a-blameless-postmortem-for-taskflow" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>Postmortem: Task creation failures after release 1.42.0
+Status: Action items in progress   Severity: SEV2   Incident date: 2026-11-10
+Authors: &lt;IC name&gt;, &lt;ops lead name&gt;   Review meeting: 2026-11-12
+
+Summary
+Release 1.42.0 added a unique index on (userId, title) to the tasks collection by
+mistake. For 27 minutes, users creating a task with a title they had used before
+received an error. Dropping the index restored service. No data was lost.
+
+Impact
+- 14:02 to 14:29 UTC (27 minutes): 31% of POST /tasks requests returned 500.
+- 6,840 failed task creations from 2,310 users; 37 support tickets.
+- 14% of the 30-day error budget for API availability consumed.
+- Reads and updates were not affected.
+
+Timeline (UTC)
+14:00  Release 1.42.0 rollout starts (index build included in the migration).
+14:02  Rollout completes; E11000 duplicate key errors begin on POST /tasks.
+14:05  TaskflowErrorBudgetBurnFast pages the primary on-call.
+14:06  Error tracker alerts on a new issue: MongoServerError E11000 in createTask.
+14:08  On-call acknowledges, sees errors started with the deploy.
+14:12  SEV2 declared; IC, ops lead, and comms lead assigned.
+14:15  Decision: roll back the application. Index left in place for now.
+14:17  First status page update posted.
+14:21  Rollback to 1.41.3 complete... errors continue at the same rate.
+14:24  Ops lead identifies the unique index (not the code) as the cause.
+14:29  Index dropped; error ratio returns to baseline. Impact ends.
+15:40  Corrected migration (non-unique index) shipped in 1.42.1.
+       Incident resolved.
+
+Root causes and contributing factors
+- The migration declared the new index { userId: 1, title: 1 } with unique: true.
+  The intent was a non-unique index to speed up search.
+- Migration tests ran against an empty database, so no duplicate titles existed.
+- Code review covered the application diff; the migration file was reviewed
+  quickly because "it only adds an index".
+- The runbook for "errors after deploy" said to roll back the application, which
+  does not undo schema changes, so the first mitigation did not help (8 extra minutes).
+- Detection was good: the burn-rate alert fired 3 minutes after impact began.
+
+What went well
+- Burn-rate alert and the error tracker identified the deploy as the trigger within minutes.
+- Roles were assigned quickly; customers received an update within 15 minutes of the page.
+
+What went wrong / where we got lucky
+- The rollback did not include schema changes.
+- We were lucky the index was additive; a destructive migration could have lost data.
+
+Action items
+| # | Action | Type | Owner | Priority | Due | Ticket |
+| 1 | Run migration tests against an anonymized production-like data set | Prevent | &lt;name&gt; | P1 | 2026-11-24 | TF-901 |
+| 2 | Lint migrations: flag unique indexes and require explicit approval | Prevent | &lt;name&gt; | P2 | 2026-12-01 | TF-902 |
+| 3 | Update the "errors after deploy" runbook: check schema changes before rollback | Mitigate | &lt;name&gt; | P1 | 2026-11-14 | TF-903 |
+| 4 | Ship schema changes as a separate, earlier deploy step with its own rollback | Prevent | &lt;name&gt; | P2 | 2026-12-15 | TF-904 |
+| 5 | Add a canary step so 5% of traffic sees a release for 10 minutes first | Detect | &lt;name&gt; | P2 | 2026-12-15 | TF-905 |
+</code></pre></div>
+<p>Note how the timeline exposes the 8 minutes lost to an ineffective first
+mitigation, and how every contributing factor is about the system (tests,
+review focus, runbook, deploy design), not the engineer who wrote the
+migration. Action item 5 would have limited the impact to a small share of
+users; see
+<a href="../../deployment-strategies/rolling-blue-green-and-canary/">rolling, blue-green, and canary deployments</a>.</p>
+<h3 id="postmortem-template">Postmortem template<a class="headerlink" href="#postmortem-template" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code># Postmortem: &lt;short title&gt;
+Status: Draft | In review | Action items in progress | Complete
+Severity: SEV&lt;n&gt;    Incident date: &lt;YYYY-MM-DD&gt;    Authors: &lt;names&gt;    Reviewers: &lt;names&gt;
+
+## Summary            (2-3 sentences, for any reader)
+## Impact             (who, what, how long, numbers, error budget consumed)
+## Timeline           (UTC; trigger, detection, response, mitigation, resolution)
+## Root causes and contributing factors   (technical, detection, response, process)
+## What went well
+## What went wrong / where we got lucky
+## Action items       (# | action | type: detect/mitigate/prevent | owner | priority | due | ticket)
+## Lessons learned
+## Supporting information   (graphs, links to channel, incident doc, related postmortems)
+</code></pre></div>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Write down declaration criteria and severity definitions before you
+  need them; declare early.</li>
+<li>Separate the incident commander from the people fixing the problem.</li>
+<li>Keep one incident channel and one live document as the record.</li>
+<li>Communicate on a fixed cadence with impact, actions, and next update
+  time, internally and externally.</li>
+<li>Mitigate first: roll back, flag off, fail over; investigate after users
+  are safe, preserving evidence.</li>
+<li>Host the status page and incident tooling independently of the
+  production systems they report on.</li>
+<li>Write blameless postmortems for every qualifying incident, review them
+  in a meeting, and share them widely.</li>
+<li>List contributing factors across technical, detection, response, and
+  process categories; never stop at "human error".</li>
+<li>Give every action item one owner, a due date, and a ticket, and review
+  completion regularly.</li>
+<li>Practise: run incident drills and game days so roles feel familiar
+  before a real SEV1.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Everyone is debugging and nobody is coordinating.</strong>
+  <em>Detect:</em> the incident channel is a stream of conflicting theories,
+  two people restart the same service, and no decision is recorded.
+  <em>Cause:</em> no incident commander, or the IC is also debugging. <em>Fix:</em>
+  assign an IC who does not touch production, and have them summarize the
+  state every 15 minutes.</li>
+<li><strong>Customers hear about the outage from social media first.</strong>
+  <em>Detect:</em> support tickets reference posts made before the first status
+  update. <em>Cause:</em> no communications lead, or status updates wait until
+  the cause is known. <em>Fix:</em> post an initial update within minutes of
+  declaring ("we are investigating errors creating tasks") and update on a
+  fixed cadence.</li>
+<li><strong>The same incident happens again three months later.</strong>
+  <em>Detect:</em> a new postmortem lists the same contributing factor as an old
+  one. <em>Cause:</em> action items were vague, unowned, or deprioritized.
+  <em>Fix:</em> concrete, owned, dated action items in the normal backlog,
+  reviewed for completion; leadership treats overdue P1 actions as risk.</li>
+<li><strong>The first mitigation does not work and nobody knows why.</strong>
+  <em>Detect:</em> errors continue after a rollback. <em>Cause:</em> the change was not
+  in the application code (a schema change, a configuration or feature
+  flag, an infrastructure change). <em>Fix:</em> check every kind of change in
+  the "what changed?" step, and record all changes in one place with
+  timestamps.</li>
+<li><strong>People stop reporting their mistakes.</strong>
+  <em>Detect:</em> postmortems become vague ("a configuration issue occurred"),
+  timelines have gaps, and near misses are never reported. <em>Cause:</em> a
+  postmortem or manager blamed an individual. <em>Fix:</em> reaffirm blameless
+  principles from leadership, focus reviews on system changes, and thank
+  people for candid accounts.</li>
+<li><strong>A long incident degrades as responders tire.</strong>
+  <em>Detect:</em> after several hours, decisions slow and mistakes increase.
+  <em>Cause:</em> no rotation of the IC and responders. <em>Fix:</em> plan handoffs
+  every few hours for long incidents, with a written handoff summary.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Incident:</strong> An unplanned disruption, or threat of one, needing a
+  coordinated response.</li>
+<li><strong>Severity (SEV):</strong> A level describing impact and the response it
+  requires.</li>
+<li><strong>Incident commander (IC):</strong> The person coordinating the response and
+  making decisions.</li>
+<li><strong>Communications lead:</strong> The person responsible for internal and
+  external updates.</li>
+<li><strong>Scribe:</strong> The person recording the timeline.</li>
+<li><strong>Mitigation:</strong> An action that reduces or stops user impact, even if the
+  cause remains.</li>
+<li><strong>Resolution:</strong> Fixing the underlying cause and confirming normal
+  service.</li>
+<li><strong>Postmortem:</strong> A written analysis of an incident with action items.</li>
+<li><strong>Blameless:</strong> Focusing on system causes rather than individual fault.</li>
+<li><strong>Contributing factor:</strong> One of several conditions that together
+  produced an incident.</li>
+<li><strong>5 whys:</strong> A technique that asks "why?" repeatedly to look past the
+  first explanation.</li>
+<li><strong>Near miss:</strong> A situation that could have caused an incident but did
+  not.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Waiting to declare an incident until the cause is understood.</li>
+<li>An incident commander who also debugs.</li>
+<li>Discussing the incident in many private chats instead of one channel.</li>
+<li>Investigating the root cause while users are still affected and a
+  rollback is available.</li>
+<li>Restarting everything and destroying the evidence needed later.</li>
+<li>Postmortems that name and blame individuals, or that stop at "human
+  error".</li>
+<li>Treating the 5 whys as finding <em>the</em> root cause in a complex system.</li>
+<li>Action items like "be more careful" or "improve monitoring" without an
+  owner or date.</li>
+<li>Writing postmortems that nobody reads, reviews, or follows up.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>What criteria would you use to decide that a problem is an incident?
+   Why "declare early, downgrade later"?</li>
+<li>Describe the five phases of the incident lifecycle and what "done"
+   means for each.</li>
+<li>Why should the incident commander not debug?</li>
+<li>What must every status update contain?</li>
+<li>Give three mitigations you could apply before knowing the root cause,
+   and one situation in which a rollback is unsafe.</li>
+<li>In the TaskFlow example, impact began at 14:02, the alert fired at
+   14:05, the incident was declared at 14:12, and impact ended at 14:29.
+   What were the time to detect and the time to mitigate? How many minutes
+   were lost to the ineffective first mitigation? (3 minutes; 27 minutes;
+   8 minutes, from 14:21 to 14:29.)</li>
+<li>What are the limits of the 5 whys, and what would you use instead or
+   alongside it?</li>
+<li>What makes an action item likely to be completed?</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://sre.google/sre-book/managing-incidents/">Google SRE book: Managing Incidents</a></li>
+<li><a href="https://sre.google/sre-book/postmortem-culture/">Google SRE book: Postmortem Culture</a></li>
+<li><a href="https://sre.google/workbook/incident-response/">Google SRE Workbook: Incident Response</a></li>
+<li><a href="https://sre.google/workbook/postmortem-culture/">Google SRE Workbook: Postmortem Culture</a></li>
+<li><a href="https://response.pagerduty.com/">PagerDuty Incident Response documentation</a></li>
+<li><a href="https://www.atlassian.com/incident-management/postmortem/blameless">Atlassian: Blameless postmortems</a></li>
+<li>Next: <a href="../interview-questions-and-answers/">monitoring and logging interview questions and answers</a>.
+  Back to the <a href="../">monitoring and logging overview</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../error-tracking-and-uptime-monitoring/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Error Tracking and Uptime Monitoring">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Error Tracking and Uptime Monitoring</span>
+      </a>
+    
+    
+      <a href="../cheat-sheet/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: Cheat Sheet">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">Cheat Sheet</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

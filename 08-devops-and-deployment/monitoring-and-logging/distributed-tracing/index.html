@@ -1,0 +1,4861 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../metrics-and-dashboards/">
+      
+      
+        <link rel="next" href="../slis-slos-and-error-budgets/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Distributed Tracing - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#distributed-tracing" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Distributed Tracing
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../05-application-architecture/" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../06-ai-and-machine-learning/" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+          <span class="md-ellipsis">&larr; Back to DevOps</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../05-application-architecture/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../06-ai-and-machine-learning/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI and Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
+        
+          
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-label="DevOps module lessons" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+                  <span class="md-ellipsis">&larr; Back to DevOps</span>
+                </a>
+              
+            </div>
+          
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                  
+  
+  
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+    
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_16" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_16" id="__nav_9_16_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monitoring and Logging
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_16_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_16">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Monitoring and Logging
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_16_2" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_16_2" id="__nav_9_16_2_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Foundations
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_16_2_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_16_2">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Foundations
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../observability-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Observability Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_16_3" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_16_3" id="__nav_9_16_3_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The Signals
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_16_3_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_16_3">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    The Signals
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../structured-logging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Structured Logging
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../metrics-and-dashboards/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metrics and Dashboards
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Distributed Tracing
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Distributed Tracing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#traces-and-spans" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Traces and spans
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#attributes-events-and-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attributes, events, and status
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#context-propagation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context propagation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#opentelemetry-api-sdk-and-instrumentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OpenTelemetry: API, SDK, and instrumentation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-opentelemetry-collector" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The OpenTelemetry Collector
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sampling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sampling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#linking-traces-with-logs-and-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Linking traces with logs and metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#backends" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backends
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#auto-instrumenting-taskflow-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auto-instrumenting TaskFlow API
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adding-a-manual-span-around-a-business-operation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adding a manual span around a business operation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#propagating-context-through-a-queue-by-hand" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Propagating context through a queue by hand
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-collector-gateway-with-tail-sampling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A Collector gateway with tail sampling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#running-jaeger-locally" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running Jaeger locally
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_16_4" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_16_4" id="__nav_9_16_4_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reliability Practice
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_16_4_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_16_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Reliability Practice
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../slis-slos-and-error-budgets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SLIs, SLOs, and Error Budgets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../alerting-and-on-call/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Alerting and On-Call
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../error-tracking-and-uptime-monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error Tracking and Uptime Monitoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../incident-response-and-postmortems/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Incident Response and Postmortems
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#traces-and-spans" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Traces and spans
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#attributes-events-and-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attributes, events, and status
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#context-propagation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context propagation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#opentelemetry-api-sdk-and-instrumentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OpenTelemetry: API, SDK, and instrumentation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-opentelemetry-collector" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The OpenTelemetry Collector
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sampling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sampling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#linking-traces-with-logs-and-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Linking traces with logs and metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#backends" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backends
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#auto-instrumenting-taskflow-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auto-instrumenting TaskFlow API
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adding-a-manual-span-around-a-business-operation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adding a manual span around a business operation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#propagating-context-through-a-queue-by-hand" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Propagating context through a queue by hand
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-collector-gateway-with-tail-sampling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A Collector gateway with tail sampling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#running-jaeger-locally" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running Jaeger locally
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="distributed-tracing">Distributed Tracing<a class="headerlink" href="#distributed-tracing" title="Permanent link">&para;</a></h1>
+<p>A distributed trace records the path of one request through every process
+it touches: the API, the services it calls, the database queries, and the
+messages it leaves on a queue. Each step is a <strong>span</strong> with a start time,
+a duration, and a link to the step that caused it. Put together, the spans
+show where time was spent and where the request failed. This lesson covers
+traces and spans, span attributes and events, how context crosses process
+boundaries (the W3C <code>traceparent</code> header, field by field), OpenTelemetry's
+API, SDK, auto-instrumentation for Node.js, and Collector, head and tail
+sampling, linking logs to traces, and the main tracing backends.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>Metrics can tell you that <code>POST /tasks</code> got slower at 14:03. Logs can tell
+you that one request took 412 ms. Neither tells you <em>which of the eleven
+things that request did</em> took 308 of those milliseconds. In a single
+process you would reach for a profiler; once a request crosses services, a
+queue, and a database, a trace is the only view that shows the whole causal
+chain with timings.</p>
+<p>Tracing also exposes design problems that are otherwise invisible: calls
+made one after another that could run in parallel, an N+1 pattern of
+fifty tiny queries, a retry loop against a slow dependency, or a "fast"
+endpoint that is fast only because it hands work to a worker that takes
+seconds. As TaskFlow grows from one API into an API, an auth service, a
+notifications service, and a queue worker, tracing turns "it's slow
+somewhere" into a specific span.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Google (Dapper).</strong> The paper
+  <a href="https://research.google/pubs/dapper-a-large-scale-distributed-systems-tracing-infrastructure/">Dapper, a Large-Scale Distributed Systems Tracing Infrastructure</a>
+  (2010) describes Google's production tracing system: trees of spans
+  linked by trace and span IDs, propagated automatically through shared
+  RPC libraries, with sampling to keep overhead low. Most modern tracing
+  systems follow its model.</li>
+<li><strong>W3C Trace Context.</strong> The
+  <a href="https://www.w3.org/TR/trace-context/">Trace Context</a> specification is a
+  W3C Recommendation that standardizes the <code>traceparent</code> and <code>tracestate</code>
+  HTTP headers, so a trace can cross services instrumented by different
+  tools and vendors without breaking.</li>
+<li><strong>Jaeger.</strong> The <a href="https://www.jaegertracing.io/docs/">Jaeger documentation</a>
+  describes an open-source tracing platform originally built at Uber and
+  now a graduated CNCF project. Its current major version is built on the
+  OpenTelemetry Collector and accepts OTLP natively.</li>
+<li><strong>OpenTelemetry.</strong> The
+  <a href="https://opentelemetry.io/docs/what-is-opentelemetry/">What is OpenTelemetry?</a>
+  page explains that the project, formed from the merger of OpenTracing and
+  OpenCensus, provides vendor-neutral APIs, SDKs, and the Collector for
+  traces, metrics, and logs.</li>
+</ul>
+<p><strong>Popular tools and providers:</strong> OpenTelemetry, Jaeger, Grafana Tempo,
+Zipkin, Honeycomb, Datadog APM, New Relic, Elastic APM, AWS X-Ray, Google
+Cloud Trace, and Azure Application Insights.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="traces-and-spans">Traces and spans<a class="headerlink" href="#traces-and-spans" title="Permanent link">&para;</a></h3>
+<p>A <strong>trace</strong> is a tree of <strong>spans</strong> that share one <strong>trace ID</strong>. Each span
+represents one operation and records:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+<th>TaskFlow example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Trace ID</td>
+<td>16 random bytes shared by every span in the trace</td>
+<td><code>4bf92f3577b34da6a3ce929d0e0e4736</code></td>
+</tr>
+<tr>
+<td>Span ID</td>
+<td>8 random bytes identifying this span</td>
+<td><code>00f067aa0ba902b7</code></td>
+</tr>
+<tr>
+<td>Parent span ID</td>
+<td>The span that caused this one (empty for the root)</td>
+<td>The server span for <code>POST /tasks</code></td>
+</tr>
+<tr>
+<td>Name</td>
+<td>A low-cardinality operation name</td>
+<td><code>POST /tasks</code>, <code>find tasks</code></td>
+</tr>
+<tr>
+<td>Kind</td>
+<td><code>SERVER</code>, <code>CLIENT</code>, <code>PRODUCER</code>, <code>CONSUMER</code>, or <code>INTERNAL</code></td>
+<td><code>CLIENT</code> for the call to the auth service</td>
+</tr>
+<tr>
+<td>Start and end time</td>
+<td>Gives the duration</td>
+<td>44 ms to 352 ms</td>
+</tr>
+<tr>
+<td>Status</td>
+<td><code>Unset</code>, <code>Ok</code>, or <code>Error</code></td>
+<td><code>Error</code> when the handler throws</td>
+</tr>
+<tr>
+<td>Attributes</td>
+<td>Key-value details</td>
+<td><code>http.route="/tasks"</code>, <code>db.collection.name="tasks"</code></td>
+</tr>
+<tr>
+<td>Events</td>
+<td>Timestamped notes inside the span</td>
+<td>An exception with its stack trace</td>
+</tr>
+<tr>
+<td>Links</td>
+<td>References to spans in other traces</td>
+<td>A batch consumer linking to each message's producer</td>
+</tr>
+</tbody>
+</table>
+<p>The service that produced a span is described by its <strong>resource</strong>
+(<code>service.name="taskflow-api"</code>, <code>service.version="1.42.0"</code>), shared by all
+spans from that process.</p>
+<p><img alt="Diagram: a waterfall for trace 4bf92f35, POST /tasks, 412 ms, 8 spans, on a 0 to 500 ms axis. The taskflow-api root span POST /tasks runs 0 to 412 ms. Its child authenticate runs 38 ms and contains a GET client span of 32 ms, whose child is the auth-service span GET /introspect of 26 ms. The next child, find tasks on MongoDB, takes 308 ms, 75% of the request, and is highlighted. insertOne tasks takes 16 ms and publish task.created takes 12 ms. The response is sent at 412 ms. Afterwards the worker's process task.created span runs for 75 ms, linked from the publish span. The legend marks service code, database calls, queue work, and where the time went." src="../trace-waterfall.svg" /></p>
+<p>Reading a waterfall:</p>
+<ul>
+<li><strong>Find the critical path:</strong> the chain of spans that determines the end
+  time. Shortening a span off the critical path does not make the request
+  faster.</li>
+<li><strong>Look for the longest bar:</strong> here, an unindexed <code>find</code> on the tasks
+  collection takes 75% of the request.</li>
+<li><strong>Look for gaps:</strong> time inside a parent not covered by any child is
+  either CPU work in that service or something uninstrumented.</li>
+<li><strong>Look for staircases:</strong> many short sequential spans (N+1 queries,
+  sequential HTTP calls) that could be batched or run concurrently.</li>
+<li><strong>Remember async work:</strong> the worker span runs after the response; it
+  does not slow the user's request but it is part of the outcome.</li>
+</ul>
+<h3 id="attributes-events-and-status">Attributes, events, and status<a class="headerlink" href="#attributes-events-and-status" title="Permanent link">&para;</a></h3>
+<p>Attributes make spans searchable ("all traces where
+<code>http.route="/tasks"</code> and <code>http.response.status_code=500</code>"). Use
+OpenTelemetry <strong>semantic conventions</strong> for common attributes so every
+backend understands them, and a project prefix (<code>taskflow.</code>) for your own.</p>
+<p>Unlike metric labels, span attributes may have high cardinality: a task
+ID or tenant ID on a span is fine and is often exactly what you need when
+debugging. They must still never contain secrets or sensitive personal
+data, because traces are stored and shared like logs.</p>
+<p><strong>Events</strong> are timestamped annotations inside a span ("cache miss",
+"retrying after 503"). An exception is recorded as an event with the
+exception type, message, and stack trace, and the span's <strong>status</strong> is set
+to <code>Error</code> so the trace is easy to find.</p>
+<h3 id="context-propagation">Context propagation<a class="headerlink" href="#context-propagation" title="Permanent link">&para;</a></h3>
+<p>Spans become a tree only if each new span knows its parent. That knowledge
+is the <strong>span context</strong> (trace ID, span ID, trace flags), and moving it
+around is <strong>context propagation</strong>.</p>
+<ul>
+<li><strong>Inside a process</strong>, OpenTelemetry keeps the active context in a
+  context manager. In Node.js it is built on <code>AsyncLocalStorage</code>, so the
+  active span follows the request through <code>await</code> and callbacks.</li>
+<li><strong>Across processes</strong>, a <strong>propagator</strong> <em>injects</em> the context into the
+  outgoing carrier (HTTP headers, message headers) and the receiver
+  <em>extracts</em> it and starts a child span.</li>
+</ul>
+<p>The default propagator uses the W3C <code>traceparent</code> header:</p>
+<div class="highlight"><pre><span></span><code>traceparent: 00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01
+             |  |                                |                |
+             |  trace-id (16 bytes, 32 hex)      |                trace-flags
+             version                             parent-id (8 bytes, 16 hex)
+</code></pre></div>
+<p><img alt="Diagram: top, the traceparent header split into version 00 (always 00), trace-id 4bf92f3577b34da6a3ce929d0e0e4736 (16 bytes, the same for every span in the trace), parent-id 00f067aa0ba902b7 (8 bytes, the caller's span ID), and trace-flags 01 (sampled). Bottom, TaskFlow API has server span a1, client span b2, and producer span d4. Its HTTP call to the auth service carries traceparent 00-4bf9...-b2...-01; the auth service extracts it and starts span c3 with parent b2 in trace 4bf9. Its queue message header carries traceparent 00-4bf9...-d4...-01; the queue worker extracts it and starts consumer span e5 with parent d4 in trace 4bf9. The trace ID stays the same while the parent ID changes on every hop." src="../trace-context-propagation.svg" /></p>
+<p>Field by field:</p>
+<ol>
+<li><strong>version</strong> (<code>00</code>): the format version. Version <code>00</code> is the only one
+   defined today; <code>ff</code> is invalid.</li>
+<li><strong>trace-id</strong> (32 lowercase hex characters): the ID of the whole trace,
+   copied unchanged to every downstream span. All zeros is invalid.</li>
+<li><strong>parent-id</strong> (16 hex characters): the span ID of the span that made
+   the call, usually the caller's <code>CLIENT</code> or <code>PRODUCER</code> span. The
+   receiver's new span records it as its parent. All zeros is invalid.</li>
+<li><strong>trace-flags</strong> (2 hex characters, 8 bits): the lowest bit is the
+   <strong>sampled</strong> flag. <code>01</code> means the caller recorded this trace, so the
+   receiver should too; <code>00</code> means it did not.</li>
+</ol>
+<p>Two companion headers exist. <code>tracestate</code> carries vendor-specific
+key-value data alongside <code>traceparent</code>. <code>baggage</code> (a separate W3C
+specification) carries application key-value pairs, such as a tenant ID,
+to every downstream service. Baggage is sent in plain headers, including
+to third parties you call, so never put secrets or personal data in it.</p>
+<p>Context is lost whenever something in the chain does not propagate:
+an uninstrumented HTTP client, a proxy that strips unknown headers, a
+message queue whose producer does not write message headers, or work
+scheduled with <code>setTimeout</code> outside the active context. A broken chain
+shows up as several short, unconnected traces instead of one tree.</p>
+<h3 id="opentelemetry-api-sdk-and-instrumentation">OpenTelemetry: API, SDK, and instrumentation<a class="headerlink" href="#opentelemetry-api-sdk-and-instrumentation" title="Permanent link">&para;</a></h3>
+<p>OpenTelemetry deliberately separates three layers:</p>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Package examples (Node.js)</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>API</strong></td>
+<td><code>@opentelemetry/api</code></td>
+<td>Stable interfaces libraries call (<code>trace.getTracer</code>, <code>startActiveSpan</code>). Without an SDK it does nothing, at almost no cost.</td>
+</tr>
+<tr>
+<td><strong>SDK</strong></td>
+<td><code>@opentelemetry/sdk-node</code></td>
+<td>The implementation: creates real spans, applies sampling, batches, and exports. Configured once by the application.</td>
+</tr>
+<tr>
+<td><strong>Instrumentation</strong></td>
+<td><code>@opentelemetry/auto-instrumentations-node</code></td>
+<td>Patches popular libraries (<code>http</code>, Express, MongoDB driver, <code>undici</code>/<code>fetch</code>, pino, Redis clients) to create spans and propagate context automatically.</td>
+</tr>
+<tr>
+<td><strong>Exporters</strong></td>
+<td><code>@opentelemetry/exporter-trace-otlp-proto</code></td>
+<td>Send spans using OTLP (the OpenTelemetry Protocol) over HTTP (port 4318) or gRPC (port 4317).</td>
+</tr>
+</tbody>
+</table>
+<p>The split matters: a library author depends only on the API, so their
+library is traced when the application installs an SDK and costs nothing
+when it does not.</p>
+<p>Instrumentation must load <strong>before</strong> the libraries it patches, so it runs
+from a separate file loaded with a Node.js flag, not imported halfway
+through <code>server.js</code>. Most settings can be given as standard environment
+variables: <code>OTEL_SERVICE_NAME</code>, <code>OTEL_RESOURCE_ATTRIBUTES</code>,
+<code>OTEL_EXPORTER_OTLP_ENDPOINT</code>, <code>OTEL_TRACES_SAMPLER</code>, and
+<code>OTEL_TRACES_SAMPLER_ARG</code>.</p>
+<h3 id="the-opentelemetry-collector">The OpenTelemetry Collector<a class="headerlink" href="#the-opentelemetry-collector" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: TaskFlow API, Notifications, and Queue worker, each with the OTel SDK, send spans over OTLP to an OpenTelemetry Collector running as a gateway. Its otlp receiver listens on gRPC 4317 and HTTP 4318. Spans pass through the processors memory_limiter, attributes/scrub, tail_sampling, and batch in order. The exporters otlp/vendor and otlp/tempo send them to an optional vendor APM as a second copy and to Tempo or Jaeger for trace storage and UI. Tail sampling keeps every error trace, every trace slower than 1 s, and 10% of the rest." src="../otel-collector-pipeline.svg" /></p>
+<p>The <strong>Collector</strong> is a separate process that receives, processes, and
+exports telemetry. A configuration defines:</p>
+<ul>
+<li><strong>Receivers:</strong> how data comes in (<code>otlp</code>, also Prometheus scraping,
+  Jaeger, Zipkin, log files).</li>
+<li><strong>Processors:</strong> what happens in between (<code>memory_limiter</code> to avoid
+  out-of-memory crashes, <code>batch</code>, <code>attributes</code> to delete or hash fields,
+  <code>tail_sampling</code>, resource detection).</li>
+<li><strong>Exporters:</strong> where data goes (OTLP to Tempo, Jaeger, or a vendor;
+  Prometheus remote write; debug output).</li>
+<li><strong>Pipelines:</strong> which receivers, processors, and exporters are wired
+  together for each signal.</li>
+</ul>
+<p>Common deployments are an <strong>agent</strong> (one Collector per node or as a
+sidecar, close to the apps) and a <strong>gateway</strong> (a central, horizontally
+scaled pool), often both. Benefits: applications send to one local
+endpoint and never hold vendor credentials; retries and batching happen
+outside the app; sensitive attributes are scrubbed in one place; and
+switching or adding a backend is a config change, not a redeploy of every
+service. Many components, including <code>tail_sampling</code>, ship in the
+"contrib" distribution of the Collector rather than the core one.</p>
+<h3 id="sampling">Sampling<a class="headerlink" href="#sampling" title="Permanent link">&para;</a></h3>
+<p>Recording every span of every request is expensive: TaskFlow at 200
+requests per second with 8 spans each produces 1,600 spans per second,
+about 138 million per day. Sampling keeps a representative subset.</p>
+<p><strong>Head sampling</strong> decides when the trace starts, at the root span, and
+passes the decision downstream through the sampled flag.</p>
+<ul>
+<li><code>TraceIdRatioBased(0.1)</code> keeps 10% of traces, chosen from the trace ID
+  so every service makes the same decision.</li>
+<li><code>ParentBased</code> respects the caller's decision, so a trace is never half
+  recorded. The usual configuration is <code>parentbased_traceidratio</code>.</li>
+<li>Cheap and simple, but blind: the decision is made before anyone knows
+  whether the request will fail or be slow, so 90% of interesting traces
+  are thrown away with the boring ones.</li>
+</ul>
+<p><strong>Tail sampling</strong> decides after the trace is complete, in the Collector.</p>
+<ul>
+<li>Policies such as "keep all traces with an error", "keep all traces
+  slower than 1 s", "keep 10% of the rest".</li>
+<li>Keeps the traces you actually want, at the cost of buffering every span
+  in memory for a decision window (for example 10 s) and sending 100% of
+  spans from the apps to the Collector.</li>
+<li>Every span of a trace must reach the same Collector instance, so a
+  multi-instance gateway needs a load-balancing layer keyed by trace ID
+  (the Collector's <code>loadbalancing</code> exporter).</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Head sampling</th>
+<th>Tail sampling</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Decision point</td>
+<td>Root span, at request start</td>
+<td>Collector, after the trace ends</td>
+</tr>
+<tr>
+<td>Keeps all errors and slow traces</td>
+<td>No (only at the sampled rate)</td>
+<td>Yes, by policy</td>
+</tr>
+<tr>
+<td>Cost in apps</td>
+<td>Low (unsampled spans are not exported)</td>
+<td>Higher (export everything)</td>
+</tr>
+<tr>
+<td>Cost in the pipeline</td>
+<td>Low</td>
+<td>Memory for buffering; trace-aware load balancing</td>
+</tr>
+<tr>
+<td>Typical use</td>
+<td>Starting point; very high traffic</td>
+<td>When rare failures matter more than volume</td>
+</tr>
+</tbody>
+</table>
+<p>Many teams combine them: a generous head-sampling rate in apps to bound
+volume, tail sampling in the Collector to keep the interesting part.</p>
+<h3 id="linking-traces-with-logs-and-metrics">Linking traces with logs and metrics<a class="headerlink" href="#linking-traces-with-logs-and-metrics" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Logs:</strong> the OpenTelemetry pino instrumentation adds <code>trace_id</code> and
+  <code>span_id</code> to every log line written inside an active span (see
+  <a href="../structured-logging/">structured logging</a>), and backends turn the
+  value into a link to the trace.</li>
+<li><strong>Metrics:</strong> exemplars attach a sample trace ID to a histogram bucket,
+  so a spike on a latency graph links to a real slow trace. The Collector
+  can also derive RED metrics from spans (the <code>spanmetrics</code> connector).</li>
+<li><strong>Errors:</strong> error trackers record the trace ID with each exception.</li>
+</ul>
+<p>Because sampling drops most traces, a log line's <code>trace_id</code> may point to a
+trace that was not kept. Tail sampling that keeps all error traces makes
+the error case reliable.</p>
+<h3 id="backends">Backends<a class="headerlink" href="#backends" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Backend</th>
+<th>Storage model</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Jaeger</td>
+<td>Pluggable (Elasticsearch, OpenSearch, Cassandra, Badger, memory)</td>
+<td>Open source, CNCF graduated; native OTLP; good local development UI</td>
+</tr>
+<tr>
+<td>Grafana Tempo</td>
+<td>Object storage (S3, GCS, Azure Blob); indexes little</td>
+<td>Cheap at scale; TraceQL queries; integrates with Loki and Prometheus in Grafana</td>
+</tr>
+<tr>
+<td>Zipkin</td>
+<td>Pluggable</td>
+<td>The original open-source Dapper-style tracer; simple and mature</td>
+</tr>
+<tr>
+<td>Vendors (Datadog, Honeycomb, New Relic, cloud tracing services)</td>
+<td>Managed</td>
+<td>Rich analysis and correlation; priced by spans or hosts; accept OTLP</td>
+</tr>
+</tbody>
+</table>
+<p>Because the apps speak OTLP to a Collector, the backend is a deployment
+choice you can change later.</p>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Situation</th>
+<th>Tracing value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Requests cross several services, queues, or serverless functions</td>
+<td>High: the only end-to-end view</td>
+</tr>
+<tr>
+<td>Latency problems you cannot explain from per-service metrics</td>
+<td>High</td>
+</tr>
+<tr>
+<td>One monolith with one database</td>
+<td>Moderate: still useful for DB and outbound calls, but a profiler and good logs go far</td>
+</tr>
+<tr>
+<td>Batch jobs processing millions of records</td>
+<td>Low per record; trace the job and its phases, not each record</td>
+</tr>
+<tr>
+<td>You need exact counts (requests, errors)</td>
+<td>Use metrics; traces are sampled</td>
+</tr>
+<tr>
+<td>Debugging CPU hot spots inside one function</td>
+<td>Use a profiler</td>
+</tr>
+</tbody>
+</table>
+<p>Start with auto-instrumentation: it covers HTTP, Express, MongoDB, and
+outbound calls with no code. Add manual spans only around business
+operations that matter (an import, a billing run) and around code the
+auto-instrumentation cannot see.</p>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="auto-instrumenting-taskflow-api">Auto-instrumenting TaskFlow API<a class="headerlink" href="#auto-instrumenting-taskflow-api" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>npm<span class="w"> </span>install<span class="w"> </span>@opentelemetry/api<span class="w"> </span>@opentelemetry/sdk-node<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>@opentelemetry/auto-instrumentations-node<span class="w"> </span>@opentelemetry/instrumentation<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>@opentelemetry/exporter-trace-otlp-proto<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>@opentelemetry/resources<span class="w"> </span>@opentelemetry/semantic-conventions
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/instrumentation.mjs</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">NodeSDK</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"@opentelemetry/sdk-node"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">getNodeAutoInstrumentations</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"@opentelemetry/auto-instrumentations-node"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">OTLPTraceExporter</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"@opentelemetry/exporter-trace-otlp-proto"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">resourceFromAttributes</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"@opentelemetry/resources"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">ATTR_SERVICE_NAME</span><span class="p">,</span><span class="w"> </span><span class="nx">ATTR_SERVICE_VERSION</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"@opentelemetry/semantic-conventions"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">sdk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">NodeSDK</span><span class="p">({</span>
+<span class="w">  </span><span class="nx">resource</span><span class="o">:</span><span class="w"> </span><span class="nx">resourceFromAttributes</span><span class="p">({</span>
+<span class="w">    </span><span class="p">[</span><span class="nx">ATTR_SERVICE_NAME</span><span class="p">]</span><span class="o">:</span><span class="w"> </span><span class="s2">"taskflow-api"</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="nx">ATTR_SERVICE_VERSION</span><span class="p">]</span><span class="o">:</span><span class="w"> </span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">APP_VERSION</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="s2">"dev"</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"deployment.environment.name"</span><span class="o">:</span><span class="w"> </span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">NODE_ENV</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="s2">"development"</span><span class="p">,</span>
+<span class="w">  </span><span class="p">}),</span>
+<span class="w">  </span><span class="c1">// Default endpoint is http://localhost:4318/v1/traces</span>
+<span class="w">  </span><span class="nx">traceExporter</span><span class="o">:</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">OTLPTraceExporter</span><span class="p">({</span>
+<span class="w">    </span><span class="nx">url</span><span class="o">:</span><span class="w"> </span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">OTEL_EXPORTER_OTLP_TRACES_ENDPOINT</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="s2">"http://otel-collector:4318/v1/traces"</span><span class="p">,</span>
+<span class="w">  </span><span class="p">}),</span>
+<span class="w">  </span><span class="nx">instrumentations</span><span class="o">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="nx">getNodeAutoInstrumentations</span><span class="p">({</span>
+<span class="w">      </span><span class="c1">// File-system spans are noisy and rarely useful in an API.</span>
+<span class="w">      </span><span class="s2">"@opentelemetry/instrumentation-fs"</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">enabled</span><span class="o">:</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">}),</span>
+<span class="w">  </span><span class="p">],</span>
+<span class="p">});</span>
+
+<span class="nx">sdk</span><span class="p">.</span><span class="nx">start</span><span class="p">();</span>
+
+<span class="c1">// Flush buffered spans on shutdown. Call this from the server's SIGTERM handler</span>
+<span class="c1">// after server.close() has finished draining, or spans from the drain window are lost.</span>
+<span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">shutdownTracing</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">sdk</span><span class="p">.</span><span class="nx">shutdown</span><span class="p">().</span><span class="k">catch</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{});</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1"># .env.production (sampling read by the SDK from standard variables)</span>
+<span class="nv">OTEL_TRACES_SAMPLER</span><span class="o">=</span>parentbased_traceidratio
+<span class="nv">OTEL_TRACES_SAMPLER_ARG</span><span class="o">=</span><span class="m">0</span>.25
+<span class="c1"># The SDK also exports logs and metrics over OTLP by default. Logs already flow</span>
+<span class="c1"># stdout -&gt; Collector and metrics are scraped from /metrics, so turn those off.</span>
+<span class="nv">OTEL_LOGS_EXPORTER</span><span class="o">=</span>none
+<span class="nv">OTEL_METRICS_EXPORTER</span><span class="o">=</span>none
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1"># TaskFlow API is an ES module app, so the loader hook is required</span>
+node<span class="w"> </span>--experimental-loader<span class="o">=</span>@opentelemetry/instrumentation/hook.mjs<span class="w"> </span><span class="se">\</span>
+<span class="w">     </span>--import<span class="w"> </span>./src/instrumentation.mjs<span class="w"> </span>src/server.js
+</code></pre></div>
+<p>Parts: the resource names the service and version on every span; the
+OTLP exporter sends batches to the Collector; the auto-instrumentations
+create spans for incoming HTTP requests, Express routing, MongoDB
+commands, outgoing <code>fetch</code> calls, and add trace IDs to pino logs;
+<code>parentbased_traceidratio</code> keeps 25% of new traces and always follows the
+caller's decision. <code>server.js</code> imports <code>shutdownTracing</code> and awaits it at
+the end of its SIGTERM handler, once <code>server.close()</code> has finished. For a CommonJS app, <code>node --require ./instrumentation.js
+app.js</code> is enough. The OpenTelemetry docs note that the ESM loader
+mechanism is expected to change, so check the current guidance when
+upgrading.</p>
+<h3 id="adding-a-manual-span-around-a-business-operation">Adding a manual span around a business operation<a class="headerlink" href="#adding-a-manual-span-around-a-business-operation" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/tasks/import.js</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">trace</span><span class="p">,</span><span class="w"> </span><span class="nx">SpanStatusCode</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"@opentelemetry/api"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">tracer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">trace</span><span class="p">.</span><span class="nx">getTracer</span><span class="p">(</span><span class="s2">"taskflow-api"</span><span class="p">);</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">importTasks</span><span class="p">(</span><span class="nx">db</span><span class="p">,</span><span class="w"> </span><span class="nx">userId</span><span class="p">,</span><span class="w"> </span><span class="nx">rows</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">tracer</span><span class="p">.</span><span class="nx">startActiveSpan</span><span class="p">(</span><span class="s2">"tasks.import"</span><span class="p">,</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="nx">span</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">span</span><span class="p">.</span><span class="nx">setAttribute</span><span class="p">(</span><span class="s2">"taskflow.import.rows"</span><span class="p">,</span><span class="w"> </span><span class="nx">rows</span><span class="p">.</span><span class="nx">length</span><span class="p">);</span>
+<span class="w">    </span><span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="kd">const</span><span class="w"> </span><span class="nx">valid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">rows</span><span class="p">.</span><span class="nx">filter</span><span class="p">((</span><span class="nx">r</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="ow">typeof</span><span class="w"> </span><span class="nx">r</span><span class="p">.</span><span class="nx">title</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">"string"</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nx">r</span><span class="p">.</span><span class="nx">title</span><span class="p">.</span><span class="nx">length</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">0</span><span class="p">);</span>
+<span class="w">      </span><span class="nx">span</span><span class="p">.</span><span class="nx">addEvent</span><span class="p">(</span><span class="s2">"validation complete"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s2">"taskflow.import.invalid"</span><span class="o">:</span><span class="w"> </span><span class="nx">rows</span><span class="p">.</span><span class="nx">length</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nx">valid</span><span class="p">.</span><span class="nx">length</span><span class="w"> </span><span class="p">});</span>
+
+<span class="w">      </span><span class="kd">const</span><span class="w"> </span><span class="nx">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">db</span><span class="p">.</span><span class="nx">collection</span><span class="p">(</span><span class="s2">"tasks"</span><span class="p">).</span><span class="nx">insertMany</span><span class="p">(</span>
+<span class="w">        </span><span class="nx">valid</span><span class="p">.</span><span class="nx">map</span><span class="p">((</span><span class="nx">r</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">({</span><span class="w"> </span><span class="nx">title</span><span class="o">:</span><span class="w"> </span><span class="nx">r</span><span class="p">.</span><span class="nx">title</span><span class="p">,</span><span class="w"> </span><span class="nx">userId</span><span class="p">,</span><span class="w"> </span><span class="nx">createdAt</span><span class="o">:</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Date</span><span class="p">()</span><span class="w"> </span><span class="p">}))</span>
+<span class="w">      </span><span class="p">);</span>
+<span class="w">      </span><span class="nx">span</span><span class="p">.</span><span class="nx">setAttribute</span><span class="p">(</span><span class="s2">"taskflow.import.inserted"</span><span class="p">,</span><span class="w"> </span><span class="nx">result</span><span class="p">.</span><span class="nx">insertedCount</span><span class="p">);</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="nx">result</span><span class="p">.</span><span class="nx">insertedCount</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="nx">err</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">span</span><span class="p">.</span><span class="nx">recordException</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+<span class="w">      </span><span class="nx">span</span><span class="p">.</span><span class="nx">setStatus</span><span class="p">({</span><span class="w"> </span><span class="nx">code</span><span class="o">:</span><span class="w"> </span><span class="nx">SpanStatusCode</span><span class="p">.</span><span class="nx">ERROR</span><span class="p">,</span><span class="w"> </span><span class="nx">message</span><span class="o">:</span><span class="w"> </span><span class="nx">err</span><span class="p">.</span><span class="nx">message</span><span class="w"> </span><span class="p">});</span>
+<span class="w">      </span><span class="k">throw</span><span class="w"> </span><span class="nx">err</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">finally</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">span</span><span class="p">.</span><span class="nx">end</span><span class="p">();</span><span class="w"> </span><span class="c1">// a span that is never ended is never exported</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">});</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><code>startActiveSpan</code> makes the new span the active context, so the MongoDB
+span created by auto-instrumentation inside it becomes its child.</p>
+<h3 id="propagating-context-through-a-queue-by-hand">Propagating context through a queue by hand<a class="headerlink" href="#propagating-context-through-a-queue-by-hand" title="Permanent link">&para;</a></h3>
+<p>If a queue library has no instrumentation, inject the context into the
+message and extract it in the worker:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/queue/trace-context.js</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">context</span><span class="p">,</span><span class="w"> </span><span class="nx">propagation</span><span class="p">,</span><span class="w"> </span><span class="nx">trace</span><span class="p">,</span><span class="w"> </span><span class="nx">SpanKind</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"@opentelemetry/api"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">tracer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">trace</span><span class="p">.</span><span class="nx">getTracer</span><span class="p">(</span><span class="s2">"taskflow-api"</span><span class="p">);</span>
+
+<span class="c1">// Producer: run inside the request's active span.</span>
+<span class="k">export</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">withTraceHeaders</span><span class="p">(</span><span class="nx">payload</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">carrier</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{};</span>
+<span class="w">  </span><span class="nx">propagation</span><span class="p">.</span><span class="nx">inject</span><span class="p">(</span><span class="nx">context</span><span class="p">.</span><span class="nx">active</span><span class="p">(),</span><span class="w"> </span><span class="nx">carrier</span><span class="p">);</span><span class="w"> </span><span class="c1">// adds traceparent (and tracestate)</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">...</span><span class="nx">payload</span><span class="p">,</span><span class="w"> </span><span class="nx">traceHeaders</span><span class="o">:</span><span class="w"> </span><span class="nx">carrier</span><span class="w"> </span><span class="p">};</span>
+<span class="p">}</span>
+
+<span class="c1">// Consumer: continue the trace in the worker.</span>
+<span class="k">export</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">runWithJobContext</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span><span class="w"> </span><span class="nx">job</span><span class="p">,</span><span class="w"> </span><span class="nx">fn</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">parentContext</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">propagation</span><span class="p">.</span><span class="nx">extract</span><span class="p">(</span><span class="nx">context</span><span class="p">.</span><span class="nx">active</span><span class="p">(),</span><span class="w"> </span><span class="nx">job</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">traceHeaders</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="p">{});</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">tracer</span><span class="p">.</span><span class="nx">startActiveSpan</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">kind</span><span class="o">:</span><span class="w"> </span><span class="nx">SpanKind</span><span class="p">.</span><span class="nx">CONSUMER</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="nx">parentContext</span><span class="p">,</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="nx">span</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">fn</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">finally</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">span</span><span class="p">.</span><span class="nx">end</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">});</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1">// usage</span>
+<span class="k">await</span><span class="w"> </span><span class="nx">queue</span><span class="p">.</span><span class="nx">add</span><span class="p">(</span><span class="s2">"task.created"</span><span class="p">,</span><span class="w"> </span><span class="nx">withTraceHeaders</span><span class="p">({</span><span class="w"> </span><span class="nx">taskId</span><span class="o">:</span><span class="w"> </span><span class="nx">task</span><span class="p">.</span><span class="nx">id</span><span class="w"> </span><span class="p">}));</span>
+<span class="c1">// in the worker:</span>
+<span class="k">await</span><span class="w"> </span><span class="nx">runWithJobContext</span><span class="p">(</span><span class="s2">"process task.created"</span><span class="p">,</span><span class="w"> </span><span class="nx">job</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">sendNotifications</span><span class="p">(</span><span class="nx">job</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">taskId</span><span class="p">));</span>
+</code></pre></div>
+<p>Making the consumer span a <strong>child</strong> suits one message per request. When a
+consumer processes a batch of messages from many traces, start a new trace
+and add <strong>links</strong> to each message's context instead.</p>
+<h3 id="a-collector-gateway-with-tail-sampling">A Collector gateway with tail sampling<a class="headerlink" href="#a-collector-gateway-with-tail-sampling" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># otel-collector.yaml (contrib distribution)</span>
+<span class="nt">receivers</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">otlp</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">protocols</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">grpc</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">endpoint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.0.0.0:4317</span>
+<span class="w">      </span><span class="nt">http</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">endpoint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.0.0.0:4318</span>
+
+<span class="nt">processors</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">memory_limiter</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">check_interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1s</span>
+<span class="w">    </span><span class="nt">limit_percentage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">80</span>
+<span class="w">    </span><span class="nt">spike_limit_percentage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">25</span>
+<span class="w">  </span><span class="nt">attributes/scrub</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">actions</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http.request.header.authorization</span>
+<span class="w">        </span><span class="nt">action</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">delete</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.email</span>
+<span class="w">        </span><span class="nt">action</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hash</span>
+<span class="w">  </span><span class="nt">tail_sampling</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">decision_wait</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10s</span>
+<span class="w">    </span><span class="nt">policies</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">keep-errors</span>
+<span class="w">        </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">status_code</span>
+<span class="w">        </span><span class="nt">status_code</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">status_codes</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">ERROR</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">keep-slow</span>
+<span class="w">        </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">latency</span>
+<span class="w">        </span><span class="nt">latency</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">threshold_ms</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1000</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sample-the-rest</span>
+<span class="w">        </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">probabilistic</span>
+<span class="w">        </span><span class="nt">probabilistic</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">sampling_percentage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+<span class="w">  </span><span class="nt">batch</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span>
+
+<span class="nt">exporters</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">otlp/tempo</span><span class="p">:</span><span class="w"> </span><span class="c1"># recent Collector releases log "otlp" as a deprecated alias of "otlp_grpc"; both work</span>
+<span class="w">    </span><span class="nt">endpoint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tempo.monitoring.svc.cluster.local:4317</span>
+<span class="w">    </span><span class="nt">tls</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">insecure</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"> </span><span class="c1"># plaintext inside the cluster network only</span>
+
+<span class="nt">service</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">pipelines</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">traces</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">receivers</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">otlp</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="nt">processors</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">memory_limiter</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">attributes/scrub</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">tail_sampling</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">batch</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="nt">exporters</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">otlp/tempo</span><span class="p p-Indicator">]</span>
+</code></pre></div>
+<p><code>memory_limiter</code> comes first so the Collector refuses data before it runs
+out of memory; <code>batch</code> comes last so exports are efficient. A trace is
+kept if <em>any</em> policy matches. When tail sampling decides, apps should send
+all spans (sampler <code>parentbased_always_on</code>), otherwise the Collector only
+sees the head-sampled fraction.</p>
+<h3 id="running-jaeger-locally">Running Jaeger locally<a class="headerlink" href="#running-jaeger-locally" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># compose.yaml (local development only)</span>
+<span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">jaeger</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">jaegertracing/jaeger:latest</span>
+<span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"16686:16686"</span><span class="w"> </span><span class="c1"># web UI</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"4317:4317"</span><span class="w">   </span><span class="c1"># OTLP gRPC</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"4318:4318"</span><span class="w">   </span><span class="c1"># OTLP HTTP</span>
+</code></pre></div>
+<p>Point <code>OTEL_EXPORTER_OTLP_TRACES_ENDPOINT</code> at
+<code>http://localhost:4318/v1/traces</code>, send a few requests to TaskFlow API,
+and open <code>http://localhost:16686</code> to see the waterfall. Pin an explicit
+image version outside a local experiment.</p>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Start with auto-instrumentation and W3C Trace Context everywhere;
+  load instrumentation before any other module.</li>
+<li>Name spans by operation, with low cardinality (<code>GET /tasks/:id</code>, not
+  <code>GET /tasks/6650f1...</code>); put IDs in attributes.</li>
+<li>Use semantic conventions for standard attributes and a prefix for
+  custom ones.</li>
+<li>Record exceptions and set error status on failing spans; always end
+  spans in <code>finally</code>.</li>
+<li>Propagate context through queues and background jobs.</li>
+<li>Send telemetry to a Collector, not straight to a vendor.</li>
+<li>Choose sampling deliberately: parent-based head sampling to bound cost,
+  tail sampling to keep errors and slow traces.</li>
+<li>Scrub secrets and personal data from attributes, both in code and in
+  the Collector.</li>
+<li>Put <code>trace_id</code> in every log line and use exemplars to connect metrics.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Traces stop at the API; downstream services appear as separate traces.</strong>
+  <em>Detect:</em> the auth service's spans have their own trace IDs and no
+  parent. <em>Cause:</em> a hop does not propagate context: an uninstrumented HTTP
+  client, a proxy or gateway that drops <code>traceparent</code>, or a different
+  propagator configured in one service. <em>Fix:</em> use instrumented clients,
+  allow the headers through proxies, and standardize on the W3C
+  propagator.</li>
+<li><strong>No spans appear at all after deploying the instrumentation.</strong>
+  <em>Detect:</em> the trace backend is empty; with <code>OTEL_LOG_LEVEL=debug</code> the
+  SDK logs export errors or shows no instrumented modules. <em>Cause:</em> the
+  instrumentation file loads after <code>express</code> and the MongoDB driver (or the
+  ESM loader hook is missing), or the exporter points at the wrong
+  endpoint or port. <em>Fix:</em> load it with <code>--import</code> or <code>--require</code> before
+  the app, add the loader hook for ESM, and check the Collector's receiver
+  address.</li>
+<li><strong>The Collector is OOM-killed under load.</strong>
+  <em>Detect:</em> Collector restarts and gaps in all traces during traffic
+  peaks. <em>Cause:</em> tail sampling buffering every span for the decision
+  window without a memory limit, or a backend outage filling export
+  queues. <em>Fix:</em> add <code>memory_limiter</code> first in the pipeline, size memory
+  for spans per second times decision window, scale out with trace-ID load
+  balancing, and alert on refused and dropped spans.</li>
+<li><strong>Error traces are missing when you need them.</strong>
+  <em>Detect:</em> a log line's <code>trace_id</code> returns "trace not found" for most
+  failed requests. <em>Cause:</em> head sampling at a low rate discards 90% or
+  more of traces before anyone knows they fail. <em>Fix:</em> tail sampling with
+  an error policy, or a higher head rate for error-prone routes.</li>
+<li><strong>The tracing bill jumps after a new feature ships.</strong>
+  <em>Detect:</em> spans per second per service doubles at a deploy. <em>Cause:</em> a
+  loop that creates a span per item (per task in a 5,000-task import) or a
+  newly enabled noisy instrumentation such as file system calls. <em>Fix:</em>
+  span the batch, not the item; record counts as attributes; disable
+  noisy instrumentations.</li>
+<li><strong>Authorization tokens are visible in trace attributes.</strong>
+  <em>Detect:</em> a review of span attributes finds full headers or query
+  strings. <em>Cause:</em> instrumentation configured to capture all request
+  headers, or custom code adding them. <em>Fix:</em> capture an allow-list of
+  headers, delete sensitive keys in the Collector, and rotate exposed
+  tokens.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Trace:</strong> All spans for one request or transaction, sharing a trace ID.</li>
+<li><strong>Span:</strong> One timed operation with a parent, attributes, events, and
+  status.</li>
+<li><strong>Root span:</strong> The first span of a trace, with no parent.</li>
+<li><strong>Span kind:</strong> Whether a span is a server, client, producer, consumer, or
+  internal operation.</li>
+<li><strong>Span context:</strong> Trace ID, span ID, and trace flags; what is
+  propagated.</li>
+<li><strong>Context propagation:</strong> Passing span context within and between
+  processes.</li>
+<li><strong>Propagator:</strong> Code that injects and extracts context into carriers
+  such as headers.</li>
+<li><strong><code>traceparent</code>:</strong> The W3C header carrying version, trace ID, parent ID,
+  and flags.</li>
+<li><strong>Baggage:</strong> Application key-value data propagated with the context.</li>
+<li><strong>OTLP:</strong> The OpenTelemetry Protocol for exporting telemetry.</li>
+<li><strong>Collector:</strong> OpenTelemetry's standalone pipeline for receiving,
+  processing, and exporting telemetry.</li>
+<li><strong>Head / tail sampling:</strong> Sampling decided at the start of a trace
+  versus after it completes.</li>
+<li><strong>Critical path:</strong> The chain of spans that determines total latency.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Importing the tracing setup after the application code, so nothing is
+  patched.</li>
+<li>Expecting traces to replace metrics: sampled traces cannot count
+  requests accurately.</li>
+<li>Using IDs or full URLs as span names.</li>
+<li>Forgetting to end manual spans, or to propagate through queues.</li>
+<li>Head sampling at 1% and expecting to find the trace for a specific
+  failed request.</li>
+<li>Putting secrets or personal data into attributes or baggage.</li>
+<li>Sending spans directly from every app to a vendor with embedded API
+  keys instead of through a Collector.</li>
+<li>Believing tracing requires microservices; even a monolith benefits from
+  database and outbound call spans.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>What are a trace, a span, and a span context? How does a span know its
+   parent?</li>
+<li>Decode <code>00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01</code>.
+   Which part changes on each hop, and what does <code>01</code> mean?</li>
+<li>Why does OpenTelemetry separate the API from the SDK?</li>
+<li>A request crosses three services, but the trace shows only the first.
+   List three places propagation could be breaking.</li>
+<li>TaskFlow handles 300 requests per second with 10 spans per request and
+   500 bytes per span. How many spans per day are stored with head sampling
+   at 10%, and roughly how much data? (300 x 10 x 0.10 = 300 spans/s,
+   about 25.9 million spans and about 13 GB per day.)</li>
+<li>Compare head and tail sampling. Why does tail sampling need trace-aware
+   load balancing?</li>
+<li>What does the Collector add compared with exporting straight from each
+   service?</li>
+<li>How do you get from a slow request on a latency graph to its trace and
+   its log lines?</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://opentelemetry.io/docs/concepts/signals/traces/">OpenTelemetry: Traces</a></li>
+<li><a href="https://opentelemetry.io/docs/concepts/context-propagation/">OpenTelemetry: Context propagation</a></li>
+<li><a href="https://opentelemetry.io/docs/languages/js/getting-started/nodejs/">OpenTelemetry: Node.js getting started</a></li>
+<li><a href="https://opentelemetry.io/docs/concepts/sampling/">OpenTelemetry: Sampling</a></li>
+<li><a href="https://opentelemetry.io/docs/collector/">OpenTelemetry Collector</a></li>
+<li><a href="https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/tailsamplingprocessor">Tail sampling processor</a></li>
+<li><a href="https://www.w3.org/TR/trace-context/">W3C Trace Context</a></li>
+<li><a href="https://grafana.com/docs/tempo/latest/">Grafana Tempo documentation</a></li>
+<li>Next: <a href="../slis-slos-and-error-budgets/">SLIs, SLOs, and error budgets</a>.
+  Back to the <a href="../">monitoring and logging overview</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../metrics-and-dashboards/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Metrics and Dashboards">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Metrics and Dashboards</span>
+      </a>
+    
+    
+      <a href="../slis-slos-and-error-budgets/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: SLIs, SLOs, and Error Budgets">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">SLIs, SLOs, and Error Budgets</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

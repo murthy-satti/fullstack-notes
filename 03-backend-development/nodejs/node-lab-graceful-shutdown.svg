@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="380" viewBox="0 0 800 380" role="img" aria-labelledby="ngs-title ngs-desc">
+  <title id="ngs-title">Graceful shutdown of the lab server on a timeline</title>
+  <desc id="ngs-desc">The server starts serving at 0 seconds. A /slow request starts at 0.3 seconds. SIGTERM arrives at 0.6 seconds: /readyz now answers 503 but the server keeps accepting during a 2-second drain, for example a /readyz probe at about 1 second gets 503. At about 2.6 seconds server.close() stops new connections and waits. The /slow request finishes with 200 at about 3.4 seconds, the process exits with code 0, and any new request gets ECONNREFUSED. A safety timer would force exit code 1 at 12.6 seconds if requests were still running.</desc>
+  <rect width="800" height="380" rx="14" fill="#f5f7fb"/>
+  <g font-family="Arial, sans-serif" text-anchor="middle">
+    <g font-size="12" font-weight="700" fill="#40566b" text-anchor="start">
+      <text x="20" y="99">server</text>
+      <text x="20" y="159">/slow</text>
+      <text x="20" y="209">/readyz</text>
+      <text x="20" y="259">new request</text>
+    </g>
+
+    <g stroke="#40566b" stroke-width="1.5" stroke-dasharray="4 4">
+      <path d="M216 50V280"/>
+      <path d="M536 50V280"/>
+      <path d="M659 50V280"/>
+    </g>
+    <g font-size="11.5" font-weight="700">
+      <text x="216" y="40" fill="#6b241c">SIGTERM (0.6 s)</text>
+      <text x="536" y="40" fill="#263e5a">server.close() (2.6 s)</text>
+      <text x="680" y="40" fill="#294a2e">exit 0 (3.4 s)</text>
+    </g>
+
+    <rect x="120" y="82" width="96" height="26" rx="4" fill="#e8f5e9" stroke="#53845b" stroke-width="1.5"/>
+    <text x="168" y="99" font-size="11" font-weight="700" fill="#294a2e">serving</text>
+    <rect x="216" y="82" width="320" height="26" rx="4" fill="#fff0d9" stroke="#bd7a20" stroke-width="1.5"/>
+    <text x="376" y="99" font-size="11" font-weight="700" fill="#66400f">draining: readiness 503, still accepting</text>
+    <rect x="536" y="82" width="123" height="26" rx="4" fill="#e5efff" stroke="#4774aa" stroke-width="1.5"/>
+    <text x="597" y="99" font-size="11" font-weight="700" fill="#263e5a">no new connections</text>
+    <rect x="659" y="82" width="101" height="26" rx="4" fill="#eef1f5" stroke="#8a96a3" stroke-width="1.5"/>
+    <text x="709" y="99" font-size="11" font-weight="700" fill="#36424e">exited</text>
+
+    <rect x="168" y="142" width="491" height="26" rx="4" fill="#e5efff" stroke="#4774aa" stroke-width="1.5"/>
+    <text x="410" y="159" font-size="11" font-weight="700" fill="#263e5a">in flight for 3 s: never dropped</text>
+    <rect x="664" y="142" width="96" height="26" rx="13" fill="#e8f5e9" stroke="#53845b" stroke-width="1.5"/>
+    <text x="712" y="159" font-size="11" font-weight="700" fill="#294a2e">200 OK</text>
+
+    <rect x="232" y="192" width="122" height="26" rx="13" fill="#fde8e6" stroke="#b5473a" stroke-width="1.5"/>
+    <text x="293" y="209" font-size="11" font-weight="700" fill="#6b241c">503 shutting down</text>
+    <circle cx="275" cy="186" r="4" fill="#b5473a"/>
+
+    <rect x="664" y="242" width="112" height="26" rx="13" fill="#fde8e6" stroke="#b5473a" stroke-width="1.5"/>
+    <text x="720" y="259" font-size="11" font-weight="700" fill="#6b241c">ECONNREFUSED</text>
+
+    <path d="M120 300H760" stroke="#40566b" stroke-width="1.5"/>
+    <g stroke="#40566b" stroke-width="1.5">
+      <path d="M120 295V305M280 295V305M440 295V305M600 295V305M760 295V305"/>
+    </g>
+    <g font-size="11" fill="#40566b">
+      <text x="120" y="320">0 s</text>
+      <text x="280" y="320">1 s</text>
+      <text x="440" y="320">2 s</text>
+      <text x="600" y="320">3 s</text>
+      <text x="760" y="320">4 s</text>
+    </g>
+    <text x="24" y="346" font-size="11.5" fill="#40566b" text-anchor="start">Safety net: an unref'd timer forces exit code 1 at drain + 10 s (12.6 s) if requests are still running.</text>
+    <text x="400" y="368" font-size="12.5" fill="#40566b">Fail readiness, keep serving while the load balancer drains you, close, then exit when work is done.</text>
+  </g>
+</svg>

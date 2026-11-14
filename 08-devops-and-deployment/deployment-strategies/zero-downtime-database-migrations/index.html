@@ -1,0 +1,4946 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../feature-flags-and-progressive-delivery/">
+      
+      
+        <link rel="next" href="../rollbacks-and-safe-releases/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Zero-Downtime Database Migrations - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#zero-downtime-database-migrations" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Zero-Downtime Database Migrations
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../05-application-architecture/" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../06-ai-and-machine-learning/" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+          <span class="md-ellipsis">&larr; Back to DevOps</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../05-application-architecture/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../06-ai-and-machine-learning/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI and Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
+        
+          
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-label="DevOps module lessons" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+                  <span class="md-ellipsis">&larr; Back to DevOps</span>
+                </a>
+              
+            </div>
+          
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                  
+  
+  
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+    
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_8" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_8" id="__nav_9_8_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment Strategies
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_8_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_8">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Deployment Strategies
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_8_2" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_8_2" id="__nav_9_8_2_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Foundations
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_8_2_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_8_2">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Foundations
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../environments-and-promotion/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Environments and Promotion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deploying-backend-services/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deploying Backend Services
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_8_3" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_8_3" id="__nav_9_8_3_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Moving Traffic Safely
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_8_3_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_8_3">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Moving Traffic Safely
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rolling-blue-green-and-canary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rolling, Blue-Green, and Canary Deployments
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../advanced-deployment-patterns/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced Deployment Patterns
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../feature-flags-and-progressive-delivery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature Flags and Progressive Delivery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Zero-Downtime Database Migrations
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Zero-Downtime Database Migrations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-schema-and-code-change-at-different-moments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why schema and code change at different moments
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#expand-and-contract-renaming-a-column-over-several-deploys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Expand and contract: renaming a column over several deploys
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#backfills-in-batches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backfills in batches
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#locking-risks-in-postgresql" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Locking risks in PostgreSQL
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#online-index-builds" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Online index builds
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schemaless-does-not-mean-migration-free" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Schemaless does not mean migration-free
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#migration-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Migration tools
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#running-migrations-in-cicd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running migrations in CI/CD
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rolling-back-migrations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rolling back migrations
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#knex-the-expand-migration-with-a-lock-timeout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Knex: the expand migration with a lock timeout
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dual-writing-and-reading-in-the-application-v2-and-v3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dual writing and reading in the application (v2 and v3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-batched-resumable-backfill" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A batched, resumable backfill
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#making-the-new-column-required-safely" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Making the new column required, safely
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#an-index-built-concurrently-with-invalid-index-cleanup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        An index built concurrently, with invalid-index cleanup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mongodb-with-migrate-mongo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MongoDB with migrate-mongo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#migrations-as-their-own-pipeline-step" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Migrations as their own pipeline step
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rollbacks-and-safe-releases/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rollbacks and Safe Releases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_8_4" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_8_4" id="__nav_9_8_4_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Other Kinds of Software
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_8_4_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_8_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Other Kinds of Software
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deploying-frontends-and-static-sites/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deploying Frontends and Static Sites
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../releasing-desktop-and-mobile-apps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Releasing Desktop and Mobile Apps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-schema-and-code-change-at-different-moments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why schema and code change at different moments
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#expand-and-contract-renaming-a-column-over-several-deploys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Expand and contract: renaming a column over several deploys
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#backfills-in-batches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backfills in batches
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#locking-risks-in-postgresql" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Locking risks in PostgreSQL
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#online-index-builds" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Online index builds
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schemaless-does-not-mean-migration-free" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Schemaless does not mean migration-free
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#migration-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Migration tools
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#running-migrations-in-cicd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running migrations in CI/CD
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rolling-back-migrations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rolling back migrations
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#knex-the-expand-migration-with-a-lock-timeout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Knex: the expand migration with a lock timeout
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dual-writing-and-reading-in-the-application-v2-and-v3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dual writing and reading in the application (v2 and v3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-batched-resumable-backfill" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A batched, resumable backfill
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#making-the-new-column-required-safely" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Making the new column required, safely
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#an-index-built-concurrently-with-invalid-index-cleanup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        An index built concurrently, with invalid-index cleanup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mongodb-with-migrate-mongo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MongoDB with migrate-mongo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#migrations-as-their-own-pipeline-step" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Migrations as their own pipeline step
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="zero-downtime-database-migrations">Zero-Downtime Database Migrations<a class="headerlink" href="#zero-downtime-database-migrations" title="Permanent link">&para;</a></h1>
+<p>A database migration changes the structure (schema) or the shape of the
+data: adding a column, renaming a field, splitting a table, building an
+index, converting values. A zero-downtime migration makes that change
+while the application keeps serving requests, without locking tables for
+long, and without any moment where the running code and the database
+disagree.</p>
+<p>This lesson explains why schema changes and code changes reach
+production at different moments, the backward and forward compatibility
+rules that follow, the expand-and-contract technique with a full column
+rename over several deploys, batched backfills, locking risks in
+PostgreSQL, online index builds in PostgreSQL and MongoDB, the common
+migration tools, where migrations belong in a CI/CD pipeline, and what
+"rolling back a migration" really means.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>Code deploys are easy to undo: start the previous image. Data changes are
+not: once a column is dropped or values are rewritten, the old code has
+nothing to read. And during every rolling, blue-green, or canary deploy,
+<strong>old and new code run at the same time against the same database</strong>, so a
+schema change that suits only the new code breaks the old instances that
+are still serving traffic.</p>
+<p>The second danger is locks. A migration that looks instant on a laptop
+can, on a 40-million-row table, rewrite the whole table under an
+exclusive lock, or wait for a lock while every application query queues
+behind it. Many "the database went down during the deploy" incidents are
+one innocent-looking <code>ALTER TABLE</code>.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Martin Fowler (Danilo Sato), parallel change.</strong> The bliki entry
+  <a href="https://martinfowler.com/bliki/ParallelChange.html">ParallelChange</a>
+  names the pattern used throughout this page: break a backward
+  incompatible change into three phases, <em>expand</em> (add the new form
+  alongside the old), <em>migrate</em> (move clients over), and <em>contract</em>
+  (remove the old form).</li>
+<li><strong>Stripe.</strong> <a href="https://stripe.com/blog/online-migrations">Online migrations at scale</a>
+  describes moving hundreds of millions of subscription records into a
+  new table with a four-step dual-writing pattern (dual write, change all
+  read paths, change all write paths, remove old data), backfilling with
+  offline jobs, and using GitHub's Scientist library to compare reads from
+  both stores before switching.</li>
+<li><strong>GitHub, gh-ost.</strong> GitHub's open-source
+  <a href="https://github.com/github/gh-ost">gh-ost</a> performs online schema
+  changes on MySQL by copying the table in the background, applying
+  ongoing changes from the binary log, and swapping tables at the end,
+  with throttling based on replication lag: the industrial version of
+  "backfill in batches and switch".</li>
+<li><strong>PostgreSQL documentation.</strong> The
+  <a href="https://www.postgresql.org/docs/current/sql-createindex.html#SQL-CREATEINDEX-CONCURRENTLY">CREATE INDEX documentation</a>
+  explains that a normal index build blocks writes for its whole
+  duration, while <code>CONCURRENTLY</code> allows writes but takes longer, cannot
+  run inside a transaction block, and leaves an invalid index behind if it
+  fails.</li>
+<li><strong>MongoDB documentation.</strong> The page on
+  <a href="https://www.mongodb.com/docs/manual/core/index-creation/">index builds on populated collections</a>
+  describes the build process used since MongoDB 4.2: an exclusive lock
+  only at the start and end of the build, reads and writes allowed in
+  between, and, since 4.4, simultaneous builds across replica set members.</li>
+</ul>
+<p><strong>Popular tools and providers:</strong> Prisma Migrate, Knex, Flyway,
+Liquibase, migrate-mongo, Atlas, Sqitch, golang-migrate, Django and
+Rails migrations, gh-ost and pt-online-schema-change for MySQL, and pgroll
+for expand-and-contract on PostgreSQL.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="why-schema-and-code-change-at-different-moments">Why schema and code change at different moments<a class="headerlink" href="#why-schema-and-code-change-at-different-moments" title="Permanent link">&para;</a></h3>
+<p>A typical deploy of TaskFlow API looks like this:</p>
+<ol>
+<li>The pipeline runs the migration (once).</li>
+<li>The new code rolls out instance by instance over several minutes.</li>
+<li>If something goes wrong, the old code is rolled back in.</li>
+</ol>
+<p>Between steps 1 and 2 the <strong>old code runs on the new schema</strong>. During step
+2 <strong>both</strong> versions run on it. During step 3 the old code runs again on a
+schema that may now contain data written by the new code. So every
+migration must satisfy two rules:</p>
+<ul>
+<li><strong>Backward compatibility of the schema:</strong> the schema after the
+  migration still works for the code currently running (old code).</li>
+<li><strong>Forward compatibility of the code:</strong> the new code works with data
+  written by both old and new code, and the old code (after a rollback)
+  tolerates data written by the new code.</li>
+</ul>
+<p><img alt="Diagram: rows are schema versions S0 with notes only, S1 with notes and description, and S2 with description only; columns are code versions v1 reading and writing notes, v2 writing both and reading notes, v3 writing both and reading description, and v4 reading and writing description; on S0 only v1 works and the others fail on the missing column; on S1 all four work, v3 once the backfill has run; on S2 only v4 works; the numbered safe order goes S0 with v1, S1 with v1, S1 with v2, S1 with v3, S1 with v4, then S2 with v4, changing either the schema or the code at each step." src="../schema-compatibility-matrix.svg" /></p>
+<p>The matrix shows the consequence: you cannot get from "S0 + v1" to
+"S2 + v4" in one deploy without passing through a combination that fails.
+You need a path through cells that all work, changing one thing at a time.</p>
+<h3 id="expand-and-contract-renaming-a-column-over-several-deploys">Expand and contract: renaming a column over several deploys<a class="headerlink" href="#expand-and-contract-renaming-a-column-over-several-deploys" title="Permanent link">&para;</a></h3>
+<p>Goal: rename <code>tasks.notes</code> to <code>tasks.description</code> in PostgreSQL. A
+direct <code>ALTER TABLE tasks RENAME COLUMN notes TO description</code> is a fast,
+metadata-only change, and it breaks every running instance of the old
+code the instant it commits. The zero-downtime version:</p>
+<p><img alt="Diagram: six steps to rename notes to description; step 1 expand adds an empty description column while v1 reads and writes notes and any rollback is safe; step 2 deploys v2 which reads notes and writes both, rollback to v1; step 3 backfills old rows in batches, still reading notes and writing both, rollback to v1; step 4 deploys v3 which reads description and writes both, rollback to v2 or v1; step 5 deploys v4 which reads and writes description only and leaves notes stale, rollback only to v3; step 6 contracts by dropping notes weeks later, after which only rolling forward from v4 is possible." src="../expand-contract-timeline.svg" /></p>
+<ol>
+<li><strong>Expand (migration).</strong> <code>ALTER TABLE tasks ADD COLUMN description
+   text;</code> A nullable column without a default is a metadata-only change
+   in PostgreSQL. v1 is unaffected.</li>
+<li><strong>Dual write (deploy v2).</strong> v2 writes both <code>notes</code> and <code>description</code>
+   on every insert and update, and still <strong>reads</strong> <code>notes</code>. New and
+   changed rows now have both.</li>
+<li><strong>Backfill (job).</strong> Copy <code>notes</code> into <code>description</code> for old rows, in
+   small batches (next section). After this, both columns hold the same
+   data for every row.</li>
+<li><strong>Switch reads (deploy v3).</strong> v3 reads <code>description</code> and still writes
+   both, so rolling back to v2 (which reads <code>notes</code>) loses nothing.</li>
+<li><strong>Single write (deploy v4).</strong> v4 reads and writes only
+   <code>description</code>. <code>notes</code> goes stale. Rollback is now only to v3, because
+   v2 would read stale <code>notes</code>.</li>
+<li><strong>Contract (migration, later).</strong> After v4 has been stable for a
+   while (days to weeks) and nothing reads <code>notes</code> (check query logs,
+   reports, other services), <code>ALTER TABLE tasks DROP COLUMN notes;</code>.</li>
+</ol>
+<p>That is four deploys and two migrations for one rename. It sounds heavy;
+in practice steps 2 and 4 are small code changes, and the alternative is
+an outage or a maintenance window. The same shape works for type changes
+(store a timestamp as <code>timestamptz</code> instead of text), splitting a column,
+moving data to a new table, and changing the shape of a MongoDB document.</p>
+<p>A variation keeps the two columns in sync with a database trigger instead
+of dual writes in the application. Tools such as pgroll automate this:
+they expose the old and new schema as views and sync columns with
+triggers until the contract step.</p>
+<h3 id="backfills-in-batches">Backfills in batches<a class="headerlink" href="#backfills-in-batches" title="Permanent link">&para;</a></h3>
+<p>A single <code>UPDATE tasks SET description = notes;</code> on 40 million rows
+holds row locks on every row until it commits, generates a huge amount of
+write-ahead log (WAL), can bloat the table, and makes replicas fall
+behind. Instead:</p>
+<ul>
+<li><strong>Batch by key range</strong> (keyset pagination on the primary key): process
+  1,000 to 10,000 rows per statement, ordered by <code>id</code>.</li>
+<li><strong>Commit each batch</strong> so locks are short and progress is durable.</li>
+<li><strong>Pause between batches</strong> and <strong>throttle on replication lag</strong> or
+  database CPU, so production traffic keeps priority.</li>
+<li><strong>Make it idempotent and resumable:</strong> only touch rows that still need
+  it (<code>WHERE description IS NULL</code>), so a restart repeats nothing.</li>
+<li><strong>Do not overwrite newer data:</strong> because the app already dual-writes,
+  the backfill must only fill gaps, never replace values the app wrote.</li>
+<li><strong>Verify afterwards:</strong> count rows where the two columns differ; it
+  should be zero.</li>
+</ul>
+<p>Worked example: 40 million rows, batches of 2,000, each batch taking about
+150 ms plus a 100 ms pause, gives <code>40,000,000 / 2,000 = 20,000</code> batches
+and <code>20,000 x 0.25 s = 5,000 s</code>, about 83 minutes, with the database
+never busy for more than 150 ms at a time.</p>
+<h3 id="locking-risks-in-postgresql">Locking risks in PostgreSQL<a class="headerlink" href="#locking-risks-in-postgresql" title="Permanent link">&para;</a></h3>
+<p>Every <code>ALTER TABLE</code> takes a lock. Most take <code>ACCESS EXCLUSIVE</code>, which
+conflicts with everything, including plain <code>SELECT</code>s. The danger is not
+only the time the lock is held but the time spent <strong>waiting</strong> for it:</p>
+<p><img alt="Diagram: top, without lock_timeout, a long report query holds ACCESS SHARE on tasks from 0 to 30 seconds; at 5 seconds an ALTER TABLE waits for ACCESS EXCLUSIVE behind it, and every application query arriving after 5 seconds queues behind the waiting ALTER, so requests time out until 30 seconds; bottom, with lock_timeout set to 2 seconds, the ALTER gives up after 2 seconds to be retried later, and application queries pause at most 2 seconds before running normally." src="../lock-queue.svg" /></p>
+<p>Locks are granted in order, so a waiting <code>ACCESS EXCLUSIVE</code> request
+blocks every later request on that table, even ones compatible with the
+lock currently held. A five-second metadata change becomes a 30-second
+outage because a report query was running. The fix is to set a short
+<code>lock_timeout</code> for migrations and retry:</p>
+<div class="highlight"><pre><span></span><code><span class="k">SET</span><span class="w"> </span><span class="n">lock_timeout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'2s'</span><span class="p">;</span><span class="w">       </span><span class="c1">-- give up instead of queueing the whole app</span>
+<span class="k">SET</span><span class="w"> </span><span class="n">statement_timeout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'30s'</span><span class="p">;</span><span class="w"> </span><span class="c1">-- never let a migration run unbounded</span>
+<span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">tasks</span><span class="w"> </span><span class="k">ADD</span><span class="w"> </span><span class="k">COLUMN</span><span class="w"> </span><span class="n">description</span><span class="w"> </span><span class="nb">text</span><span class="p">;</span>
+</code></pre></div>
+<p>Which operations are safe on a large, busy PostgreSQL table:</p>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>What happens</th>
+<th>Safe approach</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ADD COLUMN</code> (nullable, no default)</td>
+<td>Metadata only, brief exclusive lock</td>
+<td>Safe with <code>lock_timeout</code></td>
+</tr>
+<tr>
+<td><code>ADD COLUMN ... DEFAULT &lt;constant&gt;</code></td>
+<td>Metadata only since PostgreSQL 11</td>
+<td>Safe with <code>lock_timeout</code></td>
+</tr>
+<tr>
+<td><code>ADD COLUMN ... DEFAULT &lt;volatile expression&gt;</code> (for example <code>gen_random_uuid()</code>)</td>
+<td>Rewrites the whole table under an exclusive lock</td>
+<td>Add nullable, backfill in batches, then set the default</td>
+</tr>
+<tr>
+<td><code>ALTER COLUMN ... TYPE</code></td>
+<td>Usually rewrites the table and rebuilds indexes</td>
+<td>New column, dual write, backfill, switch</td>
+</tr>
+<tr>
+<td><code>ALTER COLUMN ... SET NOT NULL</code></td>
+<td>Scans the whole table under an exclusive lock</td>
+<td>Add <code>CHECK (col IS NOT NULL) NOT VALID</code>, <code>VALIDATE</code> it, then <code>SET NOT NULL</code> (PostgreSQL 12+ skips the scan)</td>
+</tr>
+<tr>
+<td><code>ADD FOREIGN KEY</code></td>
+<td>Validates every row while holding locks</td>
+<td>Add with <code>NOT VALID</code>, then <code>VALIDATE CONSTRAINT</code></td>
+</tr>
+<tr>
+<td><code>CREATE INDEX</code></td>
+<td>Blocks writes for the whole build</td>
+<td><code>CREATE INDEX CONCURRENTLY</code></td>
+</tr>
+<tr>
+<td><code>RENAME COLUMN</code> / <code>RENAME TABLE</code></td>
+<td>Instant, but breaks running code</td>
+<td>Expand and contract</td>
+</tr>
+<tr>
+<td><code>DROP COLUMN</code></td>
+<td>Instant (space reclaimed later), breaks code that still uses it</td>
+<td>Only in the contract step</td>
+</tr>
+</tbody>
+</table>
+<p><code>VALIDATE CONSTRAINT</code> takes a weaker lock that allows reads and writes, so
+it can scan for as long as it needs.</p>
+<h3 id="online-index-builds">Online index builds<a class="headerlink" href="#online-index-builds" title="Permanent link">&para;</a></h3>
+<p><strong>PostgreSQL.</strong> <code>CREATE INDEX CONCURRENTLY</code> builds the index without
+blocking inserts, updates, and deletes. Costs and caveats:</p>
+<ul>
+<li>It scans the table twice and waits for running transactions, so it
+  takes longer and uses more resources.</li>
+<li>It cannot run inside a transaction block, so migration tools must be
+  told not to wrap that migration in a transaction.</li>
+<li>If it fails (a deadlock, a uniqueness violation, a cancel), it leaves
+  an <strong>invalid</strong> index that is still maintained on writes but never used
+  for reads. Drop it (<code>DROP INDEX CONCURRENTLY</code>) and build again. Note
+  that <code>CREATE INDEX CONCURRENTLY IF NOT EXISTS</code> sees the invalid index
+  and silently does nothing.</li>
+</ul>
+<p><strong>MongoDB.</strong> Since 4.2, index builds use one optimized process (the old
+<code>background</code> option is ignored): the build holds an exclusive lock on the
+collection only briefly at the start and end, and allows reads and writes
+in between. Since 4.4, a build on a replica set runs on all data-bearing
+members at the same time and commits once a quorum (<code>commitQuorum</code>) is
+ready. Practical points:</p>
+<ul>
+<li>A large build still competes for CPU, I/O, and memory; run it off-peak
+  and watch replication lag.</li>
+<li>A unique index build fails if duplicates exist; find and fix them
+  first.</li>
+<li>For the most sensitive clusters, MongoDB documents a rolling procedure
+  that builds the index on one member at a time, taken out of the
+  replica set.</li>
+</ul>
+<h3 id="schemaless-does-not-mean-migration-free">Schemaless does not mean migration-free<a class="headerlink" href="#schemaless-does-not-mean-migration-free" title="Permanent link">&para;</a></h3>
+<p>MongoDB will happily store documents of different shapes in one
+collection, which moves the migration problem into the code: after a
+rename, old documents still have <code>notes</code> and new ones have
+<code>description</code>. The same expand-and-contract steps apply:</p>
+<ul>
+<li>Code reads both shapes during the transition
+  (<code>task.description ?? task.notes</code>).</li>
+<li>A batched backfill updates old documents (an update with an
+  aggregation pipeline can copy one field into another).</li>
+<li>Some teams migrate <strong>lazily</strong>: convert a document when it is next
+  written, and run a final backfill for the rest.</li>
+<li>If you use <code>$jsonSchema</code> validation, loosen it in the expand step
+  (<code>validationLevel: "moderate"</code> applies rules only to inserts and to
+  documents that already pass) and tighten it in the contract step.</li>
+</ul>
+<h3 id="migration-tools">Migration tools<a class="headerlink" href="#migration-tools" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Ecosystem</th>
+<th>Migrations are</th>
+<th>Apply in production</th>
+<th>Down migrations</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Prisma Migrate</td>
+<td>Node, SQL databases</td>
+<td>SQL generated from the Prisma schema, editable</td>
+<td><code>npx prisma migrate deploy</code></td>
+<td>No automatic down; write a new migration (or use <code>prisma migrate diff</code>)</td>
+</tr>
+<tr>
+<td>Knex</td>
+<td>Node, SQL databases</td>
+<td>JavaScript <code>up</code>/<code>down</code> functions</td>
+<td><code>npx knex migrate:latest</code></td>
+<td><code>npx knex migrate:rollback</code> runs your <code>down</code></td>
+</tr>
+<tr>
+<td>Flyway</td>
+<td>JVM, any SQL database</td>
+<td>Versioned SQL files (<code>V3__add_description.sql</code>)</td>
+<td><code>flyway migrate</code></td>
+<td>Undo migrations are not in the free Community edition</td>
+</tr>
+<tr>
+<td>Liquibase</td>
+<td>JVM, many databases</td>
+<td>Changelogs of changesets (SQL, XML, YAML)</td>
+<td><code>liquibase update</code></td>
+<td>Rollback blocks, generated for some change types</td>
+</tr>
+<tr>
+<td>migrate-mongo</td>
+<td>Node, MongoDB</td>
+<td>JavaScript <code>up(db, client)</code>/<code>down(db, client)</code></td>
+<td><code>npx migrate-mongo up</code></td>
+<td><code>npx migrate-mongo down</code> runs your <code>down</code></td>
+</tr>
+</tbody>
+</table>
+<p>All of them record applied migrations in a table or collection (for
+example <code>knex_migrations</code>, <code>_prisma_migrations</code>, <code>flyway_schema_history</code>,
+migrate-mongo's <code>changelog</code>) and should prevent two runners applying
+migrations at once, through a lock table, an advisory lock, or a lock
+collection. Check what yours does before running it from several
+places.</p>
+<h3 id="running-migrations-in-cicd">Running migrations in CI/CD<a class="headerlink" href="#running-migrations-in-cicd" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Expand migrations run before the code deploy,</strong> as a separate
+  pipeline step or job, once.</li>
+<li><strong>Contract migrations run in a later release,</strong> after the code that
+  stopped using the old structure has been stable. Many teams require a
+  manual approval for any migration that drops or rewrites data.</li>
+<li><strong>Rehearse on staging</strong> with production-sized data, measuring duration
+  and locks. A migration that takes 2 seconds on 5,000 rows can take 20
+  minutes on 40 million.</li>
+<li><strong>Lint migrations</strong> for dangerous operations (non-concurrent index
+  builds, <code>SET NOT NULL</code>, type changes, drops) and fail the build unless
+  a reviewer explicitly allows them.</li>
+<li><strong>Keep migrations small and separate from big code changes,</strong> so a
+  failure is easy to attribute.</li>
+<li><strong>Take or verify a backup</strong> (or confirm point-in-time recovery) before
+  destructive steps.</li>
+</ul>
+<h3 id="rolling-back-migrations">Rolling back migrations<a class="headerlink" href="#rolling-back-migrations" title="Permanent link">&para;</a></h3>
+<p>"Down" migrations look like a rollback button but rarely are one:</p>
+<ul>
+<li>A down migration that re-adds a dropped column cannot restore its data.</li>
+<li>A down migration after new code wrote data in the new shape may destroy
+  that data.</li>
+<li>Under time pressure, running untested down migrations is risky.</li>
+</ul>
+<p>In practice teams <strong>roll forward</strong>: they roll back the <em>code</em> (which the
+expand-and-contract steps make safe) and fix the schema with a new
+migration. Because expand steps only add things, they rarely need undoing;
+because contract steps happen late, after stability is proven, they rarely
+need undoing either. For truly destructive changes, the real rollback is
+a restore from backup, which is why backups and restore tests matter (see
+<a href="../../backups/database-backups-and-point-in-time-recovery/">database backups and point-in-time recovery</a>).</p>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Change</th>
+<th>Approach</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Add a nullable column, add a table, add a field</td>
+<td>Single expand migration before the deploy</td>
+</tr>
+<tr>
+<td>Add a column with a constant default (PostgreSQL 11+)</td>
+<td>Single migration with <code>lock_timeout</code></td>
+</tr>
+<tr>
+<td>Add an index to a large table</td>
+<td><code>CREATE INDEX CONCURRENTLY</code> (PostgreSQL), off-peak build (MongoDB)</td>
+</tr>
+<tr>
+<td>Rename a column or field, change a type</td>
+<td>Full expand and contract over several releases</td>
+</tr>
+<tr>
+<td>Make a column required</td>
+<td>Backfill, <code>CHECK ... NOT VALID</code>, <code>VALIDATE</code>, then <code>SET NOT NULL</code></td>
+</tr>
+<tr>
+<td>Drop a column or collection</td>
+<td>Contract step, a release after the code stopped using it</td>
+</tr>
+<tr>
+<td>Small internal tool, maintenance window available</td>
+<td>A direct change during the window may be simpler and acceptable</td>
+</tr>
+<tr>
+<td>Tiny table (hundreds of rows) on a quiet system</td>
+<td>Locks are short; still use <code>lock_timeout</code>, but full ceremony may be unnecessary</td>
+</tr>
+</tbody>
+</table>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="knex-the-expand-migration-with-a-lock-timeout">Knex: the expand migration with a lock timeout<a class="headerlink" href="#knex-the-expand-migration-with-a-lock-timeout" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// migrations/20261113090000_add_tasks_description.js</span>
+<span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">up</span><span class="p">(</span><span class="nx">knex</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">await</span><span class="w"> </span><span class="nx">knex</span><span class="p">.</span><span class="nx">raw</span><span class="p">(</span><span class="s2">"SET LOCAL lock_timeout = '2s'"</span><span class="p">);</span><span class="w"> </span><span class="c1">// only for this migration's transaction</span>
+<span class="w">  </span><span class="k">await</span><span class="w"> </span><span class="nx">knex</span><span class="p">.</span><span class="nx">schema</span><span class="p">.</span><span class="nx">alterTable</span><span class="p">(</span><span class="s2">"tasks"</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nx">table</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">table</span><span class="p">.</span><span class="nx">text</span><span class="p">(</span><span class="s2">"description"</span><span class="p">);</span><span class="w"> </span><span class="c1">// nullable, no default: metadata-only</span>
+<span class="w">  </span><span class="p">});</span>
+<span class="p">}</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">down</span><span class="p">(</span><span class="nx">knex</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">await</span><span class="w"> </span><span class="nx">knex</span><span class="p">.</span><span class="nx">schema</span><span class="p">.</span><span class="nx">alterTable</span><span class="p">(</span><span class="s2">"tasks"</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nx">table</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">table</span><span class="p">.</span><span class="nx">dropColumn</span><span class="p">(</span><span class="s2">"description"</span><span class="p">);</span>
+<span class="w">  </span><span class="p">});</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Knex runs each migration in a transaction by default, so <code>SET LOCAL</code>
+applies only to it. If the lock is not granted within 2 seconds the
+migration fails cleanly and can be retried, instead of freezing the API.</p>
+<h3 id="dual-writing-and-reading-in-the-application-v2-and-v3">Dual writing and reading in the application (v2 and v3)<a class="headerlink" href="#dual-writing-and-reading-in-the-application-v2-and-v3" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/tasks/repository.js (v2: write both, read the old column)</span>
+<span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">updateTaskNotes</span><span class="p">(</span><span class="nx">db</span><span class="p">,</span><span class="w"> </span><span class="nx">taskId</span><span class="p">,</span><span class="w"> </span><span class="nx">text</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">await</span><span class="w"> </span><span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span>
+<span class="w">    </span><span class="s2">"UPDATE tasks SET notes = $1, description = $1, updated_at = now() WHERE id = $2"</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="nx">text</span><span class="p">,</span><span class="w"> </span><span class="nx">taskId</span><span class="p">],</span>
+<span class="w">  </span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">getTask</span><span class="p">(</span><span class="nx">db</span><span class="p">,</span><span class="w"> </span><span class="nx">taskId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">rows</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s2">"SELECT id, title, notes FROM tasks WHERE id = $1"</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="nx">taskId</span><span class="p">]);</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">rows</span><span class="p">[</span><span class="mf">0</span><span class="p">]</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">...</span><span class="nx">rows</span><span class="p">[</span><span class="mf">0</span><span class="p">],</span><span class="w"> </span><span class="nx">description</span><span class="o">:</span><span class="w"> </span><span class="nx">rows</span><span class="p">[</span><span class="mf">0</span><span class="p">].</span><span class="nx">notes</span><span class="w"> </span><span class="p">};</span>
+<span class="p">}</span>
+
+<span class="c1">// v3 changes only the read: SELECT id, title, description FROM tasks ...</span>
+<span class="c1">// and keeps writing both columns, so rolling back to v2 loses nothing.</span>
+</code></pre></div>
+<h3 id="a-batched-resumable-backfill">A batched, resumable backfill<a class="headerlink" href="#a-batched-resumable-backfill" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// scripts/backfill-task-description.js: copy notes -&gt; description in small batches</span>
+<span class="k">import</span><span class="w"> </span><span class="nx">knexFactory</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"knex"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">knex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">knexFactory</span><span class="p">({</span><span class="w"> </span><span class="nx">client</span><span class="o">:</span><span class="w"> </span><span class="s2">"pg"</span><span class="p">,</span><span class="w"> </span><span class="nx">connection</span><span class="o">:</span><span class="w"> </span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">DATABASE_URL</span><span class="w"> </span><span class="p">});</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">BATCH_SIZE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">2</span><span class="nx">_000</span><span class="p">;</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">PAUSE_MS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">100</span><span class="p">;</span>
+
+<span class="kd">let</span><span class="w"> </span><span class="nx">lastId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0</span><span class="p">;</span>
+<span class="kd">let</span><span class="w"> </span><span class="nx">total</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0</span><span class="p">;</span>
+
+<span class="k">for</span><span class="w"> </span><span class="p">(;;)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">rows</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">knex</span><span class="p">.</span><span class="nx">raw</span><span class="p">(</span>
+<span class="w">    </span><span class="sb">`WITH batch AS (</span>
+<span class="sb">       SELECT id FROM tasks</span>
+<span class="sb">       WHERE id &gt; ? AND description IS NULL AND notes IS NOT NULL</span>
+<span class="sb">       ORDER BY id</span>
+<span class="sb">       LIMIT ?</span>
+<span class="sb">     )</span>
+<span class="sb">     UPDATE tasks AS t</span>
+<span class="sb">     SET description = t.notes</span>
+<span class="sb">     FROM batch</span>
+<span class="sb">     WHERE t.id = batch.id AND t.description IS NULL</span>
+<span class="sb">     RETURNING t.id`</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="nx">lastId</span><span class="p">,</span><span class="w"> </span><span class="nx">BATCH_SIZE</span><span class="p">],</span>
+<span class="w">  </span><span class="p">);</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">rows</span><span class="p">.</span><span class="nx">length</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="mf">0</span><span class="p">)</span><span class="w"> </span><span class="k">break</span><span class="p">;</span>
+
+<span class="w">  </span><span class="nx">lastId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">rows</span><span class="p">.</span><span class="nx">reduce</span><span class="p">((</span><span class="nx">max</span><span class="p">,</span><span class="w"> </span><span class="nx">r</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nb">Math</span><span class="p">.</span><span class="nx">max</span><span class="p">(</span><span class="nx">max</span><span class="p">,</span><span class="w"> </span><span class="nb">Number</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nx">id</span><span class="p">)),</span><span class="w"> </span><span class="nx">lastId</span><span class="p">);</span>
+<span class="w">  </span><span class="nx">total</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="nx">rows</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`backfilled </span><span class="si">${</span><span class="nx">total</span><span class="si">}</span><span class="sb"> rows, last id </span><span class="si">${</span><span class="nx">lastId</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
+
+<span class="w">  </span><span class="k">await</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Promise</span><span class="p">((</span><span class="nx">resolve</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">setTimeout</span><span class="p">(</span><span class="nx">resolve</span><span class="p">,</span><span class="w"> </span><span class="nx">PAUSE_MS</span><span class="p">));</span>
+<span class="p">}</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">rows</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="nx">check</span><span class="p">]</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">knex</span><span class="p">.</span><span class="nx">raw</span><span class="p">(</span>
+<span class="w">  </span><span class="s2">"SELECT count(*) AS mismatched FROM tasks WHERE description IS DISTINCT FROM notes"</span><span class="p">,</span>
+<span class="p">);</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`done: </span><span class="si">${</span><span class="nx">total</span><span class="si">}</span><span class="sb"> rows updated, </span><span class="si">${</span><span class="nx">check</span><span class="p">.</span><span class="nx">mismatched</span><span class="si">}</span><span class="sb"> rows still differ`</span><span class="p">);</span>
+<span class="k">await</span><span class="w"> </span><span class="nx">knex</span><span class="p">.</span><span class="nx">destroy</span><span class="p">();</span>
+</code></pre></div>
+<ul>
+<li>Each statement is its own transaction, so locks last milliseconds.</li>
+<li><code>description IS NULL</code> in both places makes the job idempotent and keeps
+  it from overwriting values the dual-writing app has already set.</li>
+<li>Keyset pagination (<code>id &gt; lastId</code>) stays fast however far the job gets;
+  <code>OFFSET</code> would get slower with every batch.</li>
+<li>In production, also pause while replica lag exceeds a threshold.</li>
+</ul>
+<h3 id="making-the-new-column-required-safely">Making the new column required, safely<a class="headerlink" href="#making-the-new-column-required-safely" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">-- migrations: run after the backfill reports zero mismatches</span>
+<span class="k">SET</span><span class="w"> </span><span class="n">lock_timeout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'2s'</span><span class="p">;</span>
+
+<span class="c1">-- 1. Add the rule without checking existing rows (brief lock only)</span>
+<span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">tasks</span>
+<span class="w">  </span><span class="k">ADD</span><span class="w"> </span><span class="k">CONSTRAINT</span><span class="w"> </span><span class="n">tasks_description_not_null</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span><span class="n">description</span><span class="w"> </span><span class="k">IS</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">)</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">VALID</span><span class="p">;</span>
+
+<span class="c1">-- 2. Check existing rows; this lock allows reads and writes to continue</span>
+<span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">tasks</span><span class="w"> </span><span class="n">VALIDATE</span><span class="w"> </span><span class="k">CONSTRAINT</span><span class="w"> </span><span class="n">tasks_description_not_null</span><span class="p">;</span>
+
+<span class="c1">-- 3. PostgreSQL 12+ uses the validated constraint and skips the full scan</span>
+<span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">tasks</span><span class="w"> </span><span class="k">ALTER</span><span class="w"> </span><span class="k">COLUMN</span><span class="w"> </span><span class="n">description</span><span class="w"> </span><span class="k">SET</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">;</span>
+<span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">tasks</span><span class="w"> </span><span class="k">DROP</span><span class="w"> </span><span class="k">CONSTRAINT</span><span class="w"> </span><span class="n">tasks_description_not_null</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="an-index-built-concurrently-with-invalid-index-cleanup">An index built concurrently, with invalid-index cleanup<a class="headerlink" href="#an-index-built-concurrently-with-invalid-index-cleanup" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// migrations/20261113091000_index_tasks_assignee.js</span>
+<span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">config</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">transaction</span><span class="o">:</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="p">};</span><span class="w"> </span><span class="c1">// CONCURRENTLY cannot run in a transaction</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">INDEX</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"tasks_assignee_id_due_idx"</span><span class="p">;</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">up</span><span class="p">(</span><span class="nx">knex</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">await</span><span class="w"> </span><span class="nx">knex</span><span class="p">.</span><span class="nx">raw</span><span class="p">(</span><span class="s2">"SET lock_timeout = '2s'"</span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// A failed concurrent build leaves an INVALID index that IF NOT EXISTS would skip</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">rows</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">knex</span><span class="p">.</span><span class="nx">raw</span><span class="p">(</span>
+<span class="w">    </span><span class="sb">`SELECT i.indisvalid FROM pg_class c JOIN pg_index i ON i.indexrelid = c.oid</span>
+<span class="sb">     WHERE c.relname = ?`</span><span class="p">,</span>
+<span class="w">    </span><span class="p">[</span><span class="nx">INDEX</span><span class="p">],</span>
+<span class="w">  </span><span class="p">);</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">rows</span><span class="p">.</span><span class="nx">length</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">0</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="nx">rows</span><span class="p">[</span><span class="mf">0</span><span class="p">].</span><span class="nx">indisvalid</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="nx">knex</span><span class="p">.</span><span class="nx">raw</span><span class="p">(</span><span class="sb">`DROP INDEX CONCURRENTLY </span><span class="si">${</span><span class="nx">INDEX</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="k">await</span><span class="w"> </span><span class="nx">knex</span><span class="p">.</span><span class="nx">raw</span><span class="p">(</span><span class="sb">`CREATE INDEX CONCURRENTLY IF NOT EXISTS </span><span class="si">${</span><span class="nx">INDEX</span><span class="si">}</span><span class="sb"> ON tasks (assignee_id, due_at)`</span><span class="p">);</span>
+<span class="w">  </span><span class="k">await</span><span class="w"> </span><span class="nx">knex</span><span class="p">.</span><span class="nx">raw</span><span class="p">(</span><span class="s2">"RESET lock_timeout"</span><span class="p">);</span><span class="w"> </span><span class="c1">// this session is reused by later migrations</span>
+<span class="p">}</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">down</span><span class="p">(</span><span class="nx">knex</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">await</span><span class="w"> </span><span class="nx">knex</span><span class="p">.</span><span class="nx">raw</span><span class="p">(</span><span class="sb">`DROP INDEX CONCURRENTLY IF EXISTS </span><span class="si">${</span><span class="nx">INDEX</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="mongodb-with-migrate-mongo">MongoDB with migrate-mongo<a class="headerlink" href="#mongodb-with-migrate-mongo" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// migrate-mongo-config.js</span>
+<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">mongodb</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">url</span><span class="o">:</span><span class="w"> </span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">MONGODB_URI</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">databaseName</span><span class="o">:</span><span class="w"> </span><span class="s2">"taskflow"</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">options</span><span class="o">:</span><span class="w"> </span><span class="p">{},</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nx">migrationsDir</span><span class="o">:</span><span class="w"> </span><span class="s2">"migrations"</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">changelogCollectionName</span><span class="o">:</span><span class="w"> </span><span class="s2">"changelog"</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">lockCollectionName</span><span class="o">:</span><span class="w"> </span><span class="s2">"changelog_lock"</span><span class="p">,</span><span class="w"> </span><span class="c1">// prevents two runners at once</span>
+<span class="w">  </span><span class="nx">lockTtl</span><span class="o">:</span><span class="w"> </span><span class="mf">0</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">migrationFileExtension</span><span class="o">:</span><span class="w"> </span><span class="s2">".js"</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">useFileHash</span><span class="o">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">moduleSystem</span><span class="o">:</span><span class="w"> </span><span class="s2">"commonjs"</span><span class="p">,</span>
+<span class="p">};</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1">// migrations/20261113090000-copy-notes-to-description.js</span>
+<span class="c1">// Expand + backfill: copy notes into description in batches; notes stays for now.</span>
+<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">async</span><span class="w"> </span><span class="nx">up</span><span class="p">(</span><span class="nx">db</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">tasks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">db</span><span class="p">.</span><span class="nx">collection</span><span class="p">(</span><span class="s2">"tasks"</span><span class="p">);</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">BATCH_SIZE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1000</span><span class="p">;</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="nx">lastId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(;;)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="kd">const</span><span class="w"> </span><span class="nx">filter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">description</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">$exists</span><span class="o">:</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="nx">notes</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">$exists</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">};</span>
+<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">lastId</span><span class="p">)</span><span class="w"> </span><span class="nx">filter</span><span class="p">.</span><span class="nx">_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">$gt</span><span class="o">:</span><span class="w"> </span><span class="nx">lastId</span><span class="w"> </span><span class="p">};</span>
+
+<span class="w">      </span><span class="kd">const</span><span class="w"> </span><span class="nx">ids</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">tasks</span>
+<span class="w">        </span><span class="p">.</span><span class="nx">find</span><span class="p">(</span><span class="nx">filter</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">projection</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">_id</span><span class="o">:</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">})</span>
+<span class="w">        </span><span class="p">.</span><span class="nx">sort</span><span class="p">({</span><span class="w"> </span><span class="nx">_id</span><span class="o">:</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="p">})</span>
+<span class="w">        </span><span class="p">.</span><span class="nx">limit</span><span class="p">(</span><span class="nx">BATCH_SIZE</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="nx">map</span><span class="p">((</span><span class="nx">doc</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">doc</span><span class="p">.</span><span class="nx">_id</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="nx">toArray</span><span class="p">();</span>
+<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">ids</span><span class="p">.</span><span class="nx">length</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="mf">0</span><span class="p">)</span><span class="w"> </span><span class="k">break</span><span class="p">;</span>
+
+<span class="w">      </span><span class="c1">// Update with an aggregation pipeline (MongoDB 4.2+): copy one field into another</span>
+<span class="w">      </span><span class="k">await</span><span class="w"> </span><span class="nx">tasks</span><span class="p">.</span><span class="nx">updateMany</span><span class="p">(</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nx">_id</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">$in</span><span class="o">:</span><span class="w"> </span><span class="nx">ids</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="nx">description</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">$exists</span><span class="o">:</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="p">[{</span><span class="w"> </span><span class="nx">$set</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">description</span><span class="o">:</span><span class="w"> </span><span class="s2">"$notes"</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}],</span>
+<span class="w">      </span><span class="p">);</span>
+<span class="w">      </span><span class="nx">lastId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">ids</span><span class="p">[</span><span class="nx">ids</span><span class="p">.</span><span class="nx">length</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">1</span><span class="p">];</span>
+<span class="w">      </span><span class="k">await</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Promise</span><span class="p">((</span><span class="nx">resolve</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">setTimeout</span><span class="p">(</span><span class="nx">resolve</span><span class="p">,</span><span class="w"> </span><span class="mf">100</span><span class="p">));</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="nx">tasks</span><span class="p">.</span><span class="nx">createIndex</span><span class="p">({</span><span class="w"> </span><span class="nx">assigneeId</span><span class="o">:</span><span class="w"> </span><span class="mf">1</span><span class="p">,</span><span class="w"> </span><span class="nx">dueAt</span><span class="o">:</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">name</span><span class="o">:</span><span class="w"> </span><span class="s2">"assignee_due"</span><span class="w"> </span><span class="p">});</span>
+<span class="w">  </span><span class="p">},</span>
+
+<span class="w">  </span><span class="k">async</span><span class="w"> </span><span class="nx">down</span><span class="p">(</span><span class="nx">db</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// The expand step removed nothing, so only the new index needs undoing.</span>
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="nx">db</span><span class="p">.</span><span class="nx">collection</span><span class="p">(</span><span class="s2">"tasks"</span><span class="p">).</span><span class="nx">dropIndex</span><span class="p">(</span><span class="s2">"assignee_due"</span><span class="p">);</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="p">};</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>npx<span class="w"> </span>migrate-mongo<span class="w"> </span>status<span class="w">   </span><span class="c1"># which migrations are applied</span>
+npx<span class="w"> </span>migrate-mongo<span class="w"> </span>up<span class="w">       </span><span class="c1"># apply pending ones (once, from the pipeline)</span>
+</code></pre></div>
+<h3 id="migrations-as-their-own-pipeline-step">Migrations as their own pipeline step<a class="headerlink" href="#migrations-as-their-own-pipeline-step" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># .github/workflows/deploy.yml (excerpt; the build job is as in "Environments and promotion")</span>
+<span class="nt">jobs</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">migrate</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">needs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">build</span>
+<span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
+<span class="w">    </span><span class="nt">environment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">production</span>
+<span class="w">    </span><span class="nt">steps</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/checkout@v7</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/setup-node@v7</span>
+<span class="w">        </span><span class="nt">with</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">node-version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">24</span>
+<span class="w">          </span><span class="nt">cache</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">npm</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">npm ci</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">npx knex migrate:latest</span><span class="w">    </span><span class="c1"># expand-only migrations, reviewed in the PR</span>
+<span class="w">        </span><span class="nt">env</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">DATABASE_URL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ secrets.DATABASE_URL }}</span>
+
+<span class="w">  </span><span class="nt">deploy</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">needs</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">build</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">migrate</span><span class="p p-Indicator">]</span><span class="w">              </span><span class="c1"># code rolls out only after the schema is ready</span>
+<span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
+<span class="w">    </span><span class="nt">environment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">production</span>
+<span class="w">    </span><span class="nt">steps</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/checkout@v7</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./scripts/deploy.sh production "${{ needs.build.outputs.image }}"</span>
+</code></pre></div>
+<p>Contract migrations live in a separate, manually triggered workflow (or
+a later release) so that dropping a column is always a deliberate act.</p>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Assume old and new code run at the same time; every migration must
+  work with both.</li>
+<li>Split breaking changes into expand, migrate, and contract; never
+  combine a destructive schema change with the code change that needs it.</li>
+<li>Set <code>lock_timeout</code> (and <code>statement_timeout</code>) for every migration on
+  PostgreSQL; retry instead of queueing the application.</li>
+<li>Build indexes concurrently (PostgreSQL) or off-peak with lag monitoring
+  (MongoDB).</li>
+<li>Backfill in small, idempotent, resumable batches, throttled on load
+  and replica lag.</li>
+<li>Rehearse migrations on production-sized data and record how long they
+  take.</li>
+<li>Run expand migrations once, before the deploy, from the pipeline; run
+  contract migrations later, with approval.</li>
+<li>Prefer rolling forward; treat down migrations as a convenience for
+  development, not a production safety net.</li>
+<li>Make sure backups and point-in-time recovery work before destructive
+  steps.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>The API froze for 30 seconds during a deploy.</strong>
+  <em>Detect:</em> connection pool exhaustion and timeouts begin at the
+  migration step; <code>pg_stat_activity</code> shows many sessions waiting on a
+  lock behind an <code>ALTER TABLE</code>. <em>Cause:</em> the migration waited for an
+  <code>ACCESS EXCLUSIVE</code> lock behind a long query, and everything queued
+  behind it. <em>Fix:</em> <code>lock_timeout</code> with retries, run migrations off-peak,
+  and cancel long-running reports first.</li>
+<li><strong>Old instances threw errors right after the migration.</strong>
+  <em>Detect:</em> errors such as "column does not exist" from pods still on the
+  previous version. <em>Cause:</em> a rename or drop shipped together with the
+  code that needed it. <em>Fix:</em> expand and contract; drop only after no
+  running code uses the column.</li>
+<li><strong>A rollback lost data.</strong>
+  <em>Detect:</em> records created after the deploy miss fields when served by
+  the rolled-back version. <em>Cause:</em> the new version wrote only the new
+  column, and the old version reads the old one. <em>Fix:</em> dual write until
+  the old reader can no longer be rolled back to.</li>
+<li><strong>An index migration "succeeded" but queries are still slow.</strong>
+  <em>Detect:</em> <code>EXPLAIN</code> does not use the index; <code>pg_index.indisvalid</code> is
+  false. <em>Cause:</em> an earlier concurrent build failed and left an invalid
+  index, and <code>IF NOT EXISTS</code> skipped the rebuild. <em>Fix:</em> drop the invalid
+  index concurrently and build again.</li>
+<li><strong>Replicas fell minutes behind during a backfill.</strong>
+  <em>Detect:</em> replication lag alerts; reads from replicas return stale data.
+  <em>Cause:</em> a single huge <code>UPDATE</code> or batches with no pause. <em>Fix:</em> smaller
+  batches, pauses, and throttling on measured lag.</li>
+<li><strong>The migration ran twice and failed halfway.</strong>
+  <em>Detect:</em> duplicate-object errors at startup on several instances.
+  <em>Cause:</em> migrations run on application start by every replica. <em>Fix:</em>
+  one pipeline step or job, and a tool lock.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Migration:</strong> a versioned change to schema or data, applied in order.</li>
+<li><strong>Backward-compatible schema change:</strong> a change the currently running
+  code still works with.</li>
+<li><strong>Expand and contract (parallel change):</strong> add the new form, move
+  readers and writers over, then remove the old form.</li>
+<li><strong>Dual write:</strong> writing both the old and new structure during a
+  transition.</li>
+<li><strong>Backfill:</strong> filling new structures for existing rows or documents.</li>
+<li><strong>Keyset pagination:</strong> paging by "greater than the last key seen"
+  instead of by offset.</li>
+<li><strong>Lock queue:</strong> the ordered list of sessions waiting for a lock; a
+  waiting exclusive request blocks those behind it.</li>
+<li><strong><code>lock_timeout</code>:</strong> a PostgreSQL setting that makes a statement fail if
+  it cannot get a lock in time.</li>
+<li><strong>Online index build:</strong> building an index while reads and writes
+  continue.</li>
+<li><strong>Roll forward:</strong> fixing a problem with a new change instead of undoing
+  the old one.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Shipping a rename, drop, or type change in the same release as the
+  code that depends on it.</li>
+<li>Believing MongoDB needs no migrations because it has no fixed schema.</li>
+<li>Running one giant <code>UPDATE</code> to backfill.</li>
+<li>Testing migrations only on small development databases.</li>
+<li>Relying on down migrations to undo destructive changes.</li>
+<li>Using <code>CREATE INDEX</code> without <code>CONCURRENTLY</code> on a large, busy table.</li>
+<li>Forgetting other readers of the table (reports, other services, BI
+  tools) before the contract step.</li>
+<li>Running migrations from application startup in every instance.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Why must a migration run before a deploy be compatible with the code
+   that is already running?</li>
+<li>List the six steps to rename a column with expand and contract, and
+   say which code version each step can safely roll back to.</li>
+<li>Why does a waiting <code>ALTER TABLE</code> block queries that do not conflict
+   with the lock currently held?</li>
+<li>How do you add a <code>NOT NULL</code> constraint to a large PostgreSQL table
+   without a long exclusive lock?</li>
+<li>A table has 12 million rows. Batches of 3,000 rows take 120 ms each
+   with an 80 ms pause. How long does the backfill take?</li>
+<li>What happens when <code>CREATE INDEX CONCURRENTLY</code> fails, and why can
+   <code>IF NOT EXISTS</code> hide the problem?</li>
+<li>How do MongoDB index builds since version 4.2 affect reads and writes?</li>
+<li>Why do most teams roll forward instead of running down migrations in
+   production?</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://martinfowler.com/bliki/ParallelChange.html">Martin Fowler: ParallelChange</a></li>
+<li><a href="https://www.postgresql.org/docs/current/sql-altertable.html">PostgreSQL: ALTER TABLE</a></li>
+<li><a href="https://www.postgresql.org/docs/current/explicit-locking.html">PostgreSQL: Explicit locking</a></li>
+<li><a href="https://www.mongodb.com/docs/manual/core/index-creation/">MongoDB: Index builds on populated collections</a></li>
+<li><a href="https://stripe.com/blog/online-migrations">Stripe: Online migrations at scale</a></li>
+<li><a href="https://www.prisma.io/docs/orm/prisma-client/deployment/deploy-database-changes-with-prisma-migrate">Prisma: Deploying database changes with Prisma Migrate</a></li>
+<li>Next: <a href="../rollbacks-and-safe-releases/">rollbacks and safe releases</a>. Back to the
+  <a href="../">deployment strategies overview</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../feature-flags-and-progressive-delivery/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Feature Flags and Progressive Delivery">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Feature Flags and Progressive Delivery</span>
+      </a>
+    
+    
+      <a href="../rollbacks-and-safe-releases/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: Rollbacks and Safe Releases">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">Rollbacks and Safe Releases</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="380" viewBox="0 0 800 380" role="img" aria-labelledby="epl-title epl-desc">
+  <title id="epl-title">How an error propagates through backend layers</title>
+  <desc id="epl-desc">The data layer translates a known driver error, such as MongoDB duplicate key E11000, into a ConflictError. The service layer throws domain errors and knows nothing about HTTP. The controller does not catch, so the error propagates to the error middleware. Unknown errors are rethrown unchanged through every layer. The error middleware maps the error to a status code and produces two outputs: a problem+json response for the client, 409 for a known conflict or a generic 500 for a bug, with a request ID; and one structured log entry with the request ID, stack, and cause chain, which feeds the error tracker.</desc>
+  <defs>
+    <marker id="epl-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#40566b"/>
+    </marker>
+    <marker id="epl-bad" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#b5473a"/>
+    </marker>
+  </defs>
+  <rect width="800" height="380" rx="14" fill="#f5f7fb"/>
+  <g font-family="Arial, sans-serif" text-anchor="middle">
+    <text x="400" y="34" font-size="13" font-weight="700" fill="#40566b">The error travels up; each layer handles only what it understands</text>
+
+    <rect x="20" y="50" width="160" height="90" rx="8" fill="#eef1f5" stroke="#8a96a3" stroke-width="2"/>
+    <text x="100" y="76" font-size="14" font-weight="700" fill="#36424e">Data layer</text>
+    <text x="100" y="98" font-size="11.5" fill="#36424e">E11000 duplicate key</text>
+    <text x="100" y="116" font-size="11.5" fill="#36424e">becomes ConflictError</text>
+
+    <rect x="220" y="50" width="160" height="90" rx="8" fill="#fff0d9" stroke="#bd7a20" stroke-width="2"/>
+    <text x="300" y="76" font-size="14" font-weight="700" fill="#66400f">Service layer</text>
+    <text x="300" y="98" font-size="11.5" fill="#66400f">throws domain errors</text>
+    <text x="300" y="116" font-size="11.5" fill="#66400f">no HTTP knowledge</text>
+
+    <rect x="420" y="50" width="160" height="90" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="500" y="76" font-size="14" font-weight="700" fill="#263e5a">Controller</text>
+    <text x="500" y="98" font-size="11.5" fill="#263e5a">no try/catch</text>
+    <text x="500" y="116" font-size="11.5" fill="#263e5a">error propagates</text>
+
+    <rect x="620" y="50" width="160" height="90" rx="8" fill="#f0e9fb" stroke="#8062a8" stroke-width="2"/>
+    <text x="700" y="76" font-size="14" font-weight="700" fill="#463365">Error middleware</text>
+    <text x="700" y="98" font-size="11.5" fill="#463365">maps error to status</text>
+    <text x="700" y="116" font-size="11.5" fill="#463365">logs it exactly once</text>
+
+    <rect x="250" y="228" width="250" height="96" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="375" y="252" font-size="14" font-weight="700" fill="#263e5a">Response to the client</text>
+    <text x="375" y="274" font-size="11.5" fill="#263e5a">409 application/problem+json</text>
+    <text x="375" y="292" font-size="11.5" fill="#263e5a">unknown bug: generic 500</text>
+    <text x="375" y="310" font-size="11.5" fill="#263e5a">both include the requestId</text>
+
+    <rect x="530" y="228" width="250" height="96" rx="8" fill="#eef1f5" stroke="#8a96a3" stroke-width="2"/>
+    <text x="655" y="252" font-size="14" font-weight="700" fill="#36424e">Structured log entry</text>
+    <text x="655" y="274" font-size="11.5" fill="#36424e">requestId, route, status</text>
+    <text x="655" y="292" font-size="11.5" fill="#36424e">stack and cause chain</text>
+    <text x="655" y="310" font-size="11.5" fill="#36424e">feeds the error tracker</text>
+
+    <g font-size="12" font-style="italic" fill="#40566b">
+      <text x="125" y="262">Catch only to translate,</text>
+      <text x="125" y="280">add context, retry,</text>
+      <text x="125" y="298">or degrade gracefully.</text>
+    </g>
+
+    <g fill="none" stroke="#40566b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M180 95H218" marker-end="url(#epl-arrow)"/>
+      <path d="M380 95H418" marker-end="url(#epl-arrow)"/>
+      <path d="M580 95H618" marker-end="url(#epl-arrow)"/>
+      <path d="M660 140V196H375V226" marker-end="url(#epl-arrow)"/>
+      <path d="M720 140V226" marker-end="url(#epl-arrow)"/>
+    </g>
+    <path d="M100 140V172H630V142" fill="none" stroke="#b5473a" stroke-width="2" stroke-dasharray="6 4" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#epl-bad)"/>
+    <text x="365" y="164" font-size="11.5" font-weight="700" fill="#6b241c">unknown errors are rethrown unchanged</text>
+    <text x="400" y="360" font-size="13" fill="#40566b">One place turns errors into responses and logs; clients never see stacks or SQL.</text>
+  </g>
+</svg>

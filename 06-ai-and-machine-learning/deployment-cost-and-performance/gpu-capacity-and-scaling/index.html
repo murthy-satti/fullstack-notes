@@ -1,0 +1,4460 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../cost-optimization-for-llm-apps/">
+      
+      
+        <link rel="next" href="../cheat-sheet/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>GPU Capacity and Scaling - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#gpu-capacity-and-scaling" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              GPU Capacity and Scaling
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../05-application-architecture/" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../08-devops-and-deployment/" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to AI and Machine Learning">
+          <span class="md-ellipsis">&larr; Back to AI</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../05-application-architecture/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        
+          
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-label="AI module lessons" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to AI and Machine Learning">
+                  <span class="md-ellipsis">&larr; Back to AI</span>
+                </a>
+              
+            </div>
+          
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                  
+  
+  
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+    
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+  
+
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_8" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_7_8" id="__nav_7_8_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Production
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_8_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_7_8">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Production
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_8_1" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_7_8_1" id="__nav_7_8_1_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evaluation and Monitoring
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_7_8_1_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_7_8_1">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Evaluation and Monitoring
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../evaluation-and-monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../evaluation-and-monitoring/building-evaluation-sets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Building Evaluation Sets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../evaluation-and-monitoring/llm-as-judge-and-automated-evals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM-as-Judge and Automated Evals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../evaluation-and-monitoring/evals-in-ci-and-regression-testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evals in CI and Regression Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../evaluation-and-monitoring/llm-observability-and-tracing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM Observability and Tracing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../evaluation-and-monitoring/cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../evaluation-and-monitoring/interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_8_2" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_7_8_2" id="__nav_7_8_2_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security, Privacy, and Responsible AI
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_7_8_2_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_7_8_2">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Security, Privacy, and Responsible AI
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security-privacy-and-responsible-ai/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security-privacy-and-responsible-ai/prompt-injection-and-defenses/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Prompt Injection and Defenses
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security-privacy-and-responsible-ai/guardrails-and-content-moderation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guardrails and Content Moderation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security-privacy-and-responsible-ai/privacy-pii-and-data-retention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Privacy, PII, and Data Retention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security-privacy-and-responsible-ai/ai-regulation-and-governance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Regulation and Governance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security-privacy-and-responsible-ai/cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security-privacy-and-responsible-ai/interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_8_3" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_7_8_3" id="__nav_7_8_3_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment, Cost, and Performance
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_7_8_3_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_7_8_3">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Deployment, Cost, and Performance
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../serving-open-models/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Serving Open Models
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../latency-optimization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Latency Optimization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cost-optimization-for-llm-apps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cost Optimization for LLM Apps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GPU Capacity and Scaling
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GPU Capacity and Scaling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-fills-gpu-memory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What fills GPU memory
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#running-the-numbers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running the numbers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decode-speed-and-memory-bandwidth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decode speed and memory bandwidth
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quantization-formats" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quantization formats
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#more-than-one-gpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        More than one GPU
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#autoscaling-model-servers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Autoscaling model servers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hosted-gpu-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hosted GPU options
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#estimating-memory-and-concurrency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Estimating memory and concurrency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#producing-a-quantized-checkpoint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Producing a quantized checkpoint
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scaling-vllm-on-queue-length-with-keda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scaling vLLM on queue length with KEDA
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#measuring-cold-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Measuring cold start
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_8_4" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_7_8_4" id="__nav_7_8_4_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MLOps and Model Lifecycle
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_7_8_4_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_7_8_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    MLOps and Model Lifecycle
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mlops-and-model-lifecycle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mlops-and-model-lifecycle/experiment-tracking-and-model-registry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Experiment Tracking and Model Registry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mlops-and-model-lifecycle/llmops-prompt-and-model-versioning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLMOps: Prompt and Model Versioning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mlops-and-model-lifecycle/production-monitoring-and-drift/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Production Monitoring and Drift
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mlops-and-model-lifecycle/cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mlops-and-model-lifecycle/interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../08-devops-and-deployment/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DevOps and Deployment
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-fills-gpu-memory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What fills GPU memory
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#running-the-numbers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running the numbers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decode-speed-and-memory-bandwidth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decode speed and memory bandwidth
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quantization-formats" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quantization formats
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#more-than-one-gpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        More than one GPU
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#autoscaling-model-servers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Autoscaling model servers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hosted-gpu-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hosted GPU options
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#estimating-memory-and-concurrency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Estimating memory and concurrency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#producing-a-quantized-checkpoint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Producing a quantized checkpoint
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scaling-vllm-on-queue-length-with-keda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scaling vLLM on queue length with KEDA
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#measuring-cold-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Measuring cold start
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="gpu-capacity-and-scaling">GPU Capacity and Scaling<a class="headerlink" href="#gpu-capacity-and-scaling" title="Permanent link">&para;</a></h1>
+<p>Self-hosting a model turns capacity planning into GPU arithmetic. Will the
+model fit on one card? How many conversations can it hold at once? How much
+does 4-bit quantization buy, and what does it cost in quality? How long does
+a new replica take to start, and what should trigger it? This lesson sizes
+GPU memory from first principles (weights plus KV cache plus runtime
+overhead) with a calculator you can run, explains the quantization formats
+you will meet (FP8, INT8, 4-bit GPTQ and AWQ, and GGUF), and shows how to
+autoscale model servers on Kubernetes when every new replica needs minutes
+to become ready. It closes with the hosted GPU options and how their costs
+compare.</p>
+<p>The serving engines themselves are covered in
+<a href="../serving-open-models/">serving open models</a>; this lesson is about the
+hardware and the fleet underneath them.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>GPUs are the most expensive and the least elastic part of an AI stack. A
+GPU you size too small cannot load the model, or runs it with so little
+cache that requests queue and preempt each other. A GPU you size too large,
+or keep running idle at night, costs the same every hour as a busy one.
+Unlike web servers, model servers cannot be added in seconds: a new replica
+may need a new GPU node, a multi-gigabyte image, tens of gigabytes of
+weights, and a warm-up, so an autoscaler that reacts late leaves users
+waiting for minutes.</p>
+<p>The numbers are knowable in advance. Weights take parameters times bytes per
+parameter; the KV cache takes a fixed number of bytes per token that follows
+from the model's shape; the rest is overhead you can measure once. Doing this
+arithmetic before buying or reserving capacity prevents the two classic
+mistakes: a model that does not fit, and a model that fits but serves only
+three users at a time.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>vLLM memory settings.</strong> The
+  <a href="https://docs.vllm.ai/en/latest/configuration/engine_args/">vLLM engine arguments</a>
+  define <code>--gpu-memory-utilization</code> as "the fraction of GPU memory to be
+  used for the model executor", a per-instance limit, and add
+  <code>--kv-cache-memory-bytes</code> for setting the cache size directly. At startup
+  vLLM logs its KV cache size in tokens and the "Maximum concurrency" for
+  the configured context length, which is the number to compare with your
+  estimate.</li>
+<li><strong>GPTQ.</strong> Frantar and colleagues,
+  <a href="https://arxiv.org/abs/2210.17323">GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers</a>,
+  quantize models of 175 billion parameters "in approximately four GPU
+  hours, reducing the bitwidth down to 3 or 4 bits per weight, with
+  negligible accuracy degradation", with inference speedups of around 3.25x
+  on high-end GPUs.</li>
+<li><strong>AWQ.</strong> Lin and colleagues,
+  <a href="https://arxiv.org/abs/2306.00978">AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration</a>,
+  protect the small share of weights that matter most to activations and
+  report a 4-bit inference framework with "more than 3x speedup over the
+  Huggingface FP16 implementation".</li>
+<li><strong>LLM.int8().</strong> Dettmers and colleagues,
+  <a href="https://arxiv.org/abs/2208.07339">LLM.int8(): 8-bit Matrix Multiplication for Transformers at Scale</a>,
+  show 8-bit inference that "cut the memory needed for inference by half
+  while retaining full precision performance".</li>
+<li><strong>Tooling status (November 2026).</strong> The
+  <a href="https://github.com/casper-hansen/AutoAWQ">AutoAWQ README</a> states that
+  "AutoAWQ is officially deprecated and will no longer be maintained" and
+  that it "has been adopted by the vLLM Project" in
+  <a href="https://github.com/vllm-project/llm-compressor">LLM Compressor</a>; the
+  AutoGPTQ repository is archived, and vLLM's quantization documentation
+  lists GPTQModel instead.</li>
+<li><strong>KEDA.</strong> The
+  <a href="https://keda.sh/docs/latest/scalers/prometheus/">KEDA Prometheus scaler</a>
+  scales a workload on the result of any PromQL query, which is how GPU
+  servers scale on queue length instead of CPU.</li>
+</ul>
+<p><strong>Popular tools and providers:</strong> vLLM and SGLang (FP8, AWQ, GPTQ, and
+compressed-tensors models), LLM Compressor and GPTQModel for producing
+quantized checkpoints, llama.cpp's <code>llama-quantize</code> for GGUF files,
+bitsandbytes for 4-bit and 8-bit loading in Transformers, the NVIDIA GPU
+Operator on Kubernetes, KEDA and Prometheus for autoscaling, and GPU
+capacity from cloud providers, GPU clouds, and serverless GPU platforms.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="what-fills-gpu-memory">What fills GPU memory<a class="headerlink" href="#what-fills-gpu-memory" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: four stacked bars of GPU memory, treating GPU sizes as GiB; an 8B model in 16-bit on a 24 GB GPU uses 14.9 GiB for weights, 2 GiB for runtime, and leaves 4.7 GiB of KV cache, about 4.7 conversations at 8K tokens, plus a 10% reserve; the same model with 4-bit weights uses 4.0 GiB for weights and leaves 15.6 GiB of cache, about 15.6 conversations; on an 80 GB GPU the 16-bit 8B model leaves 55.1 GiB of cache, about 55 conversations; a 70B model with 4-bit weights and an FP8 cache uses 35.5 GiB for weights on one 80 GB GPU and leaves 34.5 GiB of cache, about 27.6 conversations." src="../gpu-memory-budget.svg" /></p>
+<p>Serving memory has four parts:</p>
+<div class="highlight"><pre><span></span><code>GPU memory used = weights + KV cache + runtime (activations, CUDA graphs, workspace)
+                  + whatever the engine leaves free (vLLM's utilization setting)
+
+weights  = parameters x bytes per parameter (+ ~5-10% for scales in 4-bit formats)
+KV cache = bytes per token x tokens held by all active sequences
+bytes per token = 2 x layers x kv_heads x head_dim x bytes per cache value
+
+8B shape:  32 layers, 8 KV heads, head_dim 128 -&gt; 128 KiB per token at 16 bits
+70B shape: 80 layers, 8 KV heads, head_dim 128 -&gt; 320 KiB per token at 16 bits
+</code></pre></div>
+<p>The weights are a fixed cost per replica. The KV cache is what turns into
+concurrency: whatever memory remains after weights and runtime holds the
+cache, and the cache divided by the context each conversation uses is how
+many conversations fit at once. Grouped-query attention (several query heads
+sharing one key-value head, as in the shapes above) is why modern models need
+far less cache than older ones with as many KV heads as query heads.</p>
+<p>Concurrency is about actual tokens, not configured maximums. Engines with
+paged caches allocate blocks as tokens arrive, so a server whose
+conversations average 2,000 tokens holds about four times as many of them as
+the "full 8K context" numbers suggest, until a burst of long conversations
+fills the cache and preemptions start.</p>
+<h3 id="running-the-numbers">Running the numbers<a class="headerlink" href="#running-the-numbers" title="Permanent link">&para;</a></h3>
+<p>The calculator in the practical examples produces this table (planning
+numbers; the engine's startup log is the ground truth):</p>
+<div class="highlight"><pre><span></span><code>model weights kv    GPU      weights GiB KiB/token  KV GiB 8K seqs
+8b    bf16    bf16  1x24GB          14.9       128     4.7     4.7
+8b    int4    bf16  1x24GB           4.0       128    15.6    15.6
+8b    bf16    fp8   1x24GB          14.9        64     4.7     9.4
+8b    bf16    bf16  1x80GB          14.9       128    55.1    55.1
+70b   bf16    bf16  1x80GB         131.5       320   -61.5  no fit
+70b   bf16    bf16  2x80GB         131.5       320     8.5     3.4
+70b   int4    fp8   1x80GB          35.5       160    34.5    27.6
+</code></pre></div>
+<p>The table holds the main decisions of GPU sizing:</p>
+<ul>
+<li>An 8B model in 16-bit runs on a 24 GB card, but holds fewer than five
+  full-length conversations. Fine for a developer server, not for TaskFlow's
+  production traffic.</li>
+<li>4-bit weights free 11 GiB on the same card, more than tripling the cache.
+  An FP8 cache halves bytes per token, doubling concurrency without touching
+  the weights.</li>
+<li>A 70B model in 16-bit does not fit one 80 GB GPU. Two GPUs with tensor
+  parallelism fit it but leave little cache. With 4-bit weights and an FP8
+  cache, one GPU holds the model and about 28 full-length conversations,
+  traded against the quality loss of quantization, which you must measure.</li>
+</ul>
+<h3 id="decode-speed-and-memory-bandwidth">Decode speed and memory bandwidth<a class="headerlink" href="#decode-speed-and-memory-bandwidth" title="Permanent link">&para;</a></h3>
+<p>Decoding is limited by memory bandwidth: every step reads the weights (and
+each sequence's cache) from GPU memory. A rough upper bound for one sequence
+alone:</p>
+<div class="highlight"><pre><span></span><code>steps per second &lt;= memory bandwidth / bytes read per step
+
+16 GB of weights on a GPU with 2 TB/s of bandwidth: &lt;= 125 steps/s at batch size 1
+the same model in 4-bit (about 4.3 GB):             &lt;= 465 steps/s at batch size 1
+</code></pre></div>
+<p>Real numbers are lower, but the ratio explains two things. Quantization
+speeds up decoding even when memory is not short, because fewer bytes move
+per step. And batching is nearly free at small batch sizes: one weight read
+serves every sequence in the step, which is why continuous batching
+multiplies throughput. As batches grow, the work becomes compute-bound and
+those gains level off, so benchmark at your real concurrency.</p>
+<h3 id="quantization-formats">Quantization formats<a class="headerlink" href="#quantization-formats" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Format</th>
+<th>Bits per weight</th>
+<th>Where it runs</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BF16 / FP16</td>
+<td>16</td>
+<td>Any modern GPU</td>
+<td>The usual reference format; best quality</td>
+</tr>
+<tr>
+<td>FP8 (weights and activations)</td>
+<td>8</td>
+<td>GPUs with FP8 support (vLLM lists Ada and Hopper and newer)</td>
+<td>Small quality loss on most models; fast on supported hardware; also used for the KV cache</td>
+</tr>
+<tr>
+<td>INT8 (W8A8 or weight-only)</td>
+<td>8</td>
+<td>Most GPUs</td>
+<td>SmoothQuant-style W8A8 or LLM.int8(); halves weight memory</td>
+</tr>
+<tr>
+<td>GPTQ</td>
+<td>3-4 (usually 4)</td>
+<td>GPUs via vLLM, SGLang, Transformers</td>
+<td>Post-training, uses calibration data; produce with GPTQModel or LLM Compressor</td>
+</tr>
+<tr>
+<td>AWQ</td>
+<td>4</td>
+<td>GPUs via vLLM, SGLang</td>
+<td>Activation-aware; produce with LLM Compressor (AutoAWQ is deprecated)</td>
+</tr>
+<tr>
+<td>bitsandbytes NF4 / INT8</td>
+<td>4 or 8</td>
+<td>Transformers, vLLM</td>
+<td>Quantizes at load time; common for QLoRA fine-tuning</td>
+</tr>
+<tr>
+<td>GGUF (for example Q8_0, Q5_K_M, Q4_K_M)</td>
+<td>about 4.5-8.5</td>
+<td>llama.cpp, Ollama, LM Studio; CPUs, Apple silicon, GPUs</td>
+<td>Single-file format; Hugging Face documents Q4_K at 4.5 bits per weight</td>
+</tr>
+</tbody>
+</table>
+<p><img alt="Diagram: weight memory of one 8-billion-parameter model in four formats; 16-bit takes 14.9 GiB, FP8 or INT8 takes 7.5 GiB, 4-bit GPTQ or AWQ takes about 4.0 GiB including scales, and GGUF Q4_K_M takes about 4.5 GiB; beside the bars, quality notes say 16-bit is the reference, 8-bit usually shows a small loss, and 4-bit shows a larger, model-dependent loss that must be measured on your own evaluation set; speed notes say fewer bytes per step speed up memory-bound decoding." src="../quantization-memory-comparison.svg" /></p>
+<p>Three rules keep quantization safe:</p>
+<ol>
+<li><strong>Measure quality on your tasks.</strong> Run TaskFlow's evaluation sets
+   (task-creation accuracy, Q&amp;A faithfulness) on the quantized model before
+   switching; general benchmark scores hide task-specific regressions,
+   especially in long-context and structured-output tasks (see
+   <a href="../../evaluation-and-monitoring/building-evaluation-sets/">building evaluation sets</a>).</li>
+<li><strong>Prefer published, reputable quantized checkpoints</strong> or produce your own
+   with maintained tools; check that the engine version supports the exact
+   format.</li>
+<li><strong>Quantize the cache separately.</strong> An FP8 KV cache
+   (<code>--kv-cache-dtype fp8</code> in vLLM) doubles concurrency at a small quality
+   cost and is independent of weight quantization.</li>
+</ol>
+<h3 id="more-than-one-gpu">More than one GPU<a class="headerlink" href="#more-than-one-gpu" title="Permanent link">&para;</a></h3>
+<p>When a model does not fit one GPU, engines split it:</p>
+<ul>
+<li><strong>Tensor parallelism</strong> splits each layer across GPUs in one server
+  (<code>--tensor-parallel-size 2</code> in vLLM). It needs fast GPU-to-GPU links, and
+  each GPU holds a share of the weights and of the cache.</li>
+<li><strong>Pipeline parallelism</strong> places different layers on different GPUs or
+  nodes. It reaches larger models but adds latency between stages.</li>
+<li><strong>Data parallelism</strong> (more replicas) is how you add throughput once one
+  replica fits.</li>
+</ul>
+<p>Splitting a model buys fit, not efficiency: two GPUs running one 70B replica
+at 16 bits held about 3 full-length conversations in the table above.
+Often a quantized model on one GPU per replica, scaled out with more
+replicas, serves more users per GPU.</p>
+<h3 id="autoscaling-model-servers">Autoscaling model servers<a class="headerlink" href="#autoscaling-model-servers" title="Permanent link">&para;</a></h3>
+<p>Model servers need different autoscaling than web servers:</p>
+<ul>
+<li><strong>Scale on queue and cache signals.</strong> CPU usage is meaningless and GPU
+  utilization saturates early. Use the engine's metrics: requests waiting
+  (<code>vllm:num_requests_waiting</code>), KV cache usage
+  (<code>vllm:kv_cache_usage_perc</code>), or measured TTFT p95.</li>
+<li><strong>Scale out early, scale in slowly.</strong> A new replica takes minutes, so
+  trigger on a modest queue and keep headroom; scale in only after a long
+  stabilization window, and drain in-flight generations first.</li>
+<li><strong>Scale to zero only where cold starts are acceptable.</strong> Internal batch
+  jobs can wait minutes; the interactive Assistant cannot. Keep at least one
+  warm replica for interactive features.</li>
+</ul>
+<p><img alt="Diagram: two timelines of starting a model replica, with illustrative timings; on the cold path, provisioning a new GPU node takes about 4 minutes, pulling the multi-gigabyte engine image 2 minutes, downloading the weights 3 minutes, loading them onto the GPU 1 minute, and warm-up 1 minute, so the replica is ready after about 11 minutes; on the warm path, the node is already running with the image cached and the weights on local disk, so loading and warm-up take about 2 minutes; mitigations listed are warm minimum replicas, pre-pulled images, cached or streamed weights, and scaling on queue length before users wait." src="../model-replica-cold-start.svg" /></p>
+<p>A cold start is a chain of slow steps, and each has a fix:</p>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Why it is slow</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GPU node provisioning</td>
+<td>GPUs are scarce; nodes take minutes to boot and join</td>
+<td>Keep a warm node, reserve capacity, use node pools with minimum size</td>
+</tr>
+<tr>
+<td>Image pull</td>
+<td>Engine images are several gigabytes</td>
+<td>Pre-pull or bake into the node image; pin tags</td>
+</tr>
+<tr>
+<td>Weight download</td>
+<td>Tens of gigabytes per model</td>
+<td>Model cache on a persistent volume or local NVMe; avoid downloading at startup</td>
+</tr>
+<tr>
+<td>Load to GPU</td>
+<td>Read and copy the weights</td>
+<td>Fast local disk; streaming loaders such as vLLM's <code>--load-format runai_streamer</code></td>
+</tr>
+<tr>
+<td>Warm-up</td>
+<td>Kernel compilation, CUDA graph capture</td>
+<td>Keep it, but exclude it from readiness only with a startup probe</td>
+</tr>
+</tbody>
+</table>
+<p>Spot (preemptible) GPUs cost much less and fit batch work and extra
+replicas, but they can disappear: AWS gives a two-minute interruption
+notice, and Google Cloud's default notice for Spot VMs is shorter. Never put
+all interactive capacity on spot.</p>
+<h3 id="hosted-gpu-options">Hosted GPU options<a class="headerlink" href="#hosted-gpu-options" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: four hosting options arranged from least to most control; per-token APIs for open models have no idle cost and the least operations work but the least control; serverless GPU containers bill per second and scale to zero but have cold starts; managed model endpoints run your chosen model on provider-managed instances billed while running; GPU virtual machines or Kubernetes node pools cost the least per GPU-hour at high utilization, especially reserved or spot, but you operate everything and pay while idle; a note says the cheapest option depends on utilization: idle-free options win for spiky traffic, reserved GPUs win for steady high load." src="../gpu-hosting-options.svg" /></p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Examples</th>
+<th>Pays for idle time?</th>
+<th>Relative cost per unit of work</th>
+<th>Operations work</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Per-token API for open models</td>
+<td>Inference providers that host open-weight models</td>
+<td>No</td>
+<td>Low at low or spiky volume; higher than your own busy GPUs at sustained volume</td>
+<td>Lowest</td>
+</tr>
+<tr>
+<td>Serverless GPU containers</td>
+<td>Cloud Run with GPUs, Azure Container Apps serverless GPUs, Modal, RunPod Serverless</td>
+<td>No (scale to zero)</td>
+<td>Higher per GPU-second than VMs; nothing while idle; cold starts</td>
+<td>Low</td>
+</tr>
+<tr>
+<td>Managed model endpoints</td>
+<td>Amazon SageMaker AI endpoints, Hugging Face Inference Endpoints, cloud AI platforms' managed compute</td>
+<td>Yes, while running</td>
+<td>Above raw VMs; you pay for management</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>GPU VMs and Kubernetes node pools</td>
+<td>EC2 accelerated instances, Compute Engine GPUs, Azure GPU VMs, EKS, GKE, AKS</td>
+<td>Yes</td>
+<td>Lowest per GPU-hour at high utilization, lower still when reserved, lowest on spot</td>
+<td>Highest</td>
+</tr>
+<tr>
+<td>GPU clouds</td>
+<td>Specialized GPU providers with VMs and Kubernetes</td>
+<td>Yes</td>
+<td>Often below hyperscaler on-demand prices; fewer surrounding services</td>
+<td>High</td>
+</tr>
+</tbody>
+</table>
+<p>Choose by utilization and control. TaskFlow's sensible path is a hosted API
+first, a serverless GPU or managed endpoint for an open model when privacy
+requires it at low volume, and a reserved GPU node pool only once steady
+traffic keeps the GPUs busy. The arithmetic is in
+<a href="../cost-optimization-for-llm-apps/">cost optimization for LLM apps</a>, and the
+general cloud cost levers in
+<a href="../../../08-devops-and-deployment/hosting-and-platforms/cost-optimization-and-cloud-bills/">cost optimization and cloud bills</a>.</p>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Situation</th>
+<th>Choose</th>
+<th>Avoid</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>8B-class model, few users, one card</td>
+<td>16-bit weights on a 24 GB GPU</td>
+<td>Promising production concurrency from it</td>
+</tr>
+<tr>
+<td>More concurrency on the same GPU</td>
+<td>FP8 KV cache, then 4-bit weights after evaluation</td>
+<td>Raising <code>--max-num-seqs</code> without cache to back it</td>
+</tr>
+<tr>
+<td>Model too large for one GPU</td>
+<td>Quantize first; tensor parallelism if quality requires 16-bit</td>
+<td>Pipeline parallelism across slow networks for interactive use</td>
+</tr>
+<tr>
+<td>Interactive traffic with daily peaks</td>
+<td>Warm minimum replicas plus queue-based scale-out</td>
+<td>Scale to zero for interactive features</td>
+</tr>
+<tr>
+<td>Offline batch inference</td>
+<td>Spot GPUs or scale-to-zero serverless GPUs</td>
+<td>Reserved capacity sized for the batch peak</td>
+</tr>
+<tr>
+<td>Laptop, CPU, or edge</td>
+<td>GGUF with llama.cpp or Ollama</td>
+<td>Data-center formats that need GPU kernels</td>
+</tr>
+<tr>
+<td>Steady, high utilization</td>
+<td>Reserved GPU nodes</td>
+<td>Per-second serverless pricing</td>
+</tr>
+</tbody>
+</table>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="estimating-memory-and-concurrency">Estimating memory and concurrency<a class="headerlink" href="#estimating-memory-and-concurrency" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># scripts/vram_estimate.py</span>
+<span class="sd">"""Estimate GPU memory and concurrency for serving a decoder-only model.</span>
+
+<span class="sd">Rough planning numbers only: confirm with the engine's startup log, which</span>
+<span class="sd">reports the real KV cache size. Shapes come from the model's config.json</span>
+<span class="sd">(num_hidden_layers, num_attention_heads, num_key_value_heads, hidden_size,</span>
+<span class="sd">optional head_dim); the parameter count comes from the model card.</span>
+<span class="sd">"""</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+<span class="n">GIB</span> <span class="o">=</span> <span class="mi">1024</span><span class="o">**</span><span class="mi">3</span>
+<span class="n">BYTES</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"fp16"</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span> <span class="s2">"bf16"</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span> <span class="s2">"fp8"</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s2">"int8"</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s2">"int4"</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">kv_bytes_per_token</span><span class="p">(</span><span class="n">cfg</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">kv_dtype</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="n">heads</span> <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span><span class="s2">"num_attention_heads"</span><span class="p">]</span>
+    <span class="n">kv_heads</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"num_key_value_heads"</span><span class="p">,</span> <span class="n">heads</span><span class="p">)</span>  <span class="c1"># fewer with grouped-query attention</span>
+    <span class="n">head_dim</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"head_dim"</span><span class="p">)</span> <span class="ow">or</span> <span class="n">cfg</span><span class="p">[</span><span class="s2">"hidden_size"</span><span class="p">]</span> <span class="o">//</span> <span class="n">heads</span>
+    <span class="k">return</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">cfg</span><span class="p">[</span><span class="s2">"num_hidden_layers"</span><span class="p">]</span> <span class="o">*</span> <span class="n">kv_heads</span> <span class="o">*</span> <span class="n">head_dim</span> <span class="o">*</span> <span class="n">BYTES</span><span class="p">[</span><span class="n">kv_dtype</span><span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">estimate</span><span class="p">(</span><span class="n">cfg</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">params_b</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">weight_dtype</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">kv_dtype</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+             <span class="n">gpu_gib</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">gpus</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8192</span><span class="p">,</span>
+             <span class="n">mem_fraction</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.9</span><span class="p">,</span> <span class="n">runtime_gib_per_gpu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="c1"># 4-bit formats also store scales and zero points: add about 8%</span>
+    <span class="n">overhead</span> <span class="o">=</span> <span class="mf">1.08</span> <span class="k">if</span> <span class="n">weight_dtype</span> <span class="o">==</span> <span class="s2">"int4"</span> <span class="k">else</span> <span class="mf">1.0</span>
+    <span class="n">weights</span> <span class="o">=</span> <span class="n">params_b</span> <span class="o">*</span> <span class="mf">1e9</span> <span class="o">*</span> <span class="n">BYTES</span><span class="p">[</span><span class="n">weight_dtype</span><span class="p">]</span> <span class="o">*</span> <span class="n">overhead</span>
+    <span class="n">usable</span> <span class="o">=</span> <span class="n">gpus</span> <span class="o">*</span> <span class="n">gpu_gib</span> <span class="o">*</span> <span class="n">GIB</span> <span class="o">*</span> <span class="n">mem_fraction</span>
+    <span class="n">runtime</span> <span class="o">=</span> <span class="n">gpus</span> <span class="o">*</span> <span class="n">runtime_gib_per_gpu</span> <span class="o">*</span> <span class="n">GIB</span>  <span class="c1"># activations, CUDA graphs, workspace</span>
+    <span class="n">kv_budget</span> <span class="o">=</span> <span class="n">usable</span> <span class="o">-</span> <span class="n">weights</span> <span class="o">-</span> <span class="n">runtime</span>
+    <span class="n">per_token</span> <span class="o">=</span> <span class="n">kv_bytes_per_token</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">kv_dtype</span><span class="p">)</span>
+    <span class="n">tokens</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">kv_budget</span> <span class="o">/</span> <span class="n">per_token</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">"weights_gib"</span><span class="p">:</span> <span class="n">weights</span> <span class="o">/</span> <span class="n">GIB</span><span class="p">,</span>
+        <span class="s2">"kv_kib_per_token"</span><span class="p">:</span> <span class="n">per_token</span> <span class="o">/</span> <span class="mi">1024</span><span class="p">,</span>
+        <span class="s2">"kv_budget_gib"</span><span class="p">:</span> <span class="n">kv_budget</span> <span class="o">/</span> <span class="n">GIB</span><span class="p">,</span>
+        <span class="s2">"kv_tokens"</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">tokens</span><span class="p">),</span>
+        <span class="s2">"full_context_sequences"</span><span class="p">:</span> <span class="n">tokens</span> <span class="o">/</span> <span class="n">context</span><span class="p">,</span>
+        <span class="s2">"fits"</span><span class="p">:</span> <span class="n">kv_budget</span> <span class="o">&gt;</span> <span class="n">per_token</span> <span class="o">*</span> <span class="n">context</span><span class="p">,</span>
+    <span class="p">}</span>
+
+
+<span class="n">SHAPES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="c1"># Generic shapes of popular open models; read real ones from config.json</span>
+    <span class="s2">"8b"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"num_hidden_layers"</span><span class="p">:</span> <span class="mi">32</span><span class="p">,</span> <span class="s2">"num_attention_heads"</span><span class="p">:</span> <span class="mi">32</span><span class="p">,</span>
+           <span class="s2">"num_key_value_heads"</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span> <span class="s2">"hidden_size"</span><span class="p">:</span> <span class="mi">4096</span><span class="p">},</span>
+    <span class="s2">"70b"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"num_hidden_layers"</span><span class="p">:</span> <span class="mi">80</span><span class="p">,</span> <span class="s2">"num_attention_heads"</span><span class="p">:</span> <span class="mi">64</span><span class="p">,</span>
+            <span class="s2">"num_key_value_heads"</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span> <span class="s2">"hidden_size"</span><span class="p">:</span> <span class="mi">8192</span><span class="p">},</span>
+<span class="p">}</span>
+
+<span class="n">SCENARIOS</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="c1"># (shape, billions of params, weights, kv cache, GPU GiB, GPUs)</span>
+    <span class="p">(</span><span class="s2">"8b"</span><span class="p">,</span> <span class="mf">8.0</span><span class="p">,</span> <span class="s2">"bf16"</span><span class="p">,</span> <span class="s2">"bf16"</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">"8b"</span><span class="p">,</span> <span class="mf">8.0</span><span class="p">,</span> <span class="s2">"int4"</span><span class="p">,</span> <span class="s2">"bf16"</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">"8b"</span><span class="p">,</span> <span class="mf">8.0</span><span class="p">,</span> <span class="s2">"bf16"</span><span class="p">,</span> <span class="s2">"fp8"</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">"8b"</span><span class="p">,</span> <span class="mf">8.0</span><span class="p">,</span> <span class="s2">"bf16"</span><span class="p">,</span> <span class="s2">"bf16"</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">"70b"</span><span class="p">,</span> <span class="mf">70.6</span><span class="p">,</span> <span class="s2">"bf16"</span><span class="p">,</span> <span class="s2">"bf16"</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">"70b"</span><span class="p">,</span> <span class="mf">70.6</span><span class="p">,</span> <span class="s2">"bf16"</span><span class="p">,</span> <span class="s2">"bf16"</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">"70b"</span><span class="p">,</span> <span class="mf">70.6</span><span class="p">,</span> <span class="s2">"int4"</span><span class="p">,</span> <span class="s2">"fp8"</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+<span class="p">]</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">()</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--config"</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"path to a model's config.json"</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--params-b"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"parameters in billions"</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--weights"</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">"bf16"</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="n">BYTES</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--kv"</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">"bf16"</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="n">BYTES</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--gpu-gib"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">80</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--gpus"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--context"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">8192</span><span class="p">)</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">config</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">cfg</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">estimate</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">params_b</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">weights</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">kv</span><span class="p">,</span>
+                       <span class="n">args</span><span class="o">.</span><span class="n">gpu_gib</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">gpus</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">context</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">'model'</span><span class="si">:</span><span class="s2">5</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">'weights'</span><span class="si">:</span><span class="s2">7</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">'kv'</span><span class="si">:</span><span class="s2">5</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">'GPU'</span><span class="si">:</span><span class="s2">8</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">'weights GiB'</span><span class="si">:</span><span class="s2">&gt;11</span><span class="si">}</span><span class="s2"> "</span>
+              <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">'KiB/token'</span><span class="si">:</span><span class="s2">&gt;9</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">'KV GiB'</span><span class="si">:</span><span class="s2">&gt;7</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">'8K seqs'</span><span class="si">:</span><span class="s2">&gt;7</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">shape</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">kv</span><span class="p">,</span> <span class="n">gib</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">SCENARIOS</span><span class="p">:</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">estimate</span><span class="p">(</span><span class="n">SHAPES</span><span class="p">[</span><span class="n">shape</span><span class="p">],</span> <span class="n">params</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">kv</span><span class="p">,</span> <span class="n">gib</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+            <span class="n">gpu</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">x</span><span class="si">{</span><span class="n">gib</span><span class="si">}</span><span class="s2">GB"</span>
+            <span class="n">seqs</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">r</span><span class="p">[</span><span class="s1">'full_context_sequences'</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="s2">"fits"</span><span class="p">]</span> <span class="k">else</span> <span class="s2">"no fit"</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">shape</span><span class="si">:</span><span class="s2">5</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">w</span><span class="si">:</span><span class="s2">7</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">kv</span><span class="si">:</span><span class="s2">5</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">gpu</span><span class="si">:</span><span class="s2">8</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">r</span><span class="p">[</span><span class="s1">'weights_gib'</span><span class="p">]</span><span class="si">:</span><span class="s2">11.1f</span><span class="si">}</span><span class="s2"> "</span>
+                  <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">r</span><span class="p">[</span><span class="s1">'kv_kib_per_token'</span><span class="p">]</span><span class="si">:</span><span class="s2">9.0f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">r</span><span class="p">[</span><span class="s1">'kv_budget_gib'</span><span class="p">]</span><span class="si">:</span><span class="s2">7.1f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">seqs</span><span class="si">:</span><span class="s2">&gt;7</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1"># The scenario table shown earlier in this lesson</span>
+python<span class="w"> </span>scripts/vram_estimate.py
+
+<span class="c1"># One real model: its config.json from the model repository, a 24 GB GPU, 4K context</span>
+python<span class="w"> </span>scripts/vram_estimate.py<span class="w"> </span>--config<span class="w"> </span>config.json<span class="w"> </span>--params-b<span class="w"> </span><span class="m">8</span><span class="w"> </span>--gpu-gib<span class="w"> </span><span class="m">24</span><span class="w"> </span>--context<span class="w"> </span><span class="m">4096</span>
+<span class="c1"># {'weights_gib': 14.90..., 'kv_kib_per_token': 128.0, 'kv_budget_gib': 4.69...,</span>
+<span class="c1">#  'kv_tokens': 38492, 'full_context_sequences': 9.39..., 'fits': True}</span>
+</code></pre></div>
+<p>The runtime reserve (2 GiB per GPU) and the 90% memory fraction are
+assumptions; replace them with what your engine reports. Then compare the
+estimate with vLLM's startup line ("KV cache size: ... tokens, Maximum
+concurrency for ... tokens per request") and keep the measured value.</p>
+<h3 id="producing-a-quantized-checkpoint">Producing a quantized checkpoint<a class="headerlink" href="#producing-a-quantized-checkpoint" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># scripts/quantize_fp8.py</span>
+<span class="c1"># FP8 weights and dynamic FP8 activations with LLM Compressor; no calibration data needed.</span>
+<span class="c1"># Follows the LLM Compressor README (November 2026); needs a GPU and the model's license.</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">llmcompressor</span><span class="w"> </span><span class="kn">import</span> <span class="n">oneshot</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">llmcompressor.modifiers.quantization</span><span class="w"> </span><span class="kn">import</span> <span class="n">QuantizationModifier</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">AutoModelForCausalLM</span><span class="p">,</span> <span class="n">AutoTokenizer</span>
+
+<span class="n">MODEL_ID</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"MODEL_ID"</span><span class="p">]</span>  <span class="c1"># chosen from the model hub after license review</span>
+<span class="n">SAVE_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"SAVE_DIR"</span><span class="p">,</span> <span class="s2">"model-fp8-block"</span><span class="p">)</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">AutoModelForCausalLM</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">MODEL_ID</span><span class="p">)</span>
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">MODEL_ID</span><span class="p">)</span>
+
+<span class="n">recipe</span> <span class="o">=</span> <span class="n">QuantizationModifier</span><span class="p">(</span><span class="n">targets</span><span class="o">=</span><span class="s2">"Linear"</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="s2">"FP8_BLOCK"</span><span class="p">,</span> <span class="n">ignore</span><span class="o">=</span><span class="p">[</span><span class="s2">"lm_head"</span><span class="p">])</span>
+<span class="n">oneshot</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">recipe</span><span class="o">=</span><span class="n">recipe</span><span class="p">)</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">save_pretrained</span><span class="p">(</span><span class="n">SAVE_DIR</span><span class="p">)</span>
+<span class="n">tokenizer</span><span class="o">.</span><span class="n">save_pretrained</span><span class="p">(</span><span class="n">SAVE_DIR</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1"># GGUF for llama.cpp and Ollama: convert to a 16-bit GGUF, then quantize to Q4_K_M</span>
+python<span class="w"> </span>convert_hf_to_gguf.py<span class="w"> </span>./model-dir<span class="w"> </span>--outtype<span class="w"> </span>bf16<span class="w"> </span>--outfile<span class="w"> </span>model-bf16.gguf
+./build/bin/llama-quantize<span class="w"> </span>model-bf16.gguf<span class="w"> </span>model-Q4_K_M.gguf<span class="w"> </span>Q4_K_M
+</code></pre></div>
+<p>Either way, run the evaluation set against the quantized model and the
+original side by side, and keep the original for rollback. The quantized
+directory is served with the same <code>vllm serve</code> command as any other model.</p>
+<h3 id="scaling-vllm-on-queue-length-with-keda">Scaling vLLM on queue length with KEDA<a class="headerlink" href="#scaling-vllm-on-queue-length-with-keda" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># k8s/vllm-chat-autoscaling.yaml</span>
+<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">monitoring.coreos.com/v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PodMonitor</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vllm-chat</span>
+<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">selector</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">matchLabels</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">app.kubernetes.io/name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vllm-chat</span>
+<span class="w">  </span><span class="nt">podMetricsEndpoints</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http</span>
+<span class="w">      </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/metrics</span>
+<span class="w">      </span><span class="nt">interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15s</span>
+<span class="nn">---</span>
+<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">keda.sh/v1alpha1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ScaledObject</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vllm-chat</span>
+<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">scaleTargetRef</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vllm-chat</span><span class="w"> </span><span class="c1"># the Deployment from the serving lesson</span>
+<span class="w">  </span><span class="nt">minReplicaCount</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w"> </span><span class="c1"># keep one warm replica for interactive traffic</span>
+<span class="w">  </span><span class="nt">maxReplicaCount</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">6</span><span class="w"> </span><span class="c1"># also bounded by GPU quota and node pool size</span>
+<span class="w">  </span><span class="nt">pollingInterval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15</span>
+<span class="w">  </span><span class="nt">advanced</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">horizontalPodAutoscalerConfig</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">behavior</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">scaleUp</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">policies</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Pods</span>
+<span class="w">              </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<span class="w">              </span><span class="nt">periodSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">60</span>
+<span class="w">        </span><span class="nt">scaleDown</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">stabilizationWindowSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">900</span><span class="w"> </span><span class="c1"># replicas are slow to replace</span>
+<span class="w">          </span><span class="nt">policies</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Pods</span>
+<span class="w">              </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">              </span><span class="nt">periodSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">300</span>
+<span class="w">  </span><span class="nt">triggers</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">prometheus</span>
+<span class="w">      </span><span class="nt">metadata</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">serverAddress</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://prometheus-operated.monitoring.svc:9090</span>
+<span class="w">        </span><span class="nt">query</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sum(vllm:num_requests_waiting{namespace="taskflow", model_name="taskflow-chat"})</span>
+<span class="w">        </span><span class="nt">threshold</span><span class="p">:</span><span class="w"> </span><span class="s">"4"</span><span class="w"> </span><span class="c1"># target average waiting requests per replica</span>
+</code></pre></div>
+<ul>
+<li>The PodMonitor (a Prometheus Operator resource) scrapes each vLLM pod's
+  <code>/metrics</code>. vLLM labels metrics with <code>model_name</code>, which is the
+  <code>--served-model-name</code>.</li>
+<li>KEDA turns the query into a Horizontal Pod Autoscaler target: with the
+  default average-value metric type, it aims for about 4 waiting requests
+  per replica, so 13 waiting requests ask for 4 replicas.</li>
+<li>Scale-up adds at most 2 pods per minute; scale-down waits 15 minutes and
+  removes one pod every 5 minutes, because a replica removed too early
+  costs minutes to bring back.</li>
+<li><code>maxReplicaCount</code> must match what the GPU node pool and your cloud GPU
+  quota can actually provide; a pending pod waiting for a GPU is not
+  capacity. The node side is in
+  <a href="../../../08-devops-and-deployment/kubernetes/scaling-and-resource-management/">scaling and resource management</a>
+  and the general autoscaling patterns in
+  <a href="../../../08-devops-and-deployment/load-balancing-and-multi-server/autoscaling-server-fleets/">autoscaling server fleets</a>.</li>
+</ul>
+<h3 id="measuring-cold-start">Measuring cold start<a class="headerlink" href="#measuring-cold-start" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Time a fresh replica from creation to Ready, and see where the time went</span>
+kubectl<span class="w"> </span>-n<span class="w"> </span>taskflow<span class="w"> </span>scale<span class="w"> </span>deployment<span class="w"> </span>vllm-chat<span class="w"> </span>--replicas<span class="o">=</span><span class="m">2</span>
+kubectl<span class="w"> </span>-n<span class="w"> </span>taskflow<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-l<span class="w"> </span>app.kubernetes.io/name<span class="o">=</span>vllm-chat<span class="w"> </span>-w
+
+<span class="c1"># Events show scheduling, image pull, and probe timing for the new pod</span>
+kubectl<span class="w"> </span>-n<span class="w"> </span>taskflow<span class="w"> </span>describe<span class="w"> </span>pod<span class="w"> </span>&lt;new-pod-name&gt;<span class="w"> </span><span class="p">|</span><span class="w"> </span>sed<span class="w"> </span>-n<span class="w"> </span><span class="s1">'/Events:/,$p'</span>
+kubectl<span class="w"> </span>-n<span class="w"> </span>taskflow<span class="w"> </span>logs<span class="w"> </span>&lt;new-pod-name&gt;<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-E<span class="w"> </span><span class="s2">"Loading|KV cache size|startup complete"</span>
+</code></pre></div>
+<p>Record each stage (pod scheduled, image pulled, weights loaded, ready) and
+size the startup probe, the autoscaler's lead time, and the minimum replica
+count from the measurements.</p>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Size GPUs from weights plus KV cache for your real context lengths, and
+  confirm with the engine's startup log.</li>
+<li>Cap <code>--max-model-len</code> at what features need; context is paid in cache.</li>
+<li>Try an FP8 KV cache before buying more GPUs, then quantized weights.</li>
+<li>Evaluate every quantized model on your own tasks and keep the original
+  for rollback.</li>
+<li>Prefer quantization plus more replicas over splitting one replica across
+  many GPUs when quality allows.</li>
+<li>Autoscale on queue length or cache usage, scale out early, and scale in
+  slowly.</li>
+<li>Keep warm replicas for interactive features; reserve scale to zero for
+  batch work.</li>
+<li>Cache images and weights near the GPUs to shorten cold starts.</li>
+<li>Put only interruptible work on spot GPUs.</li>
+<li>Re-check hosting options as utilization changes; idle GPUs are the most
+  common waste.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>The engine fails to start after a model upgrade.</strong>
+  <em>Detect:</em> startup errors while allocating the cache, or a log saying the
+  context does not fit. <em>Cause:</em> the new model has more layers or KV heads,
+  or a larger default context, so weights plus minimum cache exceed the GPU.
+  <em>Fix:</em> recompute with the calculator, set <code>--max-model-len</code>, use an FP8
+  cache or quantized weights, or move to a larger GPU.</li>
+<li><strong>A burst of long documents stalls every user.</strong>
+  <em>Detect:</em> <code>vllm:kv_cache_usage_perc</code> near 100%, preemptions rising, queue
+  growing. <em>Cause:</em> long conversations consume the cache that short ones
+  need. <em>Fix:</em> separate long-document traffic onto its own replicas, cap
+  context per feature, and scale out on queue length.</li>
+<li><strong>Autoscaling adds pods that never become ready.</strong>
+  <em>Detect:</em> pods stay Pending with "Insufficient nvidia.com/gpu", or nodes
+  never arrive. <em>Cause:</em> GPU quota or node pool maximum reached, or the
+  region has no capacity. <em>Fix:</em> align <code>maxReplicaCount</code> with quota, request
+  quota ahead of launches, reserve capacity, or add a second region or GPU
+  type.</li>
+<li><strong>Users wait minutes during the morning peak.</strong>
+  <em>Detect:</em> queue length rises at the same time daily; new replicas become
+  ready ten minutes later. <em>Cause:</em> reactive scaling with long cold starts.
+  <em>Fix:</em> scheduled scale-up before the peak, a higher minimum, pre-pulled
+  images, and cached weights.</li>
+<li><strong>Answers got worse after a cost-saving change.</strong>
+  <em>Detect:</em> evaluation scores or user feedback drop after switching to a
+  4-bit model. <em>Cause:</em> quantization hurt this model on this task, often in
+  structured output or long context. <em>Fix:</em> compare against the original on
+  the evaluation set, try an 8-bit format or another quantization method, or
+  keep 16-bit for the affected feature.</li>
+<li><strong>The GPU bill stays high at night.</strong>
+  <em>Detect:</em> low request rates but a constant replica count. <em>Cause:</em> a high
+  <code>minReplicaCount</code> or no scale-in. <em>Fix:</em> time-based minimums, scale-in
+  policies, and moving batch work to hours when interactive capacity is
+  idle.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>VRAM:</strong> The GPU's own memory, which holds weights, cache, and
+  activations.</li>
+<li><strong>KV cache:</strong> Stored keys and values for every active token; the memory
+  that sets concurrency.</li>
+<li><strong>Grouped-query attention:</strong> Sharing each key-value head among several
+  query heads, shrinking the KV cache.</li>
+<li><strong>Quantization:</strong> Storing weights, activations, or the cache in fewer
+  bits.</li>
+<li><strong>FP8 / INT8 / 4-bit:</strong> Common reduced precisions for serving.</li>
+<li><strong>GPTQ / AWQ:</strong> Post-training 4-bit weight quantization methods.</li>
+<li><strong>GGUF:</strong> llama.cpp's single-file model format with its own quantization
+  types.</li>
+<li><strong>Tensor parallelism:</strong> Splitting each layer of a model across GPUs.</li>
+<li><strong>Cold start:</strong> The time for a new replica to become ready to serve.</li>
+<li><strong>Scale to zero:</strong> Removing all replicas when idle, at the cost of cold
+  starts.</li>
+<li><strong>Spot (preemptible) capacity:</strong> Discounted capacity the provider can
+  reclaim at short notice.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Sizing GPUs from the weights alone and forgetting the KV cache.</li>
+<li>Assuming a model that loads will serve many users.</li>
+<li>Treating quantization as free; it must pass your own evaluation.</li>
+<li>Splitting a model across GPUs when a quantized single-GPU replica would
+  serve more users.</li>
+<li>Autoscaling GPU servers on CPU or GPU utilization.</li>
+<li>Scaling interactive model servers to zero.</li>
+<li>Setting <code>maxReplicaCount</code> above the GPU quota.</li>
+<li>Comparing hosting options by hourly price instead of cost per unit of
+  work at your utilization.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Which four things occupy GPU memory when serving a model, and which of
+   them sets concurrency?</li>
+<li>A model has 48 layers, 8 KV heads, and head dimension 128, with a 16-bit
+   cache. How much KV cache does one token need, and how many 8K-token
+   conversations fit in 30 GiB of cache? (2 x 48 x 8 x 128 x 2 = 196,608
+   bytes = 192 KiB per token; 8,192 tokens = 1.5 GiB per conversation; 20
+   conversations.)</li>
+<li>Why does 4-bit quantization speed up decoding even when memory is not
+   short?</li>
+<li>Compare FP8, GPTQ, AWQ, and GGUF: where does each run, and how is each
+   produced?</li>
+<li>When is tensor parallelism the right answer, and when is a quantized
+   model on more replicas better?</li>
+<li>Which metrics should trigger autoscaling of a vLLM deployment, and why
+   not CPU?</li>
+<li>List the steps of a cold start and one fix for each.</li>
+<li>For steady, high traffic and for spiky, low traffic, which hosting
+   options are cheapest, and why?</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://docs.vllm.ai/en/latest/features/quantization/">vLLM: Quantization</a></li>
+<li><a href="https://docs.vllm.ai/en/latest/configuration/engine_args/">vLLM: Engine arguments</a></li>
+<li><a href="https://github.com/vllm-project/llm-compressor">LLM Compressor</a></li>
+<li><a href="https://huggingface.co/docs/hub/gguf">Hugging Face Hub: GGUF</a></li>
+<li><a href="https://github.com/ggml-org/llama.cpp/blob/master/tools/quantize/README.md">llama.cpp: quantize tool</a></li>
+<li><a href="https://keda.sh/docs/latest/reference/scaledobject-spec/">KEDA: ScaledObject specification</a></li>
+<li><a href="https://cloud.google.com/run/docs/configuring/services/gpu">Cloud Run: GPU support</a></li>
+<li><a href="https://learn.microsoft.com/en-us/azure/container-apps/gpu-serverless-overview">Azure Container Apps: Serverless GPUs</a></li>
+<li><a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-instance-termination-notices.html">Amazon EC2: Spot Instance interruption notices</a></li>
+<li>Next: <a href="../interview-questions-and-answers/">interview questions and answers</a>. Back to the <a href="../">deployment cost and performance overview</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../cost-optimization-for-llm-apps/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Cost Optimization for LLM Apps">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Cost Optimization for LLM Apps</span>
+      </a>
+    
+    
+      <a href="../cheat-sheet/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: Cheat Sheet">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">Cheat Sheet</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

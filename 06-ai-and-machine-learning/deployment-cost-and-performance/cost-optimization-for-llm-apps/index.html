@@ -1,0 +1,4657 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../latency-optimization/">
+      
+      
+        <link rel="next" href="../gpu-capacity-and-scaling/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Cost Optimization for LLM Apps - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#cost-optimization-for-llm-apps" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Cost Optimization for LLM Apps
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../05-application-architecture/" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../08-devops-and-deployment/" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to AI and Machine Learning">
+          <span class="md-ellipsis">&larr; Back to AI</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../05-application-architecture/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        
+          
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-label="AI module lessons" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to AI and Machine Learning">
+                  <span class="md-ellipsis">&larr; Back to AI</span>
+                </a>
+              
+            </div>
+          
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                  
+  
+  
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+    
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+  
+
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_8" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_7_8" id="__nav_7_8_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Production
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_8_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_7_8">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Production
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_8_1" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_7_8_1" id="__nav_7_8_1_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evaluation and Monitoring
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_7_8_1_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_7_8_1">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Evaluation and Monitoring
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../evaluation-and-monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../evaluation-and-monitoring/building-evaluation-sets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Building Evaluation Sets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../evaluation-and-monitoring/llm-as-judge-and-automated-evals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM-as-Judge and Automated Evals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../evaluation-and-monitoring/evals-in-ci-and-regression-testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evals in CI and Regression Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../evaluation-and-monitoring/llm-observability-and-tracing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM Observability and Tracing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../evaluation-and-monitoring/cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../evaluation-and-monitoring/interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_8_2" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_7_8_2" id="__nav_7_8_2_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security, Privacy, and Responsible AI
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_7_8_2_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_7_8_2">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Security, Privacy, and Responsible AI
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security-privacy-and-responsible-ai/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security-privacy-and-responsible-ai/prompt-injection-and-defenses/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Prompt Injection and Defenses
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security-privacy-and-responsible-ai/guardrails-and-content-moderation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guardrails and Content Moderation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security-privacy-and-responsible-ai/privacy-pii-and-data-retention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Privacy, PII, and Data Retention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security-privacy-and-responsible-ai/ai-regulation-and-governance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Regulation and Governance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security-privacy-and-responsible-ai/cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security-privacy-and-responsible-ai/interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_8_3" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_7_8_3" id="__nav_7_8_3_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment, Cost, and Performance
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_7_8_3_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_7_8_3">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Deployment, Cost, and Performance
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../serving-open-models/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Serving Open Models
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../latency-optimization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Latency Optimization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cost Optimization for LLM Apps
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cost Optimization for LLM Apps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-cost-of-one-request" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The cost of one request
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#where-the-money-goes-per-feature-not-per-request" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where the money goes: per feature, not per request
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#counting-tokens-estimate-before-record-after" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Counting tokens: estimate before, record after
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#caching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Caching
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#batching-and-flex-tiers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Batching and flex tiers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#routing-to-smaller-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Routing to smaller models
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#distillation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Distillation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#limits-output-caps-context-trimming-and-step-caps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Limits: output caps, context trimming, and step caps
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#self-hosting-economics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Self-hosting economics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#per-feature-cost-tracking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Per-feature cost tracking
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#estimating-tokens-and-trimming-history-before-the-call" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Estimating tokens and trimming history before the call
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#normalizing-usage-and-computing-relative-cost" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Normalizing usage and computing relative cost
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recording-cost-per-feature" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recording cost per feature
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-cascade-for-task-creation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A cascade for task creation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#moving-nightly-summaries-to-the-batch-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Moving nightly summaries to the Batch API
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gpu-capacity-and-scaling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GPU Capacity and Scaling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_8_4" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_7_8_4" id="__nav_7_8_4_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MLOps and Model Lifecycle
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_7_8_4_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_7_8_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    MLOps and Model Lifecycle
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mlops-and-model-lifecycle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mlops-and-model-lifecycle/experiment-tracking-and-model-registry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Experiment Tracking and Model Registry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mlops-and-model-lifecycle/llmops-prompt-and-model-versioning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLMOps: Prompt and Model Versioning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mlops-and-model-lifecycle/production-monitoring-and-drift/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Production Monitoring and Drift
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mlops-and-model-lifecycle/cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mlops-and-model-lifecycle/interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../08-devops-and-deployment/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DevOps and Deployment
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-cost-of-one-request" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The cost of one request
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#where-the-money-goes-per-feature-not-per-request" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where the money goes: per feature, not per request
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#counting-tokens-estimate-before-record-after" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Counting tokens: estimate before, record after
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#caching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Caching
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#batching-and-flex-tiers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Batching and flex tiers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#routing-to-smaller-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Routing to smaller models
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#distillation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Distillation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#limits-output-caps-context-trimming-and-step-caps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Limits: output caps, context trimming, and step caps
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#self-hosting-economics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Self-hosting economics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#per-feature-cost-tracking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Per-feature cost tracking
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#estimating-tokens-and-trimming-history-before-the-call" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Estimating tokens and trimming history before the call
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#normalizing-usage-and-computing-relative-cost" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Normalizing usage and computing relative cost
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recording-cost-per-feature" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recording cost per feature
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-cascade-for-task-creation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A cascade for task creation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#moving-nightly-summaries-to-the-batch-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Moving nightly summaries to the Batch API
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="cost-optimization-for-llm-apps">Cost Optimization for LLM Apps<a class="headerlink" href="#cost-optimization-for-llm-apps" title="Permanent link">&para;</a></h1>
+<p>An LLM feature has a meter attached to every request. Hosted models bill
+by tokens (input, cached input, output, and hidden reasoning tokens) and by
+some tool calls; self-hosted models bill by the GPU-hour whether or not
+anyone is using them. This lesson shows how to account for that spend
+precisely, how to find the feature and the token type that dominate it, and
+how to reduce it with caching, batching, routing to smaller models,
+distillation, output limits, and context trimming, without breaking quality.</p>
+<p>All costs here are relative. Prices change often and differ by provider and
+model, so the examples use units where one uncached input token costs 1, and
+you multiply by your provider's current price list when you need money.
+The running examples are TaskFlow's Assistant (task creation with
+structured output), project Q&amp;A over documents, the task agent, and
+meeting-notes summaries.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>Usage-based pricing scales with traffic times tokens, and both grow
+quietly. A prompt template gains a paragraph, retrieval returns eight
+passages instead of four, an agent takes two extra steps, a model upgrade
+produces longer answers, and the monthly bill doubles without a single
+traffic change. Output tokens usually cost several times as much as input
+tokens (five times at several providers' list prices in November 2026), and
+reasoning models add hidden output tokens on top. Retries and validation
+failures bill again for the same user action.</p>
+<p>Cost is also a product decision. A feature that costs more per request than
+the user pays per month cannot ship to everyone. Knowing the cost per
+completed task, per feature and per tenant, is what lets a team set limits,
+price plans, and choose where to spend engineering effort. And many cost
+fixes (shorter outputs, smaller models, cached prefixes) make the feature
+faster too, as described in <a href="../latency-optimization/">latency optimization</a>.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>OpenAI Batch API.</strong> The
+  <a href="https://developers.openai.com/api/docs/guides/batch">Batch guide</a>
+  offers a "50% cost discount compared to synchronous APIs", a separate
+  pool of higher rate limits, and completion "within 24 hours (and often
+  more quickly)". The
+  <a href="https://developers.openai.com/api/docs/guides/flex-processing">flex processing guide</a>
+  offers batch-level prices on ordinary requests "in exchange for slower
+  response times and occasional resource unavailability".</li>
+<li><strong>OpenAI and Anthropic prompt caching.</strong> OpenAI's
+  <a href="https://developers.openai.com/api/docs/guides/prompt-caching">prompt caching guide</a>
+  describes cached input tokens "discounted up to 95%". Anthropic's
+  <a href="https://platform.claude.com/docs/en/build-with-claude/prompt-caching">prompt caching documentation</a>
+  prices 5-minute cache writes at 1.25 times the base input price, 1-hour
+  writes at 2 times, and cache reads at 0.1 times (0.05 or 0.025 times on
+  some newer models), and its
+  <a href="https://platform.claude.com/docs/en/build-with-claude/batch-processing">batch processing guide</a>
+  offers "a 50 percent discount on all usage" that stacks with caching.</li>
+<li><strong>FrugalGPT.</strong> Chen, Zaharia, and Zou,
+  <a href="https://arxiv.org/abs/2305.05176">FrugalGPT</a>, route each query through a
+  cascade of models from cheap to expensive and report matching the best
+  single model's performance "with up to 98% cost reduction" on their
+  benchmarks.</li>
+<li><strong>RouteLLM.</strong> Ong and colleagues,
+  <a href="https://arxiv.org/abs/2406.18665">RouteLLM: Learning to Route LLMs with Preference Data</a>,
+  train routers that choose between a strong and a weak model per query and
+  report reducing costs "by over 2 times in certain cases" without hurting
+  response quality.</li>
+<li><strong>Gemini Batch API.</strong> Google's
+  <a href="https://aistudio.google.com/docs/batch-api">Batch API guide</a> prices
+  batch requests "at 50% of the standard interactive API cost" with a
+  24-hour target turnaround.</li>
+</ul>
+<p><strong>Popular tools and providers:</strong> provider usage dashboards and usage APIs,
+batch APIs and flex tiers, prompt caching, token counting endpoints
+(OpenAI <code>responses.inputTokens.count</code>, Anthropic <code>messages.countTokens</code>,
+Google <code>models.countTokens</code>), local tokenizers such as <code>gpt-tokenizer</code>,
+Prometheus and OpenTelemetry for per-feature metrics, and AI gateways that
+add budgets and routing in front of several providers.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="the-cost-of-one-request">The cost of one request<a class="headerlink" href="#the-cost-of-one-request" title="Permanent link">&para;</a></h3>
+<p>Every provider's bill reduces to the same shape:</p>
+<div class="highlight"><pre><span></span><code>request cost = uncached input tokens x input price
+             + cached input tokens   x cached-input price   (much cheaper)
+             + cache-write tokens    x cache-write price    (some providers charge extra)
+             + output tokens         x output price         (includes reasoning tokens)
+             + tool and other fees   (web search, images, audio, ...)
+
+Relative units used in this lesson: input 1, cached input 0.1, output 5
+
+TaskFlow Assistant (task creation): 2,000 input tokens, 1,800 of them a cached
+system prompt and tool schema; 80 output tokens
+  uncached: 200 x 1 = 200;  cached: 1,800 x 0.1 = 180;  output: 80 x 5 = 400
+  = 780 units  (2,400 units without caching)
+
+Project Q&amp;A: 150 cached instruction tokens, 8 passages x 500 tokens, 300 output tokens
+  150 x 0.1 + 4,000 x 1 + 300 x 5 = 15 + 4,000 + 1,500 = 5,515 units
+  with the top 4 passages instead of 8:  15 + 2,000 + 1,500 = 3,515 units
+
+Meeting summary: 6,000 input tokens of notes (never repeated, so never cached),
+400 output tokens
+  6,000 x 1 + 400 x 5 = 8,000 units;  with a five-bullet limit (150 tokens): 6,750
+</code></pre></div>
+<p>Then account for what the user actually gets. If 4% of Assistant calls fail
+validation and are retried once, and 2% hit a timeout and are retried, the
+cost per <strong>completed</strong> task is about 6% higher than the cost per request.
+Agents are worse: every step re-sends the growing conversation, so input
+tokens grow roughly with the square of the number of steps unless the
+history is cached or trimmed.</p>
+<h3 id="where-the-money-goes-per-feature-not-per-request">Where the money goes: per feature, not per request<a class="headerlink" href="#where-the-money-goes-per-feature-not-per-request" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: horizontal stacked bars of monthly cost in millions of relative units, where one unit is one uncached input token; task creation, at 300,000 requests, costs 234 million units: 60 uncached input, 54 cached input, and 120 output; meeting summaries, at 20,000 requests, cost 160 million: 120 uncached input and 40 output; project Q&amp;A, at 100,000 requests, costs about 552 million: 400 uncached input, 1.5 cached input, and 150 output; a note says that retrieving the top 4 passages instead of 8 cuts Q&amp;A by 200 million units, the largest single saving." src="../cost-per-feature-breakdown.svg" /></p>
+<p>Multiplying cost per request by volume changes the picture. Task creation
+is cheap per request but frequent; summaries are expensive per request but
+rare; project Q&amp;A combines high volume with long retrieved context and
+dominates the bill. The highest-value change is often a boring one (fewer,
+better passages) rather than a model switch. You only see that if usage is
+recorded per feature, which the practical examples show how to do.</p>
+<h3 id="counting-tokens-estimate-before-record-after">Counting tokens: estimate before, record after<a class="headerlink" href="#counting-tokens-estimate-before-record-after" title="Permanent link">&para;</a></h3>
+<p>Two different numbers matter:</p>
+<ul>
+<li><strong>Before the call</strong>, estimate input size to enforce budgets: trim history,
+  cap retrieved context, or refuse a request that would exceed a tenant's
+  quota. A local tokenizer such as <code>gpt-tokenizer</code> (OpenAI's <code>o200k_base</code>
+  encoding by default) is fast and free; other providers tokenize
+  differently, so treat it as an estimate with a margin, or call the
+  provider's token counting endpoint when precision matters.</li>
+<li><strong>After the call</strong>, record the <code>usage</code> object the provider returns. That
+  is what you are billed for, including cached and reasoning tokens that no
+  local count can predict.</li>
+</ul>
+<p>The usage fields differ by provider, and so does their arithmetic:</p>
+<table>
+<thead>
+<tr>
+<th>Provider</th>
+<th>Input</th>
+<th>Cached input</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OpenAI Responses</td>
+<td><code>input_tokens</code> (includes cached and cache-write tokens)</td>
+<td><code>input_tokens_details.cached_tokens</code></td>
+<td><code>output_tokens</code> (includes <code>output_tokens_details.reasoning_tokens</code>)</td>
+</tr>
+<tr>
+<td>OpenAI-style Chat Completions</td>
+<td><code>prompt_tokens</code> (includes cached)</td>
+<td><code>prompt_tokens_details.cached_tokens</code></td>
+<td><code>completion_tokens</code> (includes reasoning)</td>
+</tr>
+<tr>
+<td>Anthropic Messages</td>
+<td><code>input_tokens</code> (only tokens after the last cache breakpoint)</td>
+<td><code>cache_read_input_tokens</code>; writes in <code>cache_creation_input_tokens</code></td>
+<td><code>output_tokens</code></td>
+</tr>
+<tr>
+<td>Google Gen AI</td>
+<td><code>promptTokenCount</code> (includes cached)</td>
+<td><code>cachedContentTokenCount</code></td>
+<td><code>candidatesTokenCount</code> plus <code>thoughtsTokenCount</code></td>
+</tr>
+</tbody>
+</table>
+<p>Normalize them once, in one module, so dashboards do not mix "input
+including cache" with "input excluding cache".</p>
+<h3 id="caching">Caching<a class="headerlink" href="#caching" title="Permanent link">&para;</a></h3>
+<p>Three kinds of caching cut cost, with very different risks:</p>
+<table>
+<thead>
+<tr>
+<th>Cache</th>
+<th>What is reused</th>
+<th>Saves</th>
+<th>Main risk</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Provider prompt caching</td>
+<td>Processed prefix of the prompt</td>
+<td>Most of the input price of the cached part</td>
+<td>Low; needs an identical prefix</td>
+</tr>
+<tr>
+<td>Exact response cache (yours)</td>
+<td>The whole answer for an identical request</td>
+<td>The entire call</td>
+<td>Serving one tenant's answer to another; stale answers</td>
+</tr>
+<tr>
+<td>Semantic cache (yours)</td>
+<td>An answer to a similar earlier question</td>
+<td>The entire call</td>
+<td>Wrong answers for questions that look alike but differ</td>
+</tr>
+</tbody>
+</table>
+<p>Prompt caching is nearly free to adopt: put stable content first and
+measure hit ratios. An exact response cache fits deterministic,
+non-personal calls, such as classifying a support ticket or summarizing a
+public changelog; its key must include the model, the prompt version, the
+tenant and permission scope, the full input, and the data version (see
+<a href="../../../05-application-architecture/caching/cache-fundamentals/">cache fundamentals</a>).
+Semantic caching needs an evaluation of false hits before it is trusted,
+and should never cross tenant or permission boundaries.</p>
+<h3 id="batching-and-flex-tiers">Batching and flex tiers<a class="headerlink" href="#batching-and-flex-tiers" title="Permanent link">&para;</a></h3>
+<p>Work nobody waits for should not pay interactive prices. Nightly meeting
+summaries for inactive projects, re-summarizing a backlog after a prompt
+change, evaluation runs, and data enrichment can all go through a batch
+API: OpenAI, Anthropic, and Google all price batch requests at half the
+interactive rate as of November 2026, in exchange for asynchronous results
+within 24 hours. OpenAI's flex tier applies similar pricing to individual
+requests that can tolerate slow responses and occasional unavailability.
+For self-hosted models the equivalent is filling the GPU: an offline job
+that keeps continuous batching saturated lowers the cost of every token
+the GPU produces.</p>
+<h3 id="routing-to-smaller-models">Routing to smaller models<a class="headerlink" href="#routing-to-smaller-models" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: a cascade router for TaskFlow; each request first goes to a decision on whether the feature is a known simple task; known simple tasks go to the small model, and its output is validated; valid and confident results are returned at a relative cost of 1; invalid or low-confidence results escalate to the large model at a relative cost of 10 more, and its result is validated and returned, or the request fails clearly; features known to be hard skip straight to the large model; with 30% of requests escalating, the expected cost is 1 + 0.3 x 10 = 4 units instead of 10, and escalated requests pay extra latency; the escalation rate is tracked as a metric." src="../model-routing-cascade.svg" /></p>
+<p>Many requests do not need the largest model. Three routing patterns, from
+simple to sophisticated:</p>
+<ol>
+<li><strong>Per-feature routing.</strong> Each feature has a configured model: a small
+   model for task creation and ticket classification, a large one for
+   multi-step agent work. This is configuration, not code, and captures most
+   of the savings.</li>
+<li><strong>Cascade.</strong> Try the small model first, validate the result (schema
+   checks, a confidence field, or a cheap verifier), and escalate to the
+   large model only on failure. FrugalGPT studies this pattern.</li>
+<li><strong>Learned router.</strong> A classifier predicts which model a query needs, as
+   in RouteLLM. It needs training data and monitoring, so start with the
+   first two.</li>
+</ol>
+<p>The arithmetic of a cascade decides whether it pays:</p>
+<div class="highlight"><pre><span></span><code>small model = 1 unit, large model = 10 units per request
+
+always large:                          10 units
+cascade, 30% escalate:   1 + 0.3 x 10 = 4 units   (60% cheaper)
+cascade, 85% escalate:   1 + 0.85 x 10 = 9.5 units, and escalated requests are slower
+</code></pre></div>
+<p>A cascade only helps when most requests succeed on the small model, so
+track the escalation rate per feature, and evaluate quality on the same
+evaluation set as the large model (see
+<a href="../../evaluation-and-monitoring/building-evaluation-sets/">building evaluation sets</a>).</p>
+<h3 id="distillation">Distillation<a class="headerlink" href="#distillation" title="Permanent link">&para;</a></h3>
+<p>When one narrow, high-volume task (task extraction from a sentence, ticket
+labeling) runs on a large model, you can <strong>distill</strong> it: collect the large
+model's outputs on real inputs, review them, and fine-tune a small model to
+reproduce them. The small model then serves the task at a fraction of the
+cost and latency, and can often be self-hosted. It costs an evaluation set,
+a training pipeline, and ongoing retraining when the task changes; check the
+provider's terms on training with its outputs before you start. The method
+is covered in
+<a href="../../fine-tuning/preference-tuning-and-distillation/">preference tuning and distillation</a>,
+and the decision in <a href="../../fine-tuning/when-to-fine-tune/">when to fine-tune</a>.</p>
+<h3 id="limits-output-caps-context-trimming-and-step-caps">Limits: output caps, context trimming, and step caps<a class="headerlink" href="#limits-output-caps-context-trimming-and-step-caps" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Output caps.</strong> Set an output limit per feature (<code>max_output_tokens</code>,
+  <code>max_tokens</code>) and ask for the length the UI needs. For reasoning models,
+  choose the lowest reasoning effort that passes evaluation.</li>
+<li><strong>Context trimming.</strong> Keep the last few conversation turns verbatim and
+  replace older ones with a running summary, or drop them; see
+  <a href="../../building-ai-applications/conversation-state-and-memory/">conversation state and memory</a>.</li>
+<li><strong>Retrieval caps.</strong> Fewer, reranked passages usually answer as well as
+  many raw ones, at a fraction of the input cost.</li>
+<li><strong>Agent step caps and tool output limits.</strong> Cap the number of steps,
+  truncate large tool results before they go back into the context, and stop
+  runaway loops.</li>
+<li><strong>Per-tenant quotas.</strong> Enforce token budgets per tenant and plan, and
+  degrade gracefully (a smaller model, a shorter answer, a clear message)
+  instead of failing silently.</li>
+</ul>
+<h3 id="self-hosting-economics">Self-hosting economics<a class="headerlink" href="#self-hosting-economics" title="Permanent link">&para;</a></h3>
+<p>A self-hosted GPU costs the same per hour at 5% load and at 95% load, so its
+cost per token depends on utilization:</p>
+<div class="highlight"><pre><span></span><code>G = cost of one GPU-hour (relative units), T = tokens per hour at full load
+cost per token = G / (T x utilization)
+
+T = 7.2 million tokens per hour (2,000 tokens/s across all streams)
+  80% utilization: G / 5.76 million tokens
+  10% utilization: G / 0.72 million tokens  -&gt; 8 times the cost per token
+</code></pre></div>
+<p>Self-hosting is cheaper than a hosted API only when sustained utilization
+is high enough that <code>G / (T x utilization)</code> falls below the API's price per
+token for a model of similar quality, after adding engineering and on-call
+time. Spiky or low traffic usually favors hosted APIs; steady, high volume,
+or strict data-control requirements favor self-hosting. GPU options and
+their relative costs are in
+<a href="../gpu-capacity-and-scaling/">GPU capacity and scaling</a>.</p>
+<h3 id="per-feature-cost-tracking">Per-feature cost tracking<a class="headerlink" href="#per-feature-cost-tracking" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: every TaskFlow model call goes through one wrapper that records feature, model, prompt version, and a hashed tenant id; the provider response's usage object is normalized into uncached input, cached input, cache writes, output, and reasoning tokens; the normalized usage feeds three places: Prometheus counters labeled by feature, model, and token type without tenant labels, structured logs and trace attributes such as gen_ai.usage.input_tokens without prompt text, and a per-tenant daily usage store; a budget check reads the tenant store before each call and either allows it, switches to a smaller model, or rejects it with a clear message; dashboards show cost per feature per day and cost per completed task." src="../per-feature-cost-tracking.svg" /></p>
+<p>Cost tracking works when it is impossible to bypass:</p>
+<ul>
+<li><strong>One wrapper for every model call</strong>, taking a <code>feature</code> name, so no code
+  path calls an SDK directly.</li>
+<li><strong>Labels with low cardinality</strong> in metrics (feature, model, token type).
+  Tenant ids go to logs and a usage store, not to Prometheus labels, where
+  thousands of tenants would explode the series count.</li>
+<li><strong>No prompt content in cost records.</strong> Usage numbers and ids are enough;
+  prompts may hold personal data (see
+  <a href="../../security-privacy-and-responsible-ai/privacy-pii-and-data-retention/">privacy, PII, and data retention</a>).</li>
+<li><strong>Outcomes next to costs.</strong> Record whether the task completed (task
+  created, answer accepted) so you can compute cost per completed task,
+  not just cost per call.</li>
+<li><strong>Trace attributes.</strong> OpenTelemetry's GenAI semantic conventions define
+  attributes such as <code>gen_ai.request.model</code>, <code>gen_ai.usage.input_tokens</code>,
+  and <code>gen_ai.usage.output_tokens</code>; they are still marked Development, so
+  pin the version you follow (see
+  <a href="../../evaluation-and-monitoring/llm-observability-and-tracing/">LLM observability and tracing</a>).</li>
+</ul>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Situation</th>
+<th>Technique</th>
+<th>Watch out for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Long, repeated instructions or documents</td>
+<td>Prompt caching</td>
+<td>Variable text at the top of the prompt</td>
+</tr>
+<tr>
+<td>Identical, non-personal requests</td>
+<td>Exact response cache</td>
+<td>Key must include tenant, model, prompt and data versions</td>
+</tr>
+<tr>
+<td>Work nobody waits for</td>
+<td>Batch API or flex tier</td>
+<td>Results arrive later; design for asynchronous completion</td>
+</tr>
+<tr>
+<td>Most requests are easy</td>
+<td>Per-feature routing or a cascade</td>
+<td>Escalation rate and quality must be measured</td>
+</tr>
+<tr>
+<td>One narrow task at high volume</td>
+<td>Distillation to a small model</td>
+<td>Training pipeline, evaluation, provider terms</td>
+</tr>
+<tr>
+<td>Long answers or chats</td>
+<td>Output caps, history trimming</td>
+<td>Truncated answers, lost context</td>
+</tr>
+<tr>
+<td>Retrieval-heavy features</td>
+<td>Fewer, reranked passages</td>
+<td>Recall drops if you cut too far</td>
+</tr>
+<tr>
+<td>Steady high volume, data control needs</td>
+<td>Self-hosting</td>
+<td>Utilization; idle GPUs are expensive</td>
+</tr>
+<tr>
+<td>Spiky, low volume</td>
+<td>Hosted APIs</td>
+<td>Rate limits and provider dependency</td>
+</tr>
+</tbody>
+</table>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="estimating-tokens-and-trimming-history-before-the-call">Estimating tokens and trimming history before the call<a class="headerlink" href="#estimating-tokens-and-trimming-history-before-the-call" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/ai/token-budget.ts</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">countTokens</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"gpt-tokenizer"</span><span class="p">;</span><span class="w"> </span><span class="c1">// o200k_base by default: an estimate for other providers</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">interface</span><span class="w"> </span><span class="nx">ChatTurn</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">role</span><span class="o">:</span><span class="w"> </span><span class="s2">"system"</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">"user"</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">"assistant"</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">content</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c1">// Keep the system prompt and as many of the newest turns as fit the budget.</span>
+<span class="k">export</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">fitToBudget</span><span class="p">(</span><span class="nx">turns</span><span class="o">:</span><span class="w"> </span><span class="kt">ChatTurn</span><span class="p">[],</span><span class="w"> </span><span class="nx">budgetTokens</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="nx">ChatTurn</span><span class="p">[]</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="p">[</span><span class="nx">system</span><span class="p">,</span><span class="w"> </span><span class="p">...</span><span class="nx">rest</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">turns</span><span class="p">;</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">system</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nx">system</span><span class="p">.</span><span class="nx">role</span><span class="w"> </span><span class="o">!==</span><span class="w"> </span><span class="s2">"system"</span><span class="p">)</span><span class="w"> </span><span class="k">throw</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="ne">Error</span><span class="p">(</span><span class="s2">"first turn must be the system prompt"</span><span class="p">);</span>
+
+<span class="w">  </span><span class="kd">let</span><span class="w"> </span><span class="nx">used</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">countTokens</span><span class="p">(</span><span class="nx">system</span><span class="p">.</span><span class="nx">content</span><span class="p">);</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">kept</span><span class="o">:</span><span class="w"> </span><span class="kt">ChatTurn</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[];</span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">let</span><span class="w"> </span><span class="nx">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">rest</span><span class="p">.</span><span class="nx">length</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">1</span><span class="p">;</span><span class="w"> </span><span class="nx">i</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mf">0</span><span class="p">;</span><span class="w"> </span><span class="nx">i</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="mf">1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">turn</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">rest</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span><span class="w"> </span><span class="kr">as</span><span class="w"> </span><span class="nx">ChatTurn</span><span class="p">;</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">cost</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">countTokens</span><span class="p">(</span><span class="nx">turn</span><span class="p">.</span><span class="nx">content</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">4</span><span class="p">;</span><span class="w"> </span><span class="c1">// small allowance for message framing</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">used</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nx">cost</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="nx">budgetTokens</span><span class="p">)</span><span class="w"> </span><span class="k">break</span><span class="p">;</span>
+<span class="w">    </span><span class="nx">used</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="nx">cost</span><span class="p">;</span>
+<span class="w">    </span><span class="nx">kept</span><span class="p">.</span><span class="nx">unshift</span><span class="p">(</span><span class="nx">turn</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="p">[</span><span class="nx">system</span><span class="p">,</span><span class="w"> </span><span class="p">...</span><span class="nx">kept</span><span class="p">];</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1">// scripts/token-budget-demo.ts</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">countTokens</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"gpt-tokenizer"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">fitToBudget</span><span class="p">,</span><span class="w"> </span><span class="kr">type</span><span class="w"> </span><span class="nx">ChatTurn</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"../src/ai/token-budget.js"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">turns</span><span class="o">:</span><span class="w"> </span><span class="kt">ChatTurn</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span>
+<span class="w">  </span><span class="p">{</span><span class="w"> </span><span class="nx">role</span><span class="o">:</span><span class="w"> </span><span class="s2">"system"</span><span class="p">,</span><span class="w"> </span><span class="nx">content</span><span class="o">:</span><span class="w"> </span><span class="s2">"You are TaskFlow Assistant. Turn requests into tasks."</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="p">...</span><span class="nb">Array</span><span class="p">.</span><span class="kr">from</span><span class="p">({</span><span class="w"> </span><span class="nx">length</span><span class="o">:</span><span class="w"> </span><span class="kt">30</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="p">(</span><span class="nx">_</span><span class="p">,</span><span class="w"> </span><span class="nx">i</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="nx">ChatTurn</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">({</span>
+<span class="w">    </span><span class="nx">role</span><span class="o">:</span><span class="w"> </span><span class="kt">i</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="mf">0</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="s2">"user"</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="s2">"assistant"</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">content</span><span class="o">:</span><span class="w"> </span><span class="sb">`Turn </span><span class="si">${</span><span class="nx">i</span><span class="si">}</span><span class="sb">: please move the launch checklist task to next week and notify the design team.`</span><span class="p">,</span>
+<span class="w">  </span><span class="p">})),</span>
+<span class="p">];</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">all</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">turns</span><span class="p">.</span><span class="nx">reduce</span><span class="p">((</span><span class="nx">sum</span><span class="p">,</span><span class="w"> </span><span class="nx">t</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">sum</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nx">countTokens</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nx">content</span><span class="p">),</span><span class="w"> </span><span class="mf">0</span><span class="p">);</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">trimmed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">fitToBudget</span><span class="p">(</span><span class="nx">turns</span><span class="p">,</span><span class="w"> </span><span class="mf">300</span><span class="p">);</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">kept</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">trimmed</span><span class="p">.</span><span class="nx">reduce</span><span class="p">((</span><span class="nx">sum</span><span class="p">,</span><span class="w"> </span><span class="nx">t</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">sum</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nx">countTokens</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nx">content</span><span class="p">),</span><span class="w"> </span><span class="mf">0</span><span class="p">);</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`all turns: </span><span class="si">${</span><span class="nx">turns</span><span class="p">.</span><span class="nx">length</span><span class="si">}</span><span class="sb"> turns, </span><span class="si">${</span><span class="nx">all</span><span class="si">}</span><span class="sb"> tokens`</span><span class="p">);</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`trimmed:   </span><span class="si">${</span><span class="nx">trimmed</span><span class="p">.</span><span class="nx">length</span><span class="si">}</span><span class="sb"> turns, </span><span class="si">${</span><span class="nx">kept</span><span class="si">}</span><span class="sb"> tokens (budget 300)`</span><span class="p">);</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code># Output from a local run
+all turns: 31 turns, 581 tokens
+trimmed:   13 turns, 239 tokens (budget 300)
+</code></pre></div>
+<p>In production, replace the dropped turns with a short running summary
+rather than discarding them, and keep the budget per feature in
+configuration.</p>
+<h3 id="normalizing-usage-and-computing-relative-cost">Normalizing usage and computing relative cost<a class="headerlink" href="#normalizing-usage-and-computing-relative-cost" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/ai/usage.ts</span>
+<span class="k">import</span><span class="w"> </span><span class="kr">type</span><span class="w"> </span><span class="nx">Anthropic</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"@anthropic-ai/sdk"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="kr">type</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">GenerateContentResponseUsageMetadata</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"@google/genai"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="kr">type</span><span class="w"> </span><span class="nx">OpenAI</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"openai"</span><span class="p">;</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">interface</span><span class="w"> </span><span class="nx">NormalizedUsage</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">uncachedInput</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">cachedInput</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">cacheWrite</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">output</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">;</span><span class="w"> </span><span class="c1">// includes reasoning tokens</span>
+<span class="w">  </span><span class="nx">reasoning</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">;</span><span class="w"> </span><span class="c1">// informational subset of output</span>
+<span class="p">}</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">fromOpenAIResponses</span><span class="p">(</span><span class="nx">u</span><span class="o">:</span><span class="w"> </span><span class="kt">OpenAI.Responses.ResponseUsage</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="nx">NormalizedUsage</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">cached</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">u</span><span class="p">.</span><span class="nx">input_tokens_details</span><span class="p">.</span><span class="nx">cached_tokens</span><span class="p">;</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">writes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">u</span><span class="p">.</span><span class="nx">input_tokens_details</span><span class="p">.</span><span class="nx">cache_write_tokens</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="mf">0</span><span class="p">;</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">uncachedInput</span><span class="o">:</span><span class="w"> </span><span class="kt">Math.max</span><span class="p">(</span><span class="mf">0</span><span class="p">,</span><span class="w"> </span><span class="nx">u</span><span class="p">.</span><span class="nx">input_tokens</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nx">cached</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nx">writes</span><span class="p">),</span>
+<span class="w">    </span><span class="nx">cachedInput</span><span class="o">:</span><span class="w"> </span><span class="kt">cached</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">cacheWrite</span><span class="o">:</span><span class="w"> </span><span class="kt">writes</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">output</span><span class="o">:</span><span class="w"> </span><span class="kt">u.output_tokens</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">reasoning</span><span class="o">:</span><span class="w"> </span><span class="kt">u.output_tokens_details.reasoning_tokens</span><span class="p">,</span>
+<span class="w">  </span><span class="p">};</span>
+<span class="p">}</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">fromChatCompletions</span><span class="p">(</span><span class="nx">u</span><span class="o">:</span><span class="w"> </span><span class="kt">OpenAI.CompletionUsage</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="nx">NormalizedUsage</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">cached</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">u</span><span class="p">.</span><span class="nx">prompt_tokens_details</span><span class="o">?</span><span class="p">.</span><span class="nx">cached_tokens</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="mf">0</span><span class="p">;</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">uncachedInput</span><span class="o">:</span><span class="w"> </span><span class="kt">u.prompt_tokens</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nx">cached</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">cachedInput</span><span class="o">:</span><span class="w"> </span><span class="kt">cached</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">cacheWrite</span><span class="o">:</span><span class="w"> </span><span class="kt">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">output</span><span class="o">:</span><span class="w"> </span><span class="kt">u.completion_tokens</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">reasoning</span><span class="o">:</span><span class="w"> </span><span class="kt">u.completion_tokens_details?.reasoning_tokens</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="mf">0</span><span class="p">,</span>
+<span class="w">  </span><span class="p">};</span>
+<span class="p">}</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">fromAnthropic</span><span class="p">(</span><span class="nx">u</span><span class="o">:</span><span class="w"> </span><span class="kt">Anthropic.Messages.Usage</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="nx">NormalizedUsage</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">uncachedInput</span><span class="o">:</span><span class="w"> </span><span class="kt">u.input_tokens</span><span class="p">,</span><span class="w"> </span><span class="c1">// Anthropic reports cache reads and writes separately</span>
+<span class="w">    </span><span class="nx">cachedInput</span><span class="o">:</span><span class="w"> </span><span class="kt">u.cache_read_input_tokens</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="mf">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">cacheWrite</span><span class="o">:</span><span class="w"> </span><span class="kt">u.cache_creation_input_tokens</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="mf">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">output</span><span class="o">:</span><span class="w"> </span><span class="kt">u.output_tokens</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">reasoning</span><span class="o">:</span><span class="w"> </span><span class="kt">0</span><span class="p">,</span>
+<span class="w">  </span><span class="p">};</span>
+<span class="p">}</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">fromGemini</span><span class="p">(</span><span class="nx">u</span><span class="o">:</span><span class="w"> </span><span class="kt">GenerateContentResponseUsageMetadata</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="nx">NormalizedUsage</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">cached</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">u</span><span class="p">.</span><span class="nx">cachedContentTokenCount</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="mf">0</span><span class="p">;</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">thoughts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">u</span><span class="p">.</span><span class="nx">thoughtsTokenCount</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="mf">0</span><span class="p">;</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">uncachedInput</span><span class="o">:</span><span class="w"> </span><span class="p">(</span><span class="nx">u</span><span class="p">.</span><span class="nx">promptTokenCount</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="mf">0</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nx">cached</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">cachedInput</span><span class="o">:</span><span class="w"> </span><span class="kt">cached</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">cacheWrite</span><span class="o">:</span><span class="w"> </span><span class="kt">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">output</span><span class="o">:</span><span class="w"> </span><span class="p">(</span><span class="nx">u</span><span class="p">.</span><span class="nx">candidatesTokenCount</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="mf">0</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nx">thoughts</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">reasoning</span><span class="o">:</span><span class="w"> </span><span class="kt">thoughts</span><span class="p">,</span>
+<span class="w">  </span><span class="p">};</span>
+<span class="p">}</span>
+
+<span class="c1">// Prices per million tokens, loaded from configuration and kept in sync with</span>
+<span class="c1">// the provider's price list. Relative units work for comparisons.</span>
+<span class="k">export</span><span class="w"> </span><span class="kd">interface</span><span class="w"> </span><span class="nx">ModelPrice</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">input</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">cachedInput</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">cacheWrite</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">output</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">loadPrices</span><span class="p">(</span><span class="nx">json</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">MODEL_PRICES_JSON</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="s2">"{}"</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="nb">Map</span><span class="o">&lt;</span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="nx">ModelPrice</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Map</span><span class="p">(</span><span class="nb">Object</span><span class="p">.</span><span class="nx">entries</span><span class="p">(</span><span class="nb">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">json</span><span class="p">)</span><span class="w"> </span><span class="kr">as</span><span class="w"> </span><span class="nx">Record</span><span class="o">&lt;</span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="nx">ModelPrice</span><span class="o">&gt;</span><span class="p">));</span>
+<span class="p">}</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">costOf</span><span class="p">(</span><span class="nx">usage</span><span class="o">:</span><span class="w"> </span><span class="kt">NormalizedUsage</span><span class="p">,</span><span class="w"> </span><span class="nx">price</span><span class="o">:</span><span class="w"> </span><span class="kt">ModelPrice</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="p">(</span><span class="nx">usage</span><span class="p">.</span><span class="nx">uncachedInput</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nx">price</span><span class="p">.</span><span class="nx">input</span><span class="w"> </span><span class="o">+</span>
+<span class="w">      </span><span class="nx">usage</span><span class="p">.</span><span class="nx">cachedInput</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nx">price</span><span class="p">.</span><span class="nx">cachedInput</span><span class="w"> </span><span class="o">+</span>
+<span class="w">      </span><span class="nx">usage</span><span class="p">.</span><span class="nx">cacheWrite</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nx">price</span><span class="p">.</span><span class="nx">cacheWrite</span><span class="w"> </span><span class="o">+</span>
+<span class="w">      </span><span class="nx">usage</span><span class="p">.</span><span class="nx">output</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nx">price</span><span class="p">.</span><span class="nx">output</span><span class="p">)</span><span class="w"> </span><span class="o">/</span>
+<span class="w">    </span><span class="mf">1</span><span class="nx">_000_000</span>
+<span class="w">  </span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1">// scripts/usage-demo.ts</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">costOf</span><span class="p">,</span><span class="w"> </span><span class="nx">fromAnthropic</span><span class="p">,</span><span class="w"> </span><span class="nx">fromOpenAIResponses</span><span class="p">,</span><span class="w"> </span><span class="nx">loadPrices</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"../src/ai/usage.js"</span><span class="p">;</span>
+
+<span class="c1">// Relative prices per million tokens: input 1, cached 0.1, cache write 1.25, output 5</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">prices</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">loadPrices</span><span class="p">(</span>
+<span class="w">  </span><span class="nb">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">({</span><span class="w"> </span><span class="s2">"taskflow-large"</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">input</span><span class="o">:</span><span class="w"> </span><span class="kt">1</span><span class="p">,</span><span class="w"> </span><span class="nx">cachedInput</span><span class="o">:</span><span class="w"> </span><span class="kt">0.1</span><span class="p">,</span><span class="w"> </span><span class="nx">cacheWrite</span><span class="o">:</span><span class="w"> </span><span class="kt">1.25</span><span class="p">,</span><span class="w"> </span><span class="nx">output</span><span class="o">:</span><span class="w"> </span><span class="kt">5</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}),</span>
+<span class="p">);</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">price</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">prices</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">"taskflow-large"</span><span class="p">);</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">price</span><span class="p">)</span><span class="w"> </span><span class="k">throw</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="ne">Error</span><span class="p">(</span><span class="s2">"no price configured"</span><span class="p">);</span>
+
+<span class="c1">// Usage shaped like the provider responses for the same Assistant call</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">openai</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">fromOpenAIResponses</span><span class="p">({</span>
+<span class="w">  </span><span class="nx">input_tokens</span><span class="o">:</span><span class="w"> </span><span class="kt">2_000</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">input_tokens_details</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">cached_tokens</span><span class="o">:</span><span class="w"> </span><span class="kt">1_800</span><span class="p">,</span><span class="w"> </span><span class="nx">cache_write_tokens</span><span class="o">:</span><span class="w"> </span><span class="kt">0</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="nx">output_tokens</span><span class="o">:</span><span class="w"> </span><span class="kt">80</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">output_tokens_details</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">reasoning_tokens</span><span class="o">:</span><span class="w"> </span><span class="kt">0</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="nx">total_tokens</span><span class="o">:</span><span class="w"> </span><span class="kt">2_080</span><span class="p">,</span>
+<span class="p">});</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">anthropic</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">fromAnthropic</span><span class="p">({</span>
+<span class="w">  </span><span class="nx">input_tokens</span><span class="o">:</span><span class="w"> </span><span class="kt">200</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">cache_read_input_tokens</span><span class="o">:</span><span class="w"> </span><span class="kt">1_800</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">cache_creation_input_tokens</span><span class="o">:</span><span class="w"> </span><span class="kt">0</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">output_tokens</span><span class="o">:</span><span class="w"> </span><span class="kt">80</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">cache_creation</span><span class="o">:</span><span class="w"> </span><span class="kt">null</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">inference_geo</span><span class="o">:</span><span class="w"> </span><span class="kt">null</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">output_tokens_details</span><span class="o">:</span><span class="w"> </span><span class="kt">null</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">server_tool_use</span><span class="o">:</span><span class="w"> </span><span class="kt">null</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">service_tier</span><span class="o">:</span><span class="w"> </span><span class="s2">"standard"</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">speed</span><span class="o">:</span><span class="w"> </span><span class="kt">null</span><span class="p">,</span>
+<span class="p">});</span>
+
+<span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="p">[</span><span class="nx">name</span><span class="p">,</span><span class="w"> </span><span class="nx">usage</span><span class="p">]</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="nb">Object</span><span class="p">.</span><span class="nx">entries</span><span class="p">({</span><span class="w"> </span><span class="nx">openai</span><span class="p">,</span><span class="w"> </span><span class="nx">anthropic</span><span class="w"> </span><span class="p">}))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">units</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">costOf</span><span class="p">(</span><span class="nx">usage</span><span class="p">,</span><span class="w"> </span><span class="nx">price</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">1</span><span class="nx">_000_000</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`</span><span class="si">${</span><span class="nx">name</span><span class="p">.</span><span class="nx">padEnd</span><span class="p">(</span><span class="mf">9</span><span class="p">)</span><span class="si">}</span><span class="sb"> </span><span class="si">${</span><span class="nb">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">usage</span><span class="p">)</span><span class="si">}</span><span class="sb"> -&gt; </span><span class="si">${</span><span class="nx">units</span><span class="si">}</span><span class="sb"> units`</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code># Output from a local run
+openai    {"uncachedInput":200,"cachedInput":1800,"cacheWrite":0,"output":80,"reasoning":0} -&gt; 780 units
+anthropic {"uncachedInput":200,"cachedInput":1800,"cacheWrite":0,"output":80,"reasoning":0} -&gt; 780 units
+</code></pre></div>
+<p>The two providers report the same call differently (OpenAI's
+<code>input_tokens</code> includes the cached 1,800; Anthropic's excludes them), and
+the normalized records agree. The price table lives in configuration, keyed
+by the configured model alias, so no real prices or model IDs are
+hard-coded.</p>
+<h3 id="recording-cost-per-feature">Recording cost per feature<a class="headerlink" href="#recording-cost-per-feature" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/ai/cost-tracking.ts</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Counter</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"prom-client"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">costOf</span><span class="p">,</span><span class="w"> </span><span class="kr">type</span><span class="w"> </span><span class="nx">ModelPrice</span><span class="p">,</span><span class="w"> </span><span class="kr">type</span><span class="w"> </span><span class="nx">NormalizedUsage</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"./usage.js"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">tokens</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">Counter</span><span class="p">({</span>
+<span class="w">  </span><span class="nx">name</span><span class="o">:</span><span class="w"> </span><span class="s2">"taskflow_llm_tokens_total"</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">help</span><span class="o">:</span><span class="w"> </span><span class="s2">"Model tokens by feature, model, and token type"</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">labelNames</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"feature"</span><span class="p">,</span><span class="w"> </span><span class="s2">"model"</span><span class="p">,</span><span class="w"> </span><span class="s2">"type"</span><span class="p">]</span><span class="w"> </span><span class="kr">as</span><span class="w"> </span><span class="kd">const</span><span class="p">,</span>
+<span class="p">});</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">cost</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">Counter</span><span class="p">({</span>
+<span class="w">  </span><span class="nx">name</span><span class="o">:</span><span class="w"> </span><span class="s2">"taskflow_llm_cost_units_total"</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">help</span><span class="o">:</span><span class="w"> </span><span class="s2">"Model cost in price-table units by feature and model"</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">labelNames</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"feature"</span><span class="p">,</span><span class="w"> </span><span class="s2">"model"</span><span class="p">]</span><span class="w"> </span><span class="kr">as</span><span class="w"> </span><span class="kd">const</span><span class="p">,</span>
+<span class="p">});</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">interface</span><span class="w"> </span><span class="nx">LlmCallRecord</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">feature</span><span class="o">:</span><span class="w"> </span><span class="s2">"assistant"</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">"project-qa"</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">"agent"</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">"meeting-summary"</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">model</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">promptVersion</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">tenantHash</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span><span class="w"> </span><span class="c1">// hashed tenant id: logs and usage store only, never a metric label</span>
+<span class="w">  </span><span class="nx">usage</span><span class="o">:</span><span class="w"> </span><span class="kt">NormalizedUsage</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">completed</span><span class="o">:</span><span class="w"> </span><span class="kt">boolean</span><span class="p">;</span><span class="w"> </span><span class="c1">// did the user get the outcome (task created, answer shown)?</span>
+<span class="p">}</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">recordLlmCall</span><span class="p">(</span><span class="nx">record</span><span class="o">:</span><span class="w"> </span><span class="kt">LlmCallRecord</span><span class="p">,</span><span class="w"> </span><span class="nx">price</span><span class="o">:</span><span class="w"> </span><span class="kt">ModelPrice</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="kc">undefined</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="ow">void</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">feature</span><span class="p">,</span><span class="w"> </span><span class="nx">model</span><span class="p">,</span><span class="w"> </span><span class="nx">usage</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">record</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">tokens</span><span class="p">.</span><span class="nx">inc</span><span class="p">({</span><span class="w"> </span><span class="nx">feature</span><span class="p">,</span><span class="w"> </span><span class="nx">model</span><span class="p">,</span><span class="w"> </span><span class="kr">type</span><span class="o">:</span><span class="w"> </span><span class="s2">"input_uncached"</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="nx">usage</span><span class="p">.</span><span class="nx">uncachedInput</span><span class="p">);</span>
+<span class="w">  </span><span class="nx">tokens</span><span class="p">.</span><span class="nx">inc</span><span class="p">({</span><span class="w"> </span><span class="nx">feature</span><span class="p">,</span><span class="w"> </span><span class="nx">model</span><span class="p">,</span><span class="w"> </span><span class="kr">type</span><span class="o">:</span><span class="w"> </span><span class="s2">"input_cached"</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="nx">usage</span><span class="p">.</span><span class="nx">cachedInput</span><span class="p">);</span>
+<span class="w">  </span><span class="nx">tokens</span><span class="p">.</span><span class="nx">inc</span><span class="p">({</span><span class="w"> </span><span class="nx">feature</span><span class="p">,</span><span class="w"> </span><span class="nx">model</span><span class="p">,</span><span class="w"> </span><span class="kr">type</span><span class="o">:</span><span class="w"> </span><span class="s2">"cache_write"</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="nx">usage</span><span class="p">.</span><span class="nx">cacheWrite</span><span class="p">);</span>
+<span class="w">  </span><span class="nx">tokens</span><span class="p">.</span><span class="nx">inc</span><span class="p">({</span><span class="w"> </span><span class="nx">feature</span><span class="p">,</span><span class="w"> </span><span class="nx">model</span><span class="p">,</span><span class="w"> </span><span class="kr">type</span><span class="o">:</span><span class="w"> </span><span class="s2">"output"</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="nx">usage</span><span class="p">.</span><span class="nx">output</span><span class="p">);</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">units</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">price</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="nx">costOf</span><span class="p">(</span><span class="nx">usage</span><span class="p">,</span><span class="w"> </span><span class="nx">price</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mf">0</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">cost</span><span class="p">.</span><span class="nx">inc</span><span class="p">({</span><span class="w"> </span><span class="nx">feature</span><span class="p">,</span><span class="w"> </span><span class="nx">model</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="nx">units</span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// One structured line per call: ids and numbers, never prompt or answer text</span>
+<span class="w">  </span><span class="nx">console</span><span class="p">.</span><span class="nx">info</span><span class="p">(</span>
+<span class="w">    </span><span class="nb">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">({</span>
+<span class="w">      </span><span class="nx">event</span><span class="o">:</span><span class="w"> </span><span class="s2">"llm_usage"</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">feature</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">model</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">promptVersion</span><span class="o">:</span><span class="w"> </span><span class="kt">record.promptVersion</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">tenantHash</span><span class="o">:</span><span class="w"> </span><span class="kt">record.tenantHash</span><span class="p">,</span>
+<span class="w">      </span><span class="p">...</span><span class="nx">usage</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">costUnits</span><span class="o">:</span><span class="w"> </span><span class="kt">units</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">completed</span><span class="o">:</span><span class="w"> </span><span class="kt">record.completed</span><span class="p">,</span>
+<span class="w">    </span><span class="p">}),</span>
+<span class="w">  </span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code># PromQL: daily cost per feature, and cost per completed Assistant task
+sum by (feature) (increase(taskflow_llm_cost_units_total[1d]))
+
+sum(increase(taskflow_llm_cost_units_total{feature="assistant"}[1d]))
+  / sum(increase(taskflow_assistant_tasks_created_total[1d]))
+</code></pre></div>
+<p>The second query divides cost by outcomes (a counter the Assistant
+increments when a task is actually created), so retries and validation
+failures show up as a higher cost per task. Per-tenant totals come from the
+structured log lines or a daily usage collection in MongoDB, which also
+feeds quota checks before each call. Metrics and dashboards are covered in
+<a href="../../../08-devops-and-deployment/monitoring-and-logging/metrics-and-dashboards/">metrics and dashboards</a>.</p>
+<h3 id="a-cascade-for-task-creation">A cascade for task creation<a class="headerlink" href="#a-cascade-for-task-creation" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/ai/cascade.ts</span>
+<span class="k">export</span><span class="w"> </span><span class="kd">interface</span><span class="w"> </span><span class="nx">TaskDraft</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">title</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">dueDate</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">confidence</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">;</span><span class="w"> </span><span class="c1">// the model's own 0-1 estimate, requested in the schema</span>
+<span class="p">}</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kr">type</span><span class="w"> </span><span class="nx">Complete</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nx">model</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="nx">prompt</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nb">Promise</span><span class="o">&lt;</span><span class="kt">string</span><span class="o">&gt;</span><span class="p">;</span>
+
+<span class="kd">function</span><span class="w"> </span><span class="nx">parseDraft</span><span class="p">(</span><span class="nx">text</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="nx">TaskDraft</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">text</span><span class="p">)</span><span class="w"> </span><span class="kr">as</span><span class="w"> </span><span class="nx">Partial</span><span class="o">&lt;</span><span class="nx">TaskDraft</span><span class="o">&gt;</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="ow">typeof</span><span class="w"> </span><span class="nx">value</span><span class="p">.</span><span class="nx">title</span><span class="w"> </span><span class="o">!==</span><span class="w"> </span><span class="s2">"string"</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nx">value</span><span class="p">.</span><span class="nx">title</span><span class="p">.</span><span class="nx">trim</span><span class="p">()</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">""</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">value</span><span class="p">.</span><span class="nx">dueDate</span><span class="w"> </span><span class="o">!==</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="ow">typeof</span><span class="w"> </span><span class="nx">value</span><span class="p">.</span><span class="nx">dueDate</span><span class="w"> </span><span class="o">!==</span><span class="w"> </span><span class="s2">"string"</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="ow">typeof</span><span class="w"> </span><span class="nx">value</span><span class="p">.</span><span class="nx">confidence</span><span class="w"> </span><span class="o">!==</span><span class="w"> </span><span class="s2">"number"</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">title</span><span class="o">:</span><span class="w"> </span><span class="kt">value.title</span><span class="p">,</span><span class="w"> </span><span class="nx">dueDate</span><span class="o">:</span><span class="w"> </span><span class="kt">value.dueDate</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w"> </span><span class="nx">confidence</span><span class="o">:</span><span class="w"> </span><span class="kt">value.confidence</span><span class="w"> </span><span class="p">};</span>
+<span class="w">  </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// Try the small model; escalate when its output is invalid or unsure.</span>
+<span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">draftTask</span><span class="p">(</span>
+<span class="w">  </span><span class="nx">sentence</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">complete</span><span class="o">:</span><span class="w"> </span><span class="kt">Complete</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">models</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">small</span><span class="o">:</span><span class="w"> </span><span class="kt">process.env.SMALL_MODEL</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span><span class="w"> </span><span class="nx">large</span><span class="o">:</span><span class="w"> </span><span class="kt">process.env.CHAT_MODEL</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="s2">""</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="nx">minConfidence</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.7</span><span class="p">,</span>
+<span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="nb">Promise</span><span class="o">&lt;</span><span class="p">{</span><span class="w"> </span><span class="nx">draft</span><span class="o">:</span><span class="w"> </span><span class="kt">TaskDraft</span><span class="p">;</span><span class="w"> </span><span class="nx">escalated</span><span class="o">:</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="p">}</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">prompt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sb">`Extract a task as JSON {title, dueDate (ISO date or null), confidence}: </span><span class="si">${</span><span class="nx">sentence</span><span class="si">}</span><span class="sb">`</span><span class="p">;</span>
+
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">small</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">parseDraft</span><span class="p">(</span><span class="k">await</span><span class="w"> </span><span class="nx">complete</span><span class="p">(</span><span class="nx">models</span><span class="p">.</span><span class="nx">small</span><span class="p">,</span><span class="w"> </span><span class="nx">prompt</span><span class="p">));</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">small</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nx">small</span><span class="p">.</span><span class="nx">confidence</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="nx">minConfidence</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">draft</span><span class="o">:</span><span class="w"> </span><span class="kt">small</span><span class="p">,</span><span class="w"> </span><span class="nx">escalated</span><span class="o">:</span><span class="w"> </span><span class="kt">false</span><span class="w"> </span><span class="p">};</span>
+
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">large</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">parseDraft</span><span class="p">(</span><span class="k">await</span><span class="w"> </span><span class="nx">complete</span><span class="p">(</span><span class="nx">models</span><span class="p">.</span><span class="nx">large</span><span class="p">,</span><span class="w"> </span><span class="nx">prompt</span><span class="p">));</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">large</span><span class="p">)</span><span class="w"> </span><span class="k">throw</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="ne">Error</span><span class="p">(</span><span class="s2">"both models returned invalid task drafts"</span><span class="p">);</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">draft</span><span class="o">:</span><span class="w"> </span><span class="kt">large</span><span class="p">,</span><span class="w"> </span><span class="nx">escalated</span><span class="o">:</span><span class="w"> </span><span class="kt">true</span><span class="w"> </span><span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1">// scripts/cascade-demo.ts</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">draftTask</span><span class="p">,</span><span class="w"> </span><span class="kr">type</span><span class="w"> </span><span class="nx">Complete</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"../src/ai/cascade.js"</span><span class="p">;</span>
+
+<span class="c1">// A fake client: the small model is unsure about relative dates</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">fake</span><span class="o">:</span><span class="w"> </span><span class="kt">Complete</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="nx">model</span><span class="p">,</span><span class="w"> </span><span class="nx">prompt</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span>
+<span class="w">  </span><span class="nx">model</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">"small"</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="sr">/next/</span><span class="p">.</span><span class="nx">test</span><span class="p">(</span><span class="nx">prompt</span><span class="p">)</span>
+<span class="w">    </span><span class="o">?</span><span class="w"> </span><span class="nb">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">({</span><span class="w"> </span><span class="nx">title</span><span class="o">:</span><span class="w"> </span><span class="s2">"Plan launch"</span><span class="p">,</span><span class="w"> </span><span class="nx">dueDate</span><span class="o">:</span><span class="w"> </span><span class="kt">null</span><span class="p">,</span><span class="w"> </span><span class="nx">confidence</span><span class="o">:</span><span class="w"> </span><span class="kt">0.4</span><span class="w"> </span><span class="p">})</span>
+<span class="w">    </span><span class="o">:</span><span class="w"> </span><span class="nb">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">({</span><span class="w"> </span><span class="nx">title</span><span class="o">:</span><span class="w"> </span><span class="s2">"Plan launch"</span><span class="p">,</span><span class="w"> </span><span class="nx">dueDate</span><span class="o">:</span><span class="w"> </span><span class="s2">"2026-11-20"</span><span class="p">,</span><span class="w"> </span><span class="nx">confidence</span><span class="o">:</span><span class="w"> </span><span class="kt">0.9</span><span class="w"> </span><span class="p">});</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">models</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">small</span><span class="o">:</span><span class="w"> </span><span class="s2">"small"</span><span class="p">,</span><span class="w"> </span><span class="nx">large</span><span class="o">:</span><span class="w"> </span><span class="s2">"large"</span><span class="w"> </span><span class="p">};</span>
+<span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="nx">sentence</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="p">[</span><span class="s2">"Plan the launch by 2026-11-20"</span><span class="p">,</span><span class="w"> </span><span class="s2">"Plan the launch next Friday"</span><span class="p">])</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">draft</span><span class="p">,</span><span class="w"> </span><span class="nx">escalated</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">draftTask</span><span class="p">(</span><span class="nx">sentence</span><span class="p">,</span><span class="w"> </span><span class="nx">fake</span><span class="p">,</span><span class="w"> </span><span class="nx">models</span><span class="p">);</span>
+<span class="w">  </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`</span><span class="si">${</span><span class="nx">escalated</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="s2">"large"</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="s2">"small"</span><span class="si">}</span><span class="sb">: </span><span class="si">${</span><span class="nb">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">draft</span><span class="p">)</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code># Output from a local run
+small: {"title":"Plan launch","dueDate":"2026-11-20","confidence":0.9}
+large: {"title":"Plan launch","dueDate":"2026-11-20","confidence":0.9}
+</code></pre></div>
+<p>The injected <code>complete</code> function keeps the router testable; in production
+it wraps the provider SDK with structured output (see
+<a href="../../prompting-and-structured-output/structured-output-and-validation/">structured output and validation</a>).
+Self-reported confidence is a weak signal, so calibrate the threshold on an
+evaluation set and track the escalation rate per feature.</p>
+<h3 id="moving-nightly-summaries-to-the-batch-api">Moving nightly summaries to the Batch API<a class="headerlink" href="#moving-nightly-summaries-to-the-batch-api" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// scripts/submit-summary-batch.ts</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">createReadStream</span><span class="p">,</span><span class="w"> </span><span class="nx">writeFileSync</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:fs"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">CHAT_MODEL</span><span class="p">,</span><span class="w"> </span><span class="nx">llm</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"../src/ai/llm-client.js"</span><span class="p">;</span>
+
+<span class="kd">interface</span><span class="w"> </span><span class="nx">PendingNote</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">meetingId</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">notes</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">submitSummaryBatch</span><span class="p">(</span><span class="nx">pending</span><span class="o">:</span><span class="w"> </span><span class="kt">PendingNote</span><span class="p">[])</span><span class="o">:</span><span class="w"> </span><span class="nb">Promise</span><span class="o">&lt;</span><span class="kt">string</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">lines</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">pending</span><span class="p">.</span><span class="nx">map</span><span class="p">((</span><span class="nx">note</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span>
+<span class="w">    </span><span class="nb">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">({</span>
+<span class="w">      </span><span class="nx">custom_id</span><span class="o">:</span><span class="w"> </span><span class="sb">`meeting-</span><span class="si">${</span><span class="nx">note</span><span class="p">.</span><span class="nx">meetingId</span><span class="si">}</span><span class="sb">`</span><span class="p">,</span><span class="w"> </span><span class="c1">// maps each result back to its meeting</span>
+<span class="w">      </span><span class="nx">method</span><span class="o">:</span><span class="w"> </span><span class="s2">"POST"</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">url</span><span class="o">:</span><span class="w"> </span><span class="s2">"/v1/responses"</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">body</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nx">model</span><span class="o">:</span><span class="w"> </span><span class="kt">CHAT_MODEL</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">instructions</span><span class="o">:</span><span class="w"> </span><span class="s2">"Summarize meeting notes in at most five bullets, then list action items."</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">input</span><span class="o">:</span><span class="w"> </span><span class="kt">note.notes</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">max_output_tokens</span><span class="o">:</span><span class="w"> </span><span class="kt">400</span><span class="p">,</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">    </span><span class="p">}),</span>
+<span class="w">  </span><span class="p">);</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"/tmp/summary-batch.jsonl"</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">writeFileSync</span><span class="p">(</span><span class="nx">path</span><span class="p">,</span><span class="w"> </span><span class="nx">lines</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s2">"\n"</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s2">"\n"</span><span class="p">);</span>
+
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">llm</span><span class="p">.</span><span class="nx">files</span><span class="p">.</span><span class="nx">create</span><span class="p">({</span><span class="w"> </span><span class="nx">file</span><span class="o">:</span><span class="w"> </span><span class="kt">createReadStream</span><span class="p">(</span><span class="nx">path</span><span class="p">),</span><span class="w"> </span><span class="nx">purpose</span><span class="o">:</span><span class="w"> </span><span class="s2">"batch"</span><span class="w"> </span><span class="p">});</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">batch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">llm</span><span class="p">.</span><span class="nx">batches</span><span class="p">.</span><span class="nx">create</span><span class="p">({</span>
+<span class="w">    </span><span class="nx">input_file_id</span><span class="o">:</span><span class="w"> </span><span class="kt">file.id</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">endpoint</span><span class="o">:</span><span class="w"> </span><span class="s2">"/v1/responses"</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">completion_window</span><span class="o">:</span><span class="w"> </span><span class="s2">"24h"</span><span class="p">,</span>
+<span class="w">  </span><span class="p">});</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">batch</span><span class="p">.</span><span class="nx">id</span><span class="p">;</span><span class="w"> </span><span class="c1">// store it; a scheduled job polls llm.batches.retrieve(id) and saves results</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Each line is an ordinary request body, so the same prompt and limits apply
+at half the price. The scheduled poller downloads the output file when the
+batch completes, matches results by <code>custom_id</code>, and retries only the lines
+that failed. Anthropic's Message Batches and Google's Batch API follow the
+same shape with their own request formats.</p>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Record normalized usage for every model call, labeled by feature and
+  model, with outcomes next to costs.</li>
+<li>Report cost per completed task per feature, not only total spend.</li>
+<li>Start optimization with the feature that dominates spend; it is often
+  retrieval context, not the model.</li>
+<li>Put stable prompt content first and track cache hit ratios.</li>
+<li>Send asynchronous work through batch APIs or flex tiers.</li>
+<li>Route by feature first; add a cascade where evaluation shows a small
+  model handles most cases.</li>
+<li>Cap outputs, retrieved context, conversation history, and agent steps.</li>
+<li>Keep price tables in configuration and update them when prices change.</li>
+<li>Enforce per-tenant budgets before the call and degrade gracefully.</li>
+<li>Self-host only when sustained utilization beats hosted per-token prices.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>The bill doubled while traffic was flat.</strong>
+  <em>Detect:</em> input tokens per request rose after a release; cost by feature
+  points at one feature. <em>Cause:</em> a prompt template or retrieval change
+  added context to every call, or a cached prefix stopped matching. <em>Fix:</em>
+  per-feature token dashboards with release annotations, a prompt-size
+  check in CI, and cache hit ratio alerts.</li>
+<li><strong>One tenant consumed a large share of monthly spend.</strong>
+  <em>Detect:</em> per-tenant usage store shows one tenant far above its plan.
+  <em>Cause:</em> an automated integration looping on the agent endpoint. <em>Fix:</em>
+  per-tenant token quotas checked before each call, rate limits, and step
+  caps on agents.</li>
+<li><strong>Reasoning model costs exceed estimates by a wide margin.</strong>
+  <em>Detect:</em> output tokens per call far above visible answer length;
+  <code>reasoning_tokens</code> large. <em>Cause:</em> hidden reasoning billed as output, at a
+  high default effort. <em>Fix:</em> lower reasoning effort for simple features,
+  route them to non-reasoning models, and include reasoning tokens in
+  dashboards.</li>
+<li><strong>The cascade saved nothing.</strong>
+  <em>Detect:</em> escalation rate above 70%; latency up. <em>Cause:</em> the small model
+  is not good enough for this feature, or the confidence threshold is too
+  strict. <em>Fix:</em> evaluate per feature, route that feature directly to the
+  large model, or distill a better small model.</li>
+<li><strong>A response cache returned another customer's data.</strong>
+  <em>Detect:</em> support report of foreign task names in an answer. <em>Cause:</em> the
+  cache key omitted the tenant and permission scope. <em>Fix:</em> include tenant,
+  permission scope, model, prompt version, and data version in the key;
+  purge the cache; add a test that two tenants never share entries.</li>
+<li><strong>The batch job silently left meetings without summaries.</strong>
+  <em>Detect:</em> summaries missing for some meetings; batch status shows partial
+  failures or expiry. <em>Cause:</em> failed lines were never retried, or the
+  batch expired after 24 hours. <em>Fix:</em> reconcile by <code>custom_id</code>, retry
+  failed lines, and alert when a batch expires.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Input, cached input, and output tokens:</strong> The token classes providers
+  bill at different rates.</li>
+<li><strong>Reasoning tokens:</strong> Hidden tokens a reasoning model generates before
+  answering; billed as output.</li>
+<li><strong>Cost per completed task:</strong> Spend divided by successful user outcomes,
+  including retries and failures.</li>
+<li><strong>Prompt caching:</strong> Provider-side reuse of a repeated prompt prefix at a
+  discounted input price.</li>
+<li><strong>Response cache:</strong> Your own store of full answers for identical requests.</li>
+<li><strong>Semantic cache:</strong> Reusing answers for similar, not identical, requests.</li>
+<li><strong>Batch API:</strong> Asynchronous, discounted processing of many requests.</li>
+<li><strong>Cascade:</strong> Trying a cheap model first and escalating on failure.</li>
+<li><strong>Router:</strong> Logic or a model that picks which model handles a request.</li>
+<li><strong>Distillation:</strong> Training a small model to imitate a large model on a
+  task.</li>
+<li><strong>Utilization:</strong> The share of a GPU's capacity actually used; drives
+  self-hosted cost per token.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Tracking total spend but not spend per feature and per completed task.</li>
+<li>Assuming input tokens dominate; output and reasoning tokens often do.</li>
+<li>Comparing providers' "input tokens" without normalizing cache accounting.</li>
+<li>Putting tenant ids in metric labels.</li>
+<li>Caching full responses without tenant and permission scope in the key.</li>
+<li>Running offline jobs at interactive prices.</li>
+<li>Building a learned router before trying per-feature routing.</li>
+<li>Believing self-hosting is cheaper regardless of utilization.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Write the cost of a request in terms of token classes and prices. Which
+   class does each provider's usage object report, and how do they differ?</li>
+<li>A feature sends 3,000 input tokens (2,500 cached) and receives 200
+   output tokens. In units of input 1, cached 0.1, output 5, what does one
+   call cost, and what without caching? (500 + 250 + 1,000 = 1,750; 3,000 +
+   1,000 = 4,000.)</li>
+<li>Why should you estimate tokens before a call and record usage after it?</li>
+<li>Compare provider prompt caching, an exact response cache, and a semantic
+   cache.</li>
+<li>A cascade escalates 40% of requests from a small model (1 unit) to a
+   large one (10 units). What is the expected cost per request, and when
+   does a cascade stop paying off? (1 + 0.4 x 10 = 5 units; when escalation
+   approaches 90%, the cascade costs as much as always using the large
+   model.)</li>
+<li>Which TaskFlow work belongs in a batch API, and what does it trade away?</li>
+<li>Why must tenant ids stay out of Prometheus labels, and where should
+   per-tenant usage go instead?</li>
+<li>A GPU sustains 3.6 million tokens per hour at full load. How does its
+   cost per token change between 60% and 15% utilization? (It becomes 4
+   times higher.)</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://developers.openai.com/api/docs/guides/cost-optimization">OpenAI: Cost optimization</a></li>
+<li><a href="https://developers.openai.com/api/docs/guides/batch">OpenAI: Batch API</a></li>
+<li><a href="https://developers.openai.com/api/docs/guides/flex-processing">OpenAI: Flex processing</a></li>
+<li><a href="https://platform.claude.com/docs/en/build-with-claude/batch-processing">Anthropic: Batch processing</a></li>
+<li><a href="https://aistudio.google.com/docs/batch-api">Gemini API: Batch API</a></li>
+<li><a href="https://github.com/open-telemetry/semantic-conventions-genai">OpenTelemetry GenAI semantic conventions</a></li>
+<li><a href="https://github.com/niieani/gpt-tokenizer">gpt-tokenizer</a></li>
+<li><a href="../../hosted-model-apis/prompt-caching-and-batch-processing/">Prompt caching and batch processing</a>
+  and <a href="../../hosted-model-apis/choosing-models-and-providers/">choosing models and providers</a></li>
+<li>Next: <a href="../gpu-capacity-and-scaling/">GPU capacity and scaling</a>. Back to the <a href="../">deployment cost and performance overview</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../latency-optimization/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Latency Optimization">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Latency Optimization</span>
+      </a>
+    
+    
+      <a href="../gpu-capacity-and-scaling/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: GPU Capacity and Scaling">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">GPU Capacity and Scaling</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

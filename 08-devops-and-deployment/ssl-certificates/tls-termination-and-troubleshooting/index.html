@@ -1,0 +1,4591 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../obtaining-and-renewing-certificates/">
+      
+      
+        <link rel="next" href="../cheat-sheet/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>TLS Termination and Troubleshooting - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#tls-termination-and-troubleshooting" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              TLS Termination and Troubleshooting
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../05-application-architecture/" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../06-ai-and-machine-learning/" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+          <span class="md-ellipsis">&larr; Back to DevOps</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../05-application-architecture/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../06-ai-and-machine-learning/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI and Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
+        
+          
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-label="DevOps module lessons" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+                  <span class="md-ellipsis">&larr; Back to DevOps</span>
+                </a>
+              
+            </div>
+          
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                  
+  
+  
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+    
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_18" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_18" id="__nav_9_18_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SSL Certificates
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_18_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_18">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    SSL Certificates
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_18_2" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_18_2" id="__nav_9_18_2_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Foundations
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_18_2_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_18_2">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Foundations
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tls-and-certificate-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TLS and Certificate Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_18_3" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_18_3" id="__nav_9_18_3_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operations
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_18_3_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_18_3">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Operations
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../obtaining-and-renewing-certificates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Obtaining and Renewing Certificates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TLS Termination and Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TLS Termination and Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#where-to-terminate-tls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where to terminate TLS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#re-encryption-to-backends" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Re-encryption to backends
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-the-application-needs-to-know-after-termination" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What the application needs to know after termination
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-modern-nginx-tls-configuration-explained" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A modern nginx TLS configuration, explained
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mutual-tls-for-service-to-service-traffic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mutual TLS for service-to-service traffic
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-troubleshooting-method" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A troubleshooting method
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common-errors-and-what-they-mean" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common errors and what they mean
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nginx-https-for-taskflow-api-with-redirect-and-hsts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        nginx: HTTPS for TaskFlow API with redirect and HSTS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#express-behind-the-proxy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Express behind the proxy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#re-encrypting-to-a-backend-and-verifying-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Re-encrypting to a backend and verifying it
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#requiring-client-certificates-mtls-at-nginx" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Requiring client certificates (mTLS) at nginx
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mutual-tls-and-certificate-reload-in-nodejs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mutual TLS and certificate reload in Node.js
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-troubleshooting-session" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A troubleshooting session
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#where-to-terminate-tls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where to terminate TLS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#re-encryption-to-backends" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Re-encryption to backends
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-the-application-needs-to-know-after-termination" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What the application needs to know after termination
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-modern-nginx-tls-configuration-explained" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A modern nginx TLS configuration, explained
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mutual-tls-for-service-to-service-traffic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mutual TLS for service-to-service traffic
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-troubleshooting-method" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A troubleshooting method
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common-errors-and-what-they-mean" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common errors and what they mean
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nginx-https-for-taskflow-api-with-redirect-and-hsts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        nginx: HTTPS for TaskFlow API with redirect and HSTS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#express-behind-the-proxy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Express behind the proxy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#re-encrypting-to-a-backend-and-verifying-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Re-encrypting to a backend and verifying it
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#requiring-client-certificates-mtls-at-nginx" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Requiring client certificates (mTLS) at nginx
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mutual-tls-and-certificate-reload-in-nodejs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mutual TLS and certificate reload in Node.js
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-troubleshooting-session" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A troubleshooting session
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="tls-termination-and-troubleshooting">TLS Termination and Troubleshooting<a class="headerlink" href="#tls-termination-and-troubleshooting" title="Permanent link">&para;</a></h1>
+<p><strong>TLS termination</strong> is the point where an encrypted connection is
+decrypted. Where you put it (CDN, load balancer, reverse proxy, or the
+application itself) decides who holds private keys, where plaintext
+exists, and what can inspect or route traffic. This lesson compares the
+options, covers re-encryption to backends and mutual TLS for
+service-to-service traffic, walks through a modern nginx TLS server block
+with an HTTP redirect and HSTS, and then gives a systematic way to debug
+TLS failures with <code>openssl s_client</code>, <code>curl -v</code>, and online scanners,
+including the error messages for incomplete chains, hostname mismatches,
+expired and self-signed certificates, clock skew, and missing SNI.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>TaskFlow API runs behind something: a cloud load balancer, an ingress
+controller, nginx, or a CDN. Each hop may terminate TLS, re-encrypt, or
+pass it through, and each choice changes your security posture and your
+failure modes. A load balancer that terminates TLS and forwards plain HTTP
+across a shared network leaves tokens readable inside your environment. A
+backend connection that is "encrypted" but never verifies the backend's
+certificate can be intercepted. A proxy that strips the original scheme
+makes the app generate <code>http://</code> links and insecure cookies.</p>
+<p>When something does break, TLS errors are cryptic ("handshake failure",
+"unable to verify the first certificate") and often client-specific. A
+repeatable troubleshooting method turns a two-hour mystery into a
+five-minute diagnosis.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Mozilla.</strong> The
+  <a href="https://ssl-config.mozilla.org/">Mozilla SSL Configuration Generator</a>
+  and the <a href="https://wiki.mozilla.org/Security/Server_Side_TLS">Server Side TLS</a>
+  guidelines publish "modern", "intermediate", and "old" configurations for
+  nginx, Apache, HAProxy, and others, the starting point most teams use
+  for protocol and cipher settings.</li>
+<li><strong>Cloudflare.</strong> The documentation on
+  <a href="https://developers.cloudflare.com/ssl/origin-configuration/ssl-modes/">SSL/TLS encryption modes</a>
+  shows the termination choices in practice: "Flexible" (HTTPS to the edge,
+  plain HTTP to the origin), "Full" (HTTPS to the origin without
+  validating its certificate), and "Full (strict)" (HTTPS to the origin
+  with certificate validation), recommending strict modes.</li>
+<li><strong>nginx.</strong> The guide
+  <a href="https://nginx.org/en/docs/http/configuring_https_servers.html">Configuring HTTPS servers</a>
+  explains certificate chains (the leaf must come before the
+  intermediates in the file), SNI-based virtual hosting, and session
+  caching.</li>
+<li><strong>Qualys SSL Labs.</strong> The <a href="https://www.ssllabs.com/ssltest/">SSL Server Test</a>
+  grades public endpoints on protocol support, key exchange, cipher
+  strength, chain completeness, and HSTS, and is a standard check before
+  and after TLS changes.</li>
+</ul>
+<p><strong>Popular tools and providers:</strong> nginx, HAProxy, Envoy, Caddy, Traefik,
+AWS Application and Network Load Balancers, Google Cloud Load Balancing,
+Azure Application Gateway, Cloudflare, Istio and Linkerd for mutual TLS,
+OpenSSL, curl, testssl.sh, and SSL Labs.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="where-to-terminate-tls">Where to terminate TLS<a class="headerlink" href="#where-to-terminate-tls" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: three options. A: terminate at the load balancer with plain HTTP inside: the client uses TLS 1.3 to a load balancer holding the certificate and key, which forwards plain HTTP to TaskFlow API pods on port 3000. Pro: simplest, certificates in one managed place, and the load balancer can inspect HTTP for routing and a WAF. Con: traffic between the load balancer and pods is plaintext. B: terminate and re-encrypt: the load balancer holds the public certificate and opens verified TLS to pods with internal certificates on port 8443. Pro: encrypted inside your network while still routing on HTTP. Con: two certificate systems, and backend verification is often forgotten. C: TCP passthrough: an L4 load balancer routes by SNI without keys, and the pods hold the public certificate and terminate TLS. Pro: the load balancer never sees keys or plaintext. Con: no HTTP-aware routing, WAF, or header injection, and certificates on every pod." src="../tls-termination-options.svg" /></p>
+<table>
+<thead>
+<tr>
+<th>Termination point</th>
+<th>Holds the private key</th>
+<th>Typical use</th>
+<th>Watch out for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>CDN or edge</strong> (Cloudflare, CloudFront)</td>
+<td>The CDN</td>
+<td>Static sites, global APIs, DDoS protection</td>
+<td>The edge-to-origin leg needs its own TLS with validation</td>
+</tr>
+<tr>
+<td><strong>Cloud load balancer</strong> (ALB, Google HTTPS LB)</td>
+<td>The provider (managed certificates)</td>
+<td>Most cloud deployments</td>
+<td>Traffic to targets is plain HTTP unless you re-encrypt</td>
+</tr>
+<tr>
+<td><strong>Reverse proxy or ingress</strong> (nginx, Envoy, ingress controllers)</td>
+<td>Your proxy</td>
+<td>VMs, Kubernetes, self-managed</td>
+<td>Certificate renewal and reload are your job</td>
+</tr>
+<tr>
+<td><strong>Application</strong> (Node.js <code>https.createServer</code>)</td>
+<td>Every app instance</td>
+<td>Small services, end-to-end requirements, mTLS between services</td>
+<td>Key distribution to every instance; TLS work in the app process</td>
+</tr>
+<tr>
+<td><strong>Passthrough</strong> (L4 load balancer, SNI routing)</td>
+<td>The application</td>
+<td>Strict end-to-end encryption, client certificates checked by the app</td>
+<td>No HTTP-level routing, caching, or WAF at the load balancer</td>
+</tr>
+</tbody>
+</table>
+<p>For TaskFlow, the common setup is TLS at the cloud load balancer or
+ingress with a managed or cert-manager certificate, plus re-encryption or
+a service mesh inside the cluster if the network is shared or compliance
+requires encryption in transit everywhere.</p>
+<h3 id="re-encryption-to-backends">Re-encryption to backends<a class="headerlink" href="#re-encryption-to-backends" title="Permanent link">&para;</a></h3>
+<p>Re-encrypting means the load balancer or proxy opens a <strong>new</strong> TLS
+connection to the backend. Two rules make it meaningful:</p>
+<ol>
+<li><strong>Verify the backend certificate</strong> against a CA you trust (usually an
+   internal CA) and check the name. Encryption without verification
+   protects against passive eavesdropping only; an active attacker inside
+   the network can present any certificate. Some managed load balancers do
+   not validate target certificates at all, and Cloudflare's "Full" mode
+   (as opposed to "Full (strict)") does not either, so check what your
+   provider does.</li>
+<li><strong>Reuse connections.</strong> A full handshake per request adds latency and
+   CPU; keep-alive connection pools to backends make re-encryption cheap.</li>
+</ol>
+<h3 id="what-the-application-needs-to-know-after-termination">What the application needs to know after termination<a class="headerlink" href="#what-the-application-needs-to-know-after-termination" title="Permanent link">&para;</a></h3>
+<p>When TLS ends before the app, the app sees plain HTTP from the proxy and
+must learn the original details from headers the proxy sets:</p>
+<ul>
+<li><code>X-Forwarded-Proto: https</code> (or the standard <code>Forwarded</code> header): the
+  original scheme, used for redirects, absolute URLs, and <code>Secure</code>
+  cookies.</li>
+<li><code>X-Forwarded-For</code>: the client IP chain.</li>
+<li>In Express, <code>app.set("trust proxy", 1)</code> (or the proxy's address) makes
+  <code>req.secure</code>, <code>req.protocol</code>, and <code>req.ip</code> use these headers. Only trust
+  them from your own proxy: a client can send fake ones directly. See
+  <a href="../../../03-backend-development/express/production-and-performance/">production and performance</a>
+  in the Express section.</li>
+</ul>
+<h3 id="a-modern-nginx-tls-configuration-explained">A modern nginx TLS configuration, explained<a class="headerlink" href="#a-modern-nginx-tls-configuration-explained" title="Permanent link">&para;</a></h3>
+<p>The practical example below configures TaskFlow API behind nginx. The key
+directives:</p>
+<table>
+<thead>
+<tr>
+<th>Directive</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>listen 443 ssl;</code> and <code>http2 on;</code></td>
+<td>TLS on port 443 and HTTP/2 (the separate <code>http2</code> directive replaced the <code>listen ... http2</code> parameter in nginx 1.25.1)</td>
+</tr>
+<tr>
+<td><code>ssl_certificate</code></td>
+<td><strong><code>fullchain.pem</code></strong>: leaf first, then intermediates</td>
+</tr>
+<tr>
+<td><code>ssl_certificate_key</code></td>
+<td>The private key, readable only by root</td>
+</tr>
+<tr>
+<td><code>ssl_protocols TLSv1.2 TLSv1.3;</code></td>
+<td>Disable SSL and TLS 1.0/1.1</td>
+</tr>
+<tr>
+<td><code>ssl_ecdh_curve</code></td>
+<td>Key exchange groups in preference order</td>
+</tr>
+<tr>
+<td><code>ssl_ciphers</code></td>
+<td>TLS 1.2 cipher suites (ECDHE with AES-GCM or ChaCha20); TLS 1.3 suites are configured separately and are safe by default</td>
+</tr>
+<tr>
+<td><code>ssl_prefer_server_ciphers off;</code></td>
+<td>With only strong ciphers offered, let clients pick (mobile devices prefer ChaCha20)</td>
+</tr>
+<tr>
+<td><code>ssl_session_cache</code> / <code>ssl_session_timeout</code></td>
+<td>Resume sessions to skip full handshakes</td>
+</tr>
+<tr>
+<td><code>ssl_session_tickets off;</code></td>
+<td>Avoid long-lived ticket keys that weaken forward secrecy unless you rotate them</td>
+</tr>
+<tr>
+<td><code>add_header Strict-Transport-Security ... always;</code></td>
+<td>HSTS on every response, including errors</td>
+</tr>
+<tr>
+<td>Port 80 server with <code>return 301 https://...</code></td>
+<td>Redirect HTTP to HTTPS, except the ACME challenge path</td>
+</tr>
+</tbody>
+</table>
+<p>A classic nginx pitfall: <code>add_header</code> directives are inherited by a
+<code>location</code> block only if that block defines no <code>add_header</code> of its own.
+Adding a header in one location silently drops HSTS there; repeat it or use
+an include file.</p>
+<p>OCSP stapling (<code>ssl_stapling on</code>) only helps if your CA runs OCSP; Let's
+Encrypt certificates no longer include OCSP URLs, so stapling does nothing
+for them.</p>
+<h3 id="mutual-tls-for-service-to-service-traffic">Mutual TLS for service-to-service traffic<a class="headerlink" href="#mutual-tls-for-service-to-service-traffic" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: a TaskFlow worker acting as the client connects to the internal reports service. 1: ClientHello. 2: ServerHello and an encrypted CertificateRequest listing accepted CAs. 3: the server's Certificate, CertificateVerify, and Finished; the worker verifies the server as usual. 4: the worker's Certificate with SAN URI spiffe://example.com/ns/taskflow/sa/worker. 5: CertificateVerify signed with the client private key. 6: Finished. The server verifies the client chain against the internal CA and maps the SAN to &quot;worker&quot;. 7: application data with both identities proven." src="../mtls-handshake.svg" /></p>
+<p>In ordinary TLS only the server is authenticated. In <strong>mutual TLS (mTLS)</strong>
+the server also sends a CertificateRequest, and the client must present a
+certificate and prove it holds the key. The server verifies the client
+certificate against a CA it trusts (normally a private CA) and uses an
+identity from it, such as a SAN URI, to authorize the request.</p>
+<p>Where it fits:</p>
+<ul>
+<li><strong>Service-to-service</strong> calls inside TaskFlow (API to reports service,
+  worker to API): strong workload identity without shared API keys.
+  Service meshes such as Istio and Linkerd issue short-lived workload
+  certificates (often with SPIFFE IDs like
+  <code>spiffe://example.com/ns/taskflow/sa/worker</code>) and do mTLS transparently
+  in sidecars or node proxies.</li>
+<li><strong>Partner and B2B APIs</strong>, IoT devices, and admin endpoints, where each
+  caller gets a client certificate.</li>
+</ul>
+<p>Costs: you run a private CA, distribute and rotate client certificates
+(short lifetimes, automated), and need a way to revoke or block a
+compromised identity quickly. Browsers support client certificates, but
+the user experience is poor, so mTLS is mostly for machines.</p>
+<h3 id="a-troubleshooting-method">A troubleshooting method<a class="headerlink" href="#a-troubleshooting-method" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: start with a TLS error and run openssl s_client. Does the handshake complete? If no: a connection or protocol problem; check port, firewall, TLS version, ciphers, and SNI. If yes: is the verify return code 0 (ok)? If no: read the verify error number: 10 expired means renew and reload; 20 or 21 missing intermediate means serve the full chain; 18 or 19 self-signed means use a trusted or private CA; 9 not yet valid means fix the server or client clock. If yes: is the hostname in the SAN list? If no: a name mismatch; reissue with the name or fix SNI routing. If yes: does it fail for one client only? If yes: a client-side cause such as an old trust store, an intercepting proxy, or a pinned certificate. If no: the certificate and chain look right; scan with SSL Labs or testssl.sh." src="../tls-troubleshooting-flowchart.svg" /></p>
+<p>Work from the bottom of the stack up:</p>
+<ol>
+<li><strong>Can you connect and complete a handshake?</strong> If not, the issue is
+   below certificates: DNS, port, firewall, a protocol or cipher mismatch,
+   or a server that needs SNI.</li>
+<li><strong>Does the chain verify?</strong> <code>openssl s_client</code> prints a verify return
+   code; <code>0 (ok)</code> means the chain built to a trusted root.</li>
+<li><strong>Does the name match?</strong> The hostname must be in the SAN list.</li>
+<li><strong>Is it one client?</strong> Then look at that client: its trust store, its
+   clock, a corporate proxy re-signing traffic, or certificate pinning in a
+   mobile app.</li>
+</ol>
+<p>Always pass <code>-servername</code> to <code>openssl s_client</code>. Without SNI, a server
+hosting several names returns its default certificate, and you debug the
+wrong one.</p>
+<h3 id="common-errors-and-what-they-mean">Common errors and what they mean<a class="headerlink" href="#common-errors-and-what-they-mean" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Problem</th>
+<th>OpenSSL</th>
+<th>Node.js</th>
+<th>curl / browser</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Incomplete chain</td>
+<td><code>verify error:num=20:unable to get local issuer certificate</code>, <code>num=21:unable to verify the first certificate</code></td>
+<td><code>UNABLE_TO_VERIFY_LEAF_SIGNATURE</code></td>
+<td>curl <code>(60) SSL certificate problem: unable to get local issuer certificate</code>; browsers may work</td>
+<td>Serve <code>fullchain.pem</code></td>
+</tr>
+<tr>
+<td>Hostname mismatch</td>
+<td>Fails with <code>-verify_hostname</code></td>
+<td><code>ERR_TLS_CERT_ALTNAME_INVALID</code></td>
+<td>curl <code>no alternative certificate subject name matches target host name</code>; Chrome <code>NET::ERR_CERT_COMMON_NAME_INVALID</code></td>
+<td>Add the name to the SAN list; check SNI routing</td>
+</tr>
+<tr>
+<td>Expired</td>
+<td><code>num=10:certificate has expired</code></td>
+<td><code>CERT_HAS_EXPIRED</code></td>
+<td>Chrome <code>NET::ERR_CERT_DATE_INVALID</code></td>
+<td>Renew, reload, and fix the automation</td>
+</tr>
+<tr>
+<td>Not yet valid</td>
+<td><code>num=9:certificate is not yet valid</code></td>
+<td><code>CERT_NOT_YET_VALID</code></td>
+<td><code>NET::ERR_CERT_DATE_INVALID</code></td>
+<td>Fix the clock (NTP) on the client or server</td>
+</tr>
+<tr>
+<td>Self-signed or unknown CA</td>
+<td><code>num=18:self-signed certificate</code>, <code>num=19:self-signed certificate in certificate chain</code></td>
+<td><code>DEPTH_ZERO_SELF_SIGNED_CERT</code>, <code>SELF_SIGNED_CERT_IN_CHAIN</code></td>
+<td><code>NET::ERR_CERT_AUTHORITY_INVALID</code></td>
+<td>Use a publicly trusted CA, or add the private root to the client's trust store</td>
+</tr>
+<tr>
+<td>Protocol or cipher mismatch</td>
+<td><code>alert handshake failure</code> or <code>protocol version</code> alerts, <code>no protocols available</code></td>
+<td><code>ERR_SSL_...</code> errors such as unsupported protocol</td>
+<td><code>ERR_SSL_VERSION_OR_CIPHER_MISMATCH</code></td>
+<td>Align TLS versions and cipher suites; upgrade old clients</td>
+</tr>
+<tr>
+<td>SNI missing</td>
+<td>Default certificate returned, then a name mismatch</td>
+<td>Rare (Node sends SNI for hostnames)</td>
+<td>Old clients, scripts connecting by IP</td>
+<td>Send SNI (<code>-servername</code>), or give the default server the right certificate</td>
+</tr>
+<tr>
+<td>Key does not match certificate</td>
+<td>Server fails to start (<code>key values mismatch</code>)</td>
+<td><code>ERR_OSSL_...</code> key errors</td>
+<td>Site down</td>
+<td>Compare public key hashes; reinstall the matching pair</td>
+</tr>
+</tbody>
+</table>
+<p><code>curl -k</code>, <code>rejectUnauthorized: false</code>, and
+<code>NODE_TLS_REJECT_UNAUTHORIZED=0</code> hide every one of these errors by turning
+off verification. They are diagnostic switches for a lab, never fixes.</p>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Requirement</th>
+<th>Recommended termination</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Standard public web app or API on a cloud provider</td>
+<td>Cloud load balancer or ingress with managed or ACME certificates</td>
+</tr>
+<tr>
+<td>Compliance requires encryption in transit inside the network</td>
+<td>Terminate at the edge and re-encrypt with verification, or use a service mesh</td>
+</tr>
+<tr>
+<td>Load balancer must never see plaintext</td>
+<td>TCP passthrough with SNI routing; TLS in the app</td>
+</tr>
+<tr>
+<td>Service-to-service authentication without shared secrets</td>
+<td>Mutual TLS from a private CA or service mesh</td>
+</tr>
+<tr>
+<td>Global static content</td>
+<td>CDN termination with a strict, validated origin connection</td>
+</tr>
+<tr>
+<td>Local development</td>
+<td>Plain HTTP on localhost, or <code>mkcert</code> certificates when features need HTTPS</td>
+</tr>
+</tbody>
+</table>
+<p>Avoid terminating TLS in every Node.js process when a proxy or load
+balancer can do it: key distribution and renewal multiply with each
+instance. Avoid "Flexible"-style setups (HTTPS to the edge, HTTP over the
+internet to the origin) for anything with logins or personal data.</p>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="nginx-https-for-taskflow-api-with-redirect-and-hsts">nginx: HTTPS for TaskFlow API with redirect and HSTS<a class="headerlink" href="#nginx-https-for-taskflow-api-with-redirect-and-hsts" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># /etc/nginx/conf.d/api.example.com.conf</span>
+<span class="c1"># Port 80: ACME challenges and a redirect to HTTPS for everything else</span>
+<span class="k">server</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kn">listen</span><span class="w"> </span><span class="mi">80</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">listen</span><span class="w"> </span><span class="s">[::]:80</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">server_name</span><span class="w"> </span><span class="s">api.example.com</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kn">location</span><span class="w"> </span><span class="s">^~</span><span class="w"> </span><span class="s">/.well-known/acme-challenge/</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kn">root</span><span class="w"> </span><span class="s">/var/www/acme</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kn">location</span><span class="w"> </span><span class="s">/</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kn">return</span><span class="w"> </span><span class="mi">301</span><span class="w"> </span><span class="s">https://</span><span class="nv">$host$request_uri</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1"># Port 443: TLS termination in front of the Node.js app on 127.0.0.1:3000</span>
+<span class="k">server</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kn">listen</span><span class="w"> </span><span class="mi">443</span><span class="w"> </span><span class="s">ssl</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">listen</span><span class="w"> </span><span class="s">[::]:443</span><span class="w"> </span><span class="s">ssl</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">http2</span><span class="w"> </span><span class="no">on</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">server_name</span><span class="w"> </span><span class="s">api.example.com</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kn">ssl_certificate</span><span class="w">     </span><span class="s">/etc/letsencrypt/live/api.example.com/fullchain.pem</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">ssl_certificate_key</span><span class="w"> </span><span class="s">/etc/letsencrypt/live/api.example.com/privkey.pem</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1"># Based on Mozilla's "intermediate" profile; regenerate from ssl-config.mozilla.org</span>
+<span class="w">    </span><span class="kn">ssl_protocols</span><span class="w"> </span><span class="s">TLSv1.2</span><span class="w"> </span><span class="s">TLSv1.3</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">ssl_ecdh_curve</span><span class="w"> </span><span class="s">X25519:prime256v1:secp384r1</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">ssl_ciphers</span><span class="w"> </span><span class="s">ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">ssl_prefer_server_ciphers</span><span class="w"> </span><span class="no">off</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kn">ssl_session_timeout</span><span class="w"> </span><span class="s">1d</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">ssl_session_cache</span><span class="w"> </span><span class="s">shared:TLS:10m</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">ssl_session_tickets</span><span class="w"> </span><span class="no">off</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1"># Start with a small max-age when first rolling out HSTS, then raise it.</span>
+<span class="w">    </span><span class="kn">add_header</span><span class="w"> </span><span class="s">Strict-Transport-Security</span><span class="w"> </span><span class="s">"max-age=63072000</span><span class="p">;</span><span class="w"> </span><span class="kn">includeSubDomains"</span><span class="w"> </span><span class="s">always</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kn">location</span><span class="w"> </span><span class="s">/</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kn">proxy_pass</span><span class="w"> </span><span class="s">http://127.0.0.1:3000</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">proxy_http_version</span><span class="w"> </span><span class="mi">1</span><span class="s">.1</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">Host</span><span class="w"> </span><span class="nv">$host</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Forwarded-For</span><span class="w"> </span><span class="nv">$proxy_add_x_forwarded_for</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Forwarded-Proto</span><span class="w"> </span><span class="nv">$scheme</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Request-Id</span><span class="w"> </span><span class="nv">$request_id</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>nginx<span class="w"> </span>-t<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>sudo<span class="w"> </span>systemctl<span class="w"> </span>reload<span class="w"> </span>nginx
+</code></pre></div>
+<p><code>nginx -t</code> validates the configuration (including that the key matches
+the certificate) before the reload, so a mistake does not take the site
+down. With a recent OpenSSL (3.5 or later) you can also list the hybrid
+post-quantum group <code>X25519MLKEM768</code> first in <code>ssl_ecdh_curve</code>; check your
+nginx and OpenSSL versions before doing so.</p>
+<h3 id="express-behind-the-proxy">Express behind the proxy<a class="headerlink" href="#express-behind-the-proxy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/app.js</span>
+<span class="k">import</span><span class="w"> </span><span class="nx">express</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"express"</span><span class="p">;</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">app</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">express</span><span class="p">();</span>
+
+<span class="c1">// Trust exactly one proxy hop (nginx on the same host or the load balancer).</span>
+<span class="nx">app</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s2">"trust proxy"</span><span class="p">,</span><span class="w"> </span><span class="mf">1</span><span class="p">);</span>
+
+<span class="nx">app</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">"/whoami"</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nx">req</span><span class="p">,</span><span class="w"> </span><span class="nx">res</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="c1">// With trust proxy: req.protocol === "https" and req.secure === true behind nginx</span>
+<span class="w">  </span><span class="nx">res</span><span class="p">.</span><span class="nx">json</span><span class="p">({</span><span class="w"> </span><span class="nx">protocol</span><span class="o">:</span><span class="w"> </span><span class="nx">req</span><span class="p">.</span><span class="nx">protocol</span><span class="p">,</span><span class="w"> </span><span class="nx">secure</span><span class="o">:</span><span class="w"> </span><span class="nx">req</span><span class="p">.</span><span class="nx">secure</span><span class="p">,</span><span class="w"> </span><span class="nx">ip</span><span class="o">:</span><span class="w"> </span><span class="nx">req</span><span class="p">.</span><span class="nx">ip</span><span class="w"> </span><span class="p">});</span>
+<span class="p">});</span>
+</code></pre></div>
+<p>Without <code>trust proxy</code>, <code>req.secure</code> is false behind a TLS-terminating
+proxy, and libraries that set <code>Secure</code> cookies or build absolute URLs
+behave as if the site were plain HTTP.</p>
+<h3 id="re-encrypting-to-a-backend-and-verifying-it">Re-encrypting to a backend and verifying it<a class="headerlink" href="#re-encrypting-to-a-backend-and-verifying-it" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># /etc/nginx/conf.d/reports-upstream.conf (fragment inside a server block)</span>
+<span class="k">location</span><span class="w"> </span><span class="s">/reports/</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kn">proxy_pass</span><span class="w"> </span><span class="s">https://reports.internal.example.com:8443</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kn">proxy_ssl_verify</span><span class="w">              </span><span class="no">on</span><span class="p">;</span><span class="w">    </span><span class="c1"># off by default: without it, any certificate is accepted</span>
+<span class="w">    </span><span class="kn">proxy_ssl_verify_depth</span><span class="w">        </span><span class="mi">2</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">proxy_ssl_trusted_certificate</span><span class="w"> </span><span class="s">/etc/nginx/tls/internal-ca.pem</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">proxy_ssl_server_name</span><span class="w">         </span><span class="no">on</span><span class="p">;</span><span class="w">    </span><span class="c1"># send SNI to the backend</span>
+<span class="w">    </span><span class="kn">proxy_ssl_name</span><span class="w">                </span><span class="s">reports.internal.example.com</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">proxy_ssl_protocols</span><span class="w">           </span><span class="s">TLSv1.3</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1"># Optional: present a client certificate to the backend (mutual TLS)</span>
+<span class="w">    </span><span class="kn">proxy_ssl_certificate</span><span class="w">         </span><span class="s">/etc/nginx/tls/gateway-client.crt</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">proxy_ssl_certificate_key</span><span class="w">     </span><span class="s">/etc/nginx/tls/gateway-client.key</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><code>proxy_ssl_verify</code> defaults to <code>off</code> in nginx, which is exactly the
+"encrypted but not authenticated" trap described above.</p>
+<h3 id="requiring-client-certificates-mtls-at-nginx">Requiring client certificates (mTLS) at nginx<a class="headerlink" href="#requiring-client-certificates-mtls-at-nginx" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># /etc/nginx/conf.d/partners.example.com.conf</span>
+<span class="k">server</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kn">listen</span><span class="w"> </span><span class="mi">443</span><span class="w"> </span><span class="s">ssl</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">http2</span><span class="w"> </span><span class="no">on</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">server_name</span><span class="w"> </span><span class="s">partners.example.com</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kn">ssl_certificate</span><span class="w">     </span><span class="s">/etc/letsencrypt/live/partners.example.com/fullchain.pem</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">ssl_certificate_key</span><span class="w"> </span><span class="s">/etc/letsencrypt/live/partners.example.com/privkey.pem</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kn">ssl_client_certificate</span><span class="w"> </span><span class="s">/etc/nginx/tls/partner-ca.pem</span><span class="p">;</span><span class="w">  </span><span class="c1"># CA that issues partner client certs</span>
+<span class="w">    </span><span class="kn">ssl_verify_client</span><span class="w">      </span><span class="no">on</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">ssl_verify_depth</span><span class="w">       </span><span class="mi">2</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kn">location</span><span class="w"> </span><span class="s">/</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1"># Overwrite (never pass through) identity headers for the app.</span>
+<span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Client-Subject</span><span class="w"> </span><span class="nv">$ssl_client_s_dn</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Client-Verify</span><span class="w">  </span><span class="nv">$ssl_client_verify</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">proxy_pass</span><span class="w"> </span><span class="s">http://127.0.0.1:3000</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>The app trusts <code>X-Client-Subject</code> only because nginx always overwrites it
+and the app is reachable only through nginx.</p>
+<h3 id="mutual-tls-and-certificate-reload-in-nodejs">Mutual TLS and certificate reload in Node.js<a class="headerlink" href="#mutual-tls-and-certificate-reload-in-nodejs" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/reports-server.js: an internal service that requires client certificates</span>
+<span class="k">import</span><span class="w"> </span><span class="nx">https</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:https"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">readFileSync</span><span class="p">,</span><span class="w"> </span><span class="nx">watch</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:fs"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="nx">express</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"express"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"/etc/taskflow/tls"</span><span class="p">;</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">load</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">({</span>
+<span class="w">  </span><span class="nx">key</span><span class="o">:</span><span class="w"> </span><span class="nx">readFileSync</span><span class="p">(</span><span class="sb">`</span><span class="si">${</span><span class="nx">dir</span><span class="si">}</span><span class="sb">/tls.key`</span><span class="p">),</span>
+<span class="w">  </span><span class="nx">cert</span><span class="o">:</span><span class="w"> </span><span class="nx">readFileSync</span><span class="p">(</span><span class="sb">`</span><span class="si">${</span><span class="nx">dir</span><span class="si">}</span><span class="sb">/tls.crt`</span><span class="p">),</span>
+<span class="p">});</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">app</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">express</span><span class="p">();</span>
+<span class="nx">app</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">"/reports/:id"</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nx">req</span><span class="p">,</span><span class="w"> </span><span class="nx">res</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">peer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">req</span><span class="p">.</span><span class="nx">socket</span><span class="p">.</span><span class="nx">getPeerCertificate</span><span class="p">();</span>
+<span class="w">  </span><span class="c1">// subjectaltname looks like "URI:spiffe://example.com/ns/taskflow/sa/worker"</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">req</span><span class="p">.</span><span class="nx">socket</span><span class="p">.</span><span class="nx">authorized</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="nx">peer</span><span class="p">.</span><span class="nx">subjectaltname</span><span class="o">?</span><span class="p">.</span><span class="nx">includes</span><span class="p">(</span><span class="s2">"/sa/worker"</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nx">res</span><span class="p">.</span><span class="nx">status</span><span class="p">(</span><span class="mf">403</span><span class="p">).</span><span class="nx">json</span><span class="p">({</span><span class="w"> </span><span class="nx">error</span><span class="o">:</span><span class="w"> </span><span class="s2">"forbidden"</span><span class="w"> </span><span class="p">});</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="nx">res</span><span class="p">.</span><span class="nx">json</span><span class="p">({</span><span class="w"> </span><span class="nx">id</span><span class="o">:</span><span class="w"> </span><span class="nx">req</span><span class="p">.</span><span class="nx">params</span><span class="p">.</span><span class="nx">id</span><span class="w"> </span><span class="p">});</span>
+<span class="p">});</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">server</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">https</span><span class="p">.</span><span class="nx">createServer</span><span class="p">(</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="p">...</span><span class="nx">load</span><span class="p">(),</span>
+<span class="w">    </span><span class="nx">ca</span><span class="o">:</span><span class="w"> </span><span class="nx">readFileSync</span><span class="p">(</span><span class="sb">`</span><span class="si">${</span><span class="nx">dir</span><span class="si">}</span><span class="sb">/internal-ca.pem`</span><span class="p">),</span><span class="w"> </span><span class="c1">// trusted issuer of client certificates</span>
+<span class="w">    </span><span class="nx">requestCert</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">rejectUnauthorized</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">minVersion</span><span class="o">:</span><span class="w"> </span><span class="s2">"TLSv1.2"</span><span class="p">,</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nx">app</span>
+<span class="p">);</span>
+
+<span class="c1">// Pick up renewed certificates (for example from cert-manager) without a restart.</span>
+<span class="nx">watch</span><span class="p">(</span><span class="nx">dir</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">server</span><span class="p">.</span><span class="nx">setSecureContext</span><span class="p">({</span><span class="w"> </span><span class="p">...</span><span class="nx">load</span><span class="p">(),</span><span class="w"> </span><span class="nx">ca</span><span class="o">:</span><span class="w"> </span><span class="nx">readFileSync</span><span class="p">(</span><span class="sb">`</span><span class="si">${</span><span class="nx">dir</span><span class="si">}</span><span class="sb">/internal-ca.pem`</span><span class="p">)</span><span class="w"> </span><span class="p">});</span>
+<span class="w">  </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// keep serving the previous certificate if files are mid-update</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">});</span>
+
+<span class="nx">server</span><span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="mf">8443</span><span class="p">);</span>
+</code></pre></div>
+<p><code>setSecureContext</code> replaces the key and certificate for new connections,
+which matters when certificates live for days.</p>
+<h3 id="a-troubleshooting-session">A troubleshooting session<a class="headerlink" href="#a-troubleshooting-session" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># 1. Handshake, chain, and certificate details (always send SNI with -servername)</span>
+openssl<span class="w"> </span>s_client<span class="w"> </span>-connect<span class="w"> </span>api.example.com:443<span class="w"> </span>-servername<span class="w"> </span>api.example.com<span class="w"> </span>-showcerts<span class="w"> </span>&lt;/dev/null
+
+<span class="c1"># 2. Fail on verification errors and check the hostname explicitly</span>
+openssl<span class="w"> </span>s_client<span class="w"> </span>-connect<span class="w"> </span>api.example.com:443<span class="w"> </span>-servername<span class="w"> </span>api.example.com<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-verify_return_error<span class="w"> </span>-verify_hostname<span class="w"> </span>api.example.com<span class="w"> </span>-brief<span class="w"> </span>&lt;/dev/null
+
+<span class="c1"># 3. Protocol and ALPN checks</span>
+openssl<span class="w"> </span>s_client<span class="w"> </span>-connect<span class="w"> </span>api.example.com:443<span class="w"> </span>-servername<span class="w"> </span>api.example.com<span class="w"> </span>-tls1_2<span class="w"> </span>&lt;/dev/null
+openssl<span class="w"> </span>s_client<span class="w"> </span>-connect<span class="w"> </span>api.example.com:443<span class="w"> </span>-servername<span class="w"> </span>api.example.com<span class="w"> </span>-alpn<span class="w"> </span>h2<span class="w"> </span>&lt;/dev/null<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-i<span class="w"> </span>alpn
+
+<span class="c1"># 4. Dates on the served leaf certificate</span>
+openssl<span class="w"> </span>s_client<span class="w"> </span>-connect<span class="w"> </span>api.example.com:443<span class="w"> </span>-servername<span class="w"> </span>api.example.com<span class="w"> </span>&lt;/dev/null<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="p">|</span><span class="w"> </span>openssl<span class="w"> </span>x509<span class="w"> </span>-noout<span class="w"> </span>-dates<span class="w"> </span>-subject<span class="w"> </span>-ext<span class="w"> </span>subjectAltName
+
+<span class="c1"># 5. The client's view, step by step</span>
+curl<span class="w"> </span>-v<span class="w"> </span>https://api.example.com/healthz
+
+<span class="c1"># 6. Test one backend behind DNS or a load balancer without changing DNS</span>
+curl<span class="w"> </span>-v<span class="w"> </span>--resolve<span class="w"> </span>api.example.com:443:203.0.113.10<span class="w"> </span>https://api.example.com/healthz
+
+<span class="c1"># 7. Trust a private CA for this request only</span>
+curl<span class="w"> </span>--cacert<span class="w"> </span>/etc/taskflow/tls/internal-ca.pem<span class="w"> </span>https://reports.internal.example.com:8443/healthz
+
+<span class="c1"># 8. Clock check on the machine that reports "not yet valid"</span>
+date<span class="w"> </span>-u<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>timedatectl<span class="w"> </span>status
+</code></pre></div>
+<p>A healthy <code>-showcerts</code> result (OpenSSL 3) looks like this:</p>
+<div class="highlight"><pre><span></span><code>Certificate chain
+ 0 s:CN=api.example.com
+   i:C=US, O=Example Trust Services, CN=Example TLS CA R1
+   v:NotBefore: Oct 31 09:12:44 2026 GMT; NotAfter: Jan 29 09:12:43 2027 GMT
+ 1 s:C=US, O=Example Trust Services, CN=Example TLS CA R1
+   i:C=US, O=Example Trust Services, CN=Example Root X1
+---
+New, TLSv1.3, Cipher is TLS_AES_256_GCM_SHA384
+Verify return code: 0 (ok)
+</code></pre></div>
+<p>An incomplete chain shows only certificate <code>0</code> and ends with:</p>
+<div class="highlight"><pre><span></span><code>verify error:num=20:unable to get local issuer certificate
+verify error:num=21:unable to verify the first certificate
+Verify return code: 21 (unable to verify the first certificate)
+</code></pre></div>
+<p>For a full configuration audit of a public endpoint, run the SSL Labs
+Server Test, or for internal endpoints <code>testssl.sh</code>:</p>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-t<span class="w"> </span>ghcr.io/testssl/testssl.sh<span class="w"> </span>https://api.example.com
+</code></pre></div>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Terminate TLS as few times as practical, at a layer with automated
+  certificates; re-encrypt or use mTLS inside when the network is shared
+  or compliance requires it.</li>
+<li>Always verify backend certificates when re-encrypting
+  (<code>proxy_ssl_verify on</code>, strict modes at CDNs).</li>
+<li>Serve <code>fullchain.pem</code>, TLS 1.2 and 1.3 only, ECDHE with AEAD ciphers.</li>
+<li>Redirect HTTP to HTTPS (keeping the ACME path), and send HSTS with
+  <code>always</code>.</li>
+<li>Set <code>X-Forwarded-Proto</code> at the proxy and configure the app to trust
+  exactly that proxy.</li>
+<li>Use mTLS with short-lived certificates for service identity; prefer a
+  mesh or automated issuer to hand-made client certificates.</li>
+<li>Debug with <code>openssl s_client -servername</code> and <code>curl -v</code> before changing
+  anything; never "fix" errors by disabling verification.</li>
+<li>Re-run SSL Labs or testssl.sh after every TLS configuration change.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>API clients fail while browsers work.</strong>
+  <em>Detect:</em> <code>openssl s_client -showcerts</code> lists only one certificate;
+  Node.js clients report <code>UNABLE_TO_VERIFY_LEAF_SIGNATURE</code>. <em>Cause:</em> the
+  server is configured with <code>cert.pem</code> instead of <code>fullchain.pem</code>.
+  <em>Fix:</em> point <code>ssl_certificate</code> at the full chain, reload, and add a
+  synthetic check from a non-browser client.</li>
+<li><strong>Infinite redirect loop after moving TLS to the load balancer.</strong>
+  <em>Detect:</em> the browser reports too many redirects; logs show the app
+  redirecting every request to HTTPS. <em>Cause:</em> the app receives plain HTTP
+  from the load balancer and does not trust <code>X-Forwarded-Proto</code>, so it
+  thinks every request is insecure. <em>Fix:</em> set <code>trust proxy</code> (or the
+  framework equivalent) for the load balancer, or redirect only at the
+  load balancer.</li>
+<li><strong>A multi-tenant host serves the wrong certificate to some clients.</strong>
+  <em>Detect:</em> <code>openssl s_client</code> without <code>-servername</code> returns a different
+  certificate than with it; old clients or IP-based health checks report
+  name mismatches. <em>Cause:</em> the client does not send SNI and gets the
+  default server's certificate. <em>Fix:</em> make the default server's
+  certificate correct for health checks, and upgrade or reconfigure
+  clients to send SNI.</li>
+<li><strong>HSTS is missing on some responses.</strong>
+  <em>Detect:</em> <code>curl -sI</code> on different paths shows the header only on some.
+  <em>Cause:</em> a <code>location</code> block with its own <code>add_header</code> does not inherit
+  the server-level HSTS header, or the header lacks <code>always</code> and is
+  missing on error responses. <em>Fix:</em> use <code>always</code> and repeat or include
+  security headers in locations that add headers.</li>
+<li><strong>Internal traffic is "encrypted" but an attacker could intercept it.</strong>
+  <em>Detect:</em> a review finds <code>proxy_ssl_verify off</code> (the default), CDN mode
+  "Full" rather than "Full (strict)", or clients with
+  <code>rejectUnauthorized: false</code>. <em>Cause:</em> re-encryption configured without
+  verification. <em>Fix:</em> issue backend certificates from an internal CA and
+  enable verification end to end.</li>
+<li><strong>Only one service's mTLS calls fail after a CA rotation.</strong>
+  <em>Detect:</em> <code>certificate verify failed</code> or <code>bad certificate</code> alerts from
+  one client; its certificate was issued by the new intermediate.
+  <em>Cause:</em> the server's trusted CA bundle was not updated with the new
+  intermediate or root. <em>Fix:</em> distribute new trust anchors before issuing
+  from a new CA, keep old and new in the bundle during the overlap, and
+  rotate in stages.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>TLS termination:</strong> Decrypting TLS at a proxy, load balancer, or app.</li>
+<li><strong>Re-encryption (TLS bridging):</strong> Terminating TLS and opening a new TLS
+  connection to the backend.</li>
+<li><strong>Passthrough:</strong> Forwarding encrypted traffic without terminating it,
+  usually routed by SNI.</li>
+<li><strong>Mutual TLS (mTLS):</strong> TLS where the client also presents a certificate.</li>
+<li><strong>SPIFFE ID:</strong> A URI-form workload identity (<code>spiffe://...</code>) often
+  carried in mTLS certificates.</li>
+<li><strong>X-Forwarded-Proto:</strong> A header carrying the original scheme to the app.</li>
+<li><strong>SNI:</strong> The hostname the client requests in ClientHello, used to pick a
+  certificate.</li>
+<li><strong>Verify return code:</strong> OpenSSL's result of chain verification (<code>0</code> is
+  OK).</li>
+<li><strong>Full chain:</strong> Leaf plus intermediate certificates, as served.</li>
+<li><strong>SSL Labs / testssl.sh:</strong> Tools that audit a TLS endpoint's
+  configuration.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Assuming traffic inside a VPC or cluster cannot be read.</li>
+<li>Re-encrypting to backends without verifying their certificates.</li>
+<li>Using the leaf-only certificate file in the server configuration.</li>
+<li>Debugging with <code>openssl s_client</code> but forgetting <code>-servername</code>.</li>
+<li>Disabling verification "temporarily" and shipping it.</li>
+<li>Not telling the app that TLS was terminated upstream, causing redirect
+  loops and insecure cookies.</li>
+<li>Losing HSTS on some paths because of <code>add_header</code> inheritance.</li>
+<li>Rotating a CA without first distributing the new trust anchor.</li>
+<li>Treating mTLS as authorization; it proves identity, and the app or mesh
+  policy must still decide what that identity may do.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Compare terminating TLS at the load balancer, re-encrypting, and
+   passthrough. What does each mean for who can read plaintext?</li>
+<li>Why is re-encryption without certificate verification weak, and which
+   nginx directive enables verification?</li>
+<li>What must an Express app configure when TLS terminates at a proxy, and
+   what breaks if it does not?</li>
+<li>Explain each directive in the nginx TLS server block and why session
+   tickets are often disabled.</li>
+<li>How does mutual TLS work, and how does the server decide who the
+   client is?</li>
+<li>A Node.js client reports <code>UNABLE_TO_VERIFY_LEAF_SIGNATURE</code> while Chrome
+   works. What do you run, what do you expect to see, and what is the fix?</li>
+<li>With a 60 ms round trip time, how long does it take before the first
+   HTTP request can be sent on a new HTTPS connection with TLS 1.3, and with
+   TLS 1.2? (TCP needs 1 RTT; TLS 1.3 adds 1 RTT, so about 120 ms; TLS 1.2
+   adds 2 RTTs, so about 180 ms. Session resumption and keep-alive avoid
+   most of this.)</li>
+<li>A certificate error appears only on one VM: "certificate is not yet
+   valid". What is the likely cause and fix?</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://nginx.org/en/docs/http/ngx_http_ssl_module.html">nginx: ngx_http_ssl_module</a></li>
+<li><a href="https://nginx.org/en/docs/http/ngx_http_proxy_module.html">nginx: ngx_http_proxy_module (proxy_ssl_* directives)</a></li>
+<li><a href="https://expressjs.com/en/guide/behind-proxies.html">Express: Behind proxies</a></li>
+<li><a href="https://nodejs.org/api/tls.html">Node.js: TLS</a></li>
+<li><a href="https://github.com/testssl/testssl.sh">testssl.sh</a></li>
+<li><a href="https://spiffe.io/docs/latest/spiffe-about/overview/">SPIFFE overview</a></li>
+<li><a href="../../../07-servers-and-infrastructure/nginx/">nginx</a> and
+  <a href="../../../07-servers-and-infrastructure/reverse-proxy/">reverse proxy</a> in
+  the Servers and Infrastructure section</li>
+<li>Next: <a href="../interview-questions-and-answers/">SSL certificates interview questions and answers</a>.
+  Back to the <a href="../">SSL certificates overview</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../obtaining-and-renewing-certificates/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Obtaining and Renewing Certificates">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Obtaining and Renewing Certificates</span>
+      </a>
+    
+    
+      <a href="../cheat-sheet/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: Cheat Sheet">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">Cheat Sheet</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

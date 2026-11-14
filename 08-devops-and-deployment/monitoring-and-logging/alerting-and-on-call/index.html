@@ -1,0 +1,4807 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../slis-slos-and-error-budgets/">
+      
+      
+        <link rel="next" href="../error-tracking-and-uptime-monitoring/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Alerting and On-Call - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#alerting-and-on-call" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Alerting and On-Call
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../05-application-architecture/" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../06-ai-and-machine-learning/" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+          <span class="md-ellipsis">&larr; Back to DevOps</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../05-application-architecture/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../06-ai-and-machine-learning/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI and Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
+        
+          
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-label="DevOps module lessons" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+                  <span class="md-ellipsis">&larr; Back to DevOps</span>
+                </a>
+              
+            </div>
+          
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                  
+  
+  
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+    
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_16" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_16" id="__nav_9_16_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monitoring and Logging
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_16_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_16">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Monitoring and Logging
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_16_2" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_16_2" id="__nav_9_16_2_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Foundations
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_16_2_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_16_2">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Foundations
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../observability-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Observability Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_16_3" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_16_3" id="__nav_9_16_3_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The Signals
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_16_3_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_16_3">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    The Signals
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../structured-logging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Structured Logging
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../metrics-and-dashboards/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metrics and Dashboards
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../distributed-tracing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Distributed Tracing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_16_4" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_16_4" id="__nav_9_16_4_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reliability Practice
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_16_4_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_16_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Reliability Practice
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../slis-slos-and-error-budgets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SLIs, SLOs, and Error Budgets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Alerting and On-Call
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Alerting and On-Call
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#alert-on-symptoms-not-causes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alert on symptoms, not causes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pages-tickets-and-dashboards" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pages, tickets, and dashboards
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#severity-levels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Severity levels
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actionable-alerts-and-alert-fatigue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Actionable alerts and alert fatigue
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-alerting-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The alerting pipeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#runbook-links-in-every-alert" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runbook links in every alert
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#on-call-rotations-and-handoffs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        On-call rotations and handoffs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#escalation-policies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Escalation policies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#follow-the-sun" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Follow-the-sun
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#on-call-health-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        On-call health metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prometheus-alerting-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prometheus alerting rules
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alertmanager-routing-grouping-and-inhibition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alertmanager routing, grouping, and inhibition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#validating-and-testing-alerts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validating and testing alerts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-handoff-note-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A handoff note template
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../error-tracking-and-uptime-monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error Tracking and Uptime Monitoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../incident-response-and-postmortems/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Incident Response and Postmortems
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#alert-on-symptoms-not-causes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alert on symptoms, not causes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pages-tickets-and-dashboards" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pages, tickets, and dashboards
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#severity-levels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Severity levels
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actionable-alerts-and-alert-fatigue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Actionable alerts and alert fatigue
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-alerting-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The alerting pipeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#runbook-links-in-every-alert" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runbook links in every alert
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#on-call-rotations-and-handoffs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        On-call rotations and handoffs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#escalation-policies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Escalation policies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#follow-the-sun" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Follow-the-sun
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#on-call-health-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        On-call health metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prometheus-alerting-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prometheus alerting rules
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alertmanager-routing-grouping-and-inhibition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alertmanager routing, grouping, and inhibition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#validating-and-testing-alerts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validating and testing alerts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-handoff-note-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A handoff note template
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="alerting-and-on-call">Alerting and On-Call<a class="headerlink" href="#alerting-and-on-call" title="Permanent link">&para;</a></h1>
+<p>An alert is a decision, made in advance, that a condition deserves a
+human's attention. Paging someone at 3 a.m. is the most expensive thing a
+monitoring system can do, so every alert has to earn it. This lesson
+covers alerting on symptoms rather than causes, the difference between a
+page and a ticket, severity levels, how to keep alerts actionable and avoid
+alert fatigue, how Alertmanager groups, deduplicates, inhibits, and routes
+alerts, why every alert needs a runbook, and how to run a humane on-call
+rotation: handoffs, escalation policies, follow-the-sun, and the metrics
+that show whether on-call is healthy.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>Bad alerting fails in two directions. Too few alerts and users discover
+outages before you do. Too many and engineers learn to ignore them: when
+nine pages out of ten need no action, the tenth (the real one) is
+acknowledged and snoozed like the rest. Alert fatigue is a major
+reliability risk, and it also burns people out and makes on-call something
+everyone avoids.</p>
+<p>Good alerting is small and precise. A team running TaskFlow API should be
+paged only when users are being hurt, or are about to be, and something
+can be done about it now. Everything else becomes a ticket, a dashboard, or
+automation. Combined with a fair rotation and good runbooks, that makes
+on-call sustainable.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Google SRE (philosophy of paging).</strong> The chapter
+  <a href="https://sre.google/sre-book/monitoring-distributed-systems/">Monitoring Distributed Systems</a>
+  says pages should be urgent, actionable, and require human intelligence,
+  and that you should page on symptoms rather than causes; anything that
+  can be handled by a robot should not page a human.</li>
+<li><strong>Google SRE (being on-call).</strong> The chapter
+  <a href="https://sre.google/sre-book/being-on-call/">Being On-Call</a> describes
+  primary and secondary rotations, caps the share of time an engineer
+  spends on-call, and sets a target of at most two incidents per 12-hour
+  shift so each incident gets proper follow-up.</li>
+<li><strong>Prometheus.</strong> The project's
+  <a href="https://prometheus.io/docs/practices/alerting/">alerting best practices</a>
+  recommend keeping alerting simple, alerting on symptoms associated with
+  end-user pain, alerting on latency and errors as high in the stack as
+  possible, and having consoles that let you find the cause.</li>
+<li><strong>PagerDuty Incident Response.</strong> PagerDuty's public
+  <a href="https://response.pagerduty.com/">incident response documentation</a>,
+  including <a href="https://response.pagerduty.com/oncall/being_oncall/">Being On-Call</a>,
+  describes on-call responsibilities, acknowledgement expectations,
+  handoffs, and escalation in a form many companies adopt.</li>
+</ul>
+<p><strong>Popular tools and providers:</strong> Prometheus Alertmanager, Grafana
+Alerting, PagerDuty, Jira Service Management, incident.io, Splunk On-Call,
+and cloud-native alarms such as Amazon CloudWatch alarms with SNS.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="alert-on-symptoms-not-causes">Alert on symptoms, not causes<a class="headerlink" href="#alert-on-symptoms-not-causes" title="Permanent link">&para;</a></h3>
+<p>A <strong>symptom</strong> is something a user experiences: errors, slowness, missing
+data. A <strong>cause</strong> is a reason it might happen: high CPU, a full disk, a
+restarted pod. Causes are many, change with the architecture, and often do
+not hurt anyone. Symptoms are few and always matter.</p>
+<table>
+<thead>
+<tr>
+<th>Cause-based alert (avoid paging)</th>
+<th>Symptom-based alert (page)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CPU above 90% on an API pod</td>
+<td>Error budget burning 14x too fast</td>
+</tr>
+<tr>
+<td>One of six pods restarted</td>
+<td>p99 latency above SLO for the create-task journey</td>
+</tr>
+<tr>
+<td>MongoDB replica lag above 10 s</td>
+<td>Synthetic "create and read a task" check failing from two regions</td>
+</tr>
+<tr>
+<td>Queue depth above 1,000</td>
+<td>Reminder emails more than 15 minutes late (freshness SLI)</td>
+</tr>
+<tr>
+<td>Memory above 80%</td>
+<td>Public TLS certificate expires in under 7 days with renewal failing</td>
+</tr>
+</tbody>
+</table>
+<p>Cause-based signals are still valuable: they belong on dashboards, in
+tickets (a disk that will fill in five days), and in the runbook as
+diagnosis steps. The exception is a cause that predicts imminent,
+unavoidable user pain with no slack, such as a disk that will be full in
+two hours; that can page.</p>
+<h3 id="pages-tickets-and-dashboards">Pages, tickets, and dashboards<a class="headerlink" href="#pages-tickets-and-dashboards" title="Permanent link">&para;</a></h3>
+<p>The SRE book describes three kinds of monitoring output:</p>
+<table>
+<thead>
+<tr>
+<th>Output</th>
+<th>Meaning</th>
+<th>Response time</th>
+<th>TaskFlow examples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Page</strong></td>
+<td>A human must act now</td>
+<td>Minutes, any hour</td>
+<td>Fast error budget burn, site down from outside, data loss risk</td>
+</tr>
+<tr>
+<td><strong>Ticket</strong></td>
+<td>A human must act, but not now</td>
+<td>Hours to days, working hours</td>
+<td>Slow budget burn, certificate expiring in 20 days, disk full in 5 days, backup job failed once</td>
+</tr>
+<tr>
+<td><strong>Dashboard or log</strong></td>
+<td>Nobody needs to act; useful for diagnosis</td>
+<td>Never, unless investigating</td>
+<td>CPU, memory, individual pod restarts, cache hit ratio</td>
+</tr>
+</tbody>
+</table>
+<p>Most alerts people create should be tickets or dashboard panels. A
+practical rule: if the right response is "look at it tomorrow", it must not
+page tonight.</p>
+<h3 id="severity-levels">Severity levels<a class="headerlink" href="#severity-levels" title="Permanent link">&para;</a></h3>
+<p>Severity labels on alerts drive routing. Keep the scheme small and
+written down:</p>
+<table>
+<thead>
+<tr>
+<th>Severity</th>
+<th>Definition</th>
+<th>Routing</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>page</code> (critical)</td>
+<td>User-facing SLO at risk now; needs action within minutes</td>
+<td>Pager service, primary on-call, escalation</td>
+</tr>
+<tr>
+<td><code>ticket</code> (warning)</td>
+<td>Will become user-facing if ignored for days</td>
+<td>Ticket queue for the owning team</td>
+</tr>
+<tr>
+<td><code>info</code></td>
+<td>Context only</td>
+<td>Chat channel or dashboard, no notification</td>
+</tr>
+</tbody>
+</table>
+<p>Do not invent more levels than you route differently; five severities that
+all go to the same channel are one severity.</p>
+<h3 id="actionable-alerts-and-alert-fatigue">Actionable alerts and alert fatigue<a class="headerlink" href="#actionable-alerts-and-alert-fatigue" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: a flowchart for a detected condition. Are users hurt, or about to be? If no: dashboard only, no alert, for example CPU at 80% while the SLO is fine. If yes: does it need a human within minutes? If no: a ticket to fix during work hours, for example a disk that will be full in 5 days. If yes: can the responder act on it? If no: automate the fix or delete the alert, for example restarting a stuck worker automatically. If yes: is it new, with nothing else already paging for it? If no: group or inhibit it in Alertmanager, for example 40 pods alerting for one database outage. If yes: page the on-call engineer with a runbook link and a dashboard." src="../should-this-page.svg" /></p>
+<p>Every paging alert should pass four tests:</p>
+<ol>
+<li><strong>Urgent:</strong> waiting until morning would hurt users or the business.</li>
+<li><strong>Actionable:</strong> the responder can do something (mitigate, roll back,
+   fail over, scale), and the runbook says what.</li>
+<li><strong>Requires judgement:</strong> if the fix is a fixed script, automate it
+   instead of paging.</li>
+<li><strong>Novel:</strong> it is not a duplicate of another page for the same problem.</li>
+</ol>
+<p>Alert fatigue builds up from small exceptions: a flapping alert nobody
+fixed, a threshold set on a quiet week, a duplicate per pod. Counter it
+with process:</p>
+<ul>
+<li><strong>Review every page</strong> in a weekly on-call review: was it actionable?
+  If not, fix, downgrade, or delete the alert that week.</li>
+<li><strong>Track the actionable rate</strong>: the share of pages that led to a real
+  action. A healthy target is well above half; anything near zero means
+  the alert is noise.</li>
+<li><strong>Use <code>for:</code> to require a condition to persist</strong> (for example 5 minutes)
+  for threshold alerts, so momentary spikes do not page. SLO burn-rate
+  alerts already have this built into their windows.</li>
+<li><strong>Delete alerts nobody would miss.</strong> An alert that has not fired in a
+  year and has no clear owner is not protection, it is clutter.</li>
+</ul>
+<h3 id="the-alerting-pipeline">The alerting pipeline<a class="headerlink" href="#the-alerting-pipeline" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: Prometheus evaluates rules and sends firing alerts with severity and service labels to an Alertmanager cluster, where they are 1) deduplicated, 2) grouped by alertname and service, 3) inhibited so pages hide related tickets, 4) silenced for planned maintenance (an engineer adds silences), and 5) routed by the severity label. The default route goes to the team chat channel with no page, severity=ticket goes to a ticket queue for the next business day, and severity=page goes to the pager service by phone call and push. Defaults are group_wait 30s, group_interval 5m, repeat_interval 4h. The pager notifies the primary on-call, who acknowledges within 5 minutes; with no acknowledgement the secondary is paged after 5 minutes and the engineering manager after 15 minutes." src="../alert-routing-pipeline.svg" /></p>
+<p><strong>Alerting rules</strong> live in Prometheus (or Grafana, or a cloud provider).
+Each rule has an expression, an optional <code>for</code> duration (the condition
+must hold that long; until then the alert is <em>pending</em>), optional
+<code>keep_firing_for</code> (keeps it firing briefly after the condition clears, to
+avoid flapping), labels such as <code>severity</code>, and annotations such as
+<code>summary</code> and <code>runbook_url</code>.</p>
+<p><strong>Alertmanager</strong> receives firing alerts from one or more Prometheus
+servers and decides who hears about them:</p>
+<ul>
+<li><strong>Deduplication:</strong> run two Prometheus servers for redundancy and both
+  send the same alert; Alertmanager notifies once. Run Alertmanager itself
+  as a small cluster (two or three instances) that shares state.</li>
+<li><strong>Grouping:</strong> <code>group_by: [alertname, service]</code> turns 40 pod-level alerts
+  into one notification. <code>group_wait</code> (default 30 s) waits to collect the
+  first batch, <code>group_interval</code> (default 5 m) controls updates to an
+  existing group, and <code>repeat_interval</code> (default 4 h) re-sends while it is
+  still firing.</li>
+<li><strong>Inhibition:</strong> suppress some alerts while others fire. If "TaskFlow API
+  down" is paging, the latency and error-budget alerts for the same
+  service add nothing.</li>
+<li><strong>Silences:</strong> temporary, time-limited mutes created by people (in the
+  UI or with <code>amtool</code>) during maintenance or while an incident is already
+  being worked. Every silence should have an author, a comment, and an
+  expiry.</li>
+<li><strong>Routing:</strong> a tree of matchers on labels sends each group to a
+  <strong>receiver</strong> (pager, ticket webhook, chat, email).</li>
+</ul>
+<h3 id="runbook-links-in-every-alert">Runbook links in every alert<a class="headerlink" href="#runbook-links-in-every-alert" title="Permanent link">&para;</a></h3>
+<p>A page at 3 a.m. should never leave the responder wondering what it means.
+Every alert carries a <code>runbook_url</code> annotation pointing to a page that
+answers:</p>
+<ol>
+<li><strong>What this alert means</strong>, in one sentence, and what users experience.</li>
+<li><strong>Impact and urgency:</strong> which journeys and how badly.</li>
+<li><strong>Dashboards and queries</strong> to open first (linked, with the right
+   variables).</li>
+<li><strong>Diagnosis steps:</strong> the likely causes, how to tell them apart.</li>
+<li><strong>Mitigation:</strong> the safe actions, such as rolling back the last deploy,
+   scaling out, failing over, disabling a feature flag, in order of
+   preference.</li>
+<li><strong>Escalation:</strong> who to call when the runbook does not work.</li>
+</ol>
+<p>Runbooks are reviewed after every incident that used them, and an alert
+without a runbook is not allowed to page.</p>
+<h3 id="on-call-rotations-and-handoffs">On-call rotations and handoffs<a class="headerlink" href="#on-call-rotations-and-handoffs" title="Permanent link">&para;</a></h3>
+<p>A rotation is the schedule of who responds:</p>
+<ul>
+<li><strong>Primary and secondary:</strong> the primary responds to pages; the secondary
+  backs up the primary (escalation) and takes over if the primary is
+  overloaded or unreachable.</li>
+<li><strong>Shift length:</strong> commonly one week, handing over on a weekday morning
+  so the handoff happens during work hours.</li>
+<li><strong>Team size:</strong> with fewer than about six to eight people in a rotation,
+  each person is on-call too often; small teams share a rotation with a
+  neighbouring team or buy time with better automation.</li>
+<li><strong>Handoffs:</strong> a short written note (or meeting) at every change of
+  shift: open incidents, active silences and why, noisy alerts, risky
+  changes scheduled, anything half-finished.</li>
+<li><strong>Compensation and recovery:</strong> time off after a night of pages, and pay
+  or time in lieu for being on-call, are part of a sustainable rotation.</li>
+</ul>
+<h3 id="escalation-policies">Escalation policies<a class="headerlink" href="#escalation-policies" title="Permanent link">&para;</a></h3>
+<p>An <strong>escalation policy</strong> says what happens when a page is not
+acknowledged: page the primary; if no acknowledgement in 5 minutes, page
+the secondary; after 15 minutes, page the engineering manager. It ensures
+that a dead phone battery or a missed vibration does not turn a 10-minute
+incident into a 2-hour one. Acknowledgement only means "I am on it"; the
+responder then works the problem or declares an incident (see
+<a href="../incident-response-and-postmortems/">incident response and postmortems</a>).</p>
+<h3 id="follow-the-sun">Follow-the-sun<a class="headerlink" href="#follow-the-sun" title="Permanent link">&para;</a></h3>
+<p>Teams spread across time zones can split the day so nobody is paged at
+night: for example, a team in Europe covers 08:00 to 16:00 UTC, one in the
+Americas 16:00 to 24:00, and one in Asia-Pacific 00:00 to 08:00. This
+removes night pages but needs at least two or three sites with real
+expertise in the service, consistent runbooks, and excellent handoffs at
+each boundary.</p>
+<h3 id="on-call-health-metrics">On-call health metrics<a class="headerlink" href="#on-call-health-metrics" title="Permanent link">&para;</a></h3>
+<p>Measure on-call like any other system:</p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>What it tells you</th>
+<th>Healthy signal</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pages per shift</td>
+<td>Load on the responder</td>
+<td>Low single digits per week; at most about two incidents per 12-hour shift</td>
+</tr>
+<tr>
+<td>Pages outside working hours</td>
+<td>Sleep disruption</td>
+<td>Trending down</td>
+</tr>
+<tr>
+<td>Actionable rate</td>
+<td>Alert quality</td>
+<td>Most pages led to action</td>
+</tr>
+<tr>
+<td>Time to acknowledge (MTTA)</td>
+<td>Responsiveness and paging reliability</td>
+<td>A few minutes</td>
+</tr>
+<tr>
+<td>Time to mitigate</td>
+<td>Effectiveness of runbooks and tooling</td>
+<td>Trending down</td>
+</tr>
+<tr>
+<td>Top alerts by count</td>
+<td>Where to invest</td>
+<td>The top three are fixed or deleted each quarter</td>
+</tr>
+<tr>
+<td>Repeat incidents</td>
+<td>Whether follow-ups get done</td>
+<td>Rare</td>
+</tr>
+</tbody>
+</table>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Condition</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SLO burn rate fast (14.4x or 6x)</td>
+<td>Page</td>
+</tr>
+<tr>
+<td>Service unreachable from external probes in two or more regions</td>
+<td>Page</td>
+</tr>
+<tr>
+<td>SLO burn rate slow (1x over days)</td>
+<td>Ticket</td>
+</tr>
+<tr>
+<td>Certificate expires in under 21 days</td>
+<td>Ticket; page only if under 7 days and renewal is failing</td>
+</tr>
+<tr>
+<td>Disk will be full within 4 hours at current rate</td>
+<td>Page (imminent, no slack)</td>
+</tr>
+<tr>
+<td>Disk will be full within 5 days</td>
+<td>Ticket</td>
+</tr>
+<tr>
+<td>One pod restarting, others healthy and SLO fine</td>
+<td>Dashboard; ticket if it persists</td>
+</tr>
+<tr>
+<td>CPU or memory high, SLO fine</td>
+<td>Dashboard</td>
+</tr>
+<tr>
+<td>Backup job failed once</td>
+<td>Ticket; page if no successful backup for over 26 hours on a critical database</td>
+</tr>
+<tr>
+<td>Prometheus or Alertmanager itself is down</td>
+<td>Page through an external watchdog</td>
+</tr>
+</tbody>
+</table>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="prometheus-alerting-rules">Prometheus alerting rules<a class="headerlink" href="#prometheus-alerting-rules" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># prometheus/rules/taskflow-alerts.yml</span>
+<span class="nt">groups</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-availability</span>
+<span class="w">    </span><span class="nt">rules</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">alert</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TaskflowApiDown</span>
+<span class="w">        </span><span class="nt">expr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sum(up{job="taskflow-api"}) == 0 or absent(up{job="taskflow-api"})</span><span class="w">   </span><span class="c1"># absent(): no targets discovered at all</span>
+<span class="w">        </span><span class="nt">for</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2m</span>
+<span class="w">        </span><span class="nt">labels</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">severity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">page</span>
+<span class="w">          </span><span class="nt">service</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-api</span>
+<span class="w">        </span><span class="nt">annotations</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">summary</span><span class="p">:</span><span class="w"> </span><span class="s">"No</span><span class="nv"> </span><span class="s">TaskFlow</span><span class="nv"> </span><span class="s">API</span><span class="nv"> </span><span class="s">instance</span><span class="nv"> </span><span class="s">can</span><span class="nv"> </span><span class="s">be</span><span class="nv"> </span><span class="s">scraped"</span>
+<span class="w">          </span><span class="nt">runbook_url</span><span class="p">:</span><span class="w"> </span><span class="s">"https://runbooks.example.com/taskflow-api/api-down"</span>
+
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">alert</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TaskflowSyntheticCheckFailing</span>
+<span class="w">        </span><span class="c1"># Blackbox exporter probes from several regions; page only when two or more fail.</span>
+<span class="w">        </span><span class="nt">expr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">count(probe_success{job="blackbox-taskflow"} == 0) &gt;= 2</span>
+<span class="w">        </span><span class="nt">for</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3m</span>
+<span class="w">        </span><span class="nt">labels</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">severity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">page</span>
+<span class="w">          </span><span class="nt">service</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-api</span>
+<span class="w">        </span><span class="nt">annotations</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">summary</span><span class="p">:</span><span class="w"> </span><span class="s">"External</span><span class="nv"> </span><span class="s">probes</span><span class="nv"> </span><span class="s">failing</span><span class="nv"> </span><span class="s">from</span><span class="nv"> </span><span class="s">{{</span><span class="nv"> </span><span class="s">$value</span><span class="nv"> </span><span class="s">}}</span><span class="nv"> </span><span class="s">regions"</span>
+<span class="w">          </span><span class="nt">runbook_url</span><span class="p">:</span><span class="w"> </span><span class="s">"https://runbooks.example.com/taskflow-api/synthetic-failing"</span>
+
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-capacity</span>
+<span class="w">    </span><span class="nt">rules</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">alert</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TaskflowDbDiskFullSoon</span>
+<span class="w">        </span><span class="nt">expr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">predict_linear(node_filesystem_avail_bytes{job="node", mountpoint="/var/lib/mongodb"}[6h], 5 * 86400) &lt; 0</span>
+<span class="w">        </span><span class="nt">for</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30m</span>
+<span class="w">        </span><span class="nt">labels</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">severity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ticket</span>
+<span class="w">          </span><span class="nt">service</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-db</span>
+<span class="w">        </span><span class="nt">annotations</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">summary</span><span class="p">:</span><span class="w"> </span><span class="s">"MongoDB</span><span class="nv"> </span><span class="s">data</span><span class="nv"> </span><span class="s">disk</span><span class="nv"> </span><span class="s">on</span><span class="nv"> </span><span class="s">{{</span><span class="nv"> </span><span class="s">$labels.instance</span><span class="nv"> </span><span class="s">}}</span><span class="nv"> </span><span class="s">will</span><span class="nv"> </span><span class="s">be</span><span class="nv"> </span><span class="s">full</span><span class="nv"> </span><span class="s">within</span><span class="nv"> </span><span class="s">5</span><span class="nv"> </span><span class="s">days"</span>
+<span class="w">          </span><span class="nt">runbook_url</span><span class="p">:</span><span class="w"> </span><span class="s">"https://runbooks.example.com/taskflow-db/disk-full"</span>
+
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">alert</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TaskflowCertificateExpiringSoon</span>
+<span class="w">        </span><span class="nt">expr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">(probe_ssl_earliest_cert_expiry{job="blackbox-taskflow"} - time()) / 86400 &lt; 21</span>
+<span class="w">        </span><span class="nt">for</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1h</span>
+<span class="w">        </span><span class="nt">labels</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">severity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ticket</span>
+<span class="w">          </span><span class="nt">service</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-api</span>
+<span class="w">        </span><span class="nt">annotations</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">summary</span><span class="p">:</span><span class="w"> </span><span class="s">"TLS</span><span class="nv"> </span><span class="s">certificate</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">{{</span><span class="nv"> </span><span class="s">$labels.instance</span><span class="nv"> </span><span class="s">}}</span><span class="nv"> </span><span class="s">expires</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">{{</span><span class="nv"> </span><span class="s">$value</span><span class="nv"> </span><span class="s">|</span><span class="nv"> </span><span class="s">humanize</span><span class="nv"> </span><span class="s">}}</span><span class="nv"> </span><span class="s">days"</span>
+<span class="w">          </span><span class="nt">runbook_url</span><span class="p">:</span><span class="w"> </span><span class="s">"https://runbooks.example.com/taskflow-api/certificate-expiry"</span>
+
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">meta</span>
+<span class="w">    </span><span class="nt">rules</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">alert</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Watchdog</span>
+<span class="w">        </span><span class="c1"># Always firing. An external service pages if it STOPS receiving this.</span>
+<span class="w">        </span><span class="nt">expr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vector(1)</span>
+<span class="w">        </span><span class="nt">labels</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">severity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">none</span>
+<span class="w">        </span><span class="nt">annotations</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">summary</span><span class="p">:</span><span class="w"> </span><span class="s">"Alerting</span><span class="nv"> </span><span class="s">pipeline</span><span class="nv"> </span><span class="s">heartbeat"</span>
+</code></pre></div>
+<p>The SLO burn-rate pages from
+<a href="../slis-slos-and-error-budgets/">SLIs, SLOs, and error budgets</a> are the
+main symptom alerts; these rules cover total outages, outside-in checks,
+capacity tickets, and the pipeline itself. <code>predict_linear</code> extrapolates
+the last 6 hours of free space 5 days ahead. The <code>Watchdog</code> alert is a
+dead man's switch: it proves the whole path from Prometheus to the
+receiver works, and its absence is what pages.</p>
+<h3 id="alertmanager-routing-grouping-and-inhibition">Alertmanager routing, grouping, and inhibition<a class="headerlink" href="#alertmanager-routing-grouping-and-inhibition" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># alertmanager/alertmanager.yml</span>
+<span class="nt">global</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">resolve_timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5m</span>
+
+<span class="nt">route</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">receiver</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">team-chat</span><span class="w">            </span><span class="c1"># default: anything not matched below</span>
+<span class="w">  </span><span class="nt">group_by</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">alertname</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">service</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">group_wait</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30s</span>
+<span class="w">  </span><span class="nt">group_interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5m</span>
+<span class="w">  </span><span class="nt">repeat_interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4h</span>
+<span class="w">  </span><span class="nt">routes</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">matchers</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">'alertname="Watchdog"'</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="nt">receiver</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">heartbeat</span>
+<span class="w">      </span><span class="nt">group_interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1m</span><span class="w">           </span><span class="c1"># repeats are only sent at group_interval ticks</span>
+<span class="w">      </span><span class="nt">repeat_interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1m</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">matchers</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">'severity="page"'</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="nt">receiver</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-pager</span>
+<span class="w">      </span><span class="nt">repeat_interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1h</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">matchers</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">'severity="ticket"'</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="nt">receiver</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-tickets</span>
+<span class="w">      </span><span class="nt">repeat_interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">24h</span>
+
+<span class="nt">inhibit_rules</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># While the API is completely down, its other alerts add nothing.</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">source_matchers</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">'alertname="TaskflowApiDown"'</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">target_matchers</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">'alertname!="TaskflowApiDown"'</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">'service="taskflow-api"'</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">equal</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">service</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="c1"># A page for a service hides that service's tickets.</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">source_matchers</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">'severity="page"'</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">target_matchers</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">'severity="ticket"'</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">equal</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">service</span><span class="p p-Indicator">]</span>
+
+<span class="nt">receivers</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-pager</span>
+<span class="w">    </span><span class="nt">pagerduty_configs</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">routing_key_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/etc/alertmanager/secrets/pagerduty-routing-key</span>
+<span class="w">        </span><span class="nt">severity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">critical</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-tickets</span>
+<span class="w">    </span><span class="nt">webhook_configs</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://tickets.example.com/hooks/alertmanager</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">team-chat</span>
+<span class="w">    </span><span class="nt">slack_configs</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">api_url_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/etc/alertmanager/secrets/slack-webhook-url</span>
+<span class="w">        </span><span class="nt">channel</span><span class="p">:</span><span class="w"> </span><span class="s">"#taskflow-alerts"</span>
+<span class="w">        </span><span class="nt">send_resolved</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">heartbeat</span>
+<span class="w">    </span><span class="nt">webhook_configs</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://heartbeat.example.com/ping/&lt;check-id&gt;</span>
+</code></pre></div>
+<p>Parts: the route tree matches top to bottom and stops at the first
+matching child; <code>group_by</code> keeps one notification per alert name and
+service; the inhibit rules mute duplicates while a bigger alert is
+firing; secrets (the PagerDuty routing key and chat webhook URL) are read
+from files mounted from a secret store, not written in the config; the
+heartbeat receiver pings an external dead man's switch service every
+minute. Alertmanager rounds <code>repeat_interval</code> up to a multiple of
+<code>group_interval</code>, so the heartbeat route lowers both; with the inherited
+5-minute <code>group_interval</code> it would ping only every 5 minutes.</p>
+<h3 id="validating-and-testing-alerts">Validating and testing alerts<a class="headerlink" href="#validating-and-testing-alerts" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Syntax and semantic checks, run in CI on every change</span>
+promtool<span class="w"> </span>check<span class="w"> </span>rules<span class="w"> </span>prometheus/rules/*.yml
+amtool<span class="w"> </span>check-config<span class="w"> </span>alertmanager/alertmanager.yml
+
+<span class="c1"># Unit tests for alert rules</span>
+promtool<span class="w"> </span><span class="nb">test</span><span class="w"> </span>rules<span class="w"> </span>prometheus/tests/taskflow-alerts.test.yml
+
+<span class="c1"># Show which receiver an alert with these labels would reach</span>
+amtool<span class="w"> </span>config<span class="w"> </span>routes<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--config.file<span class="o">=</span>alertmanager/alertmanager.yml<span class="w"> </span><span class="nv">severity</span><span class="o">=</span>page<span class="w"> </span><span class="nv">service</span><span class="o">=</span>taskflow-api
+
+<span class="c1"># Silence an alert during planned maintenance, with an expiry and a reason</span>
+amtool<span class="w"> </span>silence<span class="w"> </span>add<span class="w"> </span><span class="nv">alertname</span><span class="o">=</span>TaskflowDbDiskFullSoon<span class="w"> </span><span class="nv">service</span><span class="o">=</span>taskflow-db<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--duration<span class="o">=</span>2h<span class="w"> </span>--comment<span class="o">=</span><span class="s2">"Disk resize in progress (change 4821)"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--alertmanager.url<span class="o">=</span>http://alertmanager:9093
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1"># prometheus/tests/taskflow-alerts.test.yml</span>
+<span class="nt">rule_files</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">../rules/taskflow-alerts.yml</span>
+
+<span class="nt">evaluation_interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1m</span>
+
+<span class="nt">tests</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1m</span>
+<span class="w">    </span><span class="nt">input_series</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">series</span><span class="p">:</span><span class="w"> </span><span class="s">'up{job="taskflow-api",</span><span class="nv"> </span><span class="s">instance="api-1:9464"}'</span>
+<span class="w">        </span><span class="nt">values</span><span class="p">:</span><span class="w"> </span><span class="s">"1</span><span class="nv"> </span><span class="s">1</span><span class="nv"> </span><span class="s">0</span><span class="nv"> </span><span class="s">0</span><span class="nv"> </span><span class="s">0</span><span class="nv"> </span><span class="s">0</span><span class="nv"> </span><span class="s">0"</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">series</span><span class="p">:</span><span class="w"> </span><span class="s">'up{job="taskflow-api",</span><span class="nv"> </span><span class="s">instance="api-2:9464"}'</span>
+<span class="w">        </span><span class="nt">values</span><span class="p">:</span><span class="w"> </span><span class="s">"1</span><span class="nv"> </span><span class="s">1</span><span class="nv"> </span><span class="s">0</span><span class="nv"> </span><span class="s">0</span><span class="nv"> </span><span class="s">0</span><span class="nv"> </span><span class="s">0</span><span class="nv"> </span><span class="s">0"</span>
+<span class="w">    </span><span class="nt">alert_rule_test</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">eval_time</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3m</span>
+<span class="w">        </span><span class="nt">alertname</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TaskflowApiDown</span>
+<span class="w">        </span><span class="nt">exp_alerts</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w">          </span><span class="c1"># down for 1 minute: still pending</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">eval_time</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5m</span>
+<span class="w">        </span><span class="nt">alertname</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TaskflowApiDown</span>
+<span class="w">        </span><span class="nt">exp_alerts</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">exp_labels</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">severity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">page</span>
+<span class="w">              </span><span class="nt">service</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-api</span>
+<span class="w">            </span><span class="nt">exp_annotations</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">summary</span><span class="p">:</span><span class="w"> </span><span class="s">"No</span><span class="nv"> </span><span class="s">TaskFlow</span><span class="nv"> </span><span class="s">API</span><span class="nv"> </span><span class="s">instance</span><span class="nv"> </span><span class="s">can</span><span class="nv"> </span><span class="s">be</span><span class="nv"> </span><span class="s">scraped"</span>
+<span class="w">              </span><span class="nt">runbook_url</span><span class="p">:</span><span class="w"> </span><span class="s">"https://runbooks.example.com/taskflow-api/api-down"</span>
+</code></pre></div>
+<p>Testing alerts in CI catches typos in label names (which silently route a
+page to the wrong place) and checks that <code>for</code> durations behave as
+intended.</p>
+<h3 id="a-handoff-note-template">A handoff note template<a class="headerlink" href="#a-handoff-note-template" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>On-call handoff: taskflow, week 46 (primary: &lt;name&gt;, secondary: &lt;name&gt;)
+
+Open incidents:        none / INC-123 (status, next step, owner)
+Active silences:       TaskflowDbDiskFullSoon until Thu 14:00 (disk resize, change 4821)
+Pages this week:       6 (4 actionable). Noisy: TaskflowSyntheticCheckFailing from ap-south (ticket TF-881)
+Risky changes ahead:   MongoDB 8.0 upgrade Wed 10:00 UTC, rollback plan in change 4830
+Follow-ups for review: runbook for certificate expiry was out of date (fixed), ticket TF-879
+</code></pre></div>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Page on symptoms tied to SLOs; send causes to dashboards and tickets.</li>
+<li>Make every page urgent, actionable, judgement-requiring, and novel.</li>
+<li>Require a <code>runbook_url</code> and a dashboard link on every paging alert.</li>
+<li>Use a small, written severity scheme that maps one-to-one to routing.</li>
+<li>Group and inhibit aggressively so one problem produces one page.</li>
+<li>Run Prometheus and Alertmanager redundantly, and watch them with an
+  external dead man's switch.</li>
+<li>Test rules and routes in CI with <code>promtool</code> and <code>amtool</code>.</li>
+<li>Review every page weekly; fix or delete non-actionable alerts that week.</li>
+<li>Keep rotations large enough, hand off in writing, compensate on-call,
+  and give recovery time after bad nights.</li>
+<li>Track pages per shift, actionable rate, and time to acknowledge.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>The on-call engineer receives 40 pages in 2 minutes for one outage.</strong>
+  <em>Detect:</em> the pager history shows one page per pod and per alert for a
+  single database failure. <em>Cause:</em> <code>group_by</code> includes <code>instance</code> or
+  <code>pod</code>, or no inhibition from the root-cause alert. <em>Fix:</em> group by
+  <code>alertname</code> and <code>service</code>, add inhibit rules from "service down" to its
+  dependent alerts, and alert on service-level symptoms rather than
+  per-pod conditions.</li>
+<li><strong>A real outage was acknowledged and ignored.</strong>
+  <em>Detect:</em> the postmortem timeline shows the page acknowledged within a
+  minute but no action for 30 minutes. <em>Cause:</em> alert fatigue: the same
+  alert had fired and self-resolved dozens of times that month. <em>Fix:</em>
+  measure the actionable rate per alert, fix or delete flapping alerts,
+  and tie paging to SLO burn rates.</li>
+<li><strong>Nobody was paged during a full outage.</strong>
+  <em>Detect:</em> users reported the outage; the alert history shows the rule
+  firing but no notification sent. <em>Cause:</em> Alertmanager was down, its
+  pager secret had expired, or a route matcher had a typo in the severity
+  label. <em>Fix:</em> an external dead man's switch on a <code>Watchdog</code> alert,
+  <code>amtool config routes test</code> in CI, and a periodic end-to-end test page.</li>
+<li><strong>Alerts keep firing after the problem is fixed.</strong>
+  <em>Detect:</em> the dashboard shows recovery, but the alert stays firing for
+  an hour and re-pages. <em>Cause:</em> a long-window expression without a short
+  window, or a <code>repeat_interval</code> that is too short for the receiver.
+  <em>Fix:</em> use multiwindow burn-rate rules, and set repeat intervals per
+  route.</li>
+<li><strong>A silence outlived the maintenance and hid a real failure.</strong>
+  <em>Detect:</em> an incident review finds a matching silence created days
+  earlier with no expiry note. <em>Cause:</em> broad silences (matching a whole
+  service) with long durations. <em>Fix:</em> narrow matchers, short expiries,
+  mandatory comments, and active silences listed in every handoff.</li>
+<li><strong>On-call engineers burn out and leave the rotation.</strong>
+  <em>Detect:</em> rising pages outside working hours, people swapping shifts,
+  and repeat incidents. <em>Cause:</em> noisy alerts, small rotations, and no
+  time to fix root causes. <em>Fix:</em> cap on-call load, prioritize the top
+  noisy alerts in planning, enlarge or merge rotations, and give recovery
+  time.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Alert rule:</strong> An expression evaluated periodically; when true (for the
+  <code>for</code> duration), it fires.</li>
+<li><strong>Pending / firing:</strong> States of an alert before and after its <code>for</code>
+  duration has elapsed.</li>
+<li><strong>Page:</strong> A notification that interrupts a person immediately.</li>
+<li><strong>Ticket:</strong> A tracked task for non-urgent follow-up.</li>
+<li><strong>Symptom / cause:</strong> What users experience versus why it happens.</li>
+<li><strong>Grouping:</strong> Combining related alerts into one notification.</li>
+<li><strong>Inhibition:</strong> Suppressing alerts while a related, more important alert
+  fires.</li>
+<li><strong>Silence:</strong> A time-limited, manual mute of matching alerts.</li>
+<li><strong>Runbook:</strong> A document describing how to diagnose and mitigate a
+  specific alert.</li>
+<li><strong>Escalation policy:</strong> Rules for who is notified when a page is not
+  acknowledged.</li>
+<li><strong>Follow-the-sun:</strong> Splitting on-call across time zones to avoid night
+  shifts.</li>
+<li><strong>Dead man's switch:</strong> An always-firing alert whose absence triggers
+  notification, proving the pipeline works.</li>
+<li><strong>MTTA / MTTR:</strong> Mean time to acknowledge, and to restore or resolve.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Paging on CPU, memory, or individual pod restarts.</li>
+<li>Thinking that more alerts mean better coverage.</li>
+<li>Alerts without runbooks, owners, or links to dashboards.</li>
+<li>Copying thresholds from a blog post instead of deriving them from SLOs.</li>
+<li>Grouping by <code>instance</code>, producing one page per pod.</li>
+<li>Silences without expiry or comments.</li>
+<li>Monitoring the alerting system with itself.</li>
+<li>Treating on-call as a punishment, or expecting one person to carry it
+  alone.</li>
+<li>Muting a noisy alert instead of fixing or deleting it.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Give two cause-based alerts and rewrite each as a symptom-based alert
+   for TaskFlow API.</li>
+<li>What four properties should every paging alert have?</li>
+<li>Explain Alertmanager's grouping, inhibition, and silences with an
+   example of each.</li>
+<li>What do <code>group_wait</code>, <code>group_interval</code>, and <code>repeat_interval</code> control?</li>
+<li>What belongs in a runbook linked from an alert?</li>
+<li>A rotation of five engineers takes weekly shifts. How many weeks a year
+   is each person on-call as primary, and why might that be too much?
+   (52 / 5 = about 10.4 weeks, one week in five, which leaves little
+   time to recover and is often combined with secondary duty as well.)</li>
+<li>In one week the primary received 18 pages, 11 outside working hours,
+   and 5 led to an action. What would you change first?</li>
+<li>Why does a <code>Watchdog</code> alert need an external receiver?</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/">Prometheus: Alerting rules</a></li>
+<li><a href="https://prometheus.io/docs/alerting/latest/configuration/">Prometheus: Alertmanager configuration</a></li>
+<li><a href="https://prometheus.io/docs/prometheus/latest/configuration/unit_testing_rules/">Prometheus: Unit testing for rules</a></li>
+<li><a href="https://sre.google/workbook/on-call/">Google SRE Workbook: On-Call</a></li>
+<li><a href="https://sre.google/sre-book/being-on-call/">Google SRE book: Being On-Call</a></li>
+<li><a href="https://response.pagerduty.com/oncall/being_oncall/">PagerDuty Incident Response: Being On-Call</a></li>
+<li>Next: <a href="../error-tracking-and-uptime-monitoring/">error tracking and uptime monitoring</a>.
+  Back to the <a href="../">monitoring and logging overview</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../slis-slos-and-error-budgets/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: SLIs, SLOs, and Error Budgets">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">SLIs, SLOs, and Error Budgets</span>
+      </a>
+    
+    
+      <a href="../error-tracking-and-uptime-monitoring/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: Error Tracking and Uptime Monitoring">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">Error Tracking and Uptime Monitoring</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

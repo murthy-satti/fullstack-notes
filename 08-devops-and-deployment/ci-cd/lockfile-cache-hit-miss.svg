@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="430" viewBox="0 0 880 430" role="img" aria-labelledby="lch-title lch-desc">
+  <title id="lch-title">Dependency cache lookup keyed on the lockfile hash</title>
+  <desc id="lch-desc">When the job starts, the cache key is computed from the runner operating system and the hash of package-lock.json, for example Linux-npm-3f9a. If a cache with that exact key exists, the npm cache directory is restored, npm ci installs without downloading packages, and nothing is saved afterwards because the key already exists. If the lockfile changed, there is no exact match, so the restore-keys prefix Linux-npm- restores the most recent older cache; npm ci downloads only the packages that changed, and the post-job step saves a new cache under the new key. If nothing matches at all, the job runs cold: npm ci downloads everything and then saves the cache. Example timings for TaskFlow API: about 10 seconds for an exact hit, about 25 seconds for a partial hit, and about 60 seconds cold. Caches are immutable and scoped to the branch and the default branch.</desc>
+  <defs>
+    <marker id="lch-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#40566b"/>
+    </marker>
+  </defs>
+  <rect width="880" height="430" rx="14" fill="#f5f7fb"/>
+  <g font-family="Arial, sans-serif" text-anchor="middle">
+    <rect x="195" y="20" width="490" height="50" rx="8" fill="#fff0d9" stroke="#bd7a20" stroke-width="2"/>
+    <text x="440" y="41" font-size="13" font-weight="700" fill="#66400f">Job starts: compute the cache key</text>
+    <text x="440" y="59" font-size="11.5" fill="#66400f">runner.os + "-npm-" + hashFiles('**/package-lock.json') = Linux-npm-3f9a</text>
+
+    <path d="M440 92 540 132 440 172 340 132z" fill="#f0e9fb" stroke="#8062a8" stroke-width="2"/>
+    <text x="440" y="129" font-size="12.5" font-weight="700" fill="#463365">exact key</text>
+    <text x="440" y="145" font-size="12.5" font-weight="700" fill="#463365">exists?</text>
+    <path d="M440 70V90" fill="none" stroke="#40566b" stroke-width="2" marker-end="url(#lch-arrow)"/>
+
+    <rect x="20" y="104" width="230" height="56" rx="8" fill="#e7f3e9" stroke="#53845b" stroke-width="2"/>
+    <text x="135" y="127" font-size="12.5" font-weight="700" fill="#294a2e">Hit: restore ~/.npm</text>
+    <text x="135" y="145" font-size="11" fill="#294a2e">lockfile unchanged</text>
+    <path d="M340 132H252" fill="none" stroke="#40566b" stroke-width="2" marker-end="url(#lch-arrow)"/>
+    <text x="296" y="124" font-size="11.5" font-weight="700" fill="#294a2e">yes</text>
+
+    <path d="M440 194 540 234 440 274 340 234z" fill="#f0e9fb" stroke="#8062a8" stroke-width="2"/>
+    <text x="440" y="231" font-size="12" font-weight="700" fill="#463365">restore-keys</text>
+    <text x="440" y="247" font-size="12" font-weight="700" fill="#463365">Linux-npm- ?</text>
+    <path d="M440 172V192" fill="none" stroke="#40566b" stroke-width="2" marker-end="url(#lch-arrow)"/>
+    <text x="452" y="186" font-size="11.5" font-weight="700" fill="#40566b" text-anchor="start">no: lockfile changed</text>
+
+    <rect x="630" y="206" width="230" height="56" rx="8" fill="#fff0d9" stroke="#bd7a20" stroke-width="2"/>
+    <text x="745" y="229" font-size="12.5" font-weight="700" fill="#66400f">Partial: newest older cache</text>
+    <text x="745" y="247" font-size="11" fill="#66400f">most packages already there</text>
+    <path d="M540 234H628" fill="none" stroke="#40566b" stroke-width="2" marker-end="url(#lch-arrow)"/>
+    <text x="584" y="226" font-size="11.5" font-weight="700" fill="#66400f">yes</text>
+
+    <rect x="330" y="300" width="220" height="50" rx="8" fill="#fbe9e7" stroke="#b5524b" stroke-width="2"/>
+    <text x="440" y="321" font-size="12.5" font-weight="700" fill="#6e2a24">Cold: nothing restored</text>
+    <text x="440" y="339" font-size="11" fill="#6e2a24">first run or caches evicted</text>
+    <path d="M440 274V298" fill="none" stroke="#40566b" stroke-width="2" marker-end="url(#lch-arrow)"/>
+    <text x="452" y="290" font-size="11.5" font-weight="700" fill="#6e2a24" text-anchor="start">no</text>
+
+    <g font-size="11.5" fill="#36424e">
+      <rect x="20" y="186" width="230" height="64" rx="8" fill="#eef1f5" stroke="#8a96a3" stroke-width="1.5"/>
+      <text x="135" y="208" font-weight="700">npm ci: no downloads</text>
+      <text x="135" y="225">about 10 s (example)</text>
+      <text x="135" y="241">save skipped: key exists</text>
+      <rect x="630" y="286" width="230" height="64" rx="8" fill="#eef1f5" stroke="#8a96a3" stroke-width="1.5"/>
+      <text x="745" y="308" font-weight="700">npm ci: changed packages only</text>
+      <text x="745" y="325">about 25 s (example)</text>
+      <text x="745" y="341">save new key Linux-npm-7c1e</text>
+      <rect x="300" y="362" width="280" height="30" rx="8" fill="#eef1f5" stroke="#8a96a3" stroke-width="1.5"/>
+      <text x="440" y="382">npm ci: everything, about 60 s; then save</text>
+    </g>
+    <g fill="none" stroke="#40566b" stroke-width="2">
+      <path d="M135 160V184" marker-end="url(#lch-arrow)"/>
+      <path d="M745 262V284" marker-end="url(#lch-arrow)"/>
+    </g>
+
+    <text x="440" y="416" font-size="13" fill="#40566b">Key on the lockfile hash: unchanged dependencies hit exactly, changed ones fall back to the nearest cache.</text>
+  </g>
+</svg>

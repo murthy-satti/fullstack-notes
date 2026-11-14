@@ -1,0 +1,4563 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../backup-fundamentals-and-strategies/">
+      
+      
+        <link rel="next" href="../disaster-recovery-rpo-and-rto/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Database Backups and Point-in-Time Recovery - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#database-backups-and-point-in-time-recovery" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Database Backups and Point-in-Time Recovery
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../05-application-architecture/" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../06-ai-and-machine-learning/" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+          <span class="md-ellipsis">&larr; Back to DevOps</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../05-application-architecture/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../06-ai-and-machine-learning/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI and Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
+        
+          
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-label="DevOps module lessons" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+                  <span class="md-ellipsis">&larr; Back to DevOps</span>
+                </a>
+              
+            </div>
+          
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                  
+  
+  
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+    
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_19" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_19" id="__nav_9_19_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backups and Disaster Recovery
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_19_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_19">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Backups and Disaster Recovery
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_19_2" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_19_2" id="__nav_9_19_2_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Foundations
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_19_2_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_19_2">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Foundations
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../backup-fundamentals-and-strategies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backup Fundamentals and Strategies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_19_3" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_19_3" id="__nav_9_19_3_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_19_3_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_19_3">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Databases
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Database Backups and Point-in-Time Recovery
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Database Backups and Point-in-Time Recovery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#logical-and-physical-backups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logical and physical backups
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#consistency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consistency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mongodb-logical-backups-mongodump-and-mongorestore" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MongoDB logical backups: mongodump and mongorestore
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#postgresql-logical-backups-pg_dump-and-pg_restore" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PostgreSQL logical backups: pg_dump and pg_restore
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#physical-backups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Physical backups
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#point-in-time-recovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Point-in-time recovery
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#managed-database-backups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Managed database backups
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#backing-up-a-replica-not-the-primary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backing up a replica, not the primary
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#backup-windows-and-impact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backup windows and impact
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mongodb-a-hidden-backup-member" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MongoDB: a hidden backup member
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mongodb-dump-with-the-oplog-and-restore-selectively" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MongoDB: dump with the oplog and restore selectively
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mongodb-point-in-time-recovery-with-percona-backup-for-mongodb" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MongoDB: point-in-time recovery with Percona Backup for MongoDB
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#postgresql-logical-backups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PostgreSQL: logical backups
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#postgresql-continuous-archiving-and-pitr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PostgreSQL: continuous archiving and PITR
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#amazon-rds-restore-to-a-point-in-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Amazon RDS: restore to a point in time
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_19_4" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_19_4" id="__nav_9_19_4_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Recovery
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_19_4_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_19_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Recovery
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../disaster-recovery-rpo-and-rto/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Disaster Recovery, RPO, and RTO
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../restore-testing-and-runbooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Restore Testing and Runbooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#logical-and-physical-backups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logical and physical backups
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#consistency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consistency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mongodb-logical-backups-mongodump-and-mongorestore" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MongoDB logical backups: mongodump and mongorestore
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#postgresql-logical-backups-pg_dump-and-pg_restore" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PostgreSQL logical backups: pg_dump and pg_restore
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#physical-backups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Physical backups
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#point-in-time-recovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Point-in-time recovery
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#managed-database-backups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Managed database backups
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#backing-up-a-replica-not-the-primary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backing up a replica, not the primary
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#backup-windows-and-impact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backup windows and impact
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mongodb-a-hidden-backup-member" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MongoDB: a hidden backup member
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mongodb-dump-with-the-oplog-and-restore-selectively" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MongoDB: dump with the oplog and restore selectively
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mongodb-point-in-time-recovery-with-percona-backup-for-mongodb" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MongoDB: point-in-time recovery with Percona Backup for MongoDB
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#postgresql-logical-backups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PostgreSQL: logical backups
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#postgresql-continuous-archiving-and-pitr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PostgreSQL: continuous archiving and PITR
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#amazon-rds-restore-to-a-point-in-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Amazon RDS: restore to a point in time
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="database-backups-and-point-in-time-recovery">Database Backups and Point-in-Time Recovery<a class="headerlink" href="#database-backups-and-point-in-time-recovery" title="Permanent link">&para;</a></h1>
+<p>Databases are the hardest thing to back up well: they change constantly,
+they must be captured in a consistent state, they are often large, and the
+backup itself puts load on the system users depend on. This lesson
+compares logical and physical backups, shows <code>mongodump</code>/<code>mongorestore</code>
+(with the oplog and its caveats) and <code>pg_dump</code>/<code>pg_restore</code>, explains what
+makes a backup consistent, how point-in-time recovery works by replaying
+the MongoDB oplog or the PostgreSQL write-ahead log on top of a base
+backup, what managed services such as MongoDB Atlas and Amazon RDS do for
+you, and why backups are usually taken from a replica rather than the
+primary.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>A nightly backup gives you yesterday's database. If a bad migration runs
+at 14:31, restoring last night's backup throws away fourteen hours of
+every user's work. Point-in-time recovery (PITR) lets you restore to
+14:30:59 instead, losing almost nothing that happened before the
+mistake. Without it, the choice during an incident is between living with
+corrupted data and losing a day.</p>
+<p>How you back up also decides how long a restore takes. A logical dump of a
+500 GB database can take many hours to restore because every document is
+reinserted and every index rebuilt, which may exceed the recovery time the
+business can accept. Choosing the method is therefore a decision about
+RPO and RTO, not just about tools.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>MongoDB.</strong> The manual's
+  <a href="https://www.mongodb.com/docs/manual/core/backups/">backup methods</a> page
+  compares MongoDB Atlas backups, Ops Manager, filesystem snapshots, and
+  <code>mongodump</code>, and notes that <code>mongodump</code> and <code>mongorestore</code> suit small
+  deployments, while larger systems use snapshot-based methods.</li>
+<li><strong>PostgreSQL.</strong> The documentation chapter
+  <a href="https://www.postgresql.org/docs/current/continuous-archiving.html">Continuous Archiving and Point-in-Time Recovery</a>
+  explains combining a file-system-level base backup with archived WAL
+  files to restore to any moment since the base backup.</li>
+<li><strong>Amazon RDS.</strong> The guide to
+  <a href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PIT.html">restoring to a specified time</a>
+  describes how RDS uses automated backups and archived transaction logs
+  to restore to any second within the retention period, creating a new DB
+  instance.</li>
+<li><strong>GitLab (2017).</strong> The
+  <a href="https://about.gitlab.com/blog/2017/02/10/postmortem-of-database-outage-of-january-31/">postmortem of its database outage</a>
+  lists investigating point-in-time recovery with continuous WAL archiving
+  among its action items, after restoring from a six-hour-old snapshot.</li>
+</ul>
+<p><strong>Popular tools and providers:</strong> <code>mongodump</code>/<code>mongorestore</code>, MongoDB Atlas
+Cloud Backup, Percona Backup for MongoDB, MongoDB Ops Manager,
+<code>pg_dump</code>/<code>pg_restore</code>, <code>pg_basebackup</code>, pgBackRest, Barman, WAL-G,
+Amazon RDS and Aurora backups, Google Cloud SQL backups, and EBS or
+persistent disk snapshots.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="logical-and-physical-backups">Logical and physical backups<a class="headerlink" href="#logical-and-physical-backups" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: logical backups such as mongodump and pg_dump read records through the query engine into a BSON or SQL dump file; physical backups such as snapshots and pg_basebackup copy data files or blocks into a volume snapshot. Logical backups are portable across versions and platforms, slow on large data because they read every record, allow restoring one collection or table easily, load the source and churn its cache, support point-in-time recovery with the oplog or WAL, need --oplog for MongoDB consistency, restore slowly because they reinsert data and rebuild indexes, and suit small databases, migrations, and extracts. Physical backups are tied to the same engine and major version, fast with incremental block copies, usually restore the whole database, have little load with copy-on-write snapshots, support point-in-time recovery with the oplog or WAL, need the journal on the same volume or a lock for consistency, restore quickly by copying files and starting, and suit large databases and fast full restores." src="../logical-vs-physical-backups.svg" /></p>
+<ul>
+<li>A <strong>logical backup</strong> asks the database for its data and writes it in a
+  portable format: BSON for <code>mongodump</code>, SQL or a custom archive for
+  <code>pg_dump</code>. It can be restored into a different version or platform, and
+  you can restore a single collection or table. It is slow for large data,
+  and the restore must reinsert every record and rebuild every index.</li>
+<li>A <strong>physical backup</strong> copies the database's files or disk blocks: a
+  volume snapshot, <code>pg_basebackup</code>, or a physical backup tool. It is fast
+  to take (snapshots are often incremental at the block level) and fast to
+  restore (copy files, start the server), but it is tied to the same
+  database engine and major version, and usually restores everything.</li>
+</ul>
+<p>Rule of thumb: logical for small databases (up to roughly tens of GB),
+migrations between versions, and extracting subsets; physical for large
+production databases where restore time matters. Many teams run both.</p>
+<h3 id="consistency">Consistency<a class="headerlink" href="#consistency" title="Permanent link">&para;</a></h3>
+<p>A backup is useful only if it represents a state the database actually
+had:</p>
+<ul>
+<li><strong>Point-in-time consistent:</strong> every record as of one moment. <code>pg_dump</code>
+  achieves this automatically by running in a single transaction snapshot,
+  so concurrent writes do not appear half-applied.</li>
+<li><strong>Inconsistent:</strong> a dump that reads collections one after another while
+  writes continue. A plain <code>mongodump</code> without <code>--oplog</code> on a busy replica
+  set can capture a task in one collection but not the related record in
+  another collection written a second later.</li>
+<li><strong>Crash-consistent:</strong> a snapshot equivalent to pulling the power plug.
+  Databases with a write-ahead journal recover from this on startup, <em>if</em>
+  the journal is in the same snapshot. For MongoDB with WiredTiger, a
+  snapshot of a single volume holding both data and journal is consistent;
+  if they are on different volumes, or for multi-volume setups, lock
+  writes (<code>db.fsyncLock()</code>) or use a tool that coordinates.</li>
+<li><strong>Sharded clusters</strong> need coordination across shards and the config
+  servers, which is what Atlas, Ops Manager, and Percona Backup for MongoDB
+  provide. <code>mongodump</code> through <code>mongos</code> requires pausing the balancer,
+  cross-shard transactions, and schema changes, and cannot use <code>--oplog</code>.</li>
+</ul>
+<h3 id="mongodb-logical-backups-mongodump-and-mongorestore">MongoDB logical backups: mongodump and mongorestore<a class="headerlink" href="#mongodb-logical-backups-mongodump-and-mongorestore" title="Permanent link">&para;</a></h3>
+<p><code>mongodump</code> reads data through the database and writes BSON plus
+metadata (collection options and index definitions). Important options and
+caveats from the official documentation:</p>
+<ul>
+<li><code>--oplog</code> also captures oplog entries written <strong>during</strong> the dump, so the
+  result is consistent to the moment the dump finished; restore it with
+  <code>mongorestore --oplogReplay</code>. It requires a full dump of a replica set
+  member: it cannot be combined with <code>--db</code>, <code>--collection</code>, or <code>--query</code>,
+  and cannot be used on a sharded cluster through <code>mongos</code>.</li>
+<li>A dump with <code>--oplog</code> <strong>fails</strong> if certain operations run during it,
+  including collection renames, aggregations with <code>$out</code>, <code>mapReduce</code>, and
+  changes to users or roles. Schedule dumps away from such jobs.</li>
+<li><code>--readPreference=secondary</code> reads from a secondary instead of the
+  primary.</li>
+<li><code>--archive</code> writes one archive (or a stream to stdout, for piping to
+  object storage) and <code>--gzip</code> compresses it.</li>
+<li><code>--numParallelCollections</code> (default 4) controls parallelism.</li>
+<li>Restore into a deployment with the same major version or feature
+  compatibility version as the source.</li>
+<li><code>mongorestore</code> rebuilds indexes after inserting data, which is often the
+  slowest part of a large restore. <code>--nsInclude</code>, <code>--nsFrom</code>, and
+  <code>--nsTo</code> restore selected collections, optionally under new names.</li>
+</ul>
+<h3 id="postgresql-logical-backups-pg_dump-and-pg_restore">PostgreSQL logical backups: pg_dump and pg_restore<a class="headerlink" href="#postgresql-logical-backups-pg_dump-and-pg_restore" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>pg_dump</code> dumps one database consistently, without blocking normal
+  reads and writes. Formats: plain SQL (<code>-Fp</code>), custom (<code>-Fc</code>,
+  compressed, selective restore), directory (<code>-Fd</code>, supports parallel dump
+  with <code>--jobs</code>), and tar.</li>
+<li><code>pg_restore</code> restores custom, directory, and tar dumps, in parallel with
+  <code>--jobs</code>, and can restore single tables (<code>-t</code>).</li>
+<li><code>pg_dump</code> does not include cluster-wide objects such as roles; dump them
+  with <code>pg_dumpall --globals-only</code>.</li>
+</ul>
+<h3 id="physical-backups">Physical backups<a class="headerlink" href="#physical-backups" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Volume snapshots</strong> (EBS, persistent disks) are block-level,
+  incremental after the first, and nearly instant to start. Copy them to
+  another region and account to make them real backups.</li>
+<li><strong><code>pg_basebackup</code></strong> copies a running PostgreSQL cluster's data directory
+  over the replication protocol, including the WAL needed to make it
+  consistent (<code>--wal-method=stream</code>). PostgreSQL 17 added incremental base
+  backups (<code>pg_basebackup --incremental</code> with WAL summarization enabled)
+  and <code>pg_combinebackup</code> to merge them.</li>
+<li><strong>pgBackRest, Barman, and WAL-G</strong> manage full, differential, and
+  incremental physical backups, parallelism, compression, encryption,
+  retention, and WAL archiving.</li>
+<li><strong>Percona Backup for MongoDB</strong> offers logical and physical backups and
+  point-in-time recovery for replica sets and sharded clusters.</li>
+</ul>
+<h3 id="point-in-time-recovery">Point-in-time recovery<a class="headerlink" href="#point-in-time-recovery" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: a timeline from Sunday 02:00 to Tuesday 16:00. A base backup (snapshot) is taken Sunday at 02:00, and the oplog or WAL is archived continuously in segments every few minutes. On Tuesday at 14:31 a bad migration deletes a field from tasks. Recovery restores the base backup and replays the log up to Tuesday 14:30:59; later log entries are not replayed. The result is the database exactly as it was one second before the mistake; good writes after 14:31 must be reapplied from other records or are lost." src="../pitr-timeline.svg" /></p>
+<p>Every change to a database is first recorded in a log: the <strong>write-ahead
+log (WAL)</strong> in PostgreSQL, the <strong>oplog</strong> in a MongoDB replica set. PITR
+combines two things:</p>
+<ol>
+<li>A <strong>base backup</strong> (snapshot, <code>pg_basebackup</code>, or dump) taken at a known
+   point.</li>
+<li>An <strong>unbroken archive of the log</strong> from that point onward.</li>
+</ol>
+<p>To recover, restore the base backup, then replay the log until a
+<strong>recovery target</strong>: a timestamp, a log position, or a named restore
+point. The database ends up exactly as it was at that moment.</p>
+<p>Practical details:</p>
+<ul>
+<li><strong>The RPO is the unarchived tail of the log.</strong> With WAL segments shipped
+  at least every 5 minutes (<code>archive_timeout = 300</code>), at most about 5
+  minutes of committed data is at risk if the server is destroyed. Managed
+  services quote similar figures (RDS can typically restore to within the
+  last five minutes).</li>
+<li><strong>The chain must be complete.</strong> One missing WAL segment or an oplog gap
+  (for example because the oplog window was shorter than the time between
+  captures) stops replay at that point. Monitor archive failures and the
+  oplog window.</li>
+<li><strong>Pick the target carefully.</strong> Find the exact time of the bad operation
+  from application logs, audit logs, or the oplog itself, and stop just
+  before it.</li>
+<li><strong>RTO includes replay.</strong> Restoring a base backup and replaying two days
+  of log can take much longer than restoring a fresh snapshot; take base
+  backups often enough to keep replay short.</li>
+<li><strong>Restore next to production, not over it.</strong> Recover into a new instance,
+  verify, then either switch traffic or copy the affected records back.
+  This keeps good writes made after the mistake.</li>
+</ul>
+<h3 id="managed-database-backups">Managed database backups<a class="headerlink" href="#managed-database-backups" title="Permanent link">&para;</a></h3>
+<p><strong>MongoDB Atlas</strong> provides Cloud Backup (scheduled snapshots with
+configurable retention, copies to other regions) and Continuous Cloud
+Backup, which captures the oplog so you can restore to any point within a
+configured window. Restores go to the same or a different cluster.</p>
+<p><strong>Amazon RDS</strong> provides:</p>
+<ul>
+<li><strong>Automated backups:</strong> a daily snapshot during the backup window plus
+  transaction logs uploaded about every five minutes, giving PITR to any
+  second within a retention period of 1 to 35 days (0 disables them).</li>
+<li><strong>Manual snapshots,</strong> kept until you delete them.</li>
+<li><strong>Restores always create a new DB instance</strong> with a new endpoint, so the
+  application's connection settings must change (or DNS must point to the
+  new instance).</li>
+<li>Cross-region automated backup replication and integration with AWS
+  Backup for copies to other accounts.</li>
+</ul>
+<p>Managed backups remove most of the mechanics, but not the decisions:
+retention long enough for slow-to-detect corruption, copies outside the
+account and region, protection against someone deleting the instance and
+its backups, and restore tests that measure the real RTO.</p>
+<h3 id="backing-up-a-replica-not-the-primary">Backing up a replica, not the primary<a class="headerlink" href="#backing-up-a-replica-not-the-primary" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: TaskFlow API reads and writes through the primary of a MongoDB replica set, which replicates the oplog to Secondary 1 and Secondary 2 (which may serve reads), a hidden member with priority 0 and no application use, and an optional delayed member one hour behind. A backup agent reads from the hidden member, taking snapshots or dumps plus oplog capture, and uploads them encrypted to object storage in a backup account in another region." src="../replica-backup-topology.svg" /></p>
+<p>Backups read a lot of data. On the primary, that competes with
+application traffic for disk I/O, CPU, and memory, and a full scan from
+<code>mongodump</code> evicts the application's hot data from the WiredTiger cache.
+Common practice:</p>
+<ul>
+<li>Take backups from a <strong>secondary</strong>, or better, a <strong>hidden member</strong>
+  (<code>hidden: true</code>, <code>priority: 0</code>) that applications never read from and
+  that can never become primary.</li>
+<li>Remember that a replica can lag. A backup from a member that is 10
+  minutes behind is 10 minutes older than you think; check replication lag
+  before and during backups.</li>
+<li>A <strong>delayed member</strong> (<code>secondaryDelaySecs</code>) that stays, say, an hour
+  behind gives a fast way to recover data from a mistake noticed within the
+  hour. It is a convenience, not a backup: it is in the same cluster, the
+  same account, and eventually applies every mistake.</li>
+<li>PostgreSQL can take <code>pg_basebackup</code> from a standby; WAL archiving can
+  also be done from a standby.</li>
+</ul>
+<h3 id="backup-windows-and-impact">Backup windows and impact<a class="headerlink" href="#backup-windows-and-impact" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Schedule</strong> heavy backups at low traffic, and measure their duration as
+  data grows: a nightly dump that took 40 minutes a year ago may now run
+  into business hours.</li>
+<li><strong>Throttle</strong> where tools allow (parallelism, bandwidth limits) and
+  watch latency during backups.</li>
+<li><strong>Prefer snapshots</strong> for large data: copy-on-write snapshots start
+  instantly and run in the storage layer, although the first snapshot of a
+  volume copies every block.</li>
+<li><strong>Separate concerns:</strong> a short RPO comes from continuous log capture,
+  not from running full backups more often.</li>
+</ul>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Database situation</th>
+<th>Recommended approach</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TaskFlow on Atlas or another managed service</td>
+<td>Managed snapshots plus continuous backup (PITR), copies to another region, restore tests</td>
+</tr>
+<tr>
+<td>Self-managed MongoDB replica set, under tens of GB</td>
+<td><code>mongodump --oplog</code> from a hidden member plus oplog capture, or Percona Backup for MongoDB</td>
+</tr>
+<tr>
+<td>Self-managed MongoDB, large or sharded</td>
+<td>Coordinated snapshot-based backups with PITR (Percona Backup for MongoDB, Ops Manager)</td>
+</tr>
+<tr>
+<td>PostgreSQL, small</td>
+<td><code>pg_dump</code> nightly plus WAL archiving for PITR</td>
+</tr>
+<tr>
+<td>PostgreSQL, large</td>
+<td>pgBackRest, Barman, or WAL-G with physical base backups and WAL archiving</td>
+</tr>
+<tr>
+<td>Migrating to a new major version or platform</td>
+<td>Logical dump and restore (or logical replication)</td>
+</tr>
+<tr>
+<td>Recovering one deleted collection or table</td>
+<td>Restore a backup to a scratch instance, then copy the records back</td>
+</tr>
+</tbody>
+</table>
+<p>Do not use logical dumps as the only backup for a large database whose
+restore time would exceed the RTO, and do not rely on replicas or delayed
+members instead of backups.</p>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="mongodb-a-hidden-backup-member">MongoDB: a hidden backup member<a class="headerlink" href="#mongodb-a-hidden-backup-member" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// mongosh, connected to the primary: add a member used only for backups</span>
+<span class="nx">rs</span><span class="p">.</span><span class="nx">add</span><span class="p">({</span>
+<span class="w">  </span><span class="nx">host</span><span class="o">:</span><span class="w"> </span><span class="s2">"mongo-backup-1.internal.example.com:27017"</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">priority</span><span class="o">:</span><span class="w"> </span><span class="mf">0</span><span class="p">,</span><span class="w"> </span><span class="c1">// can never become primary</span>
+<span class="w">  </span><span class="nx">hidden</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="c1">// invisible to application drivers</span>
+<span class="p">});</span>
+
+<span class="c1">// Optional: a delayed member that stays one hour behind the primary</span>
+<span class="nx">rs</span><span class="p">.</span><span class="nx">add</span><span class="p">({</span>
+<span class="w">  </span><span class="nx">host</span><span class="o">:</span><span class="w"> </span><span class="s2">"mongo-delayed-1.internal.example.com:27017"</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">priority</span><span class="o">:</span><span class="w"> </span><span class="mf">0</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">hidden</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">secondaryDelaySecs</span><span class="o">:</span><span class="w"> </span><span class="mf">3600</span><span class="p">,</span>
+<span class="p">});</span>
+
+<span class="nx">rs</span><span class="p">.</span><span class="nx">printSecondaryReplicationInfo</span><span class="p">();</span><span class="w"> </span><span class="c1">// check how far behind each member is</span>
+</code></pre></div>
+<h3 id="mongodb-dump-with-the-oplog-and-restore-selectively">MongoDB: dump with the oplog and restore selectively<a class="headerlink" href="#mongodb-dump-with-the-oplog-and-restore-selectively" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="ch">#!/usr/bin/env bash</span>
+<span class="c1"># scripts/mongo-backup.sh: consistent nightly dump from the hidden member</span>
+<span class="nb">set</span><span class="w"> </span>-euo<span class="w"> </span>pipefail
+<span class="nv">STAMP</span><span class="o">=</span><span class="s2">"</span><span class="k">$(</span>date<span class="w"> </span>-u<span class="w"> </span>+%Y-%m-%dT%H%M%SZ<span class="k">)</span><span class="s2">"</span>
+
+mongodump<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--uri<span class="o">=</span><span class="s2">"mongodb://backup-user@mongo-backup-1.internal.example.com:27017/?authSource=admin&amp;directConnection=true"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--oplog<span class="w"> </span>--archive<span class="o">=</span><span class="s2">"/var/backups/taskflow-</span><span class="si">${</span><span class="nv">STAMP</span><span class="si">}</span><span class="s2">.archive.gz"</span><span class="w"> </span>--gzip
+
+aws<span class="w"> </span>s3<span class="w"> </span>cp<span class="w"> </span><span class="s2">"/var/backups/taskflow-</span><span class="si">${</span><span class="nv">STAMP</span><span class="si">}</span><span class="s2">.archive.gz"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">"s3://taskflow-backups-example/mongodb/taskflow-</span><span class="si">${</span><span class="nv">STAMP</span><span class="si">}</span><span class="s2">.archive.gz"</span>
+
+<span class="c1"># Reached only if both commands succeeded: do not let local dumps fill the disk</span>
+rm<span class="w"> </span>-f<span class="w"> </span><span class="s2">"/var/backups/taskflow-</span><span class="si">${</span><span class="nv">STAMP</span><span class="si">}</span><span class="s2">.archive.gz"</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1"># Full restore into a scratch deployment, replaying the oplog captured during the dump</span>
+mongorestore<span class="w"> </span>--uri<span class="o">=</span><span class="s2">"</span><span class="nv">$SCRATCH_URI</span><span class="s2">"</span><span class="w"> </span>--archive<span class="o">=</span>taskflow-2026-11-12T020000Z.archive.gz<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--gzip<span class="w"> </span>--oplogReplay<span class="w"> </span>--drop
+
+<span class="c1"># Selective restore: only the tasks collection, under a new name, for comparison and repair</span>
+mongorestore<span class="w"> </span>--uri<span class="o">=</span><span class="s2">"</span><span class="nv">$SCRATCH_URI</span><span class="s2">"</span><span class="w"> </span>--archive<span class="o">=</span>taskflow-2026-11-12T020000Z.archive.gz<span class="w"> </span>--gzip<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--nsInclude<span class="o">=</span><span class="s2">"taskflow.tasks"</span><span class="w"> </span>--nsFrom<span class="o">=</span><span class="s2">"taskflow.tasks"</span><span class="w"> </span>--nsTo<span class="o">=</span><span class="s2">"recovery.tasks_20261112"</span>
+</code></pre></div>
+<p>Run the script from a systemd timer with failure alerts rather than a
+bare crontab line; the timer, overlap protection, and <code>OnFailure=</code>
+notification are shown in
+<a href="../../linux-server-operations/scheduled-jobs-and-log-rotation/">scheduled jobs and log rotation</a>.
+The backup user only needs the built-in <code>backup</code> role, and the restore
+user the <code>restore</code> role. The connection string's password comes from the
+environment or a secrets manager (here the URI omits it). Restoring
+selectively into a new namespace lets you copy back only the deleted
+documents with an aggregation or a script, instead of overwriting the
+whole collection.</p>
+<h3 id="mongodb-point-in-time-recovery-with-percona-backup-for-mongodb">MongoDB: point-in-time recovery with Percona Backup for MongoDB<a class="headerlink" href="#mongodb-point-in-time-recovery-with-percona-backup-for-mongodb" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Enable continuous oplog capture (PITR) alongside scheduled backups</span>
+pbm<span class="w"> </span>config<span class="w"> </span>--set<span class="w"> </span>pitr.enabled<span class="o">=</span><span class="nb">true</span>
+pbm<span class="w"> </span>backup<span class="w"> </span>--type<span class="o">=</span>physical<span class="w">     </span><span class="c1"># or logical (the default)</span>
+pbm<span class="w"> </span>list<span class="w">                       </span><span class="c1"># shows backups and the PITR time ranges available</span>
+
+<span class="c1"># Restore the cluster to just before the bad migration</span>
+pbm<span class="w"> </span>restore<span class="w"> </span>--time<span class="o">=</span><span class="s2">"2026-11-10T14:30:59"</span>
+</code></pre></div>
+<p>On Atlas the same operation is a point-in-time restore from the Backup
+page, CLI, or Admin API, targeting a timestamp within the continuous
+backup window.</p>
+<h3 id="postgresql-logical-backups">PostgreSQL: logical backups<a class="headerlink" href="#postgresql-logical-backups" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Parallel, compressed directory-format dump of one database</span>
+pg_dump<span class="w"> </span>--format<span class="o">=</span>directory<span class="w"> </span>--jobs<span class="o">=</span><span class="m">4</span><span class="w"> </span>--file<span class="o">=</span>/var/backups/taskflow-2026-11-12<span class="w"> </span><span class="s2">"</span><span class="nv">$DATABASE_URL</span><span class="s2">"</span>
+
+<span class="c1"># Roles and other cluster-wide objects are not in pg_dump; dump them separately</span>
+pg_dumpall<span class="w"> </span>--globals-only<span class="w"> </span>--file<span class="o">=</span>/var/backups/globals-2026-11-12.sql
+
+<span class="c1"># Parallel restore into a scratch database</span>
+pg_restore<span class="w"> </span>--jobs<span class="o">=</span><span class="m">4</span><span class="w"> </span>--clean<span class="w"> </span>--if-exists<span class="w"> </span>--no-owner<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--dbname<span class="o">=</span><span class="s2">"</span><span class="nv">$SCRATCH_DATABASE_URL</span><span class="s2">"</span><span class="w"> </span>/var/backups/taskflow-2026-11-12
+</code></pre></div>
+<h3 id="postgresql-continuous-archiving-and-pitr">PostgreSQL: continuous archiving and PITR<a class="headerlink" href="#postgresql-continuous-archiving-and-pitr" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># postgresql.conf on the primary: archive every completed WAL segment</span>
+<span class="na">wal_level</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">replica</span>
+<span class="na">archive_mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">on</span>
+<span class="na">archive_command</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'test ! -f /mnt/wal-archive/%f &amp;&amp; cp %p /mnt/wal-archive/%f'</span>
+<span class="na">archive_timeout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">300</span><span class="w">   </span><span class="c1"># force a segment switch at least every 5 minutes (bounds the RPO)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1"># Base backup, streaming the WAL needed to make it consistent</span>
+pg_basebackup<span class="w"> </span>--pgdata<span class="o">=</span>/var/backups/base-2026-11-09<span class="w"> </span>--format<span class="o">=</span>plain<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--wal-method<span class="o">=</span>stream<span class="w"> </span>--checkpoint<span class="o">=</span>fast<span class="w"> </span>--progress
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1"># postgresql.conf on the restore server (data directory copied from the base backup)</span>
+<span class="na">restore_command</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'cp /mnt/wal-archive/%f %p'</span>
+<span class="na">recovery_target_time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'2026-11-10 14:30:59+00'</span>
+<span class="na">recovery_target_action</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'promote'</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1"># Ask PostgreSQL to enter targeted recovery on startup, then start it</span>
+touch<span class="w"> </span><span class="s2">"</span><span class="nv">$PGDATA</span><span class="s2">/recovery.signal"</span>
+pg_ctl<span class="w"> </span>-D<span class="w"> </span><span class="s2">"</span><span class="nv">$PGDATA</span><span class="s2">"</span><span class="w"> </span>start
+<span class="c1"># The log shows WAL being replayed and "recovery stopping before commit of transaction ..."</span>
+</code></pre></div>
+<p>The <code>archive_command</code> shown is the documentation's simple example; in
+production use a tool such as pgBackRest or WAL-G that copies WAL to
+object storage, verifies it, and handles retention.</p>
+<h3 id="amazon-rds-restore-to-a-point-in-time">Amazon RDS: restore to a point in time<a class="headerlink" href="#amazon-rds-restore-to-a-point-in-time" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># How far forward can we restore?</span>
+aws<span class="w"> </span>rds<span class="w"> </span>describe-db-instances<span class="w"> </span>--db-instance-identifier<span class="w"> </span>taskflow-prod<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--query<span class="w"> </span><span class="s1">'DBInstances[0].LatestRestorableTime'</span>
+
+<span class="c1"># Restore into a NEW instance, one second before the bad migration</span>
+aws<span class="w"> </span>rds<span class="w"> </span>restore-db-instance-to-point-in-time<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--source-db-instance-identifier<span class="w"> </span>taskflow-prod<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--target-db-instance-identifier<span class="w"> </span>taskflow-restore-20261110<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--restore-time<span class="w"> </span><span class="m">2026</span>-11-10T14:30:59Z<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--db-subnet-group-name<span class="w"> </span>taskflow-private<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--no-publicly-accessible
+
+aws<span class="w"> </span>rds<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>db-instance-available<span class="w"> </span>--db-instance-identifier<span class="w"> </span>taskflow-restore-20261110
+</code></pre></div>
+<p>Verify the restored instance, then either repoint the application to it
+or copy the affected rows back to production.</p>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Combine base backups with continuous log capture (oplog or WAL) for
+  point-in-time recovery.</li>
+<li>Choose logical or physical backups by data size and RTO; test how long
+  a full restore really takes.</li>
+<li>Make backups consistent: <code>--oplog</code> for <code>mongodump</code>, single-volume or
+  coordinated snapshots, tools that coordinate sharded clusters.</li>
+<li>Take backups from a hidden secondary or standby, and watch replication
+  lag.</li>
+<li>Monitor log archiving failures and the oplog window, since a gap breaks
+  PITR.</li>
+<li>Restore into a new instance and copy data back, rather than restoring
+  over production.</li>
+<li>Back up roles, users, and configuration alongside data.</li>
+<li>Keep managed-service backups, but add cross-region or cross-account
+  copies and retention that matches your detection time.</li>
+<li>Record the backup window duration and its impact on latency, and revisit
+  as data grows.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>PITR stops hours short of the target time.</strong>
+  <em>Detect:</em> PostgreSQL stops with "recovery ended before configured
+  recovery target was reached", or the oplog capture shows a missing
+  range. <em>Cause:</em> WAL archiving failed
+  for a while (full disk, expired credentials) or the oplog rolled over
+  before it was captured. <em>Fix:</em> alert on archive failures
+  (<code>pg_stat_archiver.failed_count</code>), size the oplog for a long enough
+  window, and take a fresh base backup after any gap.</li>
+<li><strong>The nightly dump makes the API slow every night.</strong>
+  <em>Detect:</em> p99 latency and cache eviction rise during the backup window.
+  <em>Cause:</em> <code>mongodump</code> reads from the primary and evicts the working set
+  from the cache. <em>Fix:</em> dump from a hidden member, throttle parallelism,
+  or switch to snapshots.</li>
+<li><strong>A restored dump has orphaned or inconsistent references.</strong>
+  <em>Detect:</em> tasks reference projects that do not exist in the restored
+  data. <em>Cause:</em> <code>mongodump</code> without <code>--oplog</code> ran while writes continued,
+  so collections were captured at different times. <em>Fix:</em> use <code>--oplog</code>
+  with <code>--oplogReplay</code>, or snapshot-based backups.</li>
+<li><strong><code>mongodump --oplog</code> fails intermittently.</strong>
+  <em>Detect:</em> the backup job exits with an error about an operation not
+  allowed during the dump. <em>Cause:</em> a <code>$out</code> aggregation, collection
+  rename, or user change ran during the dump. <em>Fix:</em> schedule those jobs
+  outside the backup window, or move to a backup tool that handles them.</li>
+<li><strong>A restore exceeds the RTO by hours.</strong>
+  <em>Detect:</em> a drill shows <code>mongorestore</code> or <code>pg_restore</code> still rebuilding
+  indexes long after data loaded. <em>Cause:</em> a logical backup of a database
+  that has outgrown it. <em>Fix:</em> physical backups for full restores, keep
+  logical dumps for selective recovery, and measure restore time
+  regularly.</li>
+<li><strong>Restored RDS instance works, but the app still writes to the old one.</strong>
+  <em>Detect:</em> writes keep arriving at the damaged instance after the
+  "restore". <em>Cause:</em> PITR creates a new instance with a new endpoint.
+  <em>Fix:</em> include connection switching (DNS name or configuration change)
+  in the runbook, and practise it.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Logical backup:</strong> A dump of records through the database (BSON, SQL).</li>
+<li><strong>Physical backup:</strong> A copy of data files or blocks.</li>
+<li><strong>Base backup:</strong> The starting point for point-in-time recovery.</li>
+<li><strong>Write-ahead log (WAL):</strong> PostgreSQL's log of every change, written
+  before data files.</li>
+<li><strong>Oplog:</strong> MongoDB's capped collection recording every write on a replica
+  set.</li>
+<li><strong>Oplog window:</strong> How far back the oplog reaches before old entries are
+  overwritten.</li>
+<li><strong>Point-in-time recovery (PITR):</strong> Restoring a base backup and replaying
+  the log to a chosen moment.</li>
+<li><strong>Recovery target:</strong> The time, log position, or restore point where
+  replay stops.</li>
+<li><strong>Crash-consistent:</strong> Equivalent to a power loss; recoverable with a
+  journal.</li>
+<li><strong>Hidden member / delayed member:</strong> Replica set members not visible to
+  applications, optionally lagging on purpose.</li>
+<li><strong>Archive timeout:</strong> The maximum time before PostgreSQL ships a partly
+  filled WAL segment.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Running <code>mongodump</code> without <code>--oplog</code> on a busy replica set and calling
+  the result consistent.</li>
+<li>Assuming nightly backups give a small RPO.</li>
+<li>Never checking that WAL or oplog capture is continuous.</li>
+<li>Taking backups from the primary during peak hours.</li>
+<li>Treating a delayed member as a backup.</li>
+<li>Restoring over production instead of into a new instance.</li>
+<li>Forgetting roles, users, and configuration when restoring.</li>
+<li>Assuming a managed service's default retention (often a week) covers
+  corruption discovered a month later.</li>
+<li>Never measuring how long a full restore takes.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Compare logical and physical backups on portability, speed, selective
+   restore, and impact.</li>
+<li>What does <code>mongodump --oplog</code> do, what are its restrictions, and how is
+   the dump restored?</li>
+<li>Why is <code>pg_dump</code> consistent even while the database is being written
+   to?</li>
+<li>Explain point-in-time recovery step by step. What breaks it?</li>
+<li>With <code>archive_timeout = 300</code> and WAL shipped to another region, what is
+   the worst-case RPO if the primary's region is lost?
+   (About 5 minutes of committed transactions, plus any archiving backlog.)</li>
+<li>A base backup of 400 GB restores at 250 MB/s, and 60 GB of WAL replays
+   at 100 MB/s. Roughly how long is the restore, and how could you shorten
+   it? (1,600 s plus 600 s, about 37 minutes; take base backups more often
+   or use faster storage.)</li>
+<li>Why back up from a hidden member, and what should you check about it
+   first?</li>
+<li>What changes in your runbook when RDS PITR creates a new instance?</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://www.mongodb.com/docs/database-tools/mongodump/">MongoDB: mongodump</a></li>
+<li><a href="https://www.mongodb.com/docs/database-tools/mongorestore/">MongoDB: mongorestore</a></li>
+<li><a href="https://www.mongodb.com/docs/atlas/backup/cloud-backup/overview/">MongoDB Atlas: Cloud Backups</a></li>
+<li><a href="https://docs.percona.com/percona-backup-mongodb/">Percona Backup for MongoDB</a></li>
+<li><a href="https://www.postgresql.org/docs/current/app-pgdump.html">PostgreSQL: pg_dump</a></li>
+<li><a href="https://www.postgresql.org/docs/current/app-pgcombinebackup.html">PostgreSQL: pg_combinebackup</a></li>
+<li><a href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_WorkingWithAutomatedBackups.html">Amazon RDS: Automated backups</a></li>
+<li><a href="../../../04-databases/mongodb/backup-and-restore/">MongoDB backup and restore</a> and
+  <a href="../../../04-databases/mongodb/replication/">replication</a> in the Databases section</li>
+<li>Next: <a href="../disaster-recovery-rpo-and-rto/">disaster recovery, RPO, and RTO</a>.
+  Back to the <a href="../">backups overview</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../backup-fundamentals-and-strategies/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Backup Fundamentals and Strategies">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Backup Fundamentals and Strategies</span>
+      </a>
+    
+    
+      <a href="../disaster-recovery-rpo-and-rto/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: Disaster Recovery, RPO, and RTO">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">Disaster Recovery, RPO, and RTO</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

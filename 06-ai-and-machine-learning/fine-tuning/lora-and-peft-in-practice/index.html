@@ -1,0 +1,3807 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../when-to-fine-tune/">
+      
+      
+        <link rel="next" href="../preference-tuning-and-distillation/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>LoRA and PEFT in Practice - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#lora-and-peft-in-practice" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              LoRA and PEFT in Practice
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../05-application-architecture/" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../08-devops-and-deployment/" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to AI and Machine Learning">
+          <span class="md-ellipsis">&larr; Back to AI</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../05-application-architecture/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        
+          
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-label="AI module lessons" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to AI and Machine Learning">
+                  <span class="md-ellipsis">&larr; Back to AI</span>
+                </a>
+              
+            </div>
+          
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                  
+  
+  
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+    
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_7" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_7_7" id="__nav_7_7_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Customization
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_7_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_7_7">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Model Customization
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_7_1" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_7_7_1" id="__nav_7_7_1_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fine-Tuning
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_7_7_1_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_7_7_1">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Fine-Tuning
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../when-to-fine-tune/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    When to Fine-Tune
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LoRA and PEFT in Practice
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LoRA and PEFT in Practice
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-full-fine-tuning-is-heavy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why full fine-tuning is heavy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-lora-update" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The LoRA update
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rank-alpha-and-scaling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rank, alpha, and scaling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#which-layers-to-adapt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Which layers to adapt
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qlora-a-4-bit-base-under-a-16-bit-adapter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        QLoRA: a 4-bit base under a 16-bit adapter
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variants-worth-knowing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Variants worth knowing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#training-with-trl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Training with TRL
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hyperparameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hyperparameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#evaluating-an-adapter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Evaluating an adapter
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#serving-separate-adapters-or-a-merged-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Serving: separate adapters or a merged model
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#count-parameters-and-memory-before-you-train" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Count parameters and memory before you train
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#train-a-lora-adapter-with-trl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Train a LoRA adapter with TRL
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#switch-to-qlora-when-the-model-does-not-fit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Switch to QLoRA when the model does not fit
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generate-predictions-and-compare-with-the-base-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Generate predictions and compare with the base model
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#merge-the-adapter-or-serve-it-next-to-the-base-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Merge the adapter, or serve it next to the base model
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preference-tuning-and-distillation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preference Tuning and Distillation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../training-models/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training Models
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../small-scale-model-training/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Small-Scale Model Training Walkthrough
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ai-data-preparation-and-governance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Data Preparation and Governance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../08-devops-and-deployment/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DevOps and Deployment
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-full-fine-tuning-is-heavy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why full fine-tuning is heavy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-lora-update" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The LoRA update
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rank-alpha-and-scaling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rank, alpha, and scaling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#which-layers-to-adapt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Which layers to adapt
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qlora-a-4-bit-base-under-a-16-bit-adapter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        QLoRA: a 4-bit base under a 16-bit adapter
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variants-worth-knowing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Variants worth knowing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#training-with-trl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Training with TRL
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hyperparameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hyperparameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#evaluating-an-adapter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Evaluating an adapter
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#serving-separate-adapters-or-a-merged-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Serving: separate adapters or a merged model
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#count-parameters-and-memory-before-you-train" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Count parameters and memory before you train
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#train-a-lora-adapter-with-trl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Train a LoRA adapter with TRL
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#switch-to-qlora-when-the-model-does-not-fit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Switch to QLoRA when the model does not fit
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generate-predictions-and-compare-with-the-base-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Generate predictions and compare with the base model
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#merge-the-adapter-or-serve-it-next-to-the-base-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Merge the adapter, or serve it next to the base model
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="lora-and-peft-in-practice">LoRA and PEFT in Practice<a class="headerlink" href="#lora-and-peft-in-practice" title="Permanent link">&para;</a></h1>
+<p>Low-Rank Adaptation (LoRA) is the default way to fine-tune open-weight
+language models today. Instead of updating billions of weights, it freezes
+the base model and trains a pair of small matrices next to selected layers,
+producing an "adapter" of tens of megabytes. This lesson explains why full
+fine-tuning is so memory-hungry, how LoRA and QLoRA work, how rank, alpha,
+and target modules interact, and how to train, evaluate, merge, and serve
+an adapter for the TaskFlow Assistant's task parser with the Hugging Face
+PEFT and TRL libraries. Code was checked against the installed packages
+as of November 2026: <code>peft</code> 0.21, <code>trl</code> 1.18, and <code>transformers</code> 5.23.</p>
+<p>The previous lesson, <a href="../when-to-fine-tune/">when to fine-tune</a>, built the
+dataset and the evaluation script used here.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>Full fine-tuning updates every weight, so the optimizer must keep
+gradients and its own statistics for every weight too. For an 8-billion
+parameter model that is well over 100 GB of accelerator memory before a
+single activation is stored, which means several data-center GPUs for a
+job that only teaches the model to emit tidy JSON. Each fine-tuned copy is
+also a full-size model to store and serve.</p>
+<p>LoRA changes both sides of that equation. Training needs memory for the
+frozen weights plus a fraction of a percent of trainable parameters, so a
+single GPU is often enough, and with QLoRA even a large model can fit. The
+result is a small adapter file: many adapters can share one base model in
+memory, one per feature or customer, and a bad adapter can be rolled back
+by switching a name. Knowing the knobs (rank, alpha, which layers,
+learning rate) is the difference between an adapter that matches full
+fine-tuning and one that quietly learns nothing.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>LoRA paper (Microsoft), 2021.</strong>
+  <a href="https://arxiv.org/abs/2106.09685">LoRA: Low-Rank Adaptation of Large Language Models</a>
+  reports that, compared with fully fine-tuning GPT-3 175B with Adam,
+  LoRA "can reduce the number of trainable parameters by 10,000 times and
+  the GPU memory requirement by 3 times," performs on par in quality, and
+  adds "no additional inference latency" because the update can be merged
+  into the weights.</li>
+<li><strong>QLoRA, 2023.</strong>
+  <a href="https://arxiv.org/abs/2305.14314">QLoRA: Efficient Finetuning of Quantized LLMs</a>
+  backpropagates through a frozen 4-bit base model into LoRA adapters,
+  which "reduces memory usage enough to finetune a 65B parameter model on a
+  single 48GB GPU while preserving full 16-bit finetuning task
+  performance," using the NF4 data type, double quantization, and paged
+  optimizers.</li>
+<li><strong>Apple Intelligence, 2024.</strong> Apple's
+  <a href="https://machinelearning.apple.com/research/introducing-apple-foundation-models">foundation models overview</a>
+  describes LoRA adapters for features such as summarization that "can be
+  dynamically loaded, temporarily cached in memory, and swapped," and notes
+  that a rank-16 adapter for its roughly 3-billion-parameter on-device
+  model "typically require[s] 10s of megabytes."</li>
+<li><strong>Thinking Machines, "LoRA Without Regret", 2025.</strong> The
+  <a href="https://thinkingmachines.ai/blog/lora/">study</a> finds that LoRA matches
+  full fine-tuning on small and medium post-training datasets when applied
+  to all layers (especially the MLP layers), with a learning rate about 10
+  times higher than full fine-tuning's, and that LoRA is "less tolerant of
+  large batch sizes." Hugging Face reproduced the settings in TRL's
+  <a href="https://huggingface.co/docs/trl/lora_without_regret">LoRA Without Regret guide</a>.</li>
+<li><strong>Biderman et al., 2024.</strong>
+  <a href="https://arxiv.org/abs/2405.09673">LoRA Learns Less and Forgets Less</a>
+  finds that on large code and math datasets standard low-rank LoRA
+  "substantially underperforms full finetuning," but "better maintains the
+  base model's performance on tasks outside the target domain": the
+  capacity trade-off behind choosing a rank.</li>
+</ul>
+<p><strong>Popular tools and providers:</strong> Hugging Face PEFT, TRL, Transformers, and
+bitsandbytes; Unsloth, Axolotl, and LLaMA-Factory as training front ends;
+vLLM and LoRAX for serving many adapters on one base model. (PyTorch's
+torchtune is no longer actively maintained, according to its repository.)</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="why-full-fine-tuning-is-heavy">Why full fine-tuning is heavy<a class="headerlink" href="#why-full-fine-tuning-is-heavy" title="Permanent link">&para;</a></h3>
+<p>Training with the Adam optimizer in mixed precision keeps, for every
+weight, a 16-bit copy of the weight (2 bytes), a 16-bit gradient (2
+bytes), and in 32-bit a master copy plus Adam's two moment estimates (12
+bytes): about 16 bytes per parameter, the figure analyzed in the
+<a href="https://arxiv.org/abs/1910.02054">ZeRO paper</a>. Activations come on top
+and grow with batch size and sequence length.</p>
+<div class="highlight"><pre><span></span><code>8B parameters x 16 bytes = 128 GB   (full fine-tuning, before activations)
+8B parameters x  2 bytes =  16 GB   (the same model, frozen, in 16-bit)
+8B parameters x 0.5 byte =   4 GB   (frozen in 4-bit, as QLoRA stores it)
+</code></pre></div>
+<p>If only a small set of new parameters is trainable, the 14 bytes per
+parameter of gradient and optimizer state apply only to them. That is the
+whole idea of parameter-efficient fine-tuning (PEFT).</p>
+<h3 id="the-lora-update">The LoRA update<a class="headerlink" href="#the-lora-update" title="Permanent link">&para;</a></h3>
+<p>A linear layer computes <code>h = W x</code>, where <code>W</code> has shape
+<code>d_out x d_in</code>. LoRA freezes <code>W</code> and adds a low-rank path:</p>
+<div class="highlight"><pre><span></span><code>h = W x + (alpha / r) * B (A x)
+
+A: r x d_in    (trainable, random init)
+B: d_out x r   (trainable, initialized to zero)
+r: the rank, much smaller than d_in and d_out (for example 16)
+</code></pre></div>
+<p>Because <code>B</code> starts at zero, the adapter is a no-op before training: the
+model behaves exactly like the base model at step 0, which keeps early
+training stable (PEFT's default initialization). The trainable weights
+per layer are <code>r x (d_in + d_out)</code> instead of <code>d_in x d_out</code>. For a
+4096 x 4096 projection at rank 16, that is 131,072 weights instead of
+16,777,216, under 1%.</p>
+<p>The bet behind LoRA is that the <em>change</em> a fine-tuning task needs has low
+"intrinsic rank": a narrow behavior can be expressed as a small number of
+directions in weight space. That bet holds well for format, style, and
+task behavior, and less well for absorbing large amounts of new
+knowledge, which is where a higher rank or full fine-tuning helps.</p>
+<p><img alt="Diagram: on the left, an input vector x enters two paths. The upper path is a large blue square labelled &quot;W, frozen, 4096 by 4096, 16.8 million weights&quot;. The lower path goes through a narrow orange box &quot;A, 16 by 4096, trainable&quot; and then a tall orange box &quot;B, 4096 by 16, trainable, starts at zero&quot;, together 131 thousand weights, followed by a purple circle &quot;times alpha over r&quot;. Both paths meet at a plus sign that outputs h. Below, a note says that after training, B times A times alpha over r can be added into W once, so the merged model has no extra latency, or kept separate as an adapter file that can be swapped." src="../lora-low-rank-update.svg" /></p>
+<h3 id="rank-alpha-and-scaling">Rank, alpha, and scaling<a class="headerlink" href="#rank-alpha-and-scaling" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Rank <code>r</code></strong> sets capacity. Small ranks (8-32) suit narrow tasks such as
+  the TaskFlow parser; TRL's guide recommends rank 256 for SFT at
+  "post-training scale" and 1-32 for reinforcement learning, which needs
+  very little capacity.</li>
+<li><strong>Alpha</strong> scales the update by <code>alpha / r</code>. Changing <code>r</code> while keeping
+  <code>alpha</code> fixed changes the effective step size, which is why ranks and
+  learning rates interact. A common habit is <code>alpha = 2r</code> or a fixed alpha
+  such as 16 or 32; PEFT's defaults are <code>r=8</code> and <code>lora_alpha=8</code>.</li>
+<li><strong>rsLoRA</strong> (<code>use_rslora=True</code> in PEFT) scales by <code>alpha / sqrt(r)</code>
+  instead, from
+  <a href="https://arxiv.org/abs/2312.03732">Kalajdzievski (2023)</a>, which keeps
+  higher ranks from learning more slowly.</li>
+<li><strong>Dropout</strong> on the LoRA path (<code>lora_dropout</code>, default 0.0) is a mild
+  regularizer for small datasets.</li>
+</ul>
+<h3 id="which-layers-to-adapt">Which layers to adapt<a class="headerlink" href="#which-layers-to-adapt" title="Permanent link">&para;</a></h3>
+<p>Early LoRA work often adapted only the attention query and value
+projections. Current evidence favors adapting every linear layer: the
+Thinking Machines study found attention-only LoRA underperforms even when
+its rank is raised to match the parameter count. In PEFT,
+<code>target_modules="all-linear"</code> selects every linear layer except the output
+head. The parameter cost for an 8B-class decoder (32 layers, hidden size
+4,096, MLP size 14,336, 8 key-value heads) is small either way:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">Rank</th>
+<th style="text-align: right;">Attention only</th>
+<th style="text-align: right;">All linear</th>
+<th style="text-align: right;">Share of 8B</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">6,815,744</td>
+<td style="text-align: right;">20,971,520</td>
+<td style="text-align: right;">0.26%</td>
+</tr>
+<tr>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">13,631,488</td>
+<td style="text-align: right;">41,943,040</td>
+<td style="text-align: right;">0.52%</td>
+</tr>
+<tr>
+<td style="text-align: right;">64</td>
+<td style="text-align: right;">54,525,952</td>
+<td style="text-align: right;">167,772,160</td>
+<td style="text-align: right;">2.10%</td>
+</tr>
+<tr>
+<td style="text-align: right;">256</td>
+<td style="text-align: right;">218,103,808</td>
+<td style="text-align: right;">671,088,640</td>
+<td style="text-align: right;">8.39%</td>
+</tr>
+</tbody>
+</table>
+<p>The numbers come from the parameter calculator in the practical examples.</p>
+<h3 id="qlora-a-4-bit-base-under-a-16-bit-adapter">QLoRA: a 4-bit base under a 16-bit adapter<a class="headerlink" href="#qlora-a-4-bit-base-under-a-16-bit-adapter" title="Permanent link">&para;</a></h3>
+<p>QLoRA keeps LoRA's trainable matrices in 16-bit but stores the frozen base
+in 4-bit, with three tricks from the paper:</p>
+<ol>
+<li><strong>NF4 (4-bit NormalFloat)</strong>, a data type whose 16 levels are spaced for
+   normally distributed weights, losing less information than plain 4-bit
+   integers.</li>
+<li><strong>Double quantization</strong>, which quantizes the per-block scaling
+   constants themselves to save a little more memory.</li>
+<li><strong>Paged optimizers</strong>, which move optimizer state to CPU memory during
+   spikes instead of crashing with out-of-memory errors.</li>
+</ol>
+<p>During the forward pass each 4-bit block is dequantized to the compute
+type (usually bfloat16) on the fly, so QLoRA trades some speed for memory.
+In Transformers this is a <code>BitsAndBytesConfig</code> with <code>load_in_4bit=True</code>,
+<code>bnb_4bit_quant_type="nf4"</code>, <code>bnb_4bit_use_double_quant=True</code>, and
+<code>bnb_4bit_compute_dtype=torch.bfloat16</code>; the bitsandbytes library has the
+most complete support on NVIDIA GPUs.</p>
+<p><img alt="Diagram: three horizontal bars on a shared scale of gigabytes for an 8B model with a rank-16 adapter, before activations. Full fine-tuning: a red bar of 128 GB made of 16 GB of 16-bit weights and 112 GB of gradients, master weights, and Adam state. LoRA on a 16-bit base: a blue bar of about 16.7 GB, almost all frozen weights, with a thin orange sliver of 0.7 GB for the adapter and its optimizer state. QLoRA on a 4-bit base: a green bar of about 4.7 GB, 4 GB of 4-bit weights plus the same 0.7 GB sliver. A note says activations add more memory and grow with batch size and sequence length." src="../lora-memory-comparison.svg" /></p>
+<h3 id="variants-worth-knowing">Variants worth knowing<a class="headerlink" href="#variants-worth-knowing" title="Permanent link">&para;</a></h3>
+<p>PEFT implements dozens of methods; a few matter in practice:</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>What it changes</th>
+<th>When to try it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>use_dora=True</code></td>
+<td>DoRA splits each weight into magnitude and direction and applies LoRA to the direction (<a href="https://arxiv.org/abs/2402.09353">Liu et al., 2024</a>)</td>
+<td>When plain LoRA lags full fine-tuning; slower to train</td>
+</tr>
+<tr>
+<td><code>use_rslora=True</code></td>
+<td>Rank-stabilized scaling <code>alpha / sqrt(r)</code></td>
+<td>High ranks</td>
+</tr>
+<tr>
+<td><code>init_lora_weights="pissa"</code> and others</td>
+<td>Initializes A and B from the base weights (PiSSA, OLoRA, LoftQ, and more) instead of zeros</td>
+<td>Faster convergence; LoftQ pairs with quantized bases</td>
+</tr>
+<tr>
+<td><code>modules_to_save=[...]</code></td>
+<td>Trains and saves full copies of chosen modules</td>
+<td>New tokens whose embeddings must be learned</td>
+</tr>
+</tbody>
+</table>
+<p>Start with plain LoRA on all linear layers; reach for variants only when
+evaluation shows a gap.</p>
+<h3 id="training-with-trl">Training with TRL<a class="headerlink" href="#training-with-trl" title="Permanent link">&para;</a></h3>
+<p>TRL's <code>SFTTrainer</code> handles tokenization, chat templates, loss masking,
+and the PEFT wrapping. Three behaviors matter for a task like TaskFlow's:</p>
+<ul>
+<li><strong>Dataset format.</strong> A <em>prompt-completion</em> dataset, where <code>prompt</code> holds
+  the system and user messages and <code>completion</code> holds the assistant
+  answer, computes the loss on the completion only by default
+  (<code>completion_only_loss=None</code> means "decide from the dataset"). The model
+  is graded on the JSON it writes, not on reproducing your system prompt.</li>
+<li><strong>PEFT integration.</strong> Passing <code>peft_config=LoraConfig(...)</code> wraps the
+  model; passing <code>quantization_config=BitsAndBytesConfig(...)</code> as well
+  loads the base in 4-bit, which together is QLoRA.</li>
+<li><strong>Defaults.</strong> TRL's <code>SFTConfig</code> defaults to <code>learning_rate=2e-5</code>, a
+  full-fine-tuning value, <code>max_length=1024</code> with truncation from the end,
+  and gradient checkpointing on. For LoRA, raise the learning rate.</li>
+</ul>
+<h3 id="hyperparameters">Hyperparameters<a class="headerlink" href="#hyperparameters" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Starting point</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>r</code></td>
+<td>16 for a narrow task; up to 256 for large SFT datasets</td>
+<td>Capacity must match the dataset</td>
+</tr>
+<tr>
+<td><code>lora_alpha</code></td>
+<td>32 (with <code>r=16</code>)</td>
+<td>Sets the update scale <code>alpha / r</code></td>
+</tr>
+<tr>
+<td><code>target_modules</code></td>
+<td><code>"all-linear"</code></td>
+<td>Attention-only adapters underperform</td>
+</tr>
+<tr>
+<td><code>learning_rate</code></td>
+<td><code>2e-4</code></td>
+<td>About 10x a full fine-tuning rate; TRL's guide uses it for SFT</td>
+</tr>
+<tr>
+<td>Effective batch size</td>
+<td>16 (<code>per_device_train_batch_size</code> x <code>gradient_accumulation_steps</code> x GPUs)</td>
+<td>LoRA prefers effective batches under 32</td>
+</tr>
+<tr>
+<td><code>num_train_epochs</code></td>
+<td>1-3</td>
+<td>Watch validation loss; small datasets overfit fast</td>
+</tr>
+<tr>
+<td><code>warmup_steps</code></td>
+<td><code>0.03</code> (a float below 1 is a fraction of all steps)</td>
+<td>Transformers 5 replaced <code>warmup_ratio</code> with this</td>
+</tr>
+<tr>
+<td><code>lr_scheduler_type</code></td>
+<td><code>"cosine"</code></td>
+<td>Smooth decay after warmup</td>
+</tr>
+<tr>
+<td><code>max_length</code></td>
+<td>Longer than your longest example</td>
+<td>Truncation cuts the end, which is the answer</td>
+</tr>
+</tbody>
+</table>
+<p>Change one setting at a time and compare on the validation set. The
+learning rate matters most: too low and the adapter barely moves (its
+output looks like the base model's); too high and validation loss climbs
+after a few hundred steps.</p>
+<h3 id="evaluating-an-adapter">Evaluating an adapter<a class="headerlink" href="#evaluating-an-adapter" title="Permanent link">&para;</a></h3>
+<p>Training loss falling is necessary, not sufficient. Use four checks:</p>
+<ol>
+<li><strong>Task metrics on the held-out test set</strong>, with the same
+   <code>eval_task_parser.py</code> used for the baseline: JSON validity, field
+   accuracy, exact match.</li>
+<li><strong>Validation loss per checkpoint.</strong> When training loss keeps falling
+   but validation loss rises, the adapter is memorizing; keep the best
+   checkpoint (<code>load_best_model_at_end=True</code>).</li>
+<li><strong>A regression set of general tasks</strong> the product still relies on
+   (summaries, other prompts), to catch forgetting. LoRA forgets less than
+   full fine-tuning, but not nothing.</li>
+<li><strong>Safety and refusal cases</strong>, because a narrow dataset with no
+   refusals can erode refusal behavior.</li>
+</ol>
+<p>The <a href="../../evaluation-and-monitoring/evals-in-ci-and-regression-testing/">evals in CI lesson</a>
+shows how to run these checks automatically on every new adapter.</p>
+<h3 id="serving-separate-adapters-or-a-merged-model">Serving: separate adapters or a merged model<a class="headerlink" href="#serving-separate-adapters-or-a-merged-model" title="Permanent link">&para;</a></h3>
+<p>An adapter can be <strong>merged</strong> into the base (<code>merge_and_unload()</code> adds
+<code>(alpha/r) B A</code> into <code>W</code>), producing an ordinary model with no extra
+latency, or <strong>kept separate</strong>, so one base model in GPU memory serves
+many adapters. vLLM supports the second pattern: start it with
+<code>--enable-lora</code> and <code>--lora-modules name=path</code>, and clients select an
+adapter by passing its name as the <code>model</code> in an OpenAI-compatible
+request. Serving at scale is covered in
+<a href="../../deployment-cost-and-performance/serving-open-models/">serving open models</a>.</p>
+<p><img alt="Diagram: a left-to-right pipeline. An orange &quot;train.jsonl and validation.jsonl&quot; box feeds a purple &quot;SFTTrainer with LoraConfig&quot; box, which outputs a small orange &quot;adapter, about 84 MB&quot; file. The adapter passes three green evaluation gates in a column: task metrics on the test set, general regression set, and safety cases; a red arrow from the gates goes back to training labelled &quot;fails: adjust data or settings&quot;. On the right, a blue &quot;vLLM server&quot; box holds one base model in GPU memory with three adapters attached: taskflow-parser, meeting-summary, and parser-v2 as a canary. The TaskFlow API chooses an adapter by putting its name in the request's model field. A dashed alternative path shows &quot;merge_and_unload: one standalone model&quot;." src="../lora-train-eval-serve.svg" /></p>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Situation</th>
+<th>Choice</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Narrow task behavior on an open model</td>
+<td>LoRA, <code>r</code> 8-32, all linear layers</td>
+<td>Small, fast, matches full fine-tuning at this scale</td>
+</tr>
+<tr>
+<td>Large instruction dataset (hundreds of thousands of examples)</td>
+<td>LoRA with a high rank, or full fine-tuning</td>
+<td>Low ranks run out of capacity</td>
+</tr>
+<tr>
+<td>Continued pretraining on billions of domain tokens</td>
+<td>Full fine-tuning</td>
+<td>LoRA "learns less" at this scale</td>
+</tr>
+<tr>
+<td>A large model that does not fit on available GPUs</td>
+<td>QLoRA</td>
+<td>4-bit base, 16-bit adapter</td>
+</tr>
+<tr>
+<td>Many features or tenants sharing one base model</td>
+<td>Separate adapters with multi-LoRA serving</td>
+<td>One base in memory; swap by name</td>
+</tr>
+<tr>
+<td>Lowest possible latency for one task</td>
+<td>Merge the adapter</td>
+<td>No adapter overhead at inference</td>
+</tr>
+<tr>
+<td>A hosted model you cannot download</td>
+<td>The provider's fine-tuning service</td>
+<td>No weights, so no LoRA of your own</td>
+</tr>
+</tbody>
+</table>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="count-parameters-and-memory-before-you-train">Count parameters and memory before you train<a class="headerlink" href="#count-parameters-and-memory-before-you-train" title="Permanent link">&para;</a></h3>
+<p>This calculator reproduces the table above and the memory estimate, so
+you can plug in your own model's dimensions from its <code>config.json</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># scripts/lora_params.py</span>
+<span class="sd">"""Count LoRA parameters and estimate training memory for an 8B-class decoder."""</span>
+<span class="n">LAYERS</span><span class="p">,</span> <span class="n">HIDDEN</span><span class="p">,</span> <span class="n">MLP</span><span class="p">,</span> <span class="n">KV_OUT</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">4096</span><span class="p">,</span> <span class="mi">14336</span><span class="p">,</span> <span class="mi">1024</span>  <span class="c1"># 8 KV heads x 128 dims</span>
+<span class="n">TOTAL_PARAMS</span> <span class="o">=</span> <span class="mf">8.0e9</span>
+<span class="n">LINEAR</span> <span class="o">=</span> <span class="p">{</span>  <span class="c1"># module name: (in_features, out_features), per decoder layer</span>
+    <span class="s2">"q_proj"</span><span class="p">:</span> <span class="p">(</span><span class="n">HIDDEN</span><span class="p">,</span> <span class="n">HIDDEN</span><span class="p">),</span>
+    <span class="s2">"k_proj"</span><span class="p">:</span> <span class="p">(</span><span class="n">HIDDEN</span><span class="p">,</span> <span class="n">KV_OUT</span><span class="p">),</span>
+    <span class="s2">"v_proj"</span><span class="p">:</span> <span class="p">(</span><span class="n">HIDDEN</span><span class="p">,</span> <span class="n">KV_OUT</span><span class="p">),</span>
+    <span class="s2">"o_proj"</span><span class="p">:</span> <span class="p">(</span><span class="n">HIDDEN</span><span class="p">,</span> <span class="n">HIDDEN</span><span class="p">),</span>
+    <span class="s2">"gate_proj"</span><span class="p">:</span> <span class="p">(</span><span class="n">HIDDEN</span><span class="p">,</span> <span class="n">MLP</span><span class="p">),</span>
+    <span class="s2">"up_proj"</span><span class="p">:</span> <span class="p">(</span><span class="n">HIDDEN</span><span class="p">,</span> <span class="n">MLP</span><span class="p">),</span>
+    <span class="s2">"down_proj"</span><span class="p">:</span> <span class="p">(</span><span class="n">MLP</span><span class="p">,</span> <span class="n">HIDDEN</span><span class="p">),</span>
+<span class="p">}</span>
+<span class="n">ATTENTION</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"q_proj"</span><span class="p">,</span> <span class="s2">"k_proj"</span><span class="p">,</span> <span class="s2">"v_proj"</span><span class="p">,</span> <span class="s2">"o_proj"</span><span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">lora_params</span><span class="p">(</span><span class="n">rank</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">modules</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A LoRA pair adds A (rank x in) and B (out x rank): rank * (in + out) weights."""</span>
+    <span class="k">return</span> <span class="n">LAYERS</span> <span class="o">*</span> <span class="nb">sum</span><span class="p">(</span><span class="n">rank</span> <span class="o">*</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="n">o</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">o</span><span class="p">)</span> <span class="ow">in</span> <span class="n">LINEAR</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">modules</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">gb</span><span class="p">(</span><span class="n">n_bytes</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">n_bytes</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e9</span><span class="si">:</span><span class="s2">,.1f</span><span class="si">}</span><span class="s2"> GB"</span>
+
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">'rank'</span><span class="si">:</span><span class="s2">&gt;4</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">'attention only'</span><span class="si">:</span><span class="s2">&gt;16</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">'all linear'</span><span class="si">:</span><span class="s2">&gt;14</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">'</span><span class="si">% o</span><span class="s1">f model'</span><span class="si">:</span><span class="s2">&gt;11</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">rank</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">256</span><span class="p">):</span>
+    <span class="n">attn</span><span class="p">,</span> <span class="n">every</span> <span class="o">=</span> <span class="n">lora_params</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">ATTENTION</span><span class="p">),</span> <span class="n">lora_params</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="nb">set</span><span class="p">(</span><span class="n">LINEAR</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">rank</span><span class="si">:</span><span class="s2">&gt;4</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">attn</span><span class="si">:</span><span class="s2">&gt;16,</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">every</span><span class="si">:</span><span class="s2">&gt;14,</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">every</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">TOTAL_PARAMS</span><span class="si">:</span><span class="s2">&gt;10.2%</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+<span class="n">adapter</span> <span class="o">=</span> <span class="n">lora_params</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="nb">set</span><span class="p">(</span><span class="n">LINEAR</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Memory before activations (r=16, all linear, Adam):"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"full fine-tuning, mixed precision:"</span><span class="p">,</span> <span class="n">gb</span><span class="p">(</span><span class="n">TOTAL_PARAMS</span> <span class="o">*</span> <span class="mi">16</span><span class="p">))</span>  <span class="c1"># 2 + 2 + 12 bytes per weight</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"LoRA on a 16-bit base:           "</span><span class="p">,</span> <span class="n">gb</span><span class="p">(</span><span class="n">TOTAL_PARAMS</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">adapter</span> <span class="o">*</span> <span class="mi">16</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"QLoRA on a 4-bit base:           "</span><span class="p">,</span> <span class="n">gb</span><span class="p">(</span><span class="n">TOTAL_PARAMS</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="n">adapter</span> <span class="o">*</span> <span class="mi">16</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"adapter file in 16-bit:          "</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">adapter</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e6</span><span class="si">:</span><span class="s2">,.0f</span><span class="si">}</span><span class="s2"> MB"</span><span class="p">)</span>
+</code></pre></div>
+<p>Output:</p>
+<div class="highlight"><pre><span></span><code>rank   attention only     all linear  % of model
+   8        6,815,744     20,971,520      0.26%
+  16       13,631,488     41,943,040      0.52%
+  64       54,525,952    167,772,160      2.10%
+ 256      218,103,808    671,088,640      8.39%
+
+Memory before activations (r=16, all linear, Adam):
+full fine-tuning, mixed precision: 128.0 GB
+LoRA on a 16-bit base:            16.7 GB
+QLoRA on a 4-bit base:            4.7 GB
+adapter file in 16-bit:           84 MB
+</code></pre></div>
+<h3 id="train-a-lora-adapter-with-trl">Train a LoRA adapter with TRL<a class="headerlink" href="#train-a-lora-adapter-with-trl" title="Permanent link">&para;</a></h3>
+<p>The script turns the chat-format splits from the previous lesson into
+prompt-completion rows and trains an adapter. The base model comes from
+the <code>BASE_MODEL</code> environment variable: choose an instruct model whose
+license fits your use, whose prompted baseline is already close, and that
+fits your hardware.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># requirements: a CUDA GPU; versions as checked for this lesson</span>
+pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"torch&gt;=2.6"</span><span class="w"> </span><span class="s2">"transformers&gt;=5.23"</span><span class="w"> </span><span class="s2">"peft&gt;=0.21"</span><span class="w"> </span><span class="s2">"trl&gt;=1.18"</span><span class="w"> </span>datasets<span class="w"> </span>accelerate
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1"># scripts/train_lora.py</span>
+<span class="sd">"""Train a LoRA adapter for the TaskFlow task parser with TRL's SFTTrainer."""</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_dataset</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">peft</span><span class="w"> </span><span class="kn">import</span> <span class="n">LoraConfig</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">trl</span><span class="w"> </span><span class="kn">import</span> <span class="n">SFTConfig</span><span class="p">,</span> <span class="n">SFTTrainer</span>
+
+<span class="n">BASE_MODEL</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"BASE_MODEL"</span><span class="p">]</span>  <span class="c1"># a Hub model ID or local path, from configuration</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">to_prompt_completion</span><span class="p">(</span><span class="n">row</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="o">*</span><span class="n">prompt</span><span class="p">,</span> <span class="n">answer</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s2">"messages"</span><span class="p">]</span>  <span class="c1"># system + user messages, then the gold answer</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">"prompt"</span><span class="p">:</span> <span class="n">prompt</span><span class="p">,</span> <span class="s2">"completion"</span><span class="p">:</span> <span class="p">[</span><span class="n">answer</span><span class="p">]}</span>
+
+
+<span class="n">data</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span>
+    <span class="s2">"json"</span><span class="p">,</span> <span class="n">data_files</span><span class="o">=</span><span class="p">{</span><span class="s2">"train"</span><span class="p">:</span> <span class="s2">"data/train.jsonl"</span><span class="p">,</span> <span class="s2">"validation"</span><span class="p">:</span> <span class="s2">"data/validation.jsonl"</span><span class="p">}</span>
+<span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">to_prompt_completion</span><span class="p">,</span> <span class="n">remove_columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"messages"</span><span class="p">])</span>
+
+<span class="n">peft_config</span> <span class="o">=</span> <span class="n">LoraConfig</span><span class="p">(</span>
+    <span class="n">r</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+    <span class="n">lora_alpha</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+    <span class="n">lora_dropout</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
+    <span class="n">target_modules</span><span class="o">=</span><span class="s2">"all-linear"</span><span class="p">,</span>
+    <span class="n">task_type</span><span class="o">=</span><span class="s2">"CAUSAL_LM"</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">args</span> <span class="o">=</span> <span class="n">SFTConfig</span><span class="p">(</span>
+    <span class="n">output_dir</span><span class="o">=</span><span class="s2">"runs/taskflow-parser-lora"</span><span class="p">,</span>
+    <span class="n">num_train_epochs</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">learning_rate</span><span class="o">=</span><span class="mf">2e-4</span><span class="p">,</span>
+    <span class="n">lr_scheduler_type</span><span class="o">=</span><span class="s2">"cosine"</span><span class="p">,</span>
+    <span class="n">warmup_steps</span><span class="o">=</span><span class="mf">0.03</span><span class="p">,</span>
+    <span class="n">per_device_train_batch_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+    <span class="n">gradient_accumulation_steps</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>  <span class="c1"># effective batch size 16 on one GPU</span>
+    <span class="n">max_length</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
+    <span class="n">eval_strategy</span><span class="o">=</span><span class="s2">"steps"</span><span class="p">,</span>
+    <span class="n">eval_steps</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+    <span class="n">save_steps</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+    <span class="n">load_best_model_at_end</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">metric_for_best_model</span><span class="o">=</span><span class="s2">"eval_loss"</span><span class="p">,</span>
+    <span class="n">bf16</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">report_to</span><span class="o">=</span><span class="s2">"none"</span><span class="p">,</span>
+    <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">SFTTrainer</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">BASE_MODEL</span><span class="p">,</span>
+    <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span>
+    <span class="n">train_dataset</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s2">"train"</span><span class="p">],</span>
+    <span class="n">eval_dataset</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s2">"validation"</span><span class="p">],</span>
+    <span class="n">peft_config</span><span class="o">=</span><span class="n">peft_config</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">print_trainable_parameters</span><span class="p">()</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">save_model</span><span class="p">(</span><span class="s2">"adapters/taskflow-parser"</span><span class="p">)</span>  <span class="c1"># writes the adapter weights and config only</span>
+</code></pre></div>
+<p>Parts: <code>to_prompt_completion</code> makes the loss cover only the assistant's
+JSON; <code>LoraConfig</code> adapts every linear layer at rank 16 with scale
+<code>32 / 16 = 2</code>; <code>SFTConfig</code> raises the learning rate to a LoRA value,
+evaluates and checkpoints every 50 steps, and restores the checkpoint with
+the lowest validation loss at the end; <code>print_trainable_parameters()</code>
+should report roughly half a percent for an 8B-class model; and
+<code>save_model</code> writes <code>adapter_model.safetensors</code> plus
+<code>adapter_config.json</code>, which records the base model it belongs to.</p>
+<h3 id="switch-to-qlora-when-the-model-does-not-fit">Switch to QLoRA when the model does not fit<a class="headerlink" href="#switch-to-qlora-when-the-model-does-not-fit" title="Permanent link">&para;</a></h3>
+<p>Only the model loading changes. TRL applies the quantization when it
+loads the model from the ID, and the LoRA layers stay in 16-bit.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># scripts/train_qlora.py: the same as train_lora.py except for these lines</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">BitsAndBytesConfig</span>
+
+<span class="n">quantization_config</span> <span class="o">=</span> <span class="n">BitsAndBytesConfig</span><span class="p">(</span>
+    <span class="n">load_in_4bit</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">bnb_4bit_quant_type</span><span class="o">=</span><span class="s2">"nf4"</span><span class="p">,</span>
+    <span class="n">bnb_4bit_use_double_quant</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">bnb_4bit_compute_dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">SFTTrainer</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">BASE_MODEL</span><span class="p">,</span>
+    <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span>
+    <span class="n">train_dataset</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s2">"train"</span><span class="p">],</span>
+    <span class="n">eval_dataset</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s2">"validation"</span><span class="p">],</span>
+    <span class="n">peft_config</span><span class="o">=</span><span class="n">peft_config</span><span class="p">,</span>
+    <span class="n">quantization_config</span><span class="o">=</span><span class="n">quantization_config</span><span class="p">,</span>  <span class="c1"># requires the bitsandbytes package</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>Expect slower steps than LoRA on a 16-bit base, because every forward pass
+dequantizes the weights. Use QLoRA when memory is the constraint, not by
+default.</p>
+<h3 id="generate-predictions-and-compare-with-the-base-model">Generate predictions and compare with the base model<a class="headerlink" href="#generate-predictions-and-compare-with-the-base-model" title="Permanent link">&para;</a></h3>
+<p>To evaluate, load the base model, attach the adapter, and write the
+predictions file that <code>eval_task_parser.py</code> expects. Running the same
+script with <code>none</code> instead of an adapter path produces the base model's
+predictions.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># scripts/predict.py</span>
+<span class="sd">"""Write test-set predictions for the base model, optionally with a LoRA adapter."""</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">peft</span><span class="w"> </span><span class="kn">import</span> <span class="n">PeftModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">AutoModelForCausalLM</span><span class="p">,</span> <span class="n">AutoTokenizer</span>
+
+<span class="n">BASE_MODEL</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"BASE_MODEL"</span><span class="p">]</span>
+<span class="n">adapter_dir</span><span class="p">,</span> <span class="n">test_path</span><span class="p">,</span> <span class="n">out_path</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">BASE_MODEL</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">AutoModelForCausalLM</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">BASE_MODEL</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span><span class="p">,</span> <span class="n">device_map</span><span class="o">=</span><span class="s2">"auto"</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">adapter_dir</span> <span class="o">!=</span> <span class="s2">"none"</span><span class="p">:</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">PeftModel</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">adapter_dir</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">test_path</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">out_path</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span> <span class="k">as</span> <span class="n">out</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">src</span><span class="p">):</span>
+        <span class="n">messages</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">line</span><span class="p">)[</span><span class="s2">"messages"</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># drop the gold answer</span>
+        <span class="n">inputs</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">apply_chat_template</span><span class="p">(</span>
+            <span class="n">messages</span><span class="p">,</span> <span class="n">add_generation_prompt</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">return_tensors</span><span class="o">=</span><span class="s2">"pt"</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="o">**</span><span class="n">inputs</span><span class="p">,</span> <span class="n">max_new_tokens</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">do_sample</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">new_tokens</span> <span class="o">=</span> <span class="n">output</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">inputs</span><span class="p">[</span><span class="s2">"input_ids"</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:]</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">new_tokens</span><span class="p">,</span> <span class="n">skip_special_tokens</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s2">"index"</span><span class="p">:</span> <span class="n">index</span><span class="p">,</span> <span class="s2">"output"</span><span class="p">:</span> <span class="n">text</span><span class="p">})</span> <span class="o">+</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>scripts/predict.py<span class="w"> </span>none<span class="w"> </span>data/test.jsonl<span class="w"> </span>preds/base.jsonl
+python<span class="w"> </span>scripts/predict.py<span class="w"> </span>adapters/taskflow-parser<span class="w"> </span>data/test.jsonl<span class="w"> </span>preds/lora.jsonl
+python<span class="w"> </span>scripts/eval_task_parser.py<span class="w"> </span>data/test.jsonl<span class="w"> </span>preds/base.jsonl<span class="w"> </span>preds/lora.jsonl
+</code></pre></div>
+<p><code>apply_chat_template</code> uses the same chat template the trainer used, which
+matters: a model trained with one template and served with another often
+ignores what it learned. In Transformers 5 it returns a dictionary of
+tensors by default, hence <code>**inputs</code>. Greedy decoding (<code>do_sample=False</code>)
+makes runs repeatable.</p>
+<h3 id="merge-the-adapter-or-serve-it-next-to-the-base-model">Merge the adapter, or serve it next to the base model<a class="headerlink" href="#merge-the-adapter-or-serve-it-next-to-the-base-model" title="Permanent link">&para;</a></h3>
+<p>Merging gives a standalone model for runtimes that do not support
+adapters. Merge into the 16-bit base, never into a 4-bit one.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># scripts/merge_adapter.py</span>
+<span class="sd">"""Fold the LoRA update into the base weights and save a standalone model."""</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">peft</span><span class="w"> </span><span class="kn">import</span> <span class="n">PeftModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">AutoModelForCausalLM</span><span class="p">,</span> <span class="n">AutoTokenizer</span>
+
+<span class="n">BASE_MODEL</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"BASE_MODEL"</span><span class="p">]</span>
+
+<span class="n">base</span> <span class="o">=</span> <span class="n">AutoModelForCausalLM</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">BASE_MODEL</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span><span class="p">)</span>
+<span class="n">merged</span> <span class="o">=</span> <span class="n">PeftModel</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="s2">"adapters/taskflow-parser"</span><span class="p">)</span><span class="o">.</span><span class="n">merge_and_unload</span><span class="p">()</span>
+<span class="n">merged</span><span class="o">.</span><span class="n">save_pretrained</span><span class="p">(</span><span class="s2">"models/taskflow-parser-merged"</span><span class="p">)</span>
+<span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">BASE_MODEL</span><span class="p">)</span><span class="o">.</span><span class="n">save_pretrained</span><span class="p">(</span><span class="s2">"models/taskflow-parser-merged"</span><span class="p">)</span>
+</code></pre></div>
+<p>To keep adapters separate, start vLLM with the base model and register
+each adapter under a name:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># one base model in GPU memory, adapters selected per request by name</span>
+vllm<span class="w"> </span>serve<span class="w"> </span><span class="s2">"</span><span class="nv">$BASE_MODEL</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--enable-lora<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--lora-modules<span class="w"> </span>taskflow-parser<span class="o">=</span>./adapters/taskflow-parser<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--max-lora-rank<span class="w"> </span><span class="m">16</span>
+
+curl<span class="w"> </span>-s<span class="w"> </span>http://localhost:8000/v1/chat/completions<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{"model": "taskflow-parser", "temperature": 0,</span>
+<span class="s1">       "messages": [{"role": "user", "content": "Today is 2026-11-16.\nFix the login page by Friday"}]}'</span>
+</code></pre></div>
+<p>The TaskFlow API code from the previous lesson works unchanged: set
+<code>AI_BASE_URL</code> to the vLLM server's <code>/v1</code> URL and <code>TASK_PARSER_MODEL</code> to
+<code>taskflow-parser</code>. <code>--max-lora-rank</code> must be at least the highest rank
+among the adapters; setting it much higher wastes memory. vLLM can also
+load adapters at runtime through an API, but its documentation warns that
+this is for trusted, isolated environments only.</p>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Count trainable parameters and memory before renting hardware.</li>
+<li>Start with plain LoRA on all linear layers, rank 16, alpha 32, and a
+  learning rate around <code>2e-4</code>; change one setting at a time.</li>
+<li>Use a prompt-completion dataset so the loss covers only the answer.</li>
+<li>Set <code>max_length</code> above your longest example and check how many examples
+  would be truncated.</li>
+<li>Keep the best checkpoint by validation loss, and judge it by task
+  metrics on the held-out test set.</li>
+<li>Run a general regression set and a safety set on every adapter.</li>
+<li>Store the adapter with the exact base model ID and revision it was
+  trained on; an adapter only works on that base.</li>
+<li>Merge into a 16-bit base when you need a standalone model, and keep
+  adapters separate when several features share one base.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>The tuned model answers exactly like the base model.</strong>
+  <em>Detect:</em> predictions are identical with and without the adapter;
+  validation loss barely moved. <em>Cause:</em> the adapter was never loaded (a
+  wrong path or a missing <code>PeftModel.from_pretrained</code>), the request used
+  the base model's name instead of the adapter's, or the learning rate was
+  a full fine-tuning value such as <code>2e-5</code>. <em>Fix:</em> log which adapter served
+  each request, assert that outputs differ on a smoke test, and use a LoRA
+  learning rate.</li>
+<li><strong>JSON answers are cut off in the middle.</strong>
+  <em>Detect:</em> truncated outputs cluster on long requests; the training data
+  has examples longer than <code>max_length</code>. <em>Cause:</em> truncation dropped the
+  end of long examples, so the model learned incomplete answers. <em>Fix:</em>
+  measure token lengths, raise <code>max_length</code> or drop over-long examples, and
+  set <code>max_new_tokens</code> high enough at inference.</li>
+<li><strong>Validation loss rises while training loss keeps falling.</strong>
+  <em>Detect:</em> the curves diverge after the first epoch; test exact match
+  drops for later checkpoints. <em>Cause:</em> overfitting a small dataset with
+  too many epochs or too high a rank. <em>Fix:</em> keep the best checkpoint,
+  reduce epochs, add data, or lower the rank and learning rate.</li>
+<li><strong>The server refuses to load the adapter.</strong>
+  <em>Detect:</em> vLLM startup or load errors mentioning rank or shapes. <em>Cause:</em>
+  the adapter rank exceeds <code>--max-lora-rank</code>, or the adapter was trained
+  on a different base model or revision. <em>Fix:</em> set <code>--max-lora-rank</code> to
+  the highest adapter rank, and pin the base model revision in both
+  training and serving.</li>
+<li><strong>Quality drops after merging a QLoRA adapter.</strong>
+  <em>Detect:</em> the merged model scores lower than the base plus adapter.
+  <em>Cause:</em> the adapter was merged into the quantized 4-bit weights, adding
+  rounding error. <em>Fix:</em> load the base in 16-bit, merge there, and
+  re-quantize the merged model for serving if needed.</li>
+<li><strong>Other features get worse after the adapter ships.</strong>
+  <em>Detect:</em> the general regression set or user feedback shows weaker
+  summaries or chat after a merged model replaced the base. <em>Cause:</em> the
+  merged weights now carry the narrow task everywhere. <em>Fix:</em> serve the
+  adapter only for its feature (keep the base for everything else) or mix
+  general examples into the training data.</li>
+<li><strong>Training crashes with out-of-memory errors.</strong>
+  <em>Detect:</em> CUDA out-of-memory at the first steps or on long batches.
+  <em>Cause:</em> batch size and <code>max_length</code> too large for the GPU, or a base
+  model that does not fit in 16-bit. <em>Fix:</em> lower the per-device batch and
+  raise gradient accumulation, keep gradient checkpointing on (TRL's
+  default), shorten <code>max_length</code>, or switch to QLoRA.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>PEFT (parameter-efficient fine-tuning):</strong> Methods that train a small
+  number of parameters while the base model stays frozen.</li>
+<li><strong>LoRA:</strong> Adds a trainable low-rank update <code>(alpha/r) B A</code> beside frozen
+  linear layers.</li>
+<li><strong>Adapter:</strong> The saved LoRA weights and configuration, usable only with
+  their base model.</li>
+<li><strong>Rank (<code>r</code>):</strong> The inner dimension of the LoRA matrices; sets capacity.</li>
+<li><strong>Alpha:</strong> The scale numerator; the update is multiplied by
+  <code>alpha / r</code> (or <code>alpha / sqrt(r)</code> with rsLoRA).</li>
+<li><strong>Target modules:</strong> The layers that receive adapters; <code>all-linear</code> in
+  PEFT covers every linear layer except the output head.</li>
+<li><strong>QLoRA:</strong> LoRA on a frozen base stored in 4-bit NF4, with double
+  quantization and paged optimizers.</li>
+<li><strong>Merging:</strong> Adding the LoRA update into the base weights to produce a
+  standalone model.</li>
+<li><strong>Multi-LoRA serving:</strong> One base model in memory serving many adapters
+  chosen per request.</li>
+<li><strong>Completion-only loss:</strong> Computing the training loss only on the
+  answer tokens, not the prompt.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Using a full fine-tuning learning rate for LoRA and concluding that LoRA
+  does not work.</li>
+<li>Adapting only attention projections and compensating with a higher rank.</li>
+<li>Believing a higher rank is always better; capacity should match the
+  dataset, and higher ranks overfit small ones.</li>
+<li>Training on the whole conversation, so the model spends capacity
+  learning to repeat the system prompt.</li>
+<li>Loading an adapter onto a different base model, or a different revision
+  of the same one.</li>
+<li>Merging a QLoRA adapter into 4-bit weights.</li>
+<li>Judging an adapter by training loss instead of held-out task metrics.</li>
+<li>Assuming QLoRA is free; it is slower per step than LoRA on a 16-bit base.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Why does full fine-tuning with Adam need about 16 bytes per parameter,
+   and which of those bytes does LoRA avoid?</li>
+<li>Write the LoRA forward pass and explain why <code>B</code> is initialized to zero.</li>
+<li>A layer maps 4,096 inputs to 14,336 outputs. How many LoRA parameters
+   does rank 32 add, and what fraction of the layer is that?
+   (32 x (4,096 + 14,336) = 589,824, about 1% of 58,720,256.)</li>
+<li>What does <code>alpha / r</code> control, and what happens if you double <code>r</code>
+   without changing alpha?</li>
+<li>Explain the three QLoRA techniques and the speed cost.</li>
+<li>Why does a prompt-completion dataset produce a better task parser than
+   training on full conversations?</li>
+<li>When would you merge an adapter, and when keep it separate?</li>
+<li>Your adapter's outputs are identical to the base model's. List three
+   possible causes.</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://huggingface.co/docs/peft/developer_guides/lora">Hugging Face PEFT: LoRA developer guide</a></li>
+<li><a href="https://huggingface.co/docs/peft/package_reference/lora">Hugging Face PEFT: LoRA configuration reference</a></li>
+<li><a href="https://huggingface.co/docs/trl/sft_trainer">Hugging Face TRL: SFT Trainer</a></li>
+<li><a href="https://huggingface.co/docs/trl/peft_integration">Hugging Face TRL: PEFT integration</a></li>
+<li><a href="https://huggingface.co/docs/transformers/quantization/bitsandbytes">Hugging Face Transformers: bitsandbytes quantization</a></li>
+<li><a href="https://docs.vllm.ai/en/latest/features/lora.html">vLLM: LoRA adapters</a></li>
+<li>Next: <a href="../preference-tuning-and-distillation/">preference tuning and distillation</a>.
+  Back to the <a href="../">fine-tuning overview</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../when-to-fine-tune/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: When to Fine-Tune">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">When to Fine-Tune</span>
+      </a>
+    
+    
+      <a href="../preference-tuning-and-distillation/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: Preference Tuning and Distillation">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">Preference Tuning and Distillation</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

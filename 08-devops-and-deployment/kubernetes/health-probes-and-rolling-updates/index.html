@@ -1,0 +1,4613 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../configuration-and-secrets/">
+      
+      
+        <link rel="next" href="../scaling-and-resource-management/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Health Probes and Rolling Updates - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#health-probes-and-rolling-updates" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Health Probes and Rolling Updates
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../05-application-architecture/" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../06-ai-and-machine-learning/" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+          <span class="md-ellipsis">&larr; Back to DevOps</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../05-application-architecture/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../06-ai-and-machine-learning/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI and Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
+        
+          
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-label="DevOps module lessons" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+                  <span class="md-ellipsis">&larr; Back to DevOps</span>
+                </a>
+              
+            </div>
+          
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                  
+  
+  
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+    
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_6" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_6" id="__nav_9_6_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kubernetes
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_6_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_6">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Kubernetes
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_6_2" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_6_2" id="__nav_9_6_2_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Foundations
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_6_2_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_6_2">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Foundations
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../orchestration-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Orchestration Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pods-deployments-and-services/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pods, Deployments, and Services
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration-and-secrets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration and Secrets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_6_3" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_6_3" id="__nav_9_6_3_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Running Reliably
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_6_3_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_6_3">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Running Reliably
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Health Probes and Rolling Updates
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Health Probes and Rolling Updates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#three-probes-three-different-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Three probes, three different questions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#designing-probes-that-do-not-cause-outages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Designing probes that do not cause outages
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rolling-updates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rolling updates
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graceful-termination" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Graceful termination
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#poddisruptionbudgets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PodDisruptionBudgets
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rollout-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rollout commands
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#probe-endpoints-in-the-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Probe endpoints in the API
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#probes-rollout-strategy-and-termination-in-the-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Probes, rollout strategy, and termination in the Deployment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#releasing-and-rolling-back" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Releasing and rolling back
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-poddisruptionbudget" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A PodDisruptionBudget
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../scaling-and-resource-management/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scaling and Resource Management
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_6_4" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_6_4" id="__nav_9_6_4_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Traffic, Packaging, and Other Workloads
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_6_4_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_6_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Traffic, Packaging, and Other Workloads
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ingress-networking-and-helm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ingress, Networking, and Helm
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../stateful-workloads-and-jobs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stateful Workloads and Jobs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#three-probes-three-different-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Three probes, three different questions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#designing-probes-that-do-not-cause-outages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Designing probes that do not cause outages
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rolling-updates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rolling updates
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graceful-termination" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Graceful termination
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#poddisruptionbudgets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PodDisruptionBudgets
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rollout-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rollout commands
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#probe-endpoints-in-the-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Probe endpoints in the API
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#probes-rollout-strategy-and-termination-in-the-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Probes, rollout strategy, and termination in the Deployment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#releasing-and-rolling-back" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Releasing and rolling back
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-poddisruptionbudget" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A PodDisruptionBudget
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="health-probes-and-rolling-updates">Health Probes and Rolling Updates<a class="headerlink" href="#health-probes-and-rolling-updates" title="Permanent link">&para;</a></h1>
+<p>Kubernetes can only keep an application available if it knows two
+things about each Pod: whether it can take traffic right now, and whether
+it is broken beyond repair. Health probes answer those questions. Rolling
+updates then use the answers to replace Pods a few at a time, and
+graceful termination makes sure the Pods being replaced finish their work
+before they disappear.</p>
+<p>This lesson covers liveness, readiness, and startup probes and exactly
+what each failure does, how to design probes that do not cause outages,
+the rolling update parameters <code>maxSurge</code> and <code>maxUnavailable</code> with a
+worked example, the full Pod termination sequence (endpoint removal,
+<code>preStop</code>, <code>SIGTERM</code>, the grace period, <code>SIGKILL</code>), PodDisruptionBudgets,
+and the <code>kubectl rollout</code> commands for watching and undoing a release.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>Most deploy-time errors in Kubernetes come from these settings, not from
+the code being deployed. Without a readiness probe, new Pods receive
+traffic before they can serve it. Without graceful termination, every
+deploy cuts off in-flight requests and clients see 502 errors. A liveness
+probe that checks the database turns a short database outage into every
+API Pod restarting at once. A PodDisruptionBudget that allows no
+disruption blocks node upgrades indefinitely.</p>
+<p>Done well, the same settings give you zero-downtime deploys, automatic
+removal of unhealthy instances from load balancing, and rollouts that stop
+themselves when the new version is broken.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Google Cloud.</strong> The article
+  <a href="https://cloud.google.com/blog/products/containers-kubernetes/kubernetes-best-practices-setting-up-health-checks-with-readiness-and-liveness-probes">Kubernetes best practices: Setting up health checks with readiness and liveness probes</a>
+  explains the difference between the two probes, why liveness probes
+  need a generous initial delay or a startup phase, and how misconfigured
+  probes cause restart loops.</li>
+<li><strong>Google Cloud.</strong> The companion article
+  <a href="https://cloud.google.com/blog/products/containers-kubernetes/kubernetes-best-practices-terminating-with-grace">Kubernetes best practices: terminating with grace</a>
+  walks through the termination sequence: the Terminating state, the
+  <code>preStop</code> hook, <code>SIGTERM</code>, the grace period, and <code>SIGKILL</code>.</li>
+<li><strong>Learnk8s.</strong> The guide
+  <a href="https://learnk8s.io/graceful-shutdown">Graceful shutdown and zero downtime deployments in Kubernetes</a>
+  shows that endpoint removal and <code>SIGTERM</code> happen in parallel, so an app
+  can receive new requests after it was told to stop, and recommends
+  waiting briefly before shutting down.</li>
+<li><strong>Google SRE.</strong> The workbook chapter
+  <a href="https://sre.google/workbook/canarying-releases/">Canarying releases</a>
+  describes releasing to a small part of the fleet first and judging it by
+  health signals, the same idea that <code>maxSurge</code>, readiness gates, and
+  progress deadlines automate in a rolling update.</li>
+</ul>
+<p><strong>Popular tools and providers:</strong> <code>kubectl rollout</code>, Argo Rollouts and
+Flagger for canary and blue-green releases, Helm's <code>--wait</code>, the
+PodDisruptionBudget API, and cluster upgrade tooling that drains nodes
+respecting those budgets.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="three-probes-three-different-questions">Three probes, three different questions<a class="headerlink" href="#three-probes-three-different-questions" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: three probes compared; startupProbe asks whether the app has finished starting, and its first success hands over to the liveness and readiness probes while failureThreshold failures (failureThreshold times periodSeconds) make the kubelet kill and restart the container; readinessProbe asks whether the Pod can serve traffic now, success marks the endpoint ready and failure removes it from load balancing without a restart; livenessProbe asks whether the container is stuck, success changes nothing, and failure makes the kubelet kill and restart the container, leading to CrashLoopBackOff if repeated; over time the startup probe runs until its first success and then readiness and liveness run every periodSeconds for the Pod's whole life." src="../probe-outcomes.svg" /></p>
+<table>
+<thead>
+<tr>
+<th>Probe</th>
+<th>Question</th>
+<th>On repeated failure</th>
+<th>Runs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>startupProbe</code></td>
+<td>Has the app finished starting?</td>
+<td>Container killed and restarted</td>
+<td>From container start until its first success</td>
+</tr>
+<tr>
+<td><code>readinessProbe</code></td>
+<td>Can this Pod take traffic now?</td>
+<td>Endpoint marked not ready: no new traffic; <strong>no restart</strong></td>
+<td>For the container's whole life</td>
+</tr>
+<tr>
+<td><code>livenessProbe</code></td>
+<td>Is the process stuck beyond self-recovery?</td>
+<td>Container killed and restarted</td>
+<td>For the container's whole life, after startup succeeds</td>
+</tr>
+</tbody>
+</table>
+<p>A Pod with no probes is considered ready as soon as its containers start,
+and it is restarted only if its process exits.</p>
+<p>Each probe uses one mechanism: <code>httpGet</code> (status 200 to 399 is success),
+<code>tcpSocket</code> (the port accepts a connection), <code>exec</code> (a command exits with
+0), or <code>grpc</code> (the standard gRPC health checking protocol). And each has
+the same timing fields:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>initialDelaySeconds</code></td>
+<td>0</td>
+<td>Wait before the first probe</td>
+</tr>
+<tr>
+<td><code>periodSeconds</code></td>
+<td>10</td>
+<td>Time between probes</td>
+</tr>
+<tr>
+<td><code>timeoutSeconds</code></td>
+<td>1</td>
+<td>A probe slower than this counts as a failure</td>
+</tr>
+<tr>
+<td><code>failureThreshold</code></td>
+<td>3</td>
+<td>Consecutive failures before acting</td>
+</tr>
+<tr>
+<td><code>successThreshold</code></td>
+<td>1</td>
+<td>Consecutive successes to count as healthy again (must be 1 for liveness and startup)</td>
+</tr>
+</tbody>
+</table>
+<p>The arithmetic matters. A liveness probe with the defaults restarts a
+container after about 30 seconds of failures (3 × 10 s). A startup probe
+with <code>periodSeconds: 10</code> and <code>failureThreshold: 30</code> allows up to 300
+seconds to start, while the liveness probe stays disabled; the moment
+startup succeeds, liveness takes over with its own short threshold. That
+is far better than a large <code>initialDelaySeconds</code> on the liveness probe,
+which delays failure detection forever after.</p>
+<h3 id="designing-probes-that-do-not-cause-outages">Designing probes that do not cause outages<a class="headerlink" href="#designing-probes-that-do-not-cause-outages" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Liveness must not depend on other services.</strong> If <code>/healthz</code> checks
+  MongoDB and MongoDB has a two-minute outage, every API Pod fails
+  liveness and restarts, losing caches and connections, and all of them
+  reconnect at once when MongoDB returns. Liveness should answer only
+  "is this process able to respond at all?" For Node.js, a cheap HTTP
+  handler on the same event loop already detects a blocked or deadlocked
+  loop.</li>
+<li><strong>Readiness reflects this instance's ability to serve.</strong> Good checks:
+  startup work finished, the app's own connection pool is established, the
+  process is not shutting down. Be careful with shared dependencies: if
+  every replica fails readiness because of one external service, all
+  endpoints disappear together. Often it is better to stay ready and
+  return fast errors (with a circuit breaker) than to vanish from the load
+  balancer.</li>
+<li><strong>Keep probes cheap and give them time.</strong> The default one-second
+  timeout is easy to exceed under CPU throttling or a garbage-collection
+  pause, which turns load into restarts and more load. Use a few seconds
+  of timeout and a failure threshold that tolerates a blip.</li>
+<li><strong>Use a startup probe for slow starters</strong> (migrations, cache warming,
+  JIT-heavy runtimes) instead of stretching liveness timing.</li>
+<li><strong>Fail readiness during shutdown.</strong> Flipping <code>/readyz</code> to 503 on
+  <code>SIGTERM</code> is a cheap extra safety net beside the <code>preStop</code> delay.</li>
+</ul>
+<h3 id="rolling-updates">Rolling updates<a class="headerlink" href="#rolling-updates" title="Permanent link">&para;</a></h3>
+<p>A Deployment's default strategy, <code>RollingUpdate</code>, replaces Pods gradually
+by scaling a new ReplicaSet up and the old one down, within two limits:</p>
+<ul>
+<li><strong><code>maxSurge</code></strong>: how many Pods may exist above <code>replicas</code> during the
+  update. Percentages round <strong>up</strong>.</li>
+<li><strong><code>maxUnavailable</code></strong>: how many Pods may be unavailable below <code>replicas</code>.
+  Percentages round <strong>down</strong>.</li>
+</ul>
+<p>Both default to 25%. The alternative strategy, <code>Recreate</code>, deletes all old
+Pods before creating new ones: downtime, but never two versions at once.</p>
+<p>Worked example with 4 replicas: <code>maxSurge</code> = 25% of 4 = 1, and
+<code>maxUnavailable</code> = 25% of 4 = 1. So at most 5 Pods exist and at least 3
+are available at every moment.</p>
+<p><img alt="Diagram: a rolling update of 4 replicas with maxSurge 1 and maxUnavailable 1, so at most 5 Pods and at least 3 available; step 0 has four ready v1 Pods; step 1 starts one v2 and stops one v1, leaving 3 available; steps 2 to 4 each make one more v2 ready, start another v2, and stop another v1, always keeping 3 available; step 5 has four ready v2 Pods; a v2 Pod counts only after its readiness probe passes and minReadySeconds elapse, so a v2 that never becomes ready stops the rollout at step 1 with three v1 Pods serving." src="../rolling-update-steps.svg" /></p>
+<p>The key word is <strong>available</strong>: a new Pod counts only after its readiness
+probe passes and it has stayed ready for <code>minReadySeconds</code> (default 0).
+That is what makes rolling updates safe. If version 2 never becomes
+ready, the controller cannot remove more old Pods, and the rollout stalls
+with three old Pods still serving. After <code>progressDeadlineSeconds</code>
+(default 600) without progress, the Deployment's <code>Progressing</code> condition
+becomes <code>False</code> with reason <code>ProgressDeadlineExceeded</code>. Kubernetes does
+not roll back automatically; your pipeline or <code>kubectl rollout undo</code> must.</p>
+<table>
+<thead>
+<tr>
+<th>Settings</th>
+<th>Behaviour</th>
+<th>Needs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>maxSurge: 25%</code>, <code>maxUnavailable: 25%</code> (default)</td>
+<td>Balanced speed and capacity</td>
+<td>Some spare room</td>
+</tr>
+<tr>
+<td><code>maxSurge: 1</code>, <code>maxUnavailable: 0</code></td>
+<td>Never below full capacity; one extra Pod at a time</td>
+<td>Room for one extra Pod</td>
+</tr>
+<tr>
+<td><code>maxSurge: 0</code>, <code>maxUnavailable: 1</code></td>
+<td>No extra Pods; capacity dips by one</td>
+<td>No spare room</td>
+</tr>
+<tr>
+<td><code>maxSurge: 100%</code>, <code>maxUnavailable: 0</code></td>
+<td>Full new set first, then old removed</td>
+<td>Double capacity briefly</td>
+</tr>
+</tbody>
+</table>
+<h3 id="graceful-termination">Graceful termination<a class="headerlink" href="#graceful-termination" title="Permanent link">&para;</a></h3>
+<p>Every rolling update deletes old Pods, so how a Pod stops matters as much
+as how a new one starts. When a Pod is deleted:</p>
+<p><img alt="Diagram: at 0 seconds the Pod is deleted and marked Terminating; in parallel, its endpoint is removed from EndpointSlices and kube-proxy and ingress controllers update within roughly 1 to 2 seconds, after which no new connections arrive, while the kubelet runs a preStop sleep of 5 seconds during which the container keeps serving; at 5 seconds SIGTERM arrives, the app drains in-flight requests and exits 0 at about 7 seconds; terminationGracePeriodSeconds of 30 seconds counts from deletion and includes the preStop hook, and SIGKILL would arrive at 30 seconds if the container were still running." src="../pod-termination-timeline.svg" /></p>
+<ol>
+<li>The API server sets the Pod's <code>deletionTimestamp</code>; it shows as
+   <code>Terminating</code>.</li>
+<li><strong>In parallel</strong>: the EndpointSlice controller marks the endpoint as
+   terminating (not ready), and every node's kube-proxy and every ingress
+   controller update their rules, which takes from milliseconds to a few
+   seconds; and the kubelet starts shutting the Pod down.</li>
+<li>The kubelet runs the container's <strong><code>preStop</code> hook</strong>, if any, and waits
+   for it.</li>
+<li>The kubelet sends <strong><code>SIGTERM</code></strong> (or the image's <code>STOPSIGNAL</code>) to the
+   container's main process.</li>
+<li>The app stops accepting connections, finishes in-flight requests,
+   closes pools, and exits.</li>
+<li>If containers are still running when <strong><code>terminationGracePeriodSeconds</code></strong>
+   (default 30) has elapsed, counted from step 1 and including the
+   <code>preStop</code> time, the kubelet sends <strong><code>SIGKILL</code></strong>.</li>
+</ol>
+<p>Because steps 2 and 3 race, an app that exits immediately on <code>SIGTERM</code>
+can still receive requests from proxies that have not yet updated, and
+those clients see connection errors. A short <code>preStop</code> sleep (5 to 10
+seconds) keeps the app serving until the endpoint removal has spread.
+Kubernetes has a built-in <code>sleep</code> action for this (enabled by default
+since 1.30), so the image needs no <code>sleep</code> binary. The app's own shutdown
+logic is the handler from
+<a href="../../docker/writing-production-dockerfiles/">writing production Dockerfiles</a>,
+and its total time must fit inside the grace period.</p>
+<h3 id="poddisruptionbudgets">PodDisruptionBudgets<a class="headerlink" href="#poddisruptionbudgets" title="Permanent link">&para;</a></h3>
+<p>Kubernetes distinguishes <strong>voluntary</strong> disruptions (draining a node for
+an upgrade, the cluster autoscaler removing a node, an operator evicting
+Pods) from <strong>involuntary</strong> ones (a node crashing, a kernel panic). A
+<strong>PodDisruptionBudget</strong> (PDB) limits voluntary disruptions: the eviction
+API refuses to evict a Pod if that would leave fewer than <code>minAvailable</code>
+(or more than <code>maxUnavailable</code>) Pods of the selected set.</p>
+<p>PDBs do not apply to a Deployment's own rolling update (that is governed
+by <code>maxUnavailable</code>) and cannot prevent involuntary failures. A PDB that
+allows zero disruptions (<code>minAvailable</code> equal to the replica count) blocks
+node drains and cluster upgrades until someone intervenes. Setting
+<code>unhealthyPodEvictionPolicy: AlwaysAllow</code> lets broken Pods be evicted even
+when the budget is exhausted, so they cannot block a drain.</p>
+<h3 id="rollout-commands">Rollout commands<a class="headerlink" href="#rollout-commands" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>kubectl rollout status deploy/taskflow-api --timeout=5m</code></td>
+<td>Wait for a rollout; non-zero exit on failure or timeout (use in CI)</td>
+</tr>
+<tr>
+<td><code>kubectl rollout history deploy/taskflow-api</code></td>
+<td>List revisions and their change causes</td>
+</tr>
+<tr>
+<td><code>kubectl rollout undo deploy/taskflow-api</code></td>
+<td>Return to the previous revision</td>
+</tr>
+<tr>
+<td><code>kubectl rollout undo deploy/taskflow-api --to-revision=3</code></td>
+<td>Return to a specific revision</td>
+</tr>
+<tr>
+<td><code>kubectl rollout pause</code> / <code>resume</code></td>
+<td>Batch several changes into one rollout</td>
+</tr>
+<tr>
+<td><code>kubectl rollout restart deploy/taskflow-api</code></td>
+<td>Replace all Pods with the same template (picks up config changes)</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>CHANGE-CAUSE</code> column in the history comes from the
+<code>kubernetes.io/change-cause</code> annotation; set it in your pipeline when you
+deploy (the old <code>--record</code> flag is deprecated).</p>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Workload</th>
+<th>Probes</th>
+<th>Strategy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HTTP API (TaskFlow API)</td>
+<td>Readiness on <code>/readyz</code>, liveness on cheap <code>/healthz</code>, startup if boot is slow</td>
+<td>RollingUpdate with <code>maxUnavailable: 0</code></td>
+</tr>
+<tr>
+<td>Background worker (no port)</td>
+<td>Liveness via <code>exec</code> or a small health port; readiness rarely needed</td>
+<td>RollingUpdate</td>
+</tr>
+<tr>
+<td>App that must never run two versions at once (incompatible migrations)</td>
+<td>As above</td>
+<td><code>Recreate</code>, or better, make versions compatible</td>
+</tr>
+<tr>
+<td>Very slow start (JVM, large caches)</td>
+<td>Startup probe with a generous threshold</td>
+<td>RollingUpdate with <code>minReadySeconds</code></td>
+</tr>
+<tr>
+<td>Batch Job</td>
+<td>Usually none</td>
+<td>Not a Deployment</td>
+</tr>
+</tbody>
+</table>
+<p>Do not add a liveness probe just because you can: if the process exits
+when it breaks, the kubelet already restarts it. Add one when the app
+can hang without exiting.</p>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="probe-endpoints-in-the-api">Probe endpoints in the API<a class="headerlink" href="#probe-endpoints-in-the-api" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/health.js: liveness and readiness handlers for Express</span>
+<span class="k">import</span><span class="w"> </span><span class="nx">mongoose</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"mongoose"</span><span class="p">;</span>
+
+<span class="kd">let</span><span class="w"> </span><span class="nx">shuttingDown</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span>
+<span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">markShuttingDown</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">shuttingDown</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w"> </span><span class="p">};</span>
+
+<span class="c1">// Liveness: the event loop responds. No dependency checks here.</span>
+<span class="k">export</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">healthz</span><span class="p">(</span><span class="nx">_req</span><span class="p">,</span><span class="w"> </span><span class="nx">res</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">res</span><span class="p">.</span><span class="nx">status</span><span class="p">(</span><span class="mf">200</span><span class="p">).</span><span class="nx">send</span><span class="p">(</span><span class="s2">"ok"</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">// Readiness: this instance can serve right now.</span>
+<span class="k">export</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">readyz</span><span class="p">(</span><span class="nx">_req</span><span class="p">,</span><span class="w"> </span><span class="nx">res</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">dbConnected</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">mongoose</span><span class="p">.</span><span class="nx">connection</span><span class="p">.</span><span class="nx">readyState</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="mf">1</span><span class="p">;</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">shuttingDown</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="nx">dbConnected</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nx">res</span><span class="p">.</span><span class="nx">status</span><span class="p">(</span><span class="mf">503</span><span class="p">).</span><span class="nx">send</span><span class="p">(</span><span class="s2">"not ready"</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="nx">res</span><span class="p">.</span><span class="nx">status</span><span class="p">(</span><span class="mf">200</span><span class="p">).</span><span class="nx">send</span><span class="p">(</span><span class="s2">"ready"</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/server.js (excerpt)</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">healthz</span><span class="p">,</span><span class="w"> </span><span class="nx">readyz</span><span class="p">,</span><span class="w"> </span><span class="nx">markShuttingDown</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"./health.js"</span><span class="p">;</span>
+
+<span class="nx">app</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">"/healthz"</span><span class="p">,</span><span class="w"> </span><span class="nx">healthz</span><span class="p">);</span>
+<span class="nx">app</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">"/readyz"</span><span class="p">,</span><span class="w"> </span><span class="nx">readyz</span><span class="p">);</span>
+
+<span class="nx">process</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">"SIGTERM"</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">markShuttingDown</span><span class="p">();</span><span class="w">               </span><span class="c1">// readiness fails from now on</span>
+<span class="w">  </span><span class="nx">server</span><span class="p">.</span><span class="nx">close</span><span class="p">(</span><span class="k">async</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">        </span><span class="c1">// in-flight requests finish</span>
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="nx">mongoose</span><span class="p">.</span><span class="nx">disconnect</span><span class="p">();</span>
+<span class="w">    </span><span class="nx">process</span><span class="p">.</span><span class="nx">exit</span><span class="p">(</span><span class="mf">0</span><span class="p">);</span>
+<span class="w">  </span><span class="p">});</span>
+<span class="w">  </span><span class="nx">setTimeout</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">process</span><span class="p">.</span><span class="nx">exit</span><span class="p">(</span><span class="mf">1</span><span class="p">),</span><span class="w"> </span><span class="mf">20</span><span class="nx">_000</span><span class="p">).</span><span class="nx">unref</span><span class="p">();</span><span class="w">   </span><span class="c1">// below the 30 s grace period</span>
+<span class="p">});</span>
+</code></pre></div>
+<h3 id="probes-rollout-strategy-and-termination-in-the-deployment">Probes, rollout strategy, and termination in the Deployment<a class="headerlink" href="#probes-rollout-strategy-and-termination-in-the-deployment" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># k8s/api-deployment.yaml (excerpt)</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">replicas</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4</span>
+<span class="w">  </span><span class="nt">minReadySeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+<span class="w">  </span><span class="nt">progressDeadlineSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">300</span>
+<span class="w">  </span><span class="nt">strategy</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RollingUpdate</span>
+<span class="w">    </span><span class="nt">rollingUpdate</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">maxSurge</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">      </span><span class="nt">maxUnavailable</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+<span class="w">  </span><span class="nt">template</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">spec</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">terminationGracePeriodSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30</span>
+<span class="w">      </span><span class="nt">containers</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">api</span>
+<span class="w">          </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ghcr.io/example/taskflow-api:1.4.0</span>
+<span class="w">          </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http</span>
+<span class="w">              </span><span class="nt">containerPort</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3000</span>
+<span class="w">          </span><span class="nt">startupProbe</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">httpGet</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/healthz</span>
+<span class="w">              </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http</span>
+<span class="w">            </span><span class="nt">periodSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+<span class="w">            </span><span class="nt">failureThreshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">24</span><span class="w">          </span><span class="c1"># up to 120 s to start</span>
+<span class="w">          </span><span class="nt">readinessProbe</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">httpGet</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/readyz</span>
+<span class="w">              </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http</span>
+<span class="w">            </span><span class="nt">periodSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+<span class="w">            </span><span class="nt">timeoutSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<span class="w">            </span><span class="nt">failureThreshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<span class="w">          </span><span class="nt">livenessProbe</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">httpGet</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/healthz</span>
+<span class="w">              </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http</span>
+<span class="w">            </span><span class="nt">periodSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+<span class="w">            </span><span class="nt">timeoutSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+<span class="w">            </span><span class="nt">failureThreshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+<span class="w">          </span><span class="nt">lifecycle</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">preStop</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">sleep</span><span class="p">:</span>
+<span class="w">                </span><span class="nt">seconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span><span class="w">                </span><span class="c1"># let endpoint removal propagate</span>
+</code></pre></div>
+<p>The time budget adds up: 5 s of <code>preStop</code>, then up to 20 s of draining
+before the app's own timer exits, which is safely below the 30-second
+grace period. With <code>maxSurge: 1</code> and <code>maxUnavailable: 0</code>, capacity never
+drops below four ready Pods during a release. On clusters older than
+1.30, replace the <code>sleep</code> action with <code>exec: {command: ["sleep", "5"]}</code>,
+which requires a <code>sleep</code> binary in the image.</p>
+<h3 id="releasing-and-rolling-back">Releasing and rolling back<a class="headerlink" href="#releasing-and-rolling-back" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Deploy a new version (normally done by CI or GitOps)</span>
+kubectl<span class="w"> </span>-n<span class="w"> </span>taskflow<span class="w"> </span><span class="nb">set</span><span class="w"> </span>image<span class="w"> </span>deploy/taskflow-api<span class="w"> </span><span class="nv">api</span><span class="o">=</span>ghcr.io/example/taskflow-api:1.5.0
+kubectl<span class="w"> </span>-n<span class="w"> </span>taskflow<span class="w"> </span>annotate<span class="w"> </span>deploy/taskflow-api<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>kubernetes.io/change-cause<span class="o">=</span><span class="s2">"release 1.5.0"</span><span class="w"> </span>--overwrite
+
+<span class="c1"># Wait for it; roll back automatically if it does not complete</span>
+kubectl<span class="w"> </span>-n<span class="w"> </span>taskflow<span class="w"> </span>rollout<span class="w"> </span>status<span class="w"> </span>deploy/taskflow-api<span class="w"> </span>--timeout<span class="o">=</span>5m<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="o">||</span><span class="w"> </span>kubectl<span class="w"> </span>-n<span class="w"> </span>taskflow<span class="w"> </span>rollout<span class="w"> </span>undo<span class="w"> </span>deploy/taskflow-api
+
+kubectl<span class="w"> </span>-n<span class="w"> </span>taskflow<span class="w"> </span>rollout<span class="w"> </span><span class="nb">history</span><span class="w"> </span>deploy/taskflow-api
+kubectl<span class="w"> </span>-n<span class="w"> </span>taskflow<span class="w"> </span>get<span class="w"> </span>deploy<span class="w"> </span>taskflow-api<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">'{.status.conditions[?(@.type=="Progressing")].reason}'</span>
+</code></pre></div>
+<h3 id="a-poddisruptionbudget">A PodDisruptionBudget<a class="headerlink" href="#a-poddisruptionbudget" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># k8s/api-pdb.yaml</span>
+<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">policy/v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PodDisruptionBudget</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-api</span>
+<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">maxUnavailable</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">  </span><span class="nt">unhealthyPodEvictionPolicy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AlwaysAllow</span>
+<span class="w">  </span><span class="nt">selector</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">matchLabels</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">app.kubernetes.io/name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-api</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>-n<span class="w"> </span>taskflow<span class="w"> </span>get<span class="w"> </span>pdb<span class="w"> </span>taskflow-api
+<span class="c1"># NAME           MIN AVAILABLE   MAX UNAVAILABLE   ALLOWED DISRUPTIONS   AGE</span>
+<span class="c1"># taskflow-api   N/A             1                 1                     2d</span>
+</code></pre></div>
+<p><code>maxUnavailable: 1</code> lets node drains proceed one API Pod at a time,
+however many replicas the autoscaler has added.</p>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Give every serving container a readiness probe; add a liveness probe
+  only for failure modes where the process hangs without exiting.</li>
+<li>Keep liveness checks local and cheap; never check databases or other
+  services from liveness.</li>
+<li>Use startup probes for slow starts instead of long liveness delays.</li>
+<li>Use timeouts of a few seconds and failure thresholds that tolerate a
+  blip.</li>
+<li>Handle <code>SIGTERM</code>: fail readiness, stop accepting, drain, close pools,
+  exit well within the grace period.</li>
+<li>Add a short <code>preStop</code> sleep so endpoint removal finishes before
+  shutdown begins.</li>
+<li>Use <code>maxUnavailable: 0</code> for user-facing services when capacity allows,
+  and set <code>minReadySeconds</code> and a realistic <code>progressDeadlineSeconds</code>.</li>
+<li>Fail the pipeline on <code>kubectl rollout status</code> timeouts and roll back.</li>
+<li>Give multi-replica services a PDB that allows at least one disruption.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Every API Pod restarts during a database outage.</strong>
+  <em>Detect:</em> <code>RESTARTS</code> climbs on all Pods at the same time, and
+  <code>kubectl describe pod</code> shows <code>Liveness probe failed: HTTP probe failed
+  with statuscode: 503</code> while MongoDB is down. <em>Cause:</em> the liveness
+  endpoint checks the database. <em>Fix:</em> make liveness local only; reflect
+  dependency trouble in readiness or in request errors.</li>
+<li><strong>Clients see 502 errors during every deploy.</strong>
+  <em>Detect:</em> ingress or load balancer logs show upstream connection
+  refused or reset errors only while a rollout runs. <em>Cause:</em> Pods exit as
+  soon as they get <code>SIGTERM</code>, before every proxy has removed them, or
+  in-flight requests are cut. <em>Fix:</em> a <code>preStop</code> sleep, a <code>SIGTERM</code>
+  handler that drains, and a grace period longer than both.</li>
+<li><strong>A rollout hangs at "1 of 4 updated replicas are available".</strong>
+  <em>Detect:</em> <code>kubectl rollout status</code> waits, the new Pods are <code>Running</code> but
+  <code>0/1</code> ready, and the Deployment eventually reports
+  <code>ProgressDeadlineExceeded</code>. <em>Cause:</em> the new version fails its
+  readiness probe (bad config, missing Secret key, a probe path that
+  changed). <em>Fix:</em> read <code>kubectl describe pod</code> and the logs, then
+  <code>kubectl rollout undo</code>; automate the undo in CI.</li>
+<li><strong>Slow-starting Pods are killed in a loop.</strong>
+  <em>Detect:</em> <code>CrashLoopBackOff</code> with <code>Liveness probe failed</code> events in the
+  first minute, especially after adding startup work. <em>Cause:</em> liveness
+  starts before the app can answer. <em>Fix:</em> add a startup probe whose
+  <code>failureThreshold × periodSeconds</code> covers the worst-case start time.</li>
+<li><strong>Liveness failures under peak load make things worse.</strong>
+  <em>Detect:</em> restarts correlate with traffic peaks and CPU throttling;
+  probe events show <code>context deadline exceeded</code>. <em>Cause:</em> a one-second
+  probe timeout on a busy process. <em>Fix:</em> raise <code>timeoutSeconds</code> and
+  <code>failureThreshold</code>, keep the handler trivial, and give the container
+  enough CPU.</li>
+<li><strong>A node drain never finishes.</strong>
+  <em>Detect:</em> <code>kubectl drain</code> repeats <code>Cannot evict pod as it would violate
+  the pod's disruption budget</code>. <em>Cause:</em> <code>minAvailable</code> equals the replica
+  count, or some Pods are unhealthy and the budget is already used up.
+  <em>Fix:</em> use <code>maxUnavailable: 1</code>, add replicas, and set
+  <code>unhealthyPodEvictionPolicy: AlwaysAllow</code>.</li>
+<li><strong>New Pods stay <code>Pending</code> during a rollout.</strong>
+  <em>Detect:</em> the surge Pod reports <code>0/3 nodes are available: Insufficient
+  cpu</code>. <em>Cause:</em> <code>maxSurge</code> needs spare capacity that does not exist.
+  <em>Fix:</em> a cluster autoscaler, smaller requests, or <code>maxSurge: 0</code> with
+  <code>maxUnavailable: 1</code>.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Liveness probe:</strong> Decides whether to restart a container.</li>
+<li><strong>Readiness probe:</strong> Decides whether a Pod receives Service traffic.</li>
+<li><strong>Startup probe:</strong> Protects slow-starting containers; disables the other
+  probes until it succeeds.</li>
+<li><strong>Rolling update:</strong> Replacing Pods gradually by scaling a new
+  ReplicaSet up and the old one down.</li>
+<li><strong><code>maxSurge</code> / <code>maxUnavailable</code>:</strong> The limits on extra Pods and missing
+  available Pods during a rolling update.</li>
+<li><strong><code>minReadySeconds</code>:</strong> How long a Pod must stay ready before it counts
+  as available.</li>
+<li><strong>Progress deadline:</strong> The time after which a stalled rollout is marked
+  as failed.</li>
+<li><strong><code>preStop</code> hook:</strong> An action the kubelet runs before sending
+  <code>SIGTERM</code>.</li>
+<li><strong>Termination grace period:</strong> The total time between deletion and
+  <code>SIGKILL</code>.</li>
+<li><strong>PodDisruptionBudget:</strong> A limit on voluntary evictions for a set of
+  Pods.</li>
+<li><strong>CrashLoopBackOff:</strong> The state of a container that keeps failing and is
+  restarted with increasing delays.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Checking dependencies in liveness probes.</li>
+<li>Using the same aggressive settings for liveness as for readiness.</li>
+<li>Expecting a failing readiness probe to restart the container.</li>
+<li>Using a long <code>initialDelaySeconds</code> instead of a startup probe.</li>
+<li>Exiting immediately on <code>SIGTERM</code> without a <code>preStop</code> delay.</li>
+<li>Setting a <code>preStop</code> sleep longer than the grace period allows.</li>
+<li>Assuming Kubernetes rolls back a failed rollout automatically.</li>
+<li>Believing PDBs protect against node crashes or apply to rolling
+  updates.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>What happens to a Pod when each of the three probes fails repeatedly?</li>
+<li>A startup probe has <code>periodSeconds: 5</code> and <code>failureThreshold: 24</code>.
+   How long may the app take to start, and what are liveness and
+   readiness doing meanwhile?</li>
+<li>A Deployment has 10 replicas with the default <code>maxSurge</code> and
+   <code>maxUnavailable</code> of 25%. What is the maximum number of Pods during a
+   rollout, and the minimum number available?</li>
+<li>Why should a liveness probe not check MongoDB? What should readiness
+   check instead?</li>
+<li>Describe the termination sequence, and explain why a <code>preStop</code> sleep
+   reduces errors during deploys.</li>
+<li>A Pod has a 10-second <code>preStop</code> sleep, its app needs 25 seconds to
+   drain, and the grace period is 30 seconds. What happens?</li>
+<li>Why does a stalled rollout not take the service down, and what does
+   Kubernetes do after <code>progressDeadlineSeconds</code>?</li>
+<li>What does a PodDisruptionBudget protect against, and what does it not?</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://kubernetes.io/docs/concepts/configuration/liveness-readiness-startup-probes/">Kubernetes documentation: Liveness, readiness, and startup probes</a></li>
+<li><a href="https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/">Kubernetes documentation: Configure probes</a></li>
+<li><a href="https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination">Kubernetes documentation: Pod termination</a></li>
+<li><a href="https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-update-deployment">Kubernetes documentation: Deployment rolling update strategy</a></li>
+<li><a href="https://kubernetes.io/docs/tasks/run-application/configure-pdb/">Kubernetes documentation: Specifying a disruption budget</a></li>
+<li><a href="../../deployment-strategies/rolling-blue-green-and-canary/">Rolling, blue-green, and canary deployments</a></li>
+<li>Next: <a href="../scaling-and-resource-management/">scaling and resource management</a>.
+  Back to the <a href="../">Kubernetes overview</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../configuration-and-secrets/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Configuration and Secrets">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Configuration and Secrets</span>
+      </a>
+    
+    
+      <a href="../scaling-and-resource-management/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: Scaling and Resource Management">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">Scaling and Resource Management</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

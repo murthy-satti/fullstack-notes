@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="300" viewBox="0 0 800 300" role="img" aria-labelledby="mas-title mas-desc">
+  <title id="mas-title">Mass assignment with and without a schema allowlist</title>
+  <desc id="mas-desc">A client sends PATCH /me with displayName "Asha" and an extra field role "admin". Unsafe code passes req.body straight to User.updateOne, so the stored document gets role "admin" and the client has promoted itself. Safe code validates req.body with an allowlist schema of displayName and bio: with z.object the role key is stripped and only displayName is updated, so role stays "user"; with z.strictObject the request is rejected with 422 because of the unknown key role.</desc>
+  <defs>
+    <marker id="mas-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#40566b"/>
+    </marker>
+  </defs>
+  <rect width="800" height="300" rx="14" fill="#f5f7fb"/>
+  <g font-family="Arial, sans-serif" text-anchor="middle">
+    <rect x="150" y="18" width="500" height="46" rx="23" fill="#eef1f5" stroke="#8a96a3" stroke-width="2"/>
+    <text x="400" y="38" font-size="14" font-weight="700" fill="#36424e">PATCH /me</text>
+    <text x="400" y="56" font-size="12" fill="#36424e">{ "displayName": "Asha", "role": "admin" }</text>
+
+    <rect x="24" y="100" width="356" height="56" rx="8" fill="#fff0d9" stroke="#bd7a20" stroke-width="2"/>
+    <text x="202" y="122" font-size="14" font-weight="700" fill="#66400f">Unsafe: no allowlist</text>
+    <text x="202" y="141" font-size="11.5" fill="#66400f">User.updateOne({ _id: req.user.id }, req.body)</text>
+    <rect x="24" y="180" width="356" height="64" rx="8" fill="#fde8e6" stroke="#b5473a" stroke-width="2"/>
+    <text x="202" y="204" font-size="14" font-weight="700" fill="#6b241c">Stored: role = "admin"</text>
+    <text x="202" y="224" font-size="11.5" fill="#6b241c">the client promoted itself (mass assignment)</text>
+
+    <rect x="396" y="100" width="380" height="56" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="586" y="122" font-size="14" font-weight="700" fill="#263e5a">Safe: schema allowlist</text>
+    <text x="586" y="141" font-size="11.5" fill="#263e5a">updateProfileBody.safeParse(req.body): displayName, bio</text>
+    <rect x="396" y="180" width="184" height="64" rx="8" fill="#e8f5e9" stroke="#53845b" stroke-width="2"/>
+    <text x="488" y="200" font-size="12" font-weight="700" fill="#294a2e">z.object(): role stripped</text>
+    <text x="488" y="217" font-size="11.5" fill="#294a2e">update { displayName }</text>
+    <text x="488" y="233" font-size="11.5" fill="#294a2e">role stays "user"</text>
+    <rect x="592" y="180" width="184" height="64" rx="8" fill="#fde8e6" stroke="#b5473a" stroke-width="2"/>
+    <text x="684" y="200" font-size="12" font-weight="700" fill="#6b241c">z.strictObject(): rejected</text>
+    <text x="684" y="217" font-size="11.5" fill="#6b241c">422, unknown key "role"</text>
+    <text x="684" y="233" font-size="11.5" fill="#6b241c">nothing is written</text>
+
+    <g fill="none" stroke="#40566b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M300 64V80H202V98" marker-end="url(#mas-arrow)"/>
+      <path d="M500 64V80H586V98" marker-end="url(#mas-arrow)"/>
+      <path d="M202 156V178" marker-end="url(#mas-arrow)"/>
+      <path d="M488 156V178" marker-end="url(#mas-arrow)"/>
+      <path d="M684 156V178" marker-end="url(#mas-arrow)"/>
+    </g>
+    <text x="400" y="282" font-size="13" fill="#40566b">Validate against an explicit list of allowed fields; never write req.body straight to the database.</text>
+  </g>
+</svg>

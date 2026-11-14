@@ -1,0 +1,5294 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../from-one-server-to-many/">
+      
+      
+        <link rel="next" href="../global-traffic-management/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Load Balancers in Depth - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#load-balancers-in-depth" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Load Balancers in Depth
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../05-application-architecture/" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../06-ai-and-machine-learning/" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+          <span class="md-ellipsis">&larr; Back to DevOps</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../05-application-architecture/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../06-ai-and-machine-learning/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI and Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
+        
+          
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-label="DevOps module lessons" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+                  <span class="md-ellipsis">&larr; Back to DevOps</span>
+                </a>
+              
+            </div>
+          
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                  
+  
+  
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+    
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_12" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_12" id="__nav_9_12_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Load Balancing and Multi-Server Architecture
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_12_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_12">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Load Balancing and Multi-Server Architecture
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_12_2" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_12_2" id="__nav_9_12_2_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Foundations
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_12_2_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_12_2">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Foundations
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../from-one-server-to-many/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    From One Server to Many
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Load Balancers in Depth
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Load Balancers in Depth
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-a-load-balancer-does" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What a load balancer does
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#layer-4-compared-with-layer-7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Layer 4 compared with layer 7
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#balancing-algorithms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Balancing algorithms
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#health-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Health checks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#connection-draining-deregistration-delay-and-slow-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connection draining, deregistration delay, and slow start
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sticky-sessions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sticky sessions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tls-at-the-load-balancer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TLS at the load balancer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#passing-the-clients-address-x-forwarded-for-and-the-proxy-protocol" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Passing the client's address: X-Forwarded-For and the PROXY protocol
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#http2-grpc-and-websockets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HTTP/2, gRPC, and WebSockets
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#timeouts-and-retries-at-the-balancer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timeouts and retries at the balancer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cloud-load-balancers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cloud load balancers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#software-load-balancers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Software load balancers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#making-the-load-balancer-highly-available" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Making the load balancer highly available
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nginx-as-a-layer-7-balancer-for-taskflow-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nginx as a layer 7 balancer for TaskFlow API
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-layer-4-tier-with-the-proxy-protocol" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A layer 4 tier with the PROXY protocol
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#haproxy-for-taskflow-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HAProxy for TaskFlow API
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tuning-an-aws-target-group" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tuning an AWS target group
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reading-the-client-address-in-express" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading the client address in Express
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_12_3" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_12_3" id="__nav_9_12_3_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Going Global
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_12_3_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_12_3">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Going Global
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../global-traffic-management/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Global Traffic Management
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../multi-az-and-multi-region-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-AZ and Multi-Region Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_12_4" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_12_4" id="__nav_9_12_4_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Running the Fleet
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_12_4_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_12_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Running the Fleet
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../autoscaling-server-fleets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Autoscaling Server Fleets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../service-discovery-and-service-mesh/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Service Discovery and Service Mesh
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../resilience-patterns-across-servers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resilience Patterns Across Servers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_12_5" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_12_5" id="__nav_9_12_5_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Case Studies
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_12_5_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_12_5">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Case Studies
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../how-top-companies-run-at-scale/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How Top Companies Run at Scale
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-a-load-balancer-does" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What a load balancer does
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#layer-4-compared-with-layer-7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Layer 4 compared with layer 7
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#balancing-algorithms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Balancing algorithms
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#health-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Health checks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#connection-draining-deregistration-delay-and-slow-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connection draining, deregistration delay, and slow start
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sticky-sessions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sticky sessions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tls-at-the-load-balancer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TLS at the load balancer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#passing-the-clients-address-x-forwarded-for-and-the-proxy-protocol" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Passing the client's address: X-Forwarded-For and the PROXY protocol
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#http2-grpc-and-websockets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HTTP/2, gRPC, and WebSockets
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#timeouts-and-retries-at-the-balancer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timeouts and retries at the balancer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cloud-load-balancers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cloud load balancers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#software-load-balancers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Software load balancers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#making-the-load-balancer-highly-available" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Making the load balancer highly available
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nginx-as-a-layer-7-balancer-for-taskflow-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nginx as a layer 7 balancer for TaskFlow API
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-layer-4-tier-with-the-proxy-protocol" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A layer 4 tier with the PROXY protocol
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#haproxy-for-taskflow-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HAProxy for TaskFlow API
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tuning-an-aws-target-group" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tuning an AWS target group
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reading-the-client-address-in-express" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading the client address in Express
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="load-balancers-in-depth">Load Balancers in Depth<a class="headerlink" href="#load-balancers-in-depth" title="Permanent link">&para;</a></h1>
+<p>A load balancer accepts connections or requests on one address and spreads
+them across a pool of backends, stops sending work to backends that fail,
+and lets backends join and leave without clients noticing. This lesson
+covers the difference between layer 4 and layer 7 balancing, the balancing
+algorithms and when each fits, health checks, connection draining and slow
+start, sticky sessions, TLS, passing the client's address to the backend
+(<code>X-Forwarded-For</code> and the PROXY protocol), HTTP/2, gRPC, and WebSockets,
+the cloud load balancers of AWS, Google Cloud, and Azure, the main software
+load balancers with working Nginx and HAProxy configurations, and how to
+keep the load balancer itself from becoming a single point of failure.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>Every request crosses the load balancer, so its settings decide how a
+failure feels to users. With default settings, an AWS Application Load
+Balancer needs two failed checks 30 seconds apart before it stops sending
+traffic to a dead instance, and it reports a removed instance as draining
+for 300 seconds; a deploy tool that waits for each batch to finish draining
+turns a five-batch rolling deploy into a 25-minute one. A load balancer
+that only checks whether a TCP port is open happily
+routes to an instance whose database pool is exhausted. A layer 4 balancer
+in front of gRPC services pins every request from a client to one pod. Most
+"the load balancer is broken" incidents are really a mismatch between the
+balancer's settings and how the application behaves.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Google SRE book.</strong> The chapter
+  <a href="https://sre.google/sre-book/load-balancing-datacenter/">Load Balancing in the Datacenter</a>
+  describes a "lame duck" state in which a backend "is listening on its
+  port and can serve, but is explicitly asking clients to stop sending
+  requests", <strong>subsetting</strong> (each client talks to a subset of typically 20
+  to 100 backend tasks rather than all of them), and weighted round robin
+  in which backends report their query rate, error rate, and utilization so
+  clients can favor the healthiest ones.</li>
+<li><strong>HAProxy.</strong> Willy Tarreau's
+  <a href="https://www.haproxy.com/blog/power-of-two-load-balancing">Test Driving "Power of Two Random Choices" Load Balancing</a>
+  benchmarked algorithms on one load balancer and found that "Least
+  Connections consistently performs better", while power of two choices
+  matched round robin. The post also notes that HAProxy's <code>random</code>
+  algorithm now draws two servers by default.</li>
+<li><strong>NGINX.</strong> The post
+  <a href="https://www.f5.com/company/blog/nginx/nginx-power-of-two-choices-load-balancing-algorithm">NGINX and the "Power of Two Choices" Load-Balancing Algorithm</a>
+  explains the other half of that result: two random choices are "not as
+  effective on a single load balancer", but avoid the "herd behavior" that
+  appears when many independent load balancers each send work to whichever
+  backend looks least loaded.</li>
+<li><strong>AWS Elastic Load Balancing.</strong> The
+  <a href="https://docs.aws.amazon.com/elasticloadbalancing/latest/application/target-group-health-checks.html">target group health check documentation</a>
+  states the fail-open rule: "If a target group contains only unhealthy
+  registered targets, the load balancer routes requests to all those
+  targets, regardless of their health status."</li>
+<li><strong>Kubernetes and gRPC.</strong> The Kubernetes blog post
+  <a href="https://kubernetes.io/blog/2018/11/07/grpc-load-balancing-on-kubernetes-without-tears/">gRPC Load Balancing on Kubernetes without Tears</a>
+  explains that because HTTP/2 multiplexes requests over one long-lived
+  connection, connection-level balancing stops working: "All requests will
+  get pinned to a single destination pod."</li>
+<li><strong>Dropbox.</strong> In
+  <a href="https://dropbox.tech/infrastructure/dropbox-traffic-infrastructure-edge-network">Dropbox traffic infrastructure: Edge network</a>,
+  Dropbox describes scaling its layer 4 balancers with "BGP ECMP, DSR, and
+  consistent hashing", with IPVS as the data plane.</li>
+</ul>
+<p><strong>Popular tools and providers:</strong> AWS Application, Network, and Gateway Load
+Balancers; Google Cloud Application and Network Load Balancers; Azure Load
+Balancer, Application Gateway, and Front Door; Nginx (and the commercial F5
+NGINX Plus), HAProxy, Envoy, Traefik, and Caddy; keepalived for redundant
+pairs; Linux IPVS; and Katran and other Maglev-style layer 4 balancers.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="what-a-load-balancer-does">What a load balancer does<a class="headerlink" href="#what-a-load-balancer-does" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Accepts traffic</strong> on a stable address (a DNS name, a virtual IP, or an
+   anycast address) so clients never need to know backend addresses.</li>
+<li><strong>Chooses a backend</strong> with a balancing algorithm.</li>
+<li><strong>Checks health</strong> actively (probes) and passively (watching real
+   responses) and removes failing backends.</li>
+<li><strong>Shapes traffic:</strong> terminates TLS, enforces timeouts and connection
+   limits, retries, routes by host or path, and adds headers.</li>
+<li><strong>Reports</strong> per-backend request counts, errors, and latency, which are
+   often the best signal you have.</li>
+</ol>
+<p>Load balancers appear at several places: at the <strong>edge</strong> facing the
+internet, <strong>internally</strong> between services, and <strong>client-side</strong> as a library
+or sidecar inside the caller (gRPC, Envoy, service meshes). A <strong>proxy</strong>
+balancer keeps two connections per request (client to balancer, balancer to
+backend); a <strong>pass-through</strong> balancer forwards packets, and with <strong>direct
+server return (DSR)</strong> the backend answers the client directly, so the
+balancer only handles the smaller inbound traffic.</p>
+<h3 id="layer-4-compared-with-layer-7">Layer 4 compared with layer 7<a class="headerlink" href="#layer-4-compared-with-layer-7" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: on the left, a client opens one TCP connection carrying three requests to a layer 4 load balancer that sees only IP addresses and ports; it forwards the whole connection to server A, which receives all three requests while B and C stay idle; it is fast, works for any TCP or UDP protocol, and keeps the client IP, but cannot route by URL or retry. On the right, the same connection reaches a layer 7 load balancer that terminates TLS and parses HTTP; it sends request 1 to A, request 2 to B, and request 3 to C over its own connections; it can route by host, path, and header, retry, and run a WAF, at more CPU cost per request." src="../l4-vs-l7-load-balancing.svg" /></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Layer 4 (transport)</th>
+<th>Layer 7 (application)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sees</td>
+<td>IP addresses, ports, TCP or UDP</td>
+<td>The whole HTTP request: method, path, headers, cookies</td>
+</tr>
+<tr>
+<td>Decides</td>
+<td>Once per connection (flow)</td>
+<td>For every request</td>
+</tr>
+<tr>
+<td>Connections</td>
+<td>Packets forwarded, or a TCP proxy</td>
+<td>Client side and backend side are separate; backend connections are pooled</td>
+</tr>
+<tr>
+<td>TLS</td>
+<td>Passed through, or terminated on a TLS listener</td>
+<td>Terminated, optionally re-encrypted</td>
+</tr>
+<tr>
+<td>Can do</td>
+<td>Any TCP or UDP protocol, very high throughput, static IPs, the original client IP</td>
+<td>Host, path, and header routing, retries, header injection, WAF, compression, per-request gRPC balancing</td>
+</tr>
+<tr>
+<td>Cannot do</td>
+<td>Route by URL, retry a request, balance requests inside one HTTP/2 connection</td>
+<td>Non-HTTP protocols (outside a TCP mode); it costs more CPU per request</td>
+</tr>
+<tr>
+<td>Examples</td>
+<td>AWS NLB, Azure Load Balancer, Google passthrough Network Load Balancers, HAProxy <code>mode tcp</code>, the Nginx <code>stream</code> module, Linux IPVS</td>
+<td>AWS ALB, Google Application Load Balancers, Azure Application Gateway and Front Door, Nginx <code>http</code>, HAProxy <code>mode http</code>, Envoy</td>
+</tr>
+</tbody>
+</table>
+<p>Large systems usually use both: a layer 4 tier that spreads connections
+across a fleet of layer 7 proxies, which then route each request.</p>
+<h3 id="balancing-algorithms">Balancing algorithms<a class="headerlink" href="#balancing-algorithms" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: six cards compare algorithms over servers A, B, and C; round robin sends requests 1 to 6 as A, B, C, A, B, C for two each; weighted round robin with weights 2, 1, 1 sends eight requests as A, B, C, A, A, B, C, A, giving A four; least connections sees 3, 1, and 2 open connections and picks B; power of two choices samples A and C, which have 4 and 1 requests in flight, and picks C; IP hash maps clients X and Z to B and client Y to A; consistent hashing places servers on a ring, and adding D moves only the keys just before D, about one in N; each card lists what the algorithm fits and what to watch." src="../balancing-algorithms.svg" /></p>
+<table>
+<thead>
+<tr>
+<th>Algorithm</th>
+<th>How it picks</th>
+<th>Fits</th>
+<th>Watch out for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Round robin</td>
+<td>Next backend in turn</td>
+<td>Identical backends, requests of similar cost</td>
+<td>Slow requests pile up on whichever backend gets them</td>
+</tr>
+<tr>
+<td>Weighted round robin</td>
+<td>In turn, in proportion to weights (5:3:2 sends 500, 300, and 200 of 1,000 requests)</td>
+<td>Mixed instance sizes, gradual traffic shifts, canaries</td>
+<td>Weights are static; a weight cannot know a backend is slow today</td>
+</tr>
+<tr>
+<td>Least connections</td>
+<td>Backend with the fewest open connections</td>
+<td>Long-lived connections (WebSockets), uneven request times</td>
+<td>Counts connections, not requests; a new backend with zero connections gets a burst</td>
+</tr>
+<tr>
+<td>Least outstanding requests</td>
+<td>Backend with the fewest requests in flight (AWS ALB; Envoy's <code>least_request</code>)</td>
+<td>HTTP APIs whose request times vary</td>
+<td>Needs per-request tracking, so it is a layer 7 feature</td>
+</tr>
+<tr>
+<td>Random, power of two choices</td>
+<td>Pick two backends at random, send to the less loaded one</td>
+<td>Many independent balancers or sidecars, large fleets</td>
+<td>Needs a load signal; on one balancer, least connections is usually as good</td>
+</tr>
+<tr>
+<td>IP hash</td>
+<td>Hash of the client address picks the backend</td>
+<td>Rough affinity without cookies</td>
+<td>Many users behind one NAT land on one backend; most clients move when backends change</td>
+</tr>
+<tr>
+<td>Consistent hashing</td>
+<td>Hash of a key (URL, user, tenant) on a ring; the key belongs to the next backend on the ring</td>
+<td>Caches and sharded backends, where the same key should reach the same server</td>
+<td>Hot keys still overload one backend; uneven rings need virtual nodes</td>
+</tr>
+<tr>
+<td>Least time</td>
+<td>Lowest average response time (Nginx <code>least_time</code>)</td>
+<td>Backends in different locations or of different speeds</td>
+<td>Open-source Nginx gained it only in the 1.31 mainline; earlier it was NGINX Plus only</td>
+</tr>
+</tbody>
+</table>
+<p>Two results explain the hashing and random rows:</p>
+<div class="highlight"><pre><span></span><code>Modulo hashing (server = hash(key) mod N), going from 4 to 5 servers:
+  a key stays put only if hash mod 4 == hash mod 5, true for 4 of every 20 values
+  -&gt; 80% of keys move, and every cache in the tier goes cold at once
+
+Consistent hashing, going from 4 to 5 servers:
+  only the keys that now belong to the new server move: about 1/5
+  -&gt; 20% of keys move; the other 80% keep hitting a warm cache
+
+Random choices (balls into bins, one million of each):
+  one random choice: the fullest bin usually holds about 9
+  best of two random choices: it drops to about 4
+</code></pre></div>
+<p>The last result is from the balanced-allocations work surveyed in
+<a href="https://www.eecs.harvard.edu/~michaelm/postscripts/handbook2001.pdf">The Power of Two Random Choices</a>
+(Mitzenmacher, Richa, and Sitaraman). It is why two choices are almost as
+good as asking every backend, and why they avoid herd behavior: two
+balancers rarely sample the same pair.</p>
+<p>Which to choose: start with <strong>least outstanding requests</strong> (or least
+connections) for HTTP APIs, <strong>round robin</strong> when requests are uniform and
+cheap, <strong>weighted</strong> variants for mixed capacity or traffic shifting, and
+<strong>consistent hashing</strong> only when data placement matters. Many balancers
+combine these: Nginx's <code>random two least_conn</code> is power of two choices
+using connection counts.</p>
+<h3 id="health-checks">Health checks<a class="headerlink" href="#health-checks" title="Permanent link">&para;</a></h3>
+<p><strong>Active</strong> checks probe each backend on a schedule. <strong>Passive</strong> checks
+(Envoy calls them outlier detection) watch real responses and eject a
+backend that returns errors or timeouts. Use both: active checks find a
+backend that is down before users do, passive checks react to errors
+between probes.</p>
+<p>Detection and recovery times follow directly from the settings:</p>
+<div class="highlight"><pre><span></span><code>time to remove  ~ interval x unhealthy threshold (+ the probe timeout)
+time to restore ~ interval x healthy threshold
+
+AWS ALB defaults (interval 30 s, unhealthy 2, healthy 5):  remove ~60 s, restore ~150 s
+Tuned ALB (interval 10 s, unhealthy 2, healthy 3):           remove ~20 s, restore ~30 s
+HAProxy defaults (inter 2 s, fall 3, rise 2):                remove ~6 s,  restore ~4 s
+Google Cloud defaults (interval 5 s, thresholds 2 and 2):    remove ~10 s, restore ~10 s
+</code></pre></div>
+<p>What the check should test:</p>
+<ul>
+<li><strong>Readiness, not liveness.</strong> The endpoint (<code>/readyz</code>) answers "should this
+  instance get new requests now?": started, connected, not draining. It is
+  cheap and has a timeout shorter than the probe interval. The difference
+  between liveness and readiness is covered in
+  <a href="../../deployment-strategies/deploying-backend-services/">deploying backend services</a>.</li>
+<li><strong>Not every dependency.</strong> If <code>/readyz</code> fails whenever the database is slow,
+  every instance fails at the same moment. Balancers then <strong>fail open</strong>: AWS
+  ALB and NLB route to all targets when none are healthy, Envoy ignores
+  health once fewer than 50% of hosts are healthy (its panic threshold),
+  and Azure Front Door spreads traffic across all origins when every probe
+  fails. Failing open is better than serving nothing, but it means the
+  health check stopped protecting you. AWS lets you tune the threshold
+  with the <code>target_group_health.unhealthy_state_routing</code> attributes.</li>
+<li><strong>Hysteresis.</strong> Requiring several consecutive failures and successes
+  stops a backend from flapping in and out on a single slow response.</li>
+</ul>
+<h3 id="connection-draining-deregistration-delay-and-slow-start">Connection draining, deregistration delay, and slow start<a class="headerlink" href="#connection-draining-deregistration-delay-and-slow-start" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: a 90-second timeline with three lanes; in an unplanned failure the instance crashes at 0 s, checks every 10 s fail at 10, 20, and 30 s, and only the third failure removes it, so requests can fail for 30 s before it is out of rotation; in a planned removal with a 30 s deregistration delay the instance gets no new requests from 0 s, its last in-flight request finishes at 12 s, and at 30 s it is deregistered and safe to stop; a new instance registered at 0 s passes checks at 5 and 15 s and its share of traffic rises from 0 to 100% during a 60 s slow start, reaching its full share at 75 s." src="../health-check-and-draining-timeline.svg" /></p>
+<ul>
+<li><strong>Draining</strong> removes a backend from rotation for new requests while its
+  in-flight requests finish. On AWS this is the <strong>deregistration delay</strong>
+  (default 300 seconds, range 0 to 3,600). The load balancer stops sending
+  new requests at once; if the target has no requests in flight it finishes
+  deregistering early, but it is still shown as <code>draining</code> until the delay
+  ends, so tools that wait for the <code>unused</code> state wait the full delay. Set
+  it a little above your longest normal request (30 seconds for TaskFlow
+  API); the default makes every rolling deploy wait five minutes per batch.</li>
+<li><strong>The application must cooperate.</strong> On <code>SIGTERM</code> it fails readiness,
+  keeps serving in-flight requests, and closes idle keep-alive connections,
+  as shown in
+  <a href="../../deployment-strategies/deploying-backend-services/">deploying backend services</a>.
+  A target that closes connections before the delay ends returns errors to
+  the clients still using them.</li>
+<li><strong>Long-lived connections never "finish".</strong> WebSockets and streams are
+  cut when the delay ends. Clients must reconnect with random jitter, or
+  you need longer drains (see rainbow deployments in
+  <a href="../../deployment-strategies/advanced-deployment-patterns/">advanced deployment patterns</a>).</li>
+<li><strong>Slow start</strong> ramps a backend's share of traffic up from zero so a cold
+  instance (empty caches, unwarmed JIT, no pooled connections) is not hit
+  with a full share at once. AWS ALB applies it to newly registered targets
+  over 30 to 900 seconds, rising linearly. HAProxy's <code>slowstart</code> applies to
+  a server returning after being seen as down, not at startup. In Nginx,
+  <code>slow_start</code> is still an NGINX Plus feature. ALB cannot combine slow
+  start with the least outstanding requests or weighted random algorithms.</li>
+</ul>
+<h3 id="sticky-sessions">Sticky sessions<a class="headerlink" href="#sticky-sessions" title="Permanent link">&para;</a></h3>
+<p>Stickiness (session affinity) sends a client back to the same backend:</p>
+<ul>
+<li><strong>Load balancer cookie:</strong> the balancer adds its own cookie (AWS ALB
+  <code>AWSALB</code>, HAProxy <code>cookie ... insert</code>, Nginx <code>sticky cookie</code>).</li>
+<li><strong>Application cookie:</strong> the balancer follows a cookie your app sets (ALB
+  application-based stickiness).</li>
+<li><strong>Source IP:</strong> hash or affinity by client address (NLB <code>source_ip</code>, Azure
+  Load Balancer client IP persistence, Nginx <code>ip_hash</code>).</li>
+</ul>
+<p>Stickiness has a real cost: load stays uneven (a scale-out helps only new
+users), sessions on a failed backend are lost, and some algorithms cannot
+use it (ALB's weighted random). Use it for performance or protocol reasons
+(Socket.IO long-polling, warm per-instance caches, keeping a canary user on
+one version) and never as the only copy of session data, as explained in
+<a href="../from-one-server-to-many/">from one server to many</a>.</p>
+<h3 id="tls-at-the-load-balancer">TLS at the load balancer<a class="headerlink" href="#tls-at-the-load-balancer" title="Permanent link">&para;</a></h3>
+<p>Most HTTP setups terminate TLS at the balancer with a managed certificate;
+re-encryption to backends adds encryption inside the network, and
+passthrough (a layer 4 balancer routing by SNI) keeps the private key off
+the balancer at the cost of all layer 7 features. The trade-offs,
+certificate handling, and troubleshooting are covered in
+<a href="../../ssl-certificates/tls-termination-and-troubleshooting/">TLS termination and troubleshooting</a>.
+AWS ALB can also check client certificates itself (mutual TLS in verify
+mode) or pass them to targets in a header (passthrough mode).</p>
+<h3 id="passing-the-clients-address-x-forwarded-for-and-the-proxy-protocol">Passing the client's address: X-Forwarded-For and the PROXY protocol<a class="headerlink" href="#passing-the-clients-address-x-forwarded-for-and-the-proxy-protocol" title="Permanent link">&para;</a></h3>
+<p>Behind a proxy, the backend's TCP peer is the balancer, so the client's
+address must travel separately:</p>
+<ul>
+<li><strong>Layer 7: headers.</strong> The balancer appends the address it saw to
+  <code>X-Forwarded-For</code> (<code>client, proxy1, proxy2</code>), and sets
+  <code>X-Forwarded-Proto</code> and <code>X-Forwarded-Host</code>; the standard <code>Forwarded</code>
+  header (<a href="https://www.rfc-editor.org/rfc/rfc7239.html">RFC 7239</a>) carries
+  the same information. Any client can send a fake <code>X-Forwarded-For</code>, so a
+  backend must trust only the entries added by its own proxies: count hops
+  from the right. In Express, <code>app.set("trust proxy", 1)</code> trusts exactly one
+  hop; in Nginx, <code>set_real_ip_from</code> with <code>real_ip_header</code> and
+  <code>real_ip_recursive</code> does the same.</li>
+<li><strong>Layer 4: the PROXY protocol.</strong> A TCP balancer cannot add HTTP headers,
+  so it prepends a small header to the connection (text in version 1,
+  binary in version 2) carrying the original addresses and ports. AWS NLB
+  sends it when <code>proxy_protocol_v2.enabled</code> is true; HAProxy sends it with
+  <code>send-proxy-v2</code> and accepts it with <code>accept-proxy</code>; Nginx accepts it with
+  <code>listen ... proxy_protocol</code>. Both sides must agree: a backend that does
+  not expect the header sees garbage at the start of every connection, and
+  one that expects it rejects connections that lack it. Some layer 4
+  balancers (AWS NLB with instance targets, for example) instead preserve
+  the client's source IP, so no header is needed.</li>
+</ul>
+<h3 id="http2-grpc-and-websockets">HTTP/2, gRPC, and WebSockets<a class="headerlink" href="#http2-grpc-and-websockets" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>HTTP/2</strong> multiplexes many requests over one long-lived connection.
+  Behind a layer 4 balancer, every request on that connection reaches one
+  backend; a layer 7 balancer balances each request (stream) separately.
+  AWS ALB sends HTTP/2 or gRPC to targets when the target group's protocol
+  version is <code>HTTP2</code> or <code>GRPC</code>.</li>
+<li><strong>gRPC</strong> clients keep one channel open for a long time, so behind a
+  Kubernetes <code>ClusterIP</code> Service (connection-level balancing) a few pods do
+  all the work. Fixes, from least to most infrastructure: client-side
+  balancing (a headless Service, a <code>dns:///</code> target, and the <code>round_robin</code>
+  policy, since the default <code>pick_first</code> uses one address), a maximum
+  connection age on the server (<code>grpc.max_connection_age_ms</code> in grpc-js) so
+  clients reconnect and rebalance, or an L7 proxy or service mesh that
+  balances per call (see
+  <a href="../service-discovery-and-service-mesh/">service discovery and service mesh</a>).</li>
+<li><strong>WebSockets</strong> start as an HTTP request with <code>Upgrade: websocket</code> and then
+  become a long-lived tunnel; the balancer chooses a backend once, at
+  connect time. Use least connections, set idle timeouts above your
+  heartbeat interval (the ALB idle timeout defaults to 60 seconds, Nginx's
+  <code>proxy_read_timeout</code> to 60 seconds), and send pings more often than that.</li>
+</ul>
+<h3 id="timeouts-and-retries-at-the-balancer">Timeouts and retries at the balancer<a class="headerlink" href="#timeouts-and-retries-at-the-balancer" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>What it limits</th>
+<th>Typical value for TaskFlow API</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Connect timeout to backend</td>
+<td>Time to open a TCP connection</td>
+<td>1 to 3 s; a healthy backend in the same region connects in milliseconds</td>
+</tr>
+<tr>
+<td>Response (read) timeout</td>
+<td>Time waiting for the backend to respond</td>
+<td>A little above the slowest normal endpoint, such as 30 s</td>
+</tr>
+<tr>
+<td>Client idle timeout</td>
+<td>Idle time on the client connection</td>
+<td>60 s (ALB default)</td>
+</tr>
+<tr>
+<td>Backend keep-alive</td>
+<td>How long idle backend connections stay open</td>
+<td>The app's <code>keepAliveTimeout</code> must be longer than the balancer's, or requests fail with 502</td>
+</tr>
+<tr>
+<td>Retries</td>
+<td>Sending a failed request to another backend</td>
+<td>One retry, for connection failures and idempotent requests only</td>
+</tr>
+</tbody>
+</table>
+<p>Retries are where balancers differ most. Nginx retries on <code>error</code> and
+<code>timeout</code> by default (<code>proxy_next_upstream</code>), but never passes a <code>POST</code>,
+<code>PATCH</code>, or <code>LOCK</code> to the next server after it reached one, unless you add
+<code>non_idempotent</code>. HAProxy retries only connection failures by default
+(<code>retry-on conn-failure</code>); its manual warns that the other retry conditions
+replay requests whatever their method, so use them only when the API has
+replay protection such as idempotency keys. Retrying at several layers
+multiplies load during an outage; budgets and backoff are covered in
+<a href="../resilience-patterns-across-servers/">resilience patterns across servers</a>.</p>
+<h3 id="cloud-load-balancers">Cloud load balancers<a class="headerlink" href="#cloud-load-balancers" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Provider</th>
+<th>Product</th>
+<th>Layer and scope</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AWS</td>
+<td>Application Load Balancer</td>
+<td>L7, regional</td>
+<td>HTTP/1.1, HTTP/2, gRPC, WebSockets; host, path, and header rules; weighted target groups; round robin, least outstanding requests, or weighted random with anomaly mitigation; mutual TLS; Target Optimizer caps concurrent requests per target with an agent on each target (round robin only)</td>
+</tr>
+<tr>
+<td>AWS</td>
+<td>Network Load Balancer</td>
+<td>L4, regional</td>
+<td>TCP, UDP, TLS, TCP_UDP, QUIC, TCP_QUIC; a static IP per zone (Elastic IPs optional); flow-hash routing; client IP preservation; PROXY protocol v2; cross-zone balancing off by default</td>
+</tr>
+<tr>
+<td>AWS</td>
+<td>Gateway Load Balancer</td>
+<td>L3, regional</td>
+<td>Inserts virtual appliances (firewalls, intrusion detection) inline, using GENEVE on port 6081 and Gateway Load Balancer endpoints</td>
+</tr>
+<tr>
+<td>AWS</td>
+<td>Classic Load Balancer</td>
+<td>L4 and L7, regional</td>
+<td>Previous generation; AWS recommends migrating</td>
+</tr>
+<tr>
+<td>Google Cloud</td>
+<td>Application Load Balancers</td>
+<td>L7: global external, regional external, classic, cross-region internal, regional internal</td>
+<td>Global external uses a single anycast IP served by Envoy-based Google Front Ends; regional ones use Envoy</td>
+</tr>
+<tr>
+<td>Google Cloud</td>
+<td>Proxy Network Load Balancers</td>
+<td>L4 proxy, global or regional</td>
+<td>TCP with optional TLS offload</td>
+</tr>
+<tr>
+<td>Google Cloud</td>
+<td>Passthrough Network Load Balancers</td>
+<td>L4 pass-through, regional</td>
+<td>External ones are built on Maglev, internal ones on Andromeda; a global external version is in preview</td>
+</tr>
+<tr>
+<td>Azure</td>
+<td>Load Balancer (Standard)</td>
+<td>L4, regional</td>
+<td>Five-tuple hash by default; client IP persistence options; HA ports on internal balancers; the Basic SKU was retired on September 30, 2025</td>
+</tr>
+<tr>
+<td>Azure</td>
+<td>Gateway Load Balancer</td>
+<td>L3/L4</td>
+<td>Chains network virtual appliances in front of a Standard load balancer using VXLAN</td>
+</tr>
+<tr>
+<td>Azure</td>
+<td>Application Gateway v2</td>
+<td>L7, regional</td>
+<td>WAF_v2 SKU with the OWASP Core Rule Set; v1 was retired on April 28, 2026; Application Gateway for Containers serves Kubernetes</td>
+</tr>
+<tr>
+<td>Azure</td>
+<td>Front Door Standard and Premium</td>
+<td>L7, global</td>
+<td>Latency, priority, weighted, and session-affinity routing at the edge; Front Door (classic) retires on March 31, 2027</td>
+</tr>
+</tbody>
+</table>
+<p>DNS-based global routing (Route 53, Traffic Manager, Cloud DNS routing
+policies) and anycast are covered in
+<a href="../global-traffic-management/">global traffic management</a>.</p>
+<h3 id="software-load-balancers">Software load balancers<a class="headerlink" href="#software-load-balancers" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Nginx</th>
+<th>HAProxy</th>
+<th>Envoy</th>
+<th>Traefik</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Typical role</td>
+<td>Web server and reverse proxy that also balances</td>
+<td>Dedicated, very fast L4 and L7 balancer</td>
+<td>Sidecar, gateway, and mesh data plane, configured over APIs (xDS)</td>
+<td>Edge router that discovers backends from Docker or Kubernetes</td>
+</tr>
+<tr>
+<td>Algorithms</td>
+<td>Round robin, weights, <code>least_conn</code>, <code>ip_hash</code>, <code>hash ... consistent</code>, <code>random two</code>, <code>least_time</code> (1.31 mainline)</td>
+<td><code>roundrobin</code>, <code>static-rr</code>, <code>leastconn</code>, <code>first</code>, <code>source</code>, <code>uri</code>, <code>hdr</code>, <code>random</code>, and more; <code>random</code> with two draws is the default since 3.3</td>
+<td>Round robin, least request (two choices by default), ring hash, Maglev, random</td>
+<td>Weighted round robin (default), power of two choices, highest random weight, least time</td>
+</tr>
+<tr>
+<td>Health checks</td>
+<td>Passive (<code>max_fails</code>, <code>fail_timeout</code>) in open source; active checks in NGINX Plus</td>
+<td>Active HTTP and TCP checks, passive observation</td>
+<td>Active checks and outlier detection</td>
+<td>Active checks and passive health checks</td>
+</tr>
+<tr>
+<td>Runtime changes</td>
+<td>Reload; DNS re-resolution with <code>resolve</code></td>
+<td>Runtime API (drain, weights, add servers)</td>
+<td>Full dynamic configuration</td>
+<td>Automatic from providers</td>
+</tr>
+</tbody>
+</table>
+<p>Open-source Nginx gained several former NGINX Plus features recently:
+<code>resolve</code> in 1.27.3, <code>sticky</code>, <code>route</code>, and <code>drain</code> in 1.29.6, upstream
+keepalive by default in 1.29.7, and <code>least_time</code> in the 1.31 mainline.
+Distribution packages often ship older versions, so check <code>nginx -v</code>
+before relying on them.</p>
+<h3 id="making-the-load-balancer-highly-available">Making the load balancer highly available<a class="headerlink" href="#making-the-load-balancer-highly-available" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: three panels; an active-standby pair where clients use virtual IP 10.0.0.100 held by LB 1 as master while LB 2 waits as backup receiving VRRP advertisements, and when LB 1 dies LB 2 claims the IP in seconds with gratuitous ARP, simple on bare metal but with idle standby capacity and API-based IP moves in clouds; a managed cloud load balancer whose DNS name returns node addresses in zones a, b, and c, each forwarding to targets, with nodes replaced and scaled by the provider and unhealthy zones removed from DNS, as long as at least two zones are enabled and clients re-resolve; and an active-active layer 4 tier where routers spread flows with ECMP across four balancers announcing one VIP over BGP and consistent hashing keeps each flow on the same backend, as in Maglev-style systems." src="../load-balancer-high-availability.svg" /></p>
+<ul>
+<li><strong>Managed cloud balancers</strong> are already a redundant fleet: AWS creates a
+  load balancer node in every enabled Availability Zone and returns their
+  addresses from the balancer's DNS name. Your job is to enable at least
+  two zones, point DNS at the name (an alias record), not at an IP
+  address, and let clients re-resolve.</li>
+<li><strong>A self-managed pair</strong> shares a virtual IP with <strong>keepalived</strong>, which
+  implements VRRP (<a href="https://www.rfc-editor.org/rfc/rfc5798.html">RFC 5798</a>):
+  the master holds the address and sends advertisements; when they stop,
+  the backup claims the address and announces it with gratuitous ARP.
+  Failover takes seconds, but the backup sits idle, and in most clouds
+  moving an IP requires an API call rather than VRRP on the local network.</li>
+<li><strong>An active-active layer 4 tier</strong> announces the same address from many
+  balancers over BGP; routers spread flows across them with equal-cost
+  multipath (ECMP). Because a router may rehash flows when a balancer
+  joins or leaves, the balancers use consistent hashing (and connection
+  tracking) so that a flow keeps reaching the same backend. This is the
+  design of Google's Maglev and similar systems, described in
+  <a href="../how-top-companies-run-at-scale/">how top companies run at scale</a>.</li>
+</ul>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Situation</th>
+<th>Choose</th>
+<th>Avoid</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Public HTTP API or website on a cloud</td>
+<td>Managed L7 balancer (ALB, Google Application LB, Application Gateway) with least outstanding requests</td>
+<td>One public IP per instance; DNS round robin across instances</td>
+</tr>
+<tr>
+<td>Non-HTTP TCP or UDP protocol, static IPs, millions of connections</td>
+<td>Managed L4 balancer (NLB, Azure Load Balancer) with the PROXY protocol or client IP preservation</td>
+<td>An L7 balancer in TCP mode as a workaround for everything</td>
+</tr>
+<tr>
+<td>gRPC between services</td>
+<td>L7 proxy or mesh, or client-side <code>round_robin</code> with a headless Service</td>
+<td>A plain L4 Service with long-lived channels</td>
+</tr>
+<tr>
+<td>Cache tier keyed by URL or user</td>
+<td>Consistent hashing</td>
+<td>Round robin (every node caches everything) or modulo hashing</td>
+</tr>
+<tr>
+<td>Many balancers or sidecars choosing independently</td>
+<td>Power of two choices (<code>random two</code>, Envoy <code>least_request</code>)</td>
+<td>Every balancer chasing the globally least-loaded backend</td>
+</tr>
+<tr>
+<td>Self-hosted on VMs or bare metal</td>
+<td>Nginx or HAProxy, with keepalived for a redundant pair</td>
+<td>A single balancer with no standby</td>
+</tr>
+<tr>
+<td>Sessions in memory you cannot remove yet</td>
+<td>Sticky sessions as a temporary measure</td>
+<td>Relying on stickiness for correctness long term</td>
+</tr>
+</tbody>
+</table>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="nginx-as-a-layer-7-balancer-for-taskflow-api">Nginx as a layer 7 balancer for TaskFlow API<a class="headerlink" href="#nginx-as-a-layer-7-balancer-for-taskflow-api" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># /etc/nginx/conf.d/taskflow-api.conf: L7 balancing with TLS, retries, and WebSockets</span>
+<span class="k">upstream</span><span class="w"> </span><span class="s">taskflow_api</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kn">zone</span><span class="w"> </span><span class="s">taskflow_api</span><span class="w"> </span><span class="mi">64k</span><span class="p">;</span><span class="w">                </span><span class="c1"># shared state across worker processes</span>
+<span class="w">    </span><span class="kn">least_conn</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">server</span><span class="w"> </span><span class="n">10.0.1.11</span><span class="p">:</span><span class="mi">3000</span><span class="w"> </span><span class="s">max_fails=3</span><span class="w"> </span><span class="s">fail_timeout=10s</span><span class="w"> </span><span class="s">max_conns=200</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">server</span><span class="w"> </span><span class="n">10.0.2.11</span><span class="p">:</span><span class="mi">3000</span><span class="w"> </span><span class="s">max_fails=3</span><span class="w"> </span><span class="s">fail_timeout=10s</span><span class="w"> </span><span class="s">max_conns=200</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">server</span><span class="w"> </span><span class="n">10.0.3.11</span><span class="p">:</span><span class="mi">3000</span><span class="w"> </span><span class="s">max_fails=3</span><span class="w"> </span><span class="s">fail_timeout=10s</span><span class="w"> </span><span class="s">max_conns=200</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">server</span><span class="w"> </span><span class="n">10.0.9.11</span><span class="p">:</span><span class="mi">3000</span><span class="w"> </span><span class="s">backup</span><span class="p">;</span><span class="w">         </span><span class="c1"># used only when all others are unavailable</span>
+<span class="w">    </span><span class="kn">keepalive</span><span class="w"> </span><span class="mi">32</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">keepalive_timeout</span><span class="w"> </span><span class="s">60s</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">upstream</span><span class="w"> </span><span class="s">taskflow_realtime</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kn">zone</span><span class="w"> </span><span class="s">taskflow_realtime</span><span class="w"> </span><span class="mi">64k</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">least_conn</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">sticky</span><span class="w"> </span><span class="s">cookie</span><span class="w"> </span><span class="s">tf_srv</span><span class="w"> </span><span class="s">expires=1h</span><span class="w"> </span><span class="s">path=/</span><span class="w"> </span><span class="s">httponly</span><span class="w"> </span><span class="s">secure</span><span class="w"> </span><span class="s">samesite=lax</span><span class="p">;</span><span class="w">  </span><span class="c1"># nginx 1.29.6+</span>
+<span class="w">    </span><span class="kn">server</span><span class="w"> </span><span class="n">10.0.1.11</span><span class="p">:</span><span class="mi">3001</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">server</span><span class="w"> </span><span class="n">10.0.2.11</span><span class="p">:</span><span class="mi">3001</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">server</span><span class="w"> </span><span class="n">10.0.3.11</span><span class="p">:</span><span class="mi">3001</span><span class="w"> </span><span class="s">drain</span><span class="p">;</span><span class="w">          </span><span class="c1"># keeps its sticky clients, gets no new ones</span>
+<span class="p">}</span>
+
+<span class="k">server</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kn">listen</span><span class="w"> </span><span class="mi">443</span><span class="w"> </span><span class="s">ssl</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">http2</span><span class="w"> </span><span class="no">on</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">server_name</span><span class="w"> </span><span class="s">api.taskflow.example.com</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">ssl_certificate</span><span class="w">     </span><span class="s">/etc/nginx/tls/api.taskflow.example.com/fullchain.pem</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">ssl_certificate_key</span><span class="w"> </span><span class="s">/etc/nginx/tls/api.taskflow.example.com/privkey.pem</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">ssl_protocols</span><span class="w"> </span><span class="s">TLSv1.2</span><span class="w"> </span><span class="s">TLSv1.3</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kn">proxy_connect_timeout</span><span class="w"> </span><span class="s">2s</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">proxy_read_timeout</span><span class="w">    </span><span class="s">30s</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">proxy_send_timeout</span><span class="w">    </span><span class="s">30s</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kn">location</span><span class="w"> </span><span class="s">/</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kn">proxy_pass</span><span class="w"> </span><span class="s">http://taskflow_api</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">proxy_http_version</span><span class="w"> </span><span class="mi">1</span><span class="s">.1</span><span class="p">;</span><span class="w">           </span><span class="c1"># default since 1.29.7; needed for keepalive before</span>
+<span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">Connection</span><span class="w"> </span><span class="s">""</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">Host</span><span class="w"> </span><span class="nv">$host</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Forwarded-For</span><span class="w"> </span><span class="nv">$proxy_add_x_forwarded_for</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Forwarded-Proto</span><span class="w"> </span><span class="nv">$scheme</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Request-Id</span><span class="w"> </span><span class="nv">$request_id</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">proxy_next_upstream</span><span class="w"> </span><span class="s">error</span><span class="w"> </span><span class="s">timeout</span><span class="w"> </span><span class="s">http_502</span><span class="w"> </span><span class="s">http_503</span><span class="w"> </span><span class="s">http_504</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">proxy_next_upstream_tries</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w">      </span><span class="c1"># the original attempt plus one retry</span>
+<span class="w">        </span><span class="kn">proxy_next_upstream_timeout</span><span class="w"> </span><span class="s">5s</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kn">location</span><span class="w"> </span><span class="s">/realtime/</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kn">proxy_pass</span><span class="w"> </span><span class="s">http://taskflow_realtime</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">proxy_http_version</span><span class="w"> </span><span class="mi">1</span><span class="s">.1</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">Upgrade</span><span class="w"> </span><span class="nv">$http_upgrade</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">Connection</span><span class="w"> </span><span class="s">"upgrade"</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">Host</span><span class="w"> </span><span class="nv">$host</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Forwarded-For</span><span class="w"> </span><span class="nv">$proxy_add_x_forwarded_for</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">proxy_read_timeout</span><span class="w"> </span><span class="s">1h</span><span class="p">;</span><span class="w">            </span><span class="c1"># idle sockets stay open; clients ping every 30 s</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<ul>
+<li><code>max_fails=3 fail_timeout=10s</code> is passive health checking: three failed
+  attempts within 10 seconds mark a server unavailable for 10 seconds. What
+  counts as a failure is defined by <code>proxy_next_upstream</code>.</li>
+<li><code>max_conns=200</code> caps concurrent connections per server, so one slow
+  server cannot absorb unlimited work. <code>backup</code> cannot be combined with the
+  <code>hash</code>, <code>ip_hash</code>, or <code>random</code> methods.</li>
+<li>The <code>/realtime/</code> upstream keeps Socket.IO clients on one server with a
+  cookie and uses <code>drain</code> to empty a server before maintenance. Both need
+  nginx 1.29.6 or later; on older open-source versions use <code>hash
+  $remote_addr consistent</code>.</li>
+</ul>
+<p>Two more upstream patterns:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># /etc/nginx/conf.d/taskflow-cache-tier.conf: hashing and two random choices</span>
+<span class="k">upstream</span><span class="w"> </span><span class="s">thumbnail_cache</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kn">hash</span><span class="w"> </span><span class="nv">$request_uri</span><span class="w"> </span><span class="s">consistent</span><span class="p">;</span><span class="w">         </span><span class="c1"># ketama: adding a server moves about 1/N of URLs</span>
+<span class="w">    </span><span class="kn">server</span><span class="w"> </span><span class="n">10.0.5.11</span><span class="p">:</span><span class="mi">8080</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">server</span><span class="w"> </span><span class="n">10.0.5.12</span><span class="p">:</span><span class="mi">8080</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">server</span><span class="w"> </span><span class="n">10.0.5.13</span><span class="p">:</span><span class="mi">8080</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">upstream</span><span class="w"> </span><span class="s">taskflow_api_fleet</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kn">zone</span><span class="w"> </span><span class="s">taskflow_api_fleet</span><span class="w"> </span><span class="mi">64k</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">random</span><span class="w"> </span><span class="s">two</span><span class="w"> </span><span class="s">least_conn</span><span class="p">;</span><span class="w">                </span><span class="c1"># power of two choices on connection counts</span>
+<span class="w">    </span><span class="kn">server</span><span class="w"> </span><span class="n">10.0.1.11</span><span class="p">:</span><span class="mi">3000</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">server</span><span class="w"> </span><span class="n">10.0.1.12</span><span class="p">:</span><span class="mi">3000</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">server</span><span class="w"> </span><span class="n">10.0.2.11</span><span class="p">:</span><span class="mi">3000</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">server</span><span class="w"> </span><span class="n">10.0.2.12</span><span class="p">:</span><span class="mi">3000</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="a-layer-4-tier-with-the-proxy-protocol">A layer 4 tier with the PROXY protocol<a class="headerlink" href="#a-layer-4-tier-with-the-proxy-protocol" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># /etc/nginx/nginx.conf (stream section of the L4 tier): route TLS by SNI without decrypting</span>
+<span class="k">stream</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kn">map_hash_bucket_size</span><span class="w"> </span><span class="mi">64</span><span class="p">;</span><span class="w">              </span><span class="c1"># default follows the CPU cache line; long names need more</span>
+<span class="w">    </span><span class="kn">map</span><span class="w"> </span><span class="nv">$ssl_preread_server_name</span><span class="w"> </span><span class="nv">$tls_pool</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kn">api.taskflow.example.com</span><span class="w">  </span><span class="s">taskflow_api_tls</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">default</span><span class="w">                   </span><span class="s">taskflow_web_tls</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kn">upstream</span><span class="w"> </span><span class="s">taskflow_api_tls</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kn">least_conn</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">server</span><span class="w"> </span><span class="n">10.0.1.11</span><span class="p">:</span><span class="mi">8443</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">server</span><span class="w"> </span><span class="n">10.0.2.11</span><span class="p">:</span><span class="mi">8443</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kn">upstream</span><span class="w"> </span><span class="s">taskflow_web_tls</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kn">server</span><span class="w"> </span><span class="n">10.0.1.21</span><span class="p">:</span><span class="mi">8443</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">server</span><span class="w"> </span><span class="n">10.0.2.21</span><span class="p">:</span><span class="mi">8443</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kn">server</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kn">listen</span><span class="w"> </span><span class="mi">443</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">ssl_preread</span><span class="w"> </span><span class="no">on</span><span class="p">;</span><span class="w">                   </span><span class="c1"># read the SNI name from the ClientHello</span>
+<span class="w">        </span><span class="kn">proxy_pass</span><span class="w"> </span><span class="nv">$tls_pool</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">proxy_protocol</span><span class="w"> </span><span class="no">on</span><span class="p">;</span><span class="w">                </span><span class="c1"># prepend the client's address to each connection</span>
+<span class="w">        </span><span class="kn">proxy_connect_timeout</span><span class="w"> </span><span class="s">2s</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1"># /etc/nginx/conf.d/taskflow-api-node.conf: each API node accepts the PROXY protocol</span>
+<span class="k">server</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kn">listen</span><span class="w"> </span><span class="mi">8443</span><span class="w"> </span><span class="s">ssl</span><span class="w"> </span><span class="s">proxy_protocol</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">server_name</span><span class="w"> </span><span class="s">api.taskflow.example.com</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">ssl_certificate</span><span class="w">     </span><span class="s">/etc/nginx/tls/api.taskflow.example.com/fullchain.pem</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">ssl_certificate_key</span><span class="w"> </span><span class="s">/etc/nginx/tls/api.taskflow.example.com/privkey.pem</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kn">set_real_ip_from</span><span class="w"> </span><span class="mi">10</span><span class="s">.0.0.0/16</span><span class="p">;</span><span class="w">         </span><span class="c1"># only the L4 tier may assert a client address</span>
+<span class="w">    </span><span class="kn">real_ip_header</span><span class="w">   </span><span class="s">proxy_protocol</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kn">location</span><span class="w"> </span><span class="s">/</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kn">proxy_pass</span><span class="w"> </span><span class="s">http://127.0.0.1:3000</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Forwarded-For</span><span class="w"> </span><span class="nv">$remote_addr</span><span class="p">;</span><span class="w">   </span><span class="c1"># now the real client address</span>
+<span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Forwarded-Proto</span><span class="w"> </span><span class="s">https</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>The node terminates TLS itself, so the L4 tier never holds a private key,
+yet the app still sees the real client address.</p>
+<h3 id="haproxy-for-taskflow-api">HAProxy for TaskFlow API<a class="headerlink" href="#haproxy-for-taskflow-api" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># /etc/haproxy/haproxy.cfg: TLS termination, health checks, and slow start (HAProxy 3.4)</span>
+<span class="na">global</span>
+<span class="w">    </span><span class="na">log stdout format raw local0</span>
+<span class="w">    </span><span class="na">stats socket /run/haproxy/admin.sock mode 660 level admin</span>
+<span class="w">    </span><span class="na">ssl-default-bind-options ssl-min-ver TLSv1.2</span>
+
+<span class="na">defaults</span>
+<span class="w">    </span><span class="na">mode http</span>
+<span class="w">    </span><span class="na">log global</span>
+<span class="w">    </span><span class="na">option httplog</span>
+<span class="w">    </span><span class="na">option forwardfor                  # append the client address to X-Forwarded-For</span>
+<span class="w">    </span><span class="na">option redispatch                  # a retry may go to another server</span>
+<span class="w">    </span><span class="na">retries 2</span>
+<span class="w">    </span><span class="na">retry-on conn-failure              # the default</span><span class="o">:</span><span class="w"> </span><span class="s">never replay a request that was sent</span>
+<span class="w">    </span><span class="na">timeout connect 3s</span>
+<span class="w">    </span><span class="na">timeout client 60s</span>
+<span class="w">    </span><span class="na">timeout server 30s</span>
+<span class="w">    </span><span class="na">timeout http-request 10s</span>
+<span class="w">    </span><span class="na">timeout http-keep-alive 10s</span>
+<span class="w">    </span><span class="na">timeout tunnel 1h                  # WebSocket connections after the upgrade</span>
+
+<span class="na">frontend api</span>
+<span class="w">    </span><span class="na">bind</span><span class="w"> </span><span class="o">:</span><span class="s">80</span>
+<span class="w">    </span><span class="na">bind</span><span class="w"> </span><span class="o">:</span><span class="s">443 ssl crt /etc/haproxy/certs/api.taskflow.example.com.pem alpn h2,http/1.1</span>
+<span class="w">    </span><span class="na">http-request redirect scheme https code 301 unless { ssl_fc }</span>
+<span class="w">    </span><span class="na">http-request set-header X-Forwarded-Proto https if { ssl_fc }</span>
+<span class="w">    </span><span class="na">use_backend taskflow_realtime if { path_beg /realtime/ }</span>
+<span class="w">    </span><span class="na">default_backend taskflow_api</span>
+
+<span class="na">backend taskflow_api</span>
+<span class="w">    </span><span class="na">balance leastconn</span>
+<span class="w">    </span><span class="na">option httpchk</span>
+<span class="w">    </span><span class="na">http-check send meth GET uri /readyz ver HTTP/1.1 hdr Host api.taskflow.example.com</span>
+<span class="w">    </span><span class="na">http-check expect status 200</span>
+<span class="w">    </span><span class="na">default-server inter 2s fall 3 rise 2 slowstart 30s maxconn 200</span>
+<span class="w">    </span><span class="na">server api1 10.0.1.11</span><span class="o">:</span><span class="s">3000 check</span>
+<span class="w">    </span><span class="na">server api2 10.0.2.11</span><span class="o">:</span><span class="s">3000 check</span>
+<span class="w">    </span><span class="na">server api3 10.0.3.11</span><span class="o">:</span><span class="s">3000 check</span>
+
+<span class="na">backend taskflow_realtime</span>
+<span class="w">    </span><span class="na">balance leastconn</span>
+<span class="w">    </span><span class="na">cookie TFSRV insert indirect nocache httponly secure</span>
+<span class="w">    </span><span class="na">option httpchk</span>
+<span class="w">    </span><span class="na">http-check send meth GET uri /readyz ver HTTP/1.1 hdr Host api.taskflow.example.com</span>
+<span class="w">    </span><span class="na">http-check expect status 200</span>
+<span class="w">    </span><span class="na">default-server inter 2s fall 3 rise 2</span>
+<span class="w">    </span><span class="na">server rt1 10.0.1.11</span><span class="o">:</span><span class="s">3001 check cookie rt1</span>
+<span class="w">    </span><span class="na">server rt2 10.0.2.11</span><span class="o">:</span><span class="s">3001 check cookie rt2</span>
+</code></pre></div>
+<ul>
+<li><code>inter 2s fall 3 rise 2</code> removes a server after about six seconds of
+  failed checks and restores it after two passing checks; <code>slowstart 30s</code>
+  then ramps its weight and connection limit up over 30 seconds.</li>
+<li><code>retry-on conn-failure</code> plus <code>option redispatch</code> retries only requests
+  that never reached a server, on a different server, so a <code>POST</code> that
+  timed out is not sent twice.</li>
+<li><code>cookie TFSRV insert indirect nocache</code> makes HAProxy add its own
+  persistence cookie for the real-time backend only.</li>
+</ul>
+<p>Draining a server through the runtime API before maintenance:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Stop new traffic to api2; established connections finish, health checks continue</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">"set server taskflow_api/api2 state drain"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>socat<span class="w"> </span>stdio<span class="w"> </span>/run/haproxy/admin.sock
+<span class="nb">echo</span><span class="w"> </span><span class="s2">"show servers state taskflow_api"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>socat<span class="w"> </span>stdio<span class="w"> </span>/run/haproxy/admin.sock
+<span class="c1"># ... patch or redeploy api2, wait until /readyz passes ...</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">"set server taskflow_api/api2 state ready"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>socat<span class="w"> </span>stdio<span class="w"> </span>/run/haproxy/admin.sock
+</code></pre></div>
+<h3 id="tuning-an-aws-target-group">Tuning an AWS target group<a class="headerlink" href="#tuning-an-aws-target-group" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Health checks: probe /readyz every 10 s; 2 failures remove, 3 successes restore</span>
+aws<span class="w"> </span>elbv2<span class="w"> </span>modify-target-group<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--target-group-arn<span class="w"> </span><span class="s2">"&lt;target-group-arn&gt;"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--health-check-path<span class="w"> </span>/readyz<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--health-check-interval-seconds<span class="w"> </span><span class="m">10</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--health-check-timeout-seconds<span class="w"> </span><span class="m">5</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--unhealthy-threshold-count<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--healthy-threshold-count<span class="w"> </span><span class="m">3</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--matcher<span class="w"> </span><span class="nv">HttpCode</span><span class="o">=</span><span class="m">200</span>
+
+<span class="c1"># Drain for 30 s instead of 300, and balance on requests in flight</span>
+aws<span class="w"> </span>elbv2<span class="w"> </span>modify-target-group-attributes<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--target-group-arn<span class="w"> </span><span class="s2">"&lt;target-group-arn&gt;"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--attributes<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="nv">Key</span><span class="o">=</span>deregistration_delay.timeout_seconds,Value<span class="o">=</span><span class="m">30</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="nv">Key</span><span class="o">=</span>load_balancing.algorithm.type,Value<span class="o">=</span>least_outstanding_requests
+
+<span class="c1"># Watch target states: initial, healthy, unhealthy, draining, unused</span>
+aws<span class="w"> </span>elbv2<span class="w"> </span>describe-target-health<span class="w"> </span>--target-group-arn<span class="w"> </span><span class="s2">"&lt;target-group-arn&gt;"</span>
+</code></pre></div>
+<p>To use slow start instead (<code>slow_start.duration_seconds</code>, 30 to 900), keep
+<code>round_robin</code>, because ALB does not combine slow start with least
+outstanding requests.</p>
+<h3 id="reading-the-client-address-in-express">Reading the client address in Express<a class="headerlink" href="#reading-the-client-address-in-express" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/client-ip.js: the client address behind exactly one load balancer</span>
+<span class="k">import</span><span class="w"> </span><span class="nx">express</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"express"</span><span class="p">;</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">app</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">express</span><span class="p">();</span>
+<span class="nx">app</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s2">"trust proxy"</span><span class="p">,</span><span class="w"> </span><span class="mf">1</span><span class="p">);</span><span class="w">    </span><span class="c1">// trust the last hop only: the load balancer</span>
+
+<span class="nx">app</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">"/whoami"</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nx">req</span><span class="p">,</span><span class="w"> </span><span class="nx">res</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="c1">// X-Forwarded-For "203.0.113.9, 198.51.100.7" from the balancer at 10.0.1.5:</span>
+<span class="w">  </span><span class="c1">// req.ip is "198.51.100.7", the address the balancer itself saw.</span>
+<span class="w">  </span><span class="c1">// "203.0.113.9" may have been typed by the client, so it is ignored.</span>
+<span class="w">  </span><span class="nx">res</span><span class="p">.</span><span class="nx">json</span><span class="p">({</span><span class="w"> </span><span class="nx">ip</span><span class="o">:</span><span class="w"> </span><span class="nx">req</span><span class="p">.</span><span class="nx">ip</span><span class="p">,</span><span class="w"> </span><span class="nx">protocol</span><span class="o">:</span><span class="w"> </span><span class="nx">req</span><span class="p">.</span><span class="nx">protocol</span><span class="w"> </span><span class="p">});</span>
+<span class="p">});</span>
+</code></pre></div>
+<p>Use the same rule anywhere the address matters, such as rate limits, audit
+logs, and allowlists: take the address added by your own outermost proxy,
+never the leftmost entry.</p>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Prefer managed, multi-zone load balancers; self-manage only with a
+  redundant pair or tier.</li>
+<li>Use L7 balancing for HTTP and gRPC, L4 for other protocols or when you
+  need static IPs and maximum throughput.</li>
+<li>Default to least outstanding requests or least connections for APIs;
+  use consistent hashing only where data placement matters.</li>
+<li>Health-check a cheap readiness endpoint; keep dependencies out of
+  liveness, and know what your balancer does when every target fails.</li>
+<li>Tune check intervals and thresholds so detection takes seconds, not a
+  minute, without flapping.</li>
+<li>Set the deregistration delay just above your longest normal request, and
+  make the app fail readiness and drain on <code>SIGTERM</code>.</li>
+<li>Use slow start or a warm-up for instances with cold caches.</li>
+<li>Keep app keep-alive timeouts longer than the balancer's idle timeout.</li>
+<li>Retry at one layer only, and only for idempotent requests or requests
+  that never reached a backend.</li>
+<li>Trust forwarded client addresses only from your own proxies, and enable
+  the PROXY protocol on both ends at once.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>One backend is overloaded while the others idle.</strong>
+  <em>Detect:</em> per-backend request rate or CPU is very uneven, often for gRPC
+  or HTTP/2 traffic. <em>Cause:</em> connection-level balancing of long-lived
+  multiplexed connections, or sticky sessions. <em>Fix:</em> L7 per-request
+  balancing, client-side <code>round_robin</code>, or a maximum connection age on the
+  server; remove stickiness that is not needed.</li>
+<li><strong>Intermittent 502 errors during quiet periods.</strong>
+  <em>Detect:</em> balancer logs show the backend closed the connection; 502s
+  cluster on idle, reused connections. <em>Cause:</em> the app's keep-alive timeout
+  (Node defaults to 5 seconds) is shorter than the balancer's idle timeout,
+  so the app closes a connection the balancer is about to reuse. <em>Fix:</em> set
+  <code>server.keepAliveTimeout</code> above the balancer's idle timeout.</li>
+<li><strong>Health checks pass while users get errors.</strong>
+  <em>Detect:</em> targets show healthy, yet the 5xx rate is high. <em>Cause:</em> a TCP
+  or <code>/</code> check that does not exercise what requests need. <em>Fix:</em> a
+  <code>/readyz</code> that checks readiness cheaply, plus passive outlier detection.</li>
+<li><strong>Every target turned unhealthy at once, and traffic kept flowing to
+  broken instances.</strong>
+  <em>Detect:</em> all targets unhealthy at the same moment, often during a
+  database incident, and the balancer failing open. <em>Cause:</em> the health
+  check depends on a shared dependency. <em>Fix:</em> check only local readiness,
+  and handle dependency failures inside the app with timeouts and
+  degradation.</li>
+<li><strong>Deploys take 25 minutes.</strong>
+  <em>Detect:</em> each batch waits in <code>draining</code> for five minutes. <em>Cause:</em> the
+  default 300-second deregistration delay. <em>Fix:</em> set it just above the
+  longest normal request, such as 30 seconds, after confirming the app
+  drains on <code>SIGTERM</code>.</li>
+<li><strong>WebSocket users are disconnected every minute.</strong>
+  <em>Detect:</em> reconnects every 60 seconds on idle sockets. <em>Cause:</em> the
+  balancer's idle timeout with no traffic on the socket. <em>Fix:</em> heartbeat
+  pings more often than the idle timeout, or a longer idle timeout for the
+  real-time route.</li>
+<li><strong>All users share one rate limit, or logs show only the balancer's
+  address.</strong>
+  <em>Detect:</em> <code>req.ip</code> is the balancer's private address for every request.
+  <em>Cause:</em> <code>trust proxy</code> is not set, or the PROXY protocol is enabled on one
+  side only. <em>Fix:</em> trust exactly your proxy hops, and enable the PROXY
+  protocol on the balancer and the backend together.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Layer 4 / layer 7 load balancing:</strong> Balancing per connection on
+  addresses and ports, or per request on HTTP content.</li>
+<li><strong>Target, backend, upstream:</strong> A server the balancer can send traffic to.</li>
+<li><strong>Active health check:</strong> A probe sent to each backend on a schedule.</li>
+<li><strong>Passive health check (outlier detection):</strong> Removing a backend based on
+  errors in real traffic.</li>
+<li><strong>Fail open (panic mode):</strong> Sending traffic to all backends when too few
+  are healthy.</li>
+<li><strong>Connection draining (deregistration delay):</strong> Letting in-flight requests
+  finish on a backend that gets no new ones.</li>
+<li><strong>Slow start:</strong> Ramping a new backend's share of traffic up gradually.</li>
+<li><strong>Sticky session (session affinity):</strong> Routing a client to the same
+  backend repeatedly.</li>
+<li><strong>Consistent hashing:</strong> Mapping keys to backends so that adding or
+  removing one moves only about 1/N of the keys.</li>
+<li><strong>Power of two choices:</strong> Picking the less loaded of two random backends.</li>
+<li><strong>PROXY protocol:</strong> A header at the start of a TCP connection that carries
+  the client's original address.</li>
+<li><strong>VRRP / virtual IP:</strong> A protocol and shared address that let a standby
+  balancer take over from a failed one.</li>
+<li><strong>ECMP:</strong> Equal-cost multipath routing, which spreads flows across
+  several next hops, such as a tier of balancers.</li>
+<li><strong>Direct server return (DSR):</strong> Backends replying to clients directly,
+  bypassing the balancer on the way back.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Thinking round robin spreads load evenly when request costs differ.</li>
+<li>Health-checking <code>/</code> or a TCP port and calling the service healthy.</li>
+<li>Putting database checks in the endpoint the balancer uses, so one
+  database blip removes every instance.</li>
+<li>Leaving the 300-second deregistration delay in place and blaming the
+  pipeline for slow deploys.</li>
+<li>Trusting the leftmost <code>X-Forwarded-For</code> entry for rate limits or access
+  control.</li>
+<li>Enabling the PROXY protocol on the balancer but not on the backend, or the
+  reverse.</li>
+<li>Expecting a layer 4 balancer to spread gRPC or HTTP/2 requests.</li>
+<li>Retrying non-idempotent requests at the balancer and at the client.</li>
+<li>Forgetting that the balancer itself needs redundancy.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>What can a layer 7 balancer do that a layer 4 balancer cannot, and when
+   would you still choose layer 4?</li>
+<li>A target group checks every 15 seconds with an unhealthy threshold of 3
+   and a healthy threshold of 4. Roughly how long does it take to remove a
+   dead instance, and to restore a recovered one? (About 45 seconds; about
+   60 seconds.)</li>
+<li>Why does consistent hashing suit a cache tier better than modulo hashing?
+   What share of keys move when a tier grows from 9 to 10 servers with each?
+   (Modulo: about 90%; consistent: about 10%.)</li>
+<li>Why does power of two choices help most when there are many independent
+   balancers?</li>
+<li>What does "fail open" mean, which balancers do it, and why does a health
+   check that tests the database make it more likely?</li>
+<li>Explain connection draining, the deregistration delay, and slow start, and
+   how each protects users during a rolling deploy.</li>
+<li>How does a backend learn the client's real address behind an L7 balancer,
+   and behind an L4 balancer? What breaks if only one side enables the PROXY
+   protocol?</li>
+<li>Compare a keepalived pair, a managed cloud balancer, and an ECMP tier as
+   ways to keep the balancer itself available.</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://nginx.org/en/docs/http/ngx_http_upstream_module.html">Nginx: ngx_http_upstream_module</a></li>
+<li><a href="https://docs.haproxy.org/3.4/configuration.html">HAProxy 3.4 configuration manual</a></li>
+<li><a href="https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/load_balancing/load_balancing">Envoy: Load balancing</a></li>
+<li><a href="https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html">AWS: Target groups for Application Load Balancers</a></li>
+<li><a href="https://docs.cloud.google.com/load-balancing/docs/load-balancing-overview">Google Cloud: Cloud Load Balancing overview</a></li>
+<li><a href="https://learn.microsoft.com/en-us/azure/architecture/guide/technology-choices/load-balancing-overview">Azure: Load balancing options</a></li>
+<li><a href="https://www.haproxy.org/download/3.4/doc/proxy-protocol.txt">HAProxy: The PROXY protocol specification</a></li>
+<li><a href="../../../07-servers-and-infrastructure/load-balancing/">Load balancing</a>
+  and <a href="../../../07-servers-and-infrastructure/nginx/">Nginx</a> in the Servers
+  and Infrastructure section</li>
+<li>Next: <a href="../global-traffic-management/">global traffic management</a>. Back to
+  the <a href="../">load balancing and multi-server overview</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../from-one-server-to-many/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: From One Server to Many">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">From One Server to Many</span>
+      </a>
+    
+    
+      <a href="../global-traffic-management/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: Global Traffic Management">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">Global Traffic Management</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

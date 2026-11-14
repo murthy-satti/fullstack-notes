@@ -1,0 +1,3808 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../lora-and-peft-in-practice/">
+      
+      
+        <link rel="next" href="../cheat-sheet/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Preference Tuning and Distillation - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#preference-tuning-and-distillation" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Preference Tuning and Distillation
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../05-application-architecture/" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../08-devops-and-deployment/" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to AI and Machine Learning">
+          <span class="md-ellipsis">&larr; Back to AI</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../05-application-architecture/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        
+          
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-label="AI module lessons" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to AI and Machine Learning">
+                  <span class="md-ellipsis">&larr; Back to AI</span>
+                </a>
+              
+            </div>
+          
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                  
+  
+  
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+    
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_7" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_7_7" id="__nav_7_7_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Customization
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_7_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_7_7">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Model Customization
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_7_1" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_7_7_1" id="__nav_7_7_1_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fine-Tuning
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_7_7_1_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_7_7_1">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Fine-Tuning
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../when-to-fine-tune/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    When to Fine-Tune
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lora-and-peft-in-practice/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LoRA and PEFT in Practice
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preference Tuning and Distillation
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preference Tuning and Distillation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#where-preference-tuning-fits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where preference tuning fits
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rlhf-the-classic-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RLHF: the classic pipeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dpo-preferences-without-the-rl-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DPO: preferences without the RL loop
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#newer-preference-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Newer preference methods
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reinforcement-learning-with-verifiable-rewards" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reinforcement learning with verifiable rewards
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#distillation-teacher-to-student" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Distillation: teacher to student
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-distillation-is-worth-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When distillation is worth it
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#build-dpo-pairs-from-summary-comparisons" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build DPO pairs from summary comparisons
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#train-with-dpo-on-top-of-the-sft-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Train with DPO on top of the SFT model
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#write-a-verifiable-reward" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Write a verifiable reward
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#train-the-parser-with-grpo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Train the parser with GRPO
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#distill-off-policy-let-a-teacher-label-prompts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Distill off-policy: let a teacher label prompts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#distill-on-policy-with-trl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Distill on-policy with TRL
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../training-models/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training Models
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../small-scale-model-training/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Small-Scale Model Training Walkthrough
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ai-data-preparation-and-governance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Data Preparation and Governance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../08-devops-and-deployment/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DevOps and Deployment
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#where-preference-tuning-fits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where preference tuning fits
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rlhf-the-classic-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RLHF: the classic pipeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dpo-preferences-without-the-rl-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DPO: preferences without the RL loop
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#newer-preference-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Newer preference methods
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reinforcement-learning-with-verifiable-rewards" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reinforcement learning with verifiable rewards
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#distillation-teacher-to-student" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Distillation: teacher to student
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-distillation-is-worth-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When distillation is worth it
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#build-dpo-pairs-from-summary-comparisons" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build DPO pairs from summary comparisons
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#train-with-dpo-on-top-of-the-sft-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Train with DPO on top of the SFT model
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#write-a-verifiable-reward" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Write a verifiable reward
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#train-the-parser-with-grpo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Train the parser with GRPO
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#distill-off-policy-let-a-teacher-label-prompts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Distill off-policy: let a teacher label prompts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#distill-on-policy-with-trl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Distill on-policy with TRL
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="preference-tuning-and-distillation">Preference Tuning and Distillation<a class="headerlink" href="#preference-tuning-and-distillation" title="Permanent link">&para;</a></h1>
+<p>Supervised fine-tuning teaches a model what a good answer looks like.
+Preference tuning teaches it which of two plausible answers is <em>better</em>,
+and reinforcement methods let it improve against a score you can compute.
+Distillation goes the other way: it moves the behavior of a large, slow
+"teacher" model into a small, fast "student". This lesson covers the
+classic RLHF pipeline, Direct Preference Optimization (DPO) and the newer
+methods built on it, reinforcement learning with verifiable rewards such
+as GRPO, and teacher-to-student distillation, with TRL code for the
+TaskFlow Assistant's meeting-notes summaries and task parser. Code was
+checked against <code>trl</code> 1.18 and <code>peft</code> 0.21 as of November 2026.</p>
+<p>It builds on <a href="../lora-and-peft-in-practice/">LoRA and PEFT in practice</a>:
+every method here can train a LoRA adapter instead of the full model.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>Many qualities users care about have no single correct answer. Two
+summaries of the same meeting can both be accurate while one is clearly
+more useful: it names owners, skips small talk, and stays short. Writing
+the perfect summary for every training example is slow and subjective;
+picking the better of two is fast and consistent. Preference methods turn
+those cheap comparisons into training signal, which is how chat models
+learned to be helpful in the first place.</p>
+<p>Reinforcement methods go further when quality can be checked by code: a
+parsed task either matches the expected fields or it does not, a SQL query
+either returns the right rows or it does not. Training against such a
+check can push a model past the examples you could write by hand.</p>
+<p>Distillation addresses the bill. A large model may do the TaskFlow tasks
+well but too slowly and expensively for every keystroke; a student a
+fraction of its size, trained on the teacher's outputs, can often keep
+most of the quality for that narrow task. Knowing which of these tools
+fits, and their failure modes (length bias, reward hacking, inherited
+mistakes), keeps a team from spending weeks on the wrong one.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>InstructGPT (OpenAI), 2022.</strong>
+  <a href="https://arxiv.org/abs/2203.02155">Training language models to follow instructions with human feedback</a>
+  describes the three-stage pipeline (demonstrations for SFT, rankings for
+  a reward model, reinforcement learning) and reports that outputs from
+  the 1.3B InstructGPT model "are preferred to outputs from the 175B
+  GPT-3, despite having 100x fewer parameters."</li>
+<li><strong>DPO (Stanford), 2023.</strong>
+  <a href="https://arxiv.org/abs/2305.18290">Direct Preference Optimization</a>
+  shows that the RLHF objective can be solved "with only a simple
+  classification loss," which is "stable, performant, and computationally
+  lightweight, eliminating the need for sampling from the LM during
+  fine-tuning."</li>
+<li><strong>Tulu 3 (Allen Institute for AI), 2024.</strong>
+  <a href="https://arxiv.org/abs/2411.15124">Tulu 3</a> publishes a fully open
+  post-training recipe that combines SFT, DPO, and a method it calls
+  Reinforcement Learning with Verifiable Rewards (RLVR), with data, code,
+  and evaluations.</li>
+<li><strong>DeepSeekMath and DeepSeek-R1, 2024-2025.</strong>
+  <a href="https://arxiv.org/abs/2402.03300">DeepSeekMath</a> introduced Group
+  Relative Policy Optimization (GRPO), and
+  <a href="https://arxiv.org/abs/2501.12948">DeepSeek-R1</a> shows that reasoning
+  abilities "can be incentivized through pure reinforcement learning" on
+  verifiable tasks and that the resulting reasoning patterns "can be
+  systematically harnessed to guide and enhance the reasoning capabilities
+  of smaller models", that is, distilled.</li>
+<li><strong>DistilBERT (Hugging Face), 2019.</strong>
+  <a href="https://arxiv.org/abs/1910.01108">DistilBERT</a> showed that distillation
+  can "reduce the size of a BERT model by 40%, while retaining 97% of its
+  language understanding capabilities and being 60% faster."</li>
+<li><strong>Amazon Bedrock Model Distillation.</strong> Bedrock's
+  <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/model-distillation.html">distillation</a>
+  feature generates responses from a chosen teacher for your prompts and
+  fine-tunes a smaller student on them, the off-policy distillation
+  pattern described below, as a managed service.</li>
+</ul>
+<p><strong>Popular tools and providers:</strong> Hugging Face TRL (<code>DPOTrainer</code>,
+<code>KTOTrainer</code>, <code>RewardTrainer</code>, <code>GRPOTrainer</code>, <code>RLOOTrainer</code>, and
+<code>DistillationTrainer</code>), verl, and OpenRLHF for open models; Microsoft
+Foundry (DPO and reinforcement fine-tuning), Google Cloud's Gemini
+Enterprise Agent Platform, formerly Vertex AI (preference tuning and RL
+fine-tuning), and Amazon Bedrock (reinforcement
+fine-tuning and distillation) as managed services.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="where-preference-tuning-fits">Where preference tuning fits<a class="headerlink" href="#where-preference-tuning-fits" title="Permanent link">&para;</a></h3>
+<p>A typical post-training stack runs in this order:</p>
+<ol>
+<li><strong>SFT</strong> on demonstrations teaches the format and the task.</li>
+<li><strong>Preference tuning</strong> on comparisons teaches which of the model's own
+   plausible answers people prefer.</li>
+<li><strong>Reinforcement learning</strong> against a reward model or a verifier
+   improves further where quality can be scored.</li>
+</ol>
+<p>Skipping step 1 rarely works: preference methods adjust the relative
+likelihood of answers the model can already produce. If the model never
+writes a three-bullet summary with owners, no amount of comparing two bad
+summaries will teach it.</p>
+<h3 id="rlhf-the-classic-pipeline">RLHF: the classic pipeline<a class="headerlink" href="#rlhf-the-classic-pipeline" title="Permanent link">&para;</a></h3>
+<p>Reinforcement learning from human feedback (RLHF), as InstructGPT used it,
+has three stages:</p>
+<ol>
+<li><strong>Supervised fine-tuning</strong> on human-written demonstrations.</li>
+<li><strong>Reward modeling.</strong> Labelers rank several model answers per prompt; a
+   reward model learns a score so that preferred answers score higher.
+   With the Bradley-Terry model, the probability that answer A beats
+   answer B is <code>sigmoid(r(A) - r(B))</code>, and training maximizes that
+   probability for the observed preferences.</li>
+<li><strong>Policy optimization.</strong> The SFT model (now the "policy") generates
+   answers, the reward model scores them, and an RL algorithm, usually
+   <a href="https://arxiv.org/abs/1707.06347">PPO</a>, updates the policy to raise
+   the reward, minus a penalty <code>beta x KL(policy || reference)</code> that keeps
+   it close to the SFT model.</li>
+</ol>
+<p>The KL penalty is essential. A reward model is an imperfect proxy, and a
+policy optimized hard against it finds answers that score well without
+being good: <strong>reward hacking</strong>, such as very long or flattering answers.
+Staying near the reference model limits how far it can drift. The cost is
+complexity: PPO-based RLHF keeps four models busy (policy, frozen
+reference, reward model, and a value model that estimates expected
+reward), and it is sensitive to hyperparameters.</p>
+<p><img alt="Diagram: three stages left to right. Stage 1, an orange box of demonstrations (prompts with written answers) trains the SFT model. Stage 2, a purple box &quot;Reward model&quot;: labelers rank two answers to the same prompt, A better than B, and the reward model learns scores so that sigmoid of r(A) minus r(B) is high. Stage 3, a blue loop: the policy, initialized from the SFT model, generates an answer; the reward model scores it; a frozen reference copy of the SFT model supplies a KL penalty; PPO updates the policy to maximize reward minus beta times KL. A red note warns that without the KL penalty the policy learns to game the reward model." src="../rlhf-pipeline.svg" /></p>
+<h3 id="dpo-preferences-without-the-rl-loop">DPO: preferences without the RL loop<a class="headerlink" href="#dpo-preferences-without-the-rl-loop" title="Permanent link">&para;</a></h3>
+<p>DPO starts from the same objective (maximize reward, stay close to the
+reference) and shows that the optimal policy can be written in closed
+form, so the reward model and the RL loop disappear. What remains is a
+loss over preference pairs <code>(prompt x, chosen y_w, rejected y_l)</code>:</p>
+<div class="highlight"><pre><span></span><code>loss = -log sigmoid( beta * [ (log p(y_w|x) - log p_ref(y_w|x))
+                            - (log p(y_l|x) - log p_ref(y_l|x)) ] )
+</code></pre></div>
+<p>In words: raise the policy's probability of the chosen answer relative to
+the reference model, lower it for the rejected answer, and stop pushing
+once the margin is comfortable. <code>beta</code> controls how strongly the policy
+may move away from the reference; TRL's default is 0.1.</p>
+<p>A worked example with <code>beta = 0.1</code>. At the start of training the policy
+equals the reference, both log-ratios are 0, and the loss is
+<code>-log sigmoid(0) = log 2 = 0.693</code>. Later, the chosen answer's log-ratio is
++2.0 and the rejected one's is -1.0:</p>
+<div class="highlight"><pre><span></span><code>margin = 0.1 x (2.0 - (-1.0)) = 0.3
+loss   = -log sigmoid(0.3) = -log 0.574 = 0.554
+</code></pre></div>
+<p>DPO needs only two models (policy and reference), no sampling during
+training, and ordinary supervised-style batches. In TRL, if you pass no
+reference model, the trainer uses the initial policy (the model as it was
+before DPO started), which with a LoRA adapter costs no extra copy. TRL
+logs <code>rewards/chosen</code>, <code>rewards/rejected</code>, <code>rewards/margins</code>, and
+<code>rewards/accuracies</code> (how often the chosen answer wins); accuracy near
+100% after a few steps usually means the pairs are too easy or the model
+is memorizing.</p>
+<p>Three known weaknesses shape how DPO is used:</p>
+<ul>
+<li><strong>Length bias.</strong> If people preferred longer answers in the data, DPO
+  learns "longer is better". Check how often the chosen answer is longer
+  before training.</li>
+<li><strong>Off-policy data.</strong> Pairs collected from a different model may
+  describe answers your model would never produce. Pairs sampled from
+  your own SFT model work better.</li>
+<li><strong>Falling likelihoods.</strong> The probabilities of <em>both</em> chosen and rejected
+  answers can decrease while their gap grows. Adding an SFT term on the
+  chosen answers (TRL accepts <code>loss_type=["sigmoid", "sft"]</code> with
+  <code>loss_weights</code>) keeps the chosen answers likely.</li>
+</ul>
+<h3 id="newer-preference-methods">Newer preference methods<a class="headerlink" href="#newer-preference-methods" title="Permanent link">&para;</a></h3>
+<p>DPO started a family of variants. TRL includes several, with different
+maturity levels as of version 1.18:</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Key idea</th>
+<th>Data</th>
+<th>In TRL</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://arxiv.org/abs/2310.12036">IPO</a></td>
+<td>Replaces DPO's log-sigmoid with a squared loss to resist overfitting deterministic preferences</td>
+<td>Pairs</td>
+<td><code>DPOConfig(loss_type="ipo")</code></td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2402.01306">KTO</a></td>
+<td>Learns from a binary "desirable or not" signal; "matches or exceeds" pairwise methods "at scales from 1B to 30B"</td>
+<td>Single answers with a label, such as thumbs up or down</td>
+<td><code>KTOTrainer</code> (stable)</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2403.07691">ORPO</a></td>
+<td>Adds an odds-ratio penalty to the SFT loss, so SFT and preference alignment happen in one stage with no reference model</td>
+<td>Pairs</td>
+<td><code>ORPOTrainer</code> (experimental)</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2405.14734">SimPO</a></td>
+<td>Uses the average log-probability as the implicit reward and adds a target margin; no reference model</td>
+<td>Pairs</td>
+<td>Experimental CPO trainer with <code>loss_type="simpo"</code></td>
+</tr>
+</tbody>
+</table>
+<p>KTO deserves attention for products like TaskFlow: a thumbs-up or
+thumbs-down on a single summary is far easier to collect than a careful
+side-by-side comparison. "Experimental" in TRL means the API may change
+between releases, so pin the version if you use those trainers.</p>
+<h3 id="reinforcement-learning-with-verifiable-rewards">Reinforcement learning with verifiable rewards<a class="headerlink" href="#reinforcement-learning-with-verifiable-rewards" title="Permanent link">&para;</a></h3>
+<p>When quality can be checked by code, the reward model can be replaced by
+the check itself. Tulu 3 calls this RLVR; DeepSeek used it with GRPO to
+train reasoning on math and code. For the TaskFlow parser the check is the
+evaluation logic: valid JSON, the right keys, correct fields.</p>
+<p>GRPO is the most common algorithm for this. For each prompt it samples a
+group of answers (TRL's default is 8), scores each one, and uses the
+score relative to the group as the advantage:</p>
+<div class="highlight"><pre><span></span><code>advantage_i = (reward_i - mean(group rewards)) / std(group rewards)
+
+rewards    1.00   0.75   0.25   0.00     mean 0.50, std 0.40
+advantage  +1.26  +0.63  -0.63  -1.26    (population standard deviation)
+</code></pre></div>
+<p>Answers better than their siblings are reinforced and worse ones are
+discouraged, without a value model, which saves memory compared with PPO.
+Two consequences follow. If every answer in a group gets the same reward
+(all perfect or all failing), the advantages are zero and the prompt
+teaches nothing; TRL logs this as <code>frac_reward_zero_std</code>. And the policy
+will exploit any gap in the reward function, so the verifier must be as
+strict as the real requirement. TRL's GRPO defaults to <code>beta=0.0</code> (no KL
+penalty against a reference model, so no reference copy in memory), and
+TRL's <a href="https://huggingface.co/docs/trl/lora_without_regret">LoRA Without Regret guide</a>
+reports that RL needs very little adapter capacity (ranks of 1-32).</p>
+<p>Managed services offer the same idea under the name reinforcement
+fine-tuning: Microsoft Foundry scores samples with graders you define,
+Amazon Bedrock calls reward functions you write in AWS Lambda, and
+Google's Agent Platform trains a LoRA adapter "to maximize the reward."</p>
+<p><img alt="Diagram: a comparison of three methods in columns. PPO-based RLHF: data is prompts plus a reward model trained on rankings; models in memory are policy, reference, reward model, and value model; online, it samples during training; most complex. DPO: data is preference pairs of prompt, chosen, and rejected; models are policy and reference, or the initial policy when using LoRA; offline, no sampling; simple and stable, but sensitive to length bias and off-policy pairs. GRPO with verifiable rewards: data is prompts plus a reward function in code; models are the policy, and a reference only when beta is above zero; online, it samples a group of answers per prompt and uses relative advantages; needs a reward that cannot be gamed. A footer says to start with SFT, add DPO or KTO for preferences, and use GRPO when quality can be checked by code." src="../preference-methods-compared.svg" /></p>
+<h3 id="distillation-teacher-to-student">Distillation: teacher to student<a class="headerlink" href="#distillation-teacher-to-student" title="Permanent link">&para;</a></h3>
+<p>Distillation trains a small student to imitate a large teacher. There are
+three practical forms:</p>
+<ol>
+<li><strong>Logit (classic) distillation.</strong>
+   <a href="https://arxiv.org/abs/1503.02531">Hinton et al. (2015)</a> train the
+   student to match the teacher's full probability distribution over
+   outputs ("soft targets"), which carries more information than the
+   single correct label. It needs the teacher's probabilities and, for
+   language models, a shared vocabulary.</li>
+<li><strong>Off-policy (sequence-level) distillation.</strong> The teacher writes
+   answers for a set of prompts, a validator filters them, and the student
+   is fine-tuned on the result with ordinary SFT. This works with any
+   teacher behind an API, which is why managed services offer it:
+   Bedrock's distillation generates teacher responses and fine-tunes the
+   student, and Foundry supports distillation "through teacher-generated
+   SFT data". Zephyr applied the same idea to preferences, using a
+   teacher's rankings for "distilled DPO" with no human annotation
+   (<a href="https://arxiv.org/abs/2310.16944">Tunstall et al., 2023</a>).</li>
+<li><strong>On-policy distillation.</strong> The student generates its own answers and
+   the teacher's token distribution grades every token, as in
+   <a href="https://arxiv.org/abs/2306.13649">Generalized Knowledge Distillation</a>.
+   This fixes the mismatch of off-policy distillation, where the student
+   only ever learns from the teacher's perfect paths and never from
+   recovering after its own mistakes. TRL's <code>DistillationTrainer</code>
+   implements it; the teacher must be an open model that "must share the
+   student's vocabulary."</li>
+</ol>
+<p><img alt="Diagram: two rows. Top row, off-policy distillation: prompts flow to a large teacher model, which writes answers; a purple validator keeps only answers that pass the schema and evaluation checks; the kept pairs train a small student with SFT. A note says this works with an API teacher. Bottom row, on-policy distillation: the student writes its own answers to the prompts; the teacher, an open model with the same vocabulary, provides its probability for every token of the student's answer; the student is updated to match the teacher's distribution, and a dashed loop repeats the cycle so the student learns from its own mistakes. A note says teacher and student must share the same vocabulary. A red bar at the bottom says to check the teacher provider's terms, because some prohibit using outputs to train competing models." src="../distillation-paths.svg" /></p>
+<p>Two cautions apply to every form. The student inherits the teacher's
+mistakes, so validate teacher outputs as strictly as you would human
+labels. And check the teacher provider's terms: Anthropic's
+<a href="https://www.anthropic.com/legal/commercial-terms">commercial terms</a>, for
+example, prohibit accessing the services "to build a competing product
+or service, including to train competing AI models." Distilling an open
+model you are licensed to use, or your own fine-tuned model, avoids that
+question.</p>
+<h3 id="when-distillation-is-worth-it">When distillation is worth it<a class="headerlink" href="#when-distillation-is-worth-it" title="Permanent link">&para;</a></h3>
+<p>The arithmetic is the same break-even reasoning as in
+<a href="../when-to-fine-tune/">when to fine-tune</a>, with the teacher's labeling
+cost added to the one-off side. In relative units, if the teacher costs
+1.0 per request and the student 0.1, each request saves 0.9; generating
+and validating 20,000 teacher answers costs 20,000, and training and
+evaluation another 30,000, so the project breaks even after about
+55,000 requests (50,000 / 0.9). Distillation is worth it when:</p>
+<ul>
+<li>the task is narrow and stable, so the student's smaller capacity is
+  enough and you will not redo the work monthly;</li>
+<li>volume is high or latency matters (a student also runs on cheaper
+  hardware or on-device);</li>
+<li>the student reaches your quality bar on the same held-out evaluation
+  used for the teacher.</li>
+</ul>
+<p>It is not worth it for low-volume features, for broad open-ended tasks
+where the student's capacity limits quality, or when the teacher's terms
+forbid it.</p>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Situation</th>
+<th>Method</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A clear correct answer per input</td>
+<td>SFT</td>
+<td>Simplest; preference methods add nothing</td>
+</tr>
+<tr>
+<td>Several valid answers, some better (summaries, tone)</td>
+<td>DPO on pairs from your SFT model</td>
+<td>Cheap comparisons become signal</td>
+</tr>
+<tr>
+<td>Only thumbs up or down feedback</td>
+<td>KTO</td>
+<td>Works with unpaired binary labels</td>
+</tr>
+<tr>
+<td>Quality can be checked by code (JSON fields, SQL results, tests)</td>
+<td>GRPO or managed reinforcement fine-tuning</td>
+<td>Optimizes the real requirement</td>
+</tr>
+<tr>
+<td>A large model works, but cost or latency is too high</td>
+<td>Distillation into a smaller student</td>
+<td>Keeps most of the quality for a narrow task</td>
+</tr>
+<tr>
+<td>No SFT baseline yet</td>
+<td>SFT first</td>
+<td>Preference methods refine existing behavior</td>
+</tr>
+<tr>
+<td>Subjective quality with no reliable labels or checks</td>
+<td>None yet</td>
+<td>Build the evaluation and labeling guide first</td>
+</tr>
+</tbody>
+</table>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="build-dpo-pairs-from-summary-comparisons">Build DPO pairs from summary comparisons<a class="headerlink" href="#build-dpo-pairs-from-summary-comparisons" title="Permanent link">&para;</a></h3>
+<p>TaskFlow's meeting-notes feature can show two candidate summaries and let
+users pick one. The script turns those logged choices into the
+conversational preference format TRL and the managed DPO services expect,
+drops ties and duplicates, and reports how often the chosen answer is
+longer, an early warning for length bias.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># scripts/build_pairs.py</span>
+<span class="sd">"""Turn logged summary comparisons into DPO preference pairs and report label bias.</span>
+
+<span class="sd">Each input line: {"prompt": [messages], "a": str, "b": str, "winner": "a" | "b" | "tie"}</span>
+<span class="sd">Each output line: {"prompt": [messages], "chosen": [message], "rejected": [message]}</span>
+<span class="sd">"""</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">pairs</span><span class="p">,</span> <span class="n">skipped</span><span class="p">,</span> <span class="n">chosen_longer</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">{</span><span class="s2">"tie"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">"identical"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">"duplicate"</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span> <span class="mi">0</span>
+    <span class="n">seen</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">Path</span><span class="p">(</span><span class="n">source</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s2">"winner"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"tie"</span><span class="p">:</span>
+            <span class="n">skipped</span><span class="p">[</span><span class="s2">"tie"</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">continue</span>
+        <span class="n">chosen</span><span class="p">,</span> <span class="n">rejected</span> <span class="o">=</span> <span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">"a"</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s2">"b"</span><span class="p">])</span> <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s2">"winner"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"a"</span> <span class="k">else</span> <span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">"b"</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s2">"a"</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">chosen</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="n">rejected</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+            <span class="n">skipped</span><span class="p">[</span><span class="s2">"identical"</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">continue</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">"prompt"</span><span class="p">]),</span> <span class="n">chosen</span><span class="p">,</span> <span class="n">rejected</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">seen</span><span class="p">:</span>
+            <span class="n">skipped</span><span class="p">[</span><span class="s2">"duplicate"</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">continue</span>
+        <span class="n">seen</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="n">chosen_longer</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">chosen</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">rejected</span><span class="p">)</span>
+        <span class="n">pairs</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+            <span class="s2">"prompt"</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="s2">"prompt"</span><span class="p">],</span>
+            <span class="s2">"chosen"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"role"</span><span class="p">:</span> <span class="s2">"assistant"</span><span class="p">,</span> <span class="s2">"content"</span><span class="p">:</span> <span class="n">chosen</span><span class="p">}],</span>
+            <span class="s2">"rejected"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"role"</span><span class="p">:</span> <span class="s2">"assistant"</span><span class="p">,</span> <span class="s2">"content"</span><span class="p">:</span> <span class="n">rejected</span><span class="p">}],</span>
+        <span class="p">})</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">pair</span><span class="p">,</span> <span class="n">ensure_ascii</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"pairs written: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">pairs</span><span class="p">)</span><span class="si">}</span><span class="s2">  skipped: </span><span class="si">{</span><span class="n">skipped</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="c1"># Preference data often rewards length; DPO will learn that bias if it is there.</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"chosen answer is longer in </span><span class="si">{</span><span class="n">chosen_longer</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pairs</span><span class="p">),</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="si">:</span><span class="s2">.0%</span><span class="si">}</span><span class="s2"> of pairs"</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+</code></pre></div>
+<p>On a 12-line sample file:</p>
+<div class="highlight"><pre><span></span><code>pairs written: 8  skipped: {'tie': 2, 'identical': 1, 'duplicate': 1}
+chosen answer is longer in 62% of pairs
+</code></pre></div>
+<p>A share well above half means raters lean toward longer summaries. Decide
+whether that is a real preference or a rater habit before DPO amplifies
+it; options include rebalancing pairs or adding a length rule to the
+labeling guide.</p>
+<h3 id="train-with-dpo-on-top-of-the-sft-model">Train with DPO on top of the SFT model<a class="headerlink" href="#train-with-dpo-on-top-of-the-sft-model" title="Permanent link">&para;</a></h3>
+<p>DPO starts from the SFT model, here a merged SFT checkpoint whose path
+comes from configuration, and trains a new LoRA adapter on the pairs.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># scripts/train_dpo.py</span>
+<span class="sd">"""Preference-tune the meeting-summary model with DPO and a fresh LoRA adapter."""</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_dataset</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">peft</span><span class="w"> </span><span class="kn">import</span> <span class="n">LoraConfig</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">trl</span><span class="w"> </span><span class="kn">import</span> <span class="n">DPOConfig</span><span class="p">,</span> <span class="n">DPOTrainer</span>
+
+<span class="n">SFT_MODEL</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"SFT_MODEL"</span><span class="p">]</span>  <span class="c1"># path or ID of the SFT model, from configuration</span>
+
+<span class="n">pairs</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="s2">"json"</span><span class="p">,</span> <span class="n">data_files</span><span class="o">=</span><span class="s2">"data/pairs.jsonl"</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="s2">"train"</span><span class="p">)</span>
+<span class="n">splits</span> <span class="o">=</span> <span class="n">pairs</span><span class="o">.</span><span class="n">train_test_split</span><span class="p">(</span><span class="n">test_size</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+
+<span class="n">args</span> <span class="o">=</span> <span class="n">DPOConfig</span><span class="p">(</span>
+    <span class="n">output_dir</span><span class="o">=</span><span class="s2">"runs/summary-dpo"</span><span class="p">,</span>
+    <span class="n">beta</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>  <span class="c1"># how far the policy may move from the reference</span>
+    <span class="n">loss_type</span><span class="o">=</span><span class="p">[</span><span class="s2">"sigmoid"</span><span class="p">,</span> <span class="s2">"sft"</span><span class="p">],</span>  <span class="c1"># DPO plus an SFT term on the chosen answers</span>
+    <span class="n">loss_weights</span><span class="o">=</span><span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">],</span>
+    <span class="n">learning_rate</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span>  <span class="c1"># a LoRA value; TRL's default of 1e-6 suits full fine-tuning</span>
+    <span class="n">num_train_epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">per_device_train_batch_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+    <span class="n">gradient_accumulation_steps</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+    <span class="n">max_length</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
+    <span class="n">eval_strategy</span><span class="o">=</span><span class="s2">"steps"</span><span class="p">,</span>
+    <span class="n">eval_steps</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+    <span class="n">bf16</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">report_to</span><span class="o">=</span><span class="s2">"none"</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">DPOTrainer</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">SFT_MODEL</span><span class="p">,</span>
+    <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span>
+    <span class="n">train_dataset</span><span class="o">=</span><span class="n">splits</span><span class="p">[</span><span class="s2">"train"</span><span class="p">],</span>
+    <span class="n">eval_dataset</span><span class="o">=</span><span class="n">splits</span><span class="p">[</span><span class="s2">"test"</span><span class="p">],</span>
+    <span class="n">peft_config</span><span class="o">=</span><span class="n">LoraConfig</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">lora_alpha</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">target_modules</span><span class="o">=</span><span class="s2">"all-linear"</span><span class="p">,</span> <span class="n">task_type</span><span class="o">=</span><span class="s2">"CAUSAL_LM"</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">save_model</span><span class="p">(</span><span class="s2">"adapters/summary-dpo"</span><span class="p">)</span>
+</code></pre></div>
+<p>Watch <code>rewards/margins</code> grow and <code>rewards/accuracies</code> rise on the
+evaluation split, but judge the result with a summary evaluation (for
+example a rubric scored by people or by an
+<a href="../../evaluation-and-monitoring/llm-as-judge-and-automated-evals/">LLM judge</a>),
+not by the training metrics. The same pairs format, with <code>input</code>,
+<code>preferred_output</code>, and <code>non_preferred_output</code> field names instead, is
+what Microsoft Foundry's managed DPO expects.</p>
+<h3 id="write-a-verifiable-reward">Write a verifiable reward<a class="headerlink" href="#write-a-verifiable-reward" title="Permanent link">&para;</a></h3>
+<p>The reward function scores a parser answer between 0 and 1. TRL passes it
+the completions plus every extra dataset column, so a <code>ground_truth</code>
+column carries the gold task.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># scripts/rewards.py</span>
+<span class="sd">"""A verifiable reward for the TaskFlow task parser, usable by TRL's GRPOTrainer.</span>
+
+<span class="sd">TRL calls reward functions with the generated completions plus every extra</span>
+<span class="sd">dataset column as a keyword argument; here the dataset has a "ground_truth"</span>
+<span class="sd">column holding the gold task as a JSON string.</span>
+<span class="sd">"""</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+<span class="n">FIELDS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"title"</span><span class="p">,</span> <span class="s2">"due_date"</span><span class="p">,</span> <span class="s2">"priority"</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_text</span><span class="p">(</span><span class="n">completion</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="c1"># Conversational datasets produce [{"role": "assistant", "content": ...}].</span>
+    <span class="k">return</span> <span class="n">completion</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">"content"</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">completion</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="n">completion</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">task_reward</span><span class="p">(</span><span class="n">completions</span><span class="p">,</span> <span class="n">ground_truth</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+    <span class="n">rewards</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">completion</span><span class="p">,</span> <span class="n">gold_json</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">completions</span><span class="p">,</span> <span class="n">ground_truth</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">task</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">_text</span><span class="p">(</span><span class="n">completion</span><span class="p">))</span>
+        <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">:</span>
+            <span class="n">rewards</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>  <span class="c1"># not JSON at all</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">set</span><span class="p">(</span><span class="n">task</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">(</span><span class="n">FIELDS</span><span class="p">):</span>
+            <span class="n">rewards</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>  <span class="c1"># JSON, wrong shape</span>
+            <span class="k">continue</span>
+        <span class="n">gold</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">gold_json</span><span class="p">)</span>
+        <span class="n">title_ok</span> <span class="o">=</span> <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">task</span><span class="p">[</span><span class="s2">"title"</span><span class="p">])</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">())</span> <span class="o">==</span> <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">gold</span><span class="p">[</span><span class="s2">"title"</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+        <span class="n">hits</span> <span class="o">=</span> <span class="p">[</span><span class="n">title_ok</span><span class="p">,</span> <span class="n">task</span><span class="p">[</span><span class="s2">"due_date"</span><span class="p">]</span> <span class="o">==</span> <span class="n">gold</span><span class="p">[</span><span class="s2">"due_date"</span><span class="p">],</span> <span class="n">task</span><span class="p">[</span><span class="s2">"priority"</span><span class="p">]</span> <span class="o">==</span> <span class="n">gold</span><span class="p">[</span><span class="s2">"priority"</span><span class="p">]]</span>
+        <span class="n">rewards</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">0.25</span> <span class="o">+</span> <span class="mf">0.25</span> <span class="o">*</span> <span class="nb">sum</span><span class="p">(</span><span class="n">hits</span><span class="p">))</span>  <span class="c1"># 0.25 for valid shape, up to 1.0</span>
+    <span class="k">return</span> <span class="n">rewards</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
+    <span class="n">gold</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s2">"title"</span><span class="p">:</span> <span class="s2">"Fix the login page"</span><span class="p">,</span> <span class="s2">"due_date"</span><span class="p">:</span> <span class="s2">"2026-11-20"</span><span class="p">,</span> <span class="s2">"priority"</span><span class="p">:</span> <span class="s2">"high"</span><span class="p">})</span>
+    <span class="n">samples</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">'{"title": "Fix the login page", "due_date": "2026-11-20", "priority": "high"}'</span><span class="p">,</span>
+        <span class="s1">'{"title": "Fix login page", "due_date": "2026-11-20", "priority": "high"}'</span><span class="p">,</span>
+        <span class="s1">'{"title": "Fix the login page", "due_date": null}'</span><span class="p">,</span>
+        <span class="s2">"Sure! I created the task for you."</span><span class="p">,</span>
+        <span class="p">[{</span><span class="s2">"role"</span><span class="p">:</span> <span class="s2">"assistant"</span><span class="p">,</span> <span class="s2">"content"</span><span class="p">:</span> <span class="s1">'{"title": "fix the LOGIN page", "due_date": "2026-11-21", "priority": "high"}'</span><span class="p">}],</span>
+    <span class="p">]</span>
+    <span class="k">for</span> <span class="n">sample</span><span class="p">,</span> <span class="n">reward</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">task_reward</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="p">[</span><span class="n">gold</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">samples</span><span class="p">))):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">reward</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">sample</span><span class="p">)[:</span><span class="mi">70</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</code></pre></div>
+<p>Running the self-test:</p>
+<div class="highlight"><pre><span></span><code>1.00  {"title": "Fix the login page", "due_date": "2026-11-20", "priority":
+0.75  {"title": "Fix login page", "due_date": "2026-11-20", "priority": "hig
+0.10  {"title": "Fix the login page", "due_date": null}
+0.00  Sure! I created the task for you.
+0.75  [{'role': 'assistant', 'content': '{"title": "fix the LOGIN page", "du
+</code></pre></div>
+<p>The partial credit is deliberate: if every early sample scored 0 or 1,
+most groups would have identical rewards and teach nothing. Test a reward
+function like this one on correct, partly correct, and adversarial
+answers before training, exactly as the managed services advise for
+graders.</p>
+<h3 id="train-the-parser-with-grpo">Train the parser with GRPO<a class="headerlink" href="#train-the-parser-with-grpo" title="Permanent link">&para;</a></h3>
+<p>The training script reuses the SFT splits: the prompt is the system and
+user messages, and the gold answer becomes the <code>ground_truth</code> column.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># scripts/train_grpo.py</span>
+<span class="sd">"""Reinforcement fine-tuning of the task parser with GRPO and the verifiable reward."""</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_dataset</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">peft</span><span class="w"> </span><span class="kn">import</span> <span class="n">LoraConfig</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rewards</span><span class="w"> </span><span class="kn">import</span> <span class="n">task_reward</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">trl</span><span class="w"> </span><span class="kn">import</span> <span class="n">GRPOConfig</span><span class="p">,</span> <span class="n">GRPOTrainer</span>
+
+<span class="n">SFT_MODEL</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"SFT_MODEL"</span><span class="p">]</span>  <span class="c1"># start from SFT so most samples are already valid JSON</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">to_rl_row</span><span class="p">(</span><span class="n">row</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="o">*</span><span class="n">prompt</span><span class="p">,</span> <span class="n">answer</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s2">"messages"</span><span class="p">]</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">"prompt"</span><span class="p">:</span> <span class="n">prompt</span><span class="p">,</span> <span class="s2">"ground_truth"</span><span class="p">:</span> <span class="n">answer</span><span class="p">[</span><span class="s2">"content"</span><span class="p">]}</span>
+
+
+<span class="n">train</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="s2">"json"</span><span class="p">,</span> <span class="n">data_files</span><span class="o">=</span><span class="s2">"data/train.jsonl"</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="s2">"train"</span><span class="p">)</span>
+<span class="n">train</span> <span class="o">=</span> <span class="n">train</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">to_rl_row</span><span class="p">,</span> <span class="n">remove_columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"messages"</span><span class="p">])</span>
+
+<span class="n">args</span> <span class="o">=</span> <span class="n">GRPOConfig</span><span class="p">(</span>
+    <span class="n">output_dir</span><span class="o">=</span><span class="s2">"runs/parser-grpo"</span><span class="p">,</span>
+    <span class="n">num_generations</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>  <span class="c1"># answers sampled per prompt; advantages are relative within the group</span>
+    <span class="n">max_completion_length</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span>  <span class="c1"># the JSON answer is short</span>
+    <span class="n">learning_rate</span><span class="o">=</span><span class="mf">5e-5</span><span class="p">,</span>  <span class="c1"># the LoRA value used in TRL's LoRA Without Regret guide</span>
+    <span class="n">per_device_train_batch_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+    <span class="n">gradient_accumulation_steps</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>  <span class="c1"># 32 answers per step, a multiple of num_generations</span>
+    <span class="n">num_train_epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">logging_steps</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+    <span class="n">bf16</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">report_to</span><span class="o">=</span><span class="s2">"none"</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">GRPOTrainer</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">SFT_MODEL</span><span class="p">,</span>
+    <span class="n">reward_funcs</span><span class="o">=</span><span class="n">task_reward</span><span class="p">,</span>
+    <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span>
+    <span class="n">train_dataset</span><span class="o">=</span><span class="n">train</span><span class="p">,</span>
+    <span class="n">peft_config</span><span class="o">=</span><span class="n">LoraConfig</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">lora_alpha</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">target_modules</span><span class="o">=</span><span class="s2">"all-linear"</span><span class="p">,</span> <span class="n">task_type</span><span class="o">=</span><span class="s2">"CAUSAL_LM"</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">save_model</span><span class="p">(</span><span class="s2">"adapters/parser-grpo"</span><span class="p">)</span>
+</code></pre></div>
+<p>Watch the logged <code>reward</code> rise and <code>frac_reward_zero_std</code> stay low. If
+the reward climbs while the held-out evaluation does not improve, the
+model has found a way to score without doing the task; tighten the reward
+function. Generation dominates GRPO's run time, and TRL can hand sampling
+to vLLM (<code>use_vllm=True</code>) to speed it up.</p>
+<h3 id="distill-off-policy-let-a-teacher-label-prompts">Distill off-policy: let a teacher label prompts<a class="headerlink" href="#distill-off-policy-let-a-teacher-label-prompts" title="Permanent link">&para;</a></h3>
+<p>This script asks a teacher model behind an OpenAI-compatible endpoint to
+answer TaskFlow prompts and keeps only answers that pass validation. The
+endpoint and model ID come from configuration; the output is ready for
+the SFT scripts from the earlier lessons.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># scripts/generate_teacher_data.py</span>
+<span class="sd">"""Off-policy distillation, step 1: have a teacher model label prompts, keep only valid answers.</span>
+
+<span class="sd">Environment: TEACHER_BASE_URL, TEACHER_API_KEY, TEACHER_MODEL (all from configuration).</span>
+<span class="sd">Input: prompts.jsonl with {"messages": [system, user]} per line.</span>
+<span class="sd">Output: SFT-ready chat JSONL with the teacher's answer appended as the assistant turn.</span>
+<span class="sd">"""</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">openai</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpenAI</span>
+
+<span class="n">client</span> <span class="o">=</span> <span class="n">OpenAI</span><span class="p">(</span><span class="n">base_url</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"TEACHER_BASE_URL"</span><span class="p">],</span> <span class="n">api_key</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"TEACHER_API_KEY"</span><span class="p">])</span>
+<span class="n">TEACHER</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"TEACHER_MODEL"</span><span class="p">]</span>
+<span class="n">FIELDS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"title"</span><span class="p">,</span> <span class="s2">"due_date"</span><span class="p">,</span> <span class="s2">"priority"</span><span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">valid</span><span class="p">(</span><span class="n">answer</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">task</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">answer</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">set</span><span class="p">(</span><span class="n">task</span><span class="p">)</span> <span class="o">==</span> <span class="n">FIELDS</span> <span class="ow">and</span> <span class="n">task</span><span class="p">[</span><span class="s2">"priority"</span><span class="p">]</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"low"</span><span class="p">,</span> <span class="s2">"medium"</span><span class="p">,</span> <span class="s2">"high"</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">prompts_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">out_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">kept</span> <span class="o">=</span> <span class="n">dropped</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">prompts_path</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">out_path</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span> <span class="k">as</span> <span class="n">out</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">src</span><span class="p">:</span>
+            <span class="n">messages</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">line</span><span class="p">)[</span><span class="s2">"messages"</span><span class="p">]</span>
+            <span class="n">reply</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">chat</span><span class="o">.</span><span class="n">completions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">TEACHER</span><span class="p">,</span> <span class="n">messages</span><span class="o">=</span><span class="n">messages</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">answer</span> <span class="o">=</span> <span class="p">(</span><span class="n">reply</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">valid</span><span class="p">(</span><span class="n">answer</span><span class="p">):</span>
+                <span class="n">dropped</span> <span class="o">+=</span> <span class="mi">1</span>  <span class="c1"># never train the student on answers that fail validation</span>
+                <span class="k">continue</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s2">"messages"</span><span class="p">:</span> <span class="n">messages</span> <span class="o">+</span> <span class="p">[{</span><span class="s2">"role"</span><span class="p">:</span> <span class="s2">"assistant"</span><span class="p">,</span> <span class="s2">"content"</span><span class="p">:</span> <span class="n">answer</span><span class="p">}]})</span> <span class="o">+</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+            <span class="n">kept</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"kept </span><span class="si">{</span><span class="n">kept</span><span class="si">}</span><span class="s2">, dropped </span><span class="si">{</span><span class="n">dropped</span><span class="si">}</span><span class="s2"> invalid teacher answers"</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+</code></pre></div>
+<p>Against a local stub server that returns one non-JSON answer out of four,
+the script printed <code>kept 3, dropped 1 invalid teacher answers</code>. For a real
+run, also compare a sample of kept answers with human labels, because a
+valid-looking answer can still have the wrong date; where gold labels
+exist, keep only teacher answers that match them. For large prompt sets,
+the provider's batch API (see
+<a href="../../hosted-model-apis/prompt-caching-and-batch-processing/">prompt caching and batch processing</a>)
+is usually cheaper than one request at a time.</p>
+<h3 id="distill-on-policy-with-trl">Distill on-policy with TRL<a class="headerlink" href="#distill-on-policy-with-trl" title="Permanent link">&para;</a></h3>
+<p>When the teacher is an open model you can load, TRL's
+<code>DistillationTrainer</code> lets the student generate and the teacher grade
+every token.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># scripts/train_distill.py</span>
+<span class="sd">"""On-policy distillation: the student writes answers, the teacher's token probabilities grade them."""</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_dataset</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">peft</span><span class="w"> </span><span class="kn">import</span> <span class="n">LoraConfig</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">trl</span><span class="w"> </span><span class="kn">import</span> <span class="n">DistillationConfig</span><span class="p">,</span> <span class="n">DistillationTrainer</span>
+
+<span class="n">STUDENT_MODEL</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"STUDENT_MODEL"</span><span class="p">]</span>  <span class="c1"># the small model you will serve</span>
+<span class="n">TEACHER_MODEL</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"TEACHER_MODEL"</span><span class="p">]</span>  <span class="c1"># a larger open model with the same vocabulary</span>
+
+<span class="n">prompts</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="s2">"json"</span><span class="p">,</span> <span class="n">data_files</span><span class="o">=</span><span class="s2">"data/train.jsonl"</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="s2">"train"</span><span class="p">)</span>
+<span class="n">prompts</span> <span class="o">=</span> <span class="n">prompts</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">row</span><span class="p">:</span> <span class="p">{</span><span class="s2">"prompt"</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="s2">"messages"</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">]},</span> <span class="n">remove_columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"messages"</span><span class="p">])</span>
+
+<span class="n">args</span> <span class="o">=</span> <span class="n">DistillationConfig</span><span class="p">(</span>
+    <span class="n">output_dir</span><span class="o">=</span><span class="s2">"runs/parser-distill"</span><span class="p">,</span>
+    <span class="n">beta</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>  <span class="c1"># 0.0 forward KL, 0.5 Jensen-Shannon, 1.0 reverse KL (the default)</span>
+    <span class="n">max_completion_length</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span>
+    <span class="n">learning_rate</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span>
+    <span class="n">per_device_train_batch_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+    <span class="n">gradient_accumulation_steps</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+    <span class="n">bf16</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">report_to</span><span class="o">=</span><span class="s2">"none"</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">DistillationTrainer</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">STUDENT_MODEL</span><span class="p">,</span>
+    <span class="n">teacher_model</span><span class="o">=</span><span class="n">TEACHER_MODEL</span><span class="p">,</span>
+    <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span>
+    <span class="n">train_dataset</span><span class="o">=</span><span class="n">prompts</span><span class="p">,</span>
+    <span class="n">peft_config</span><span class="o">=</span><span class="n">LoraConfig</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">lora_alpha</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">target_modules</span><span class="o">=</span><span class="s2">"all-linear"</span><span class="p">,</span> <span class="n">task_type</span><span class="o">=</span><span class="s2">"CAUSAL_LM"</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">save_model</span><span class="p">(</span><span class="s2">"adapters/parser-distilled"</span><span class="p">)</span>
+</code></pre></div>
+<p>Teacher and student are both in memory during training, so this needs
+more GPU memory than SFT; the payoff is a student that has practiced on
+its own outputs. Evaluate the student with the same <code>eval_task_parser.py</code>
+used for the teacher and the baseline.</p>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Run SFT first; use preference and reinforcement methods to refine
+  behavior the model can already produce.</li>
+<li>Collect preference pairs from your own model's outputs, with a written
+  rubric for raters, and check the data for length bias before training.</li>
+<li>Use KTO when you only have thumbs-up and thumbs-down feedback.</li>
+<li>Make reward functions strict, give partial credit where it helps
+  learning, and test them on adversarial answers before training.</li>
+<li>Judge every method by the held-out task evaluation, not by training
+  rewards or margins.</li>
+<li>Validate teacher outputs as strictly as human labels before distilling,
+  and confirm the teacher's license or terms allow it.</li>
+<li>Keep a reference to the starting model's scores so regressions on
+  other behavior are visible.</li>
+<li>Pin the TRL version when you use trainers marked experimental.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Summaries get longer after DPO.</strong>
+  <em>Detect:</em> average summary length jumps after the release; reviewers
+  call them verbose. <em>Cause:</em> raters preferred longer answers, and DPO
+  learned length as the signal. <em>Fix:</em> measure the chosen-longer share,
+  rebalance pairs, add brevity to the rubric, or try a length-normalized
+  method such as SimPO.</li>
+<li><strong>Training rewards climb but the evaluation gets worse.</strong>
+  <em>Detect:</em> GRPO's <code>reward</code> or DPO's <code>rewards/accuracies</code> rise while
+  held-out exact match falls. <em>Cause:</em> reward hacking (the policy
+  exploits a loophole in the verifier) or memorized preference pairs.
+  <em>Fix:</em> inspect high-reward samples, close the loophole, add a KL penalty
+  (<code>beta</code>) or fewer steps, and select checkpoints by the evaluation.</li>
+<li><strong>GRPO training does not move.</strong>
+  <em>Detect:</em> <code>frac_reward_zero_std</code> stays high and the reward is flat.
+  <em>Cause:</em> prompts are so easy or so hard that every sampled answer gets
+  the same reward. <em>Fix:</em> filter prompts to ones the model sometimes gets
+  right, add partial credit, or raise sampling temperature.</li>
+<li><strong>Chosen answers become less likely during DPO.</strong>
+  <em>Detect:</em> <code>rewards/chosen</code> goes negative even though margins grow;
+  output quality drops. <em>Cause:</em> DPO only pushes the gap, so both
+  likelihoods can fall. <em>Fix:</em> add an SFT term
+  (<code>loss_type=["sigmoid", "sft"]</code>), lower the learning rate, or use pairs
+  sampled from the current model.</li>
+<li><strong>The distilled student repeats the teacher's errors.</strong>
+  <em>Detect:</em> the student fails the same evaluation cases as the teacher,
+  plus more. <em>Cause:</em> unvalidated teacher outputs were used as labels.
+  <em>Fix:</em> validate outputs, keep only answers that match gold labels where
+  available, and review a sample by hand.</li>
+<li><strong>The student is good on test prompts but brittle on real traffic.</strong>
+  <em>Detect:</em> the canary shows more fallbacks than the offline evaluation
+  predicted. <em>Cause:</em> off-policy distillation never showed the student
+  how to recover from its own mistakes, and the prompts did not cover
+  real phrasing. <em>Fix:</em> add real prompts and use on-policy distillation or
+  a GRPO stage with the verifier.</li>
+<li><strong>Legal review blocks the distilled model.</strong>
+  <em>Detect:</em> a terms-of-service review flags the training data source.
+  <em>Cause:</em> teacher outputs came from a provider whose terms prohibit
+  training competing models. <em>Fix:</em> check terms before generating data,
+  and prefer open teachers or models you own.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Preference tuning:</strong> Training from comparisons or ratings of model
+  outputs rather than from target answers.</li>
+<li><strong>RLHF:</strong> Reinforcement learning from human feedback: SFT, a reward
+  model from rankings, then policy optimization.</li>
+<li><strong>Reward model:</strong> A model that scores answers, trained so preferred
+  answers score higher.</li>
+<li><strong>KL penalty:</strong> A term that keeps the trained policy close to a
+  reference model.</li>
+<li><strong>Reward hacking:</strong> Finding outputs that score highly without meeting
+  the real goal.</li>
+<li><strong>DPO:</strong> Direct Preference Optimization, a classification-style loss on
+  preference pairs with no separate reward model or RL loop.</li>
+<li><strong>KTO:</strong> A preference method that learns from single answers labelled
+  desirable or undesirable.</li>
+<li><strong>GRPO:</strong> Group Relative Policy Optimization; scores a group of samples
+  per prompt and uses within-group relative advantages.</li>
+<li><strong>RLVR:</strong> Reinforcement learning with verifiable rewards computed by
+  code.</li>
+<li><strong>Distillation:</strong> Training a smaller student to imitate a larger
+  teacher.</li>
+<li><strong>On-policy distillation:</strong> The student generates and the teacher
+  grades the student's own outputs token by token.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Running DPO on a base model that cannot yet produce the desired answers.</li>
+<li>Treating <code>rewards/accuracies</code> or the GRPO reward curve as proof of
+  better quality.</li>
+<li>Collecting preference pairs from a different model and expecting them
+  to fit your model.</li>
+<li>Writing a lenient reward function and assuming the model will not find
+  the loophole.</li>
+<li>Believing preference tuning adds knowledge; like SFT, it shapes
+  behavior.</li>
+<li>Distilling from a teacher whose terms prohibit it.</li>
+<li>Assuming a distilled student matches the teacher on everything; it
+  matches on the distribution it was trained on, at best.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Describe the three stages of RLHF and why the KL penalty is needed.</li>
+<li>What does DPO remove from the RLHF pipeline, and what does it keep?</li>
+<li>With <code>beta = 0.2</code>, the chosen log-ratio is +1.0 and the rejected one is
+   -1.5. What is the DPO margin and loss? (0.2 x 2.5 = 0.5; loss =
+   -log sigmoid(0.5), about 0.474.)</li>
+<li>When would you choose KTO over DPO?</li>
+<li>A GRPO group gets rewards 1, 1, 1, 1. What are the advantages, and what
+   does that mean for training?</li>
+<li>Why does a verifiable reward need partial credit and adversarial
+   testing?</li>
+<li>Compare off-policy and on-policy distillation, including what each
+   needs from the teacher.</li>
+<li>Distillation costs 40,000 units one-off and saves 0.8 units per
+   request. At 2,000 requests a day, when does it break even?
+   (50,000 requests, 25 days.)</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://huggingface.co/docs/trl/dpo_trainer">Hugging Face TRL: DPO Trainer</a></li>
+<li><a href="https://huggingface.co/docs/trl/grpo_trainer">Hugging Face TRL: GRPO Trainer</a></li>
+<li><a href="https://huggingface.co/docs/trl/kto_trainer">Hugging Face TRL: KTO Trainer</a></li>
+<li><a href="https://huggingface.co/docs/trl/distillation_trainer">Hugging Face TRL: Distillation Trainer</a></li>
+<li><a href="https://learn.microsoft.com/en-us/azure/foundry/openai/how-to/reinforcement-fine-tuning">Microsoft Foundry: Reinforcement fine-tuning</a></li>
+<li><a href="https://docs.aws.amazon.com/bedrock/latest/userguide/reinforcement-fine-tuning.html">Amazon Bedrock: Reinforcement fine-tuning</a></li>
+<li>Next: <a href="../interview-questions-and-answers/">fine-tuning interview questions and answers</a>.
+  Back to the <a href="../">fine-tuning overview</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../lora-and-peft-in-practice/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: LoRA and PEFT in Practice">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">LoRA and PEFT in Practice</span>
+      </a>
+    
+    
+      <a href="../cheat-sheet/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: Cheat Sheet">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">Cheat Sheet</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

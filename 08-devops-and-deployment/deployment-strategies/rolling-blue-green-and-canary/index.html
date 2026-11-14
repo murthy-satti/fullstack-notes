@@ -1,0 +1,5059 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../deploying-backend-services/">
+      
+      
+        <link rel="next" href="../advanced-deployment-patterns/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Rolling, Blue-Green, and Canary Deployments - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#rolling-blue-green-and-canary-deployments" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Rolling, Blue-Green, and Canary Deployments
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../05-application-architecture/" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../06-ai-and-machine-learning/" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+          <span class="md-ellipsis">&larr; Back to DevOps</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../05-application-architecture/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../06-ai-and-machine-learning/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI and Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
+        
+          
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-label="DevOps module lessons" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+                  <span class="md-ellipsis">&larr; Back to DevOps</span>
+                </a>
+              
+            </div>
+          
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                  
+  
+  
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+    
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_8" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_8" id="__nav_9_8_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment Strategies
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_8_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_8">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Deployment Strategies
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_8_2" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_8_2" id="__nav_9_8_2_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Foundations
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_8_2_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_8_2">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Foundations
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../environments-and-promotion/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Environments and Promotion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deploying-backend-services/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deploying Backend Services
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_8_3" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_8_3" id="__nav_9_8_3_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Moving Traffic Safely
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_8_3_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_8_3">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Moving Traffic Safely
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rolling, Blue-Green, and Canary Deployments
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rolling, Blue-Green, and Canary Deployments
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#recreate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recreate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rolling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rolling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blue-green" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Blue-green
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#canary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Canary
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Canary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#canary-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Canary analysis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-much-traffic-a-canary-needs-a-worked-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How much traffic a canary needs: a worked example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#traffic-shifting-mechanisms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Traffic shifting mechanisms
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#automatic-promotion-and-abort" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Automatic promotion and abort
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ab-testing-compared-with-canary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A/B testing compared with canary
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sessions-state-and-database-concerns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sessions, state, and database concerns
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pattern-chooser" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pattern chooser
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-rolling-update-in-kubernetes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A rolling update in Kubernetes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blue-green-with-two-deployments-and-a-service-selector" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Blue-green with two Deployments and a Service selector
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-weighted-canary-with-gateway-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A weighted canary with Gateway API
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#automated-canary-analysis-with-argo-rollouts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Automated canary analysis with Argo Rollouts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#weighted-target-groups-on-an-aws-application-load-balancer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Weighted target groups on an AWS Application Load Balancer
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../advanced-deployment-patterns/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced Deployment Patterns
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../feature-flags-and-progressive-delivery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature Flags and Progressive Delivery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../zero-downtime-database-migrations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Zero-Downtime Database Migrations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rollbacks-and-safe-releases/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rollbacks and Safe Releases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_8_4" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_8_4" id="__nav_9_8_4_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Other Kinds of Software
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_8_4_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_8_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Other Kinds of Software
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deploying-frontends-and-static-sites/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deploying Frontends and Static Sites
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../releasing-desktop-and-mobile-apps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Releasing Desktop and Mobile Apps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#recreate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recreate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rolling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rolling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blue-green" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Blue-green
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#canary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Canary
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Canary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#canary-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Canary analysis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-much-traffic-a-canary-needs-a-worked-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How much traffic a canary needs: a worked example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#traffic-shifting-mechanisms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Traffic shifting mechanisms
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#automatic-promotion-and-abort" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Automatic promotion and abort
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ab-testing-compared-with-canary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A/B testing compared with canary
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sessions-state-and-database-concerns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sessions, state, and database concerns
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pattern-chooser" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pattern chooser
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-rolling-update-in-kubernetes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A rolling update in Kubernetes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blue-green-with-two-deployments-and-a-service-selector" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Blue-green with two Deployments and a Service selector
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-weighted-canary-with-gateway-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A weighted canary with Gateway API
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#automated-canary-analysis-with-argo-rollouts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Automated canary analysis with Argo Rollouts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#weighted-target-groups-on-an-aws-application-load-balancer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Weighted target groups on an AWS Application Load Balancer
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="rolling-blue-green-and-canary-deployments">Rolling, Blue-Green, and Canary Deployments<a class="headerlink" href="#rolling-blue-green-and-canary-deployments" title="Permanent link">&para;</a></h1>
+<p>These are the four core ways to replace a running version of a service:
+<strong>recreate</strong> (stop the old, start the new), <strong>rolling</strong> (replace instances
+in batches), <strong>blue-green</strong> (run a full second environment and switch),
+and <strong>canary</strong> (send a small, growing share of traffic to the new version
+while measuring it). This lesson explains each in depth, how traffic is
+actually shifted, how canary analysis decides to promote or abort, how a
+canary differs from an A/B test, and what sessions, caches, queues, and
+the database need so that two versions can run side by side.</p>
+<p>The next lesson, <a href="../advanced-deployment-patterns/">advanced deployment patterns</a>,
+builds on these with red/black, rainbow, shadow traffic, rings, waves, and
+cells.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>The strategy decides three numbers for every release: how long users are
+affected if the release is bad, how many users are affected, and how fast
+you can undo it. With recreate, a bad version hits 100% of users until a
+full redeploy finishes. With a canary at 1%, the same bug reaches 1% of
+requests for a few minutes before automation pulls it back. The Google
+SRE Workbook puts it simply: the impact on the error budget is directly
+proportional to the share of traffic exposed to the defect.</p>
+<p>Every strategy except recreate also means <strong>two versions run at the same
+time</strong>, which is where most surprises come from: an old instance reading
+data written by a new one, a cached object in a new format, a queue
+message the old consumer cannot parse. Choosing a strategy is therefore
+also choosing which compatibility rules your code and data must follow.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Martin Fowler, blue-green.</strong> The bliki entry
+  <a href="https://martinfowler.com/bliki/BlueGreenDeployment.html">BlueGreenDeployment</a>
+  describes two identical production environments with a router in front:
+  you release by switching the router to the idle one and roll back by
+  switching back. It also notes that the database is the hard part,
+  because both environments usually share it.</li>
+<li><strong>Google SRE Workbook, canarying.</strong> The chapter
+  <a href="https://sre.google/workbook/canarying-releases/">Canarying Releases</a>
+  defines a canary as "a partial and time-limited deployment of a change
+  in a service and its evaluation", recommends comparing the canary with a
+  control population <em>at the same time</em> rather than before and after, and
+  advises evaluating user-facing metrics such as error rate and latency
+  instead of noisy ones such as CPU.</li>
+<li><strong>Google and Netflix, Kayenta.</strong> The Google Cloud post
+  <a href="https://cloud.google.com/blog/products/gcp/introducing-kayenta-an-open-automated-canary-analysis-tool-from-google-and-netflix">Introducing Kayenta</a>
+  describes automated canary analysis used with Spinnaker: a small share
+  of traffic goes to the canary, a <em>new</em> baseline cluster runs the old
+  version (to avoid comparing fresh instances with long-running ones), a
+  judge scores each chosen metric statistically, and the 0 to 100 score
+  promotes, escalates to a human, or rolls back.</li>
+<li><strong>Slack.</strong> <a href="https://slack.engineering/deploys-at-slack/">Deploys at Slack</a>
+  describes a canary at about 2% of production traffic, followed by
+  10%, 25%, 50%, 75%, and 100% while dashboards and alerts are watched.</li>
+<li><strong>AWS CodeDeploy.</strong> The predefined
+  <a href="https://docs.aws.amazon.com/codedeploy/latest/userguide/deployment-configurations.html">deployment configurations</a>
+  encode these strategies as products: <code>CodeDeployDefault.OneAtATime</code> and
+  <code>HalfAtATime</code> (rolling) for servers, and
+  <code>ECSCanary10Percent5Minutes</code> or <code>LambdaLinear10PercentEvery1Minute</code>
+  (canary and linear traffic shifting) for containers and functions.</li>
+</ul>
+<p><strong>Popular tools and providers:</strong> Kubernetes Deployments, Argo Rollouts,
+Flagger, Spinnaker with Kayenta, AWS CodeDeploy, Amazon ECS, Istio,
+Linkerd, Gateway API implementations, AWS Application Load Balancer
+weighted target groups, Amazon Route 53 weighted records, and the traffic
+splitting built into Cloud Run and AWS Lambda aliases.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="recreate">Recreate<a class="headerlink" href="#recreate" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: v1 serves until the deploy starts; step 1 stops every v1 instance and the load balancer returns 503; step 2 optionally changes the schema, which may break v1 because nothing old runs; step 3 starts v2 and waits until it is ready; the time between the last v1 stopping and v2 becoming ready is downtime." src="../recreate-deployment.svg" /></p>
+<p>Recreate stops every old instance, then starts the new ones. In
+Kubernetes it is <code>strategy.type: Recreate</code>; on a single VM it is
+<code>systemctl restart</code>.</p>
+<ul>
+<li><strong>Downtime:</strong> from the moment the last old instance stops until the
+  first new one is ready. For a Node API that connects to MongoDB and
+  warms up, 10 to 60 seconds is typical.</li>
+<li><strong>Advantage:</strong> only one version ever runs, so no compatibility rules
+  apply. Recreate is the only strategy that allows a breaking schema
+  change in a single step (inside a maintenance window).</li>
+<li><strong>Rollback:</strong> another full recreate with the old version, with another
+  outage.</li>
+<li><strong>Fits:</strong> development and test environments, internal tools, batch
+  workers that can pause, single-instance software that cannot run two
+  copies (some licensed or stateful software), and planned maintenance.</li>
+</ul>
+<h3 id="rolling">Rolling<a class="headerlink" href="#rolling" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: a Deployment with 4 replicas, maxSurge 1, and maxUnavailable 0; at the start four v1 pods are ready; one extra v2 pod starts as surge so five run while four are ready; when v2 passes readiness one v1 pod drains and is removed; the pattern repeats so midway two v2 and two v1 pods serve together; at the end four v2 pods are ready, and capacity never drops below four." src="../rolling-update-batches.svg" /></p>
+<p>A rolling deployment replaces instances in batches. Two parameters
+control the pace (Kubernetes names, with equivalents elsewhere):</p>
+<ul>
+<li><strong>maxSurge:</strong> how many <em>extra</em> instances may exist above the desired
+  count. Higher surge means a faster rollout and more temporary cost.</li>
+<li><strong>maxUnavailable:</strong> how many instances may be missing below the desired
+  count. Zero means full capacity throughout; higher means faster but
+  thinner.</li>
+</ul>
+<p>With <code>replicas: 4</code>, <code>maxSurge: 1</code>, <code>maxUnavailable: 0</code>, Kubernetes starts
+one new pod, waits until it passes its readiness probe (plus
+<code>minReadySeconds</code>), removes one old pod, and repeats. The rollout
+depends entirely on readiness: a probe that returns 200 before the app
+can serve turns a rolling deploy into a rolling outage.</p>
+<p>What rolling does <strong>not</strong> give you:</p>
+<ul>
+<li><strong>No traffic control.</strong> The share of requests reaching the new version
+  equals its share of instances, and the rollout keeps going unless
+  readiness fails. A version that is "ready" but returns wrong answers
+  rolls all the way out.</li>
+<li><strong>No automatic rollback.</strong> If new pods never become ready, Kubernetes
+  stops and marks the rollout as failed after <code>progressDeadlineSeconds</code>
+  (600 by default), but leaves it there. Someone or something must run
+  <code>kubectl rollout undo</code>.</li>
+<li><strong>Mixed versions for the whole rollout.</strong> Every request might hit
+  either version, so APIs, events, and schemas must be compatible both
+  ways.</li>
+</ul>
+<h3 id="blue-green">Blue-green<a class="headerlink" href="#blue-green" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: before the switch, users reach a router that sends 100% to blue on v1.7 with four instances, while green runs v1.8 warmed up and receives only smoke tests; after the switch the router sends 100% to green on v1.8 and blue stays idle but running so the router can switch back; both environments share one MongoDB database." src="../blue-green-switch.svg" /></p>
+<p>Blue-green keeps two complete production environments. One (blue) is
+live; the other (green) receives the new version, is warmed up, and is
+tested through a private route. The release is a single routing change;
+the rollback is the same change reversed.</p>
+<p>How the switch is made:</p>
+<table>
+<thead>
+<tr>
+<th>Switch point</th>
+<th>How</th>
+<th>Speed and caveats</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Load balancer</td>
+<td>Change the listener's target group, or the nginx upstream</td>
+<td>Seconds; existing keep-alive connections finish on blue</td>
+</tr>
+<tr>
+<td>Kubernetes Service</td>
+<td>Change the Service selector from <code>color: blue</code> to <code>color: green</code></td>
+<td>Seconds; endpoints update cluster-wide</td>
+</tr>
+<tr>
+<td>DNS</td>
+<td>Point the record at the green load balancer</td>
+<td>Minutes to hours; resolvers and clients cache beyond the TTL</td>
+</tr>
+<tr>
+<td>Platform</td>
+<td>Swap deployment slots (Azure App Service), or move traffic between revisions</td>
+<td>Seconds; platform-specific</td>
+</tr>
+</tbody>
+</table>
+<p>Design points:</p>
+<ul>
+<li><strong>Warm-up first.</strong> Green must have the same instance count as blue and
+  warm caches and connection pools before the switch, or the first minute
+  after the switch is slow.</li>
+<li><strong>Keep blue for a bake period.</strong> Leave blue running (at full or reduced
+  size) for an hour or a day. Rollback is only instant while blue exists.</li>
+<li><strong>The database is shared.</strong> Blue and green almost always use the same
+  database, so the schema must work for both versions. Blue-green makes
+  code rollback instant; it does nothing for data.</li>
+<li><strong>Everyone moves at once.</strong> Unlike a canary, the switch exposes 100% of
+  users simultaneously. A gradual weighted shift between blue and green
+  turns it into a canary, which the SRE Workbook recommends when possible.</li>
+<li><strong>Background work runs twice.</strong> If schedulers or queue consumers run in
+  both colors, cron jobs fire twice and messages are consumed by both
+  versions. Disable schedulers in the idle color or run them separately.</li>
+<li><strong>Cost:</strong> double capacity during the deploy, permanently if both colors
+  stay at full size.</li>
+</ul>
+<h3 id="canary">Canary<a class="headerlink" href="#canary" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: v2 is deployed at 0%, then receives 1% for a 10-minute soak, then a check; if the check passes it gets 10% for 10 minutes and another check, then 50% for 20 minutes and a third check, then it is promoted to 100%; each check compares the canary with a baseline on 5xx rate, p99 latency, saturation, and business events; any failed check aborts automatically by setting the canary weight to 0%, scaling it down, and alerting the team." src="../canary-traffic-steps.svg" /></p>
+<p>A canary sends a small share of real traffic to the new version, compares
+it with the old version, and increases the share step by step while the
+comparison stays good. Three decisions define a canary:</p>
+<ol>
+<li><strong>Who goes to the canary.</strong> A random share of requests (simplest), a
+   random share of <em>users</em> (sticky, so one user sees one version), staff
+   and internal accounts first, or one region or cell first.</li>
+<li><strong>The steps.</strong> For example 1% for 10 minutes, 10% for 10 minutes, 50%
+   for 20 minutes, then 100%. The first step catches crashes and obvious
+   errors; later steps catch problems that appear only under load.</li>
+<li><strong>The analysis.</strong> Which metrics, compared with what, and what result
+   means abort.</li>
+</ol>
+<h4 id="canary-analysis">Canary analysis<a class="headerlink" href="#canary-analysis" title="Permanent link">&para;</a></h4>
+<p>Good canary metrics are user-facing and attributable to the change:</p>
+<ul>
+<li>5xx error rate (exclude 4xx caused by clients),</li>
+<li>latency percentiles (p50, p99) for the main endpoints,</li>
+<li>saturation signals that predict trouble (event-loop lag, memory growth,
+  database connection pool waits),</li>
+<li>a few business events (tasks created per minute, sign-ins succeeded).</li>
+</ul>
+<p>Compare the canary with a <strong>baseline running at the same time</strong>, not with
+yesterday: traffic changes by hour and day. Ideally the baseline is a
+separate set of old-version instances of the same size and age as the
+canary, which is what Kayenta does, because freshly started instances
+behave differently from instances that have run for days.</p>
+<h4 id="how-much-traffic-a-canary-needs-a-worked-example">How much traffic a canary needs: a worked example<a class="headerlink" href="#how-much-traffic-a-canary-needs-a-worked-example" title="Permanent link">&para;</a></h4>
+<p>TaskFlow API serves 200 requests per second with a normal 5xx rate of
+0.2%.</p>
+<div class="highlight"><pre><span></span><code>Canary at 1% = 2 requests/s; a 10-minute step sees 1,200 requests.
+Expected errors if the canary is as good as the baseline: 1,200 x 0.002 = 2.4
+
+Case A: v2 fails 5% of requests -&gt; about 60 errors.
+        60 versus an expected 2.4 is unmistakable: abort within minutes.
+
+Case B: v2 raises the error rate to 0.4% (doubles it).
+        Error counts are roughly Poisson, so noise is about sqrt(expected).
+        To see the extra errors (0.002 n) above 3 standard deviations of
+        noise (3 x sqrt(0.002 n)):
+            0.002 n &gt;= 3 x sqrt(0.002 n)  -&gt;  0.002 n &gt;= 9  -&gt;  n &gt;= 4,500
+        At 1%  (2 req/s):  4,500 / 2  = 2,250 s, about 37 minutes
+        At 10% (20 req/s): 4,500 / 20 =   225 s, under 4 minutes
+</code></pre></div>
+<p>The lesson: a small canary catches large regressions quickly and safely;
+subtle regressions need more traffic or more time. That is why canaries
+go up in steps, and why analysis tools use statistical tests instead of
+eyeballing one dashboard.</p>
+<h4 id="traffic-shifting-mechanisms">Traffic shifting mechanisms<a class="headerlink" href="#traffic-shifting-mechanisms" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Mechanism</th>
+<th>How the split happens</th>
+<th>Precision</th>
+<th>Rollback</th>
+<th>Caveats</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Replica ratio</td>
+<td>1 new pod among 10 gets about 10%</td>
+<td>Coarse, in steps of one instance</td>
+<td>As fast as scaling</td>
+<td>Depends on even load balancing; 1% needs 100 pods</td>
+</tr>
+<tr>
+<td>Load balancer weights</td>
+<td>AWS ALB weighted target groups (weights 0 to 999), nginx <code>weight</code></td>
+<td>Exact, per request</td>
+<td>Seconds</td>
+<td>Enable stickiness if users must stay on one version</td>
+</tr>
+<tr>
+<td>Gateway API</td>
+<td><code>HTTPRoute</code> <code>backendRefs</code> with <code>weight</code></td>
+<td>Exact, per request (implementation-dependent)</td>
+<td>Seconds</td>
+<td>Portable across implementations; supports header matches</td>
+</tr>
+<tr>
+<td>Service mesh</td>
+<td>Istio <code>VirtualService</code> weights, Linkerd</td>
+<td>Exact, plus header and cookie targeting</td>
+<td>Seconds</td>
+<td>Adds a mesh to operate</td>
+</tr>
+<tr>
+<td>Ingress annotations</td>
+<td>Controller-specific canary annotations</td>
+<td>Exact</td>
+<td>Seconds</td>
+<td>Not portable; the widely used ingress-nginx project was retired in March 2026</td>
+</tr>
+<tr>
+<td>DNS weighted records</td>
+<td>Route 53 weighted records (weights 0 to 255)</td>
+<td>Coarse, per resolver</td>
+<td>Slow</td>
+<td>Resolvers and clients cache beyond the TTL; open connections stay on the old target</td>
+</tr>
+<tr>
+<td>Platform built-in</td>
+<td>Cloud Run revision traffic, Lambda alias weights</td>
+<td>Exact</td>
+<td>Seconds</td>
+<td>Tied to one platform</td>
+</tr>
+</tbody>
+</table>
+<p>DNS deserves a warning: lowering a TTL to 60 seconds does not mean all
+clients move within 60 seconds. Some resolvers enforce minimum TTLs,
+operating systems and browsers cache, mobile apps hold connections for
+long periods, and a client that has an open connection keeps using the
+old address. DNS is fine for moving whole regions over hours; it is a poor
+tool for a 1% canary or a fast rollback.</p>
+<h4 id="automatic-promotion-and-abort">Automatic promotion and abort<a class="headerlink" href="#automatic-promotion-and-abort" title="Permanent link">&para;</a></h4>
+<p>Tools such as Argo Rollouts, Flagger, Spinnaker with Kayenta, and AWS
+CodeDeploy run the loop for you: set weight, wait, query metrics, compare
+with thresholds or the baseline, then continue, pause, or abort. When
+analysis fails, the controller sets the canary weight back to 0% and
+marks the rollout aborted. Manual promotion still has a place for the
+first canary of a risky change, but a human watching dashboards at 2 a.m.
+is the weakest part of a canary.</p>
+<h3 id="ab-testing-compared-with-canary">A/B testing compared with canary<a class="headerlink" href="#ab-testing-compared-with-canary" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: left, a canary asks whether v2 is safe by splitting requests at random, 95% to v1 as baseline and 5% to the v2 canary, measuring 5xx rate, p99 latency, and saturation, and ending within minutes to hours by promoting or rolling back; right, an A/B test asks which variant users prefer by assigning users with a sticky hash of their user ID, 50% to variant A and 50% to variant B, both healthy, measuring conversion, retention, and task completion, and ending after days or weeks by shipping the winner and deleting the loser." src="../ab-test-vs-canary.svg" /></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Canary</th>
+<th>A/B test</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Question</td>
+<td>Is the new version safe to roll out?</td>
+<td>Which variant achieves the product goal better?</td>
+</tr>
+<tr>
+<td>Variants</td>
+<td>Old and new version of the software</td>
+<td>Two (or more) intended behaviors, both expected to work</td>
+</tr>
+<tr>
+<td>Assignment</td>
+<td>Random requests or users; often not sticky</td>
+<td>Sticky per user (hash of user ID), so each user has one consistent experience</td>
+</tr>
+<tr>
+<td>Metrics</td>
+<td>Errors, latency, saturation</td>
+<td>Conversion, retention, engagement, revenue</td>
+</tr>
+<tr>
+<td>Duration</td>
+<td>Minutes to hours</td>
+<td>Days to weeks, until the planned sample size is reached</td>
+</tr>
+<tr>
+<td>Ends with</td>
+<td>100% of the new version, or rollback</td>
+<td>The winning variant for everyone; the losing code removed</td>
+</tr>
+<tr>
+<td>Usually implemented with</td>
+<td>Traffic routing (load balancer, mesh, rollout controller)</td>
+<td>Feature flags or an experimentation platform inside one version</td>
+</tr>
+</tbody>
+</table>
+<p>The two are often confused because both split traffic. They answer
+different questions, need different statistics (an A/B test needs a
+sample size calculated in advance and protection against stopping early
+when results look good), and live in different tools. An A/B test runs
+<em>inside</em> one deployed version, usually through
+<a href="../feature-flags-and-progressive-delivery/">feature flags</a>; a canary
+compares two deployed versions.</p>
+<h3 id="sessions-state-and-database-concerns">Sessions, state, and database concerns<a class="headerlink" href="#sessions-state-and-database-concerns" title="Permanent link">&para;</a></h3>
+<p>Running two versions side by side, or switching between them, raises the
+same questions in every strategy except recreate:</p>
+<ul>
+<li><strong>Sessions.</strong> If session data lives in instance memory, any switch logs
+  users out. Store sessions in Redis or a database, or use stateless
+  tokens, and keep the session format readable by both versions.</li>
+<li><strong>Sticky routing.</strong> Per-request weights can send one user's requests to
+  both versions in the same minute. If the UI or API changed, enable
+  stickiness (a cookie or user-ID hash) for the canary period.</li>
+<li><strong>Long-lived connections.</strong> WebSockets and server-sent event streams do
+  not move when the router changes; they stay on the old version until
+  they close. Plan drain times, or ask clients to reconnect (see rainbow
+  deployments in <a href="../advanced-deployment-patterns/">advanced deployment patterns</a>).</li>
+<li><strong>Caches.</strong> If v2 writes cache entries in a new format, v1 may read and
+  fail on them. Version cache keys (<code>task:42:v2</code>) so each version reads
+  its own format.</li>
+<li><strong>Queues and events.</strong> Both versions may consume the same queue, and
+  each may produce messages the other consumes. Add fields, never remove
+  or rename them in one step, and make consumers ignore unknown fields.</li>
+<li><strong>Scheduled jobs.</strong> Make sure only one version runs each scheduled job
+  (blue-green idle colors especially).</li>
+<li><strong>Database schema.</strong> Every change must be readable and writable by both
+  versions during the rollout and the rollback window. This is the
+  expand-and-contract discipline in
+  <a href="../zero-downtime-database-migrations/">zero-downtime database migrations</a>.</li>
+<li><strong>Clients.</strong> A browser that loaded the old SPA calls the API after the
+  switch. Keep API changes backward compatible for at least one release.</li>
+</ul>
+<h3 id="pattern-chooser">Pattern chooser<a class="headerlink" href="#pattern-chooser" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: a matrix compares recreate, rolling, blue-green, and canary; recreate has downtime, no extra cost, slow rollback by redeploying, exposes everyone, and is lowest complexity; rolling has no downtime, a small surge, medium rollback by re-rolling, exposure growing per batch, and low complexity; blue-green has no downtime, double capacity, an instant switch-back rollback, exposes all users at the switch, and medium complexity; canary has no downtime, small cost, fast rollback by setting the weight to 0%, a small exposure at first, and high complexity because it needs metrics analysis." src="../strategy-comparison-matrix.svg" /></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Recreate</th>
+<th>Rolling</th>
+<th>Blue-green</th>
+<th>Canary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Downtime</td>
+<td>Yes, seconds to minutes</td>
+<td>None if readiness is correct</td>
+<td>None</td>
+<td>None</td>
+</tr>
+<tr>
+<td>Extra capacity cost</td>
+<td>None</td>
+<td>Small (surge instances)</td>
+<td>Up to 2x during the deploy and bake</td>
+<td>Small (a few canary instances)</td>
+</tr>
+<tr>
+<td>Rollback speed</td>
+<td>Slow: full redeploy with another outage</td>
+<td>Medium: roll the old version back in</td>
+<td>Instant: switch back while blue exists</td>
+<td>Fast: weight to 0%, often automatic</td>
+</tr>
+<tr>
+<td>Risk exposure</td>
+<td>100% of users at once</td>
+<td>Grows batch by batch, with no metric gate by default</td>
+<td>100% of users at the switch</td>
+<td>1% first, grows only while metrics stay healthy</td>
+</tr>
+<tr>
+<td>Complexity</td>
+<td>Lowest</td>
+<td>Low (default in Kubernetes)</td>
+<td>Medium: two environments, switch, warm-up</td>
+<td>High: traffic routing plus metric analysis</td>
+</tr>
+<tr>
+<td>Database and sessions</td>
+<td>Breaking changes allowed in one step</td>
+<td>Two versions share data throughout: compatible schema, versioned caches, external sessions</td>
+<td>Shared database: schema compatible both ways; sessions external; idle color must not run jobs</td>
+<td>Like rolling, plus sticky assignment if behavior differs visibly</td>
+</tr>
+</tbody>
+</table>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Situation</th>
+<th>Good fit</th>
+<th>Avoid</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dev or test environment, internal tool</td>
+<td>Recreate</td>
+<td>Anything heavier</td>
+</tr>
+<tr>
+<td>Stateless API on Kubernetes, moderate risk</td>
+<td>Rolling with good readiness probes</td>
+<td>Recreate (needless downtime)</td>
+</tr>
+<tr>
+<td>Instant rollback required, budget for double capacity</td>
+<td>Blue-green</td>
+<td>Rolling (slow rollback)</td>
+</tr>
+<tr>
+<td>High traffic, high cost of a bad release</td>
+<td>Canary with automated analysis</td>
+<td>Blue-green alone (all users at once)</td>
+</tr>
+<tr>
+<td>Very low traffic (a few requests a minute)</td>
+<td>Blue-green or rolling plus strong tests; canary statistics will be weak</td>
+<td>Pure canary analysis</td>
+</tr>
+<tr>
+<td>Breaking schema change that cannot be split</td>
+<td>Recreate in a maintenance window</td>
+<td>Any strategy that runs two versions</td>
+</tr>
+<tr>
+<td>Product question ("does the new flow convert better?")</td>
+<td>A/B test behind feature flags</td>
+<td>A canary</td>
+</tr>
+</tbody>
+</table>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="a-rolling-update-in-kubernetes">A rolling update in Kubernetes<a class="headerlink" href="#a-rolling-update-in-kubernetes" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># k8s/taskflow-api-deployment.yaml</span>
+<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">apps/v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Deployment</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-api</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">replicas</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4</span>
+<span class="w">  </span><span class="nt">revisionHistoryLimit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span><span class="w">        </span><span class="c1"># old ReplicaSets kept for rollout undo</span>
+<span class="w">  </span><span class="nt">minReadySeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span><span class="w">            </span><span class="c1"># must stay ready 10 s before counting</span>
+<span class="w">  </span><span class="nt">progressDeadlineSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">300</span><span class="w">   </span><span class="c1"># mark the rollout failed after 5 min</span>
+<span class="w">  </span><span class="nt">strategy</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RollingUpdate</span>
+<span class="w">    </span><span class="nt">rollingUpdate</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">maxSurge</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">      </span><span class="nt">maxUnavailable</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+<span class="w">  </span><span class="nt">selector</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">matchLabels</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">app</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-api</span>
+<span class="w">  </span><span class="nt">template</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">metadata</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">labels</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">app</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-api</span>
+<span class="w">    </span><span class="nt">spec</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">terminationGracePeriodSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30</span>
+<span class="w">      </span><span class="nt">containers</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">api</span>
+<span class="w">          </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ghcr.io/example/taskflow-api:1.8.0</span>
+<span class="w">          </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">containerPort</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3000</span>
+<span class="w">          </span><span class="nt">readinessProbe</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">httpGet</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/readyz</span>
+<span class="w">              </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3000</span>
+<span class="w">            </span><span class="nt">periodSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+<span class="w">            </span><span class="nt">failureThreshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<span class="w">          </span><span class="nt">livenessProbe</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">httpGet</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/livez</span>
+<span class="w">              </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3000</span>
+<span class="w">            </span><span class="nt">periodSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+<span class="w">            </span><span class="nt">failureThreshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span><span class="nb">set</span><span class="w"> </span>image<span class="w"> </span>deployment/taskflow-api<span class="w"> </span><span class="nv">api</span><span class="o">=</span>ghcr.io/example/taskflow-api:1.8.1
+kubectl<span class="w"> </span>rollout<span class="w"> </span>status<span class="w"> </span>deployment/taskflow-api<span class="w"> </span>--timeout<span class="o">=</span>5m
+<span class="c1"># If it fails or misbehaves:</span>
+kubectl<span class="w"> </span>rollout<span class="w"> </span>undo<span class="w"> </span>deployment/taskflow-api
+kubectl<span class="w"> </span>rollout<span class="w"> </span><span class="nb">history</span><span class="w"> </span>deployment/taskflow-api
+</code></pre></div>
+<p><code>kubectl rollout status</code> exits non-zero when the progress deadline is
+exceeded, so a pipeline can run <code>rollout undo</code> automatically on failure.</p>
+<h3 id="blue-green-with-two-deployments-and-a-service-selector">Blue-green with two Deployments and a Service selector<a class="headerlink" href="#blue-green-with-two-deployments-and-a-service-selector" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># k8s/taskflow-api-service.yaml: the live Service selects one color</span>
+<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Service</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-api</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">selector</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">app</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-api</span>
+<span class="w">    </span><span class="nt">color</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">blue</span><span class="w">          </span><span class="c1"># switch to green to release</span>
+<span class="w">  </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">80</span>
+<span class="w">      </span><span class="nt">targetPort</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3000</span>
+<span class="nn">---</span>
+<span class="c1"># A preview Service always points at green for smoke tests</span>
+<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Service</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-api-preview</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">selector</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">app</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-api</span>
+<span class="w">    </span><span class="nt">color</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">green</span>
+<span class="w">  </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">80</span>
+<span class="w">      </span><span class="nt">targetPort</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3000</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="ch">#!/usr/bin/env bash</span>
+<span class="c1"># scripts/blue-green-switch.sh: release green, keep blue for rollback</span>
+<span class="nb">set</span><span class="w"> </span>-euo<span class="w"> </span>pipefail
+kubectl<span class="w"> </span><span class="nb">set</span><span class="w"> </span>image<span class="w"> </span>deployment/taskflow-api-green<span class="w"> </span><span class="nv">api</span><span class="o">=</span><span class="s2">"</span><span class="nv">$1</span><span class="s2">"</span>
+kubectl<span class="w"> </span>rollout<span class="w"> </span>status<span class="w"> </span>deployment/taskflow-api-green<span class="w"> </span>--timeout<span class="o">=</span>5m
+./scripts/smoke-test.sh<span class="w"> </span>http://taskflow-api-preview.default.svc.cluster.local
+kubectl<span class="w"> </span>patch<span class="w"> </span>service<span class="w"> </span>taskflow-api<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-p<span class="w"> </span><span class="s1">'{"spec":{"selector":{"app":"taskflow-api","color":"green"}}}'</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">"green is live; blue stays up for rollback"</span>
+<span class="c1"># Rollback: patch the selector back to color: blue</span>
+</code></pre></div>
+<h3 id="a-weighted-canary-with-gateway-api">A weighted canary with Gateway API<a class="headerlink" href="#a-weighted-canary-with-gateway-api" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># k8s/taskflow-api-httproute.yaml</span>
+<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gateway.networking.k8s.io/v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">HTTPRoute</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-api</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">parentRefs</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">public-gateway</span>
+<span class="w">  </span><span class="nt">hostnames</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">api.taskflow.example.com</span>
+<span class="w">  </span><span class="nt">rules</span><span class="p">:</span>
+<span class="w">    </span><span class="c1"># Staff can force the canary with a header for manual checks</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">matches</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">headers</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">x-taskflow-canary</span>
+<span class="w">              </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"always"</span>
+<span class="w">      </span><span class="nt">backendRefs</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-api-canary</span>
+<span class="w">          </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">80</span>
+<span class="w">    </span><span class="c1"># Everyone else: 90/10 split</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">backendRefs</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-api-stable</span>
+<span class="w">          </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">80</span>
+<span class="w">          </span><span class="nt">weight</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">90</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-api-canary</span>
+<span class="w">          </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">80</span>
+<span class="w">          </span><span class="nt">weight</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+</code></pre></div>
+<p>Changing the weights (and committing the change, in a GitOps setup) is
+the whole promotion step. Setting the canary weight to 0 is the rollback.</p>
+<h3 id="automated-canary-analysis-with-argo-rollouts">Automated canary analysis with Argo Rollouts<a class="headerlink" href="#automated-canary-analysis-with-argo-rollouts" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># k8s/taskflow-api-rollout.yaml</span>
+<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">argoproj.io/v1alpha1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Rollout</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-api</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">replicas</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+<span class="w">  </span><span class="nt">revisionHistoryLimit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+<span class="w">  </span><span class="nt">selector</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">matchLabels</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">app</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-api</span>
+<span class="w">  </span><span class="nt">template</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">metadata</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">labels</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">app</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-api</span>
+<span class="w">    </span><span class="nt">spec</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">containers</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">api</span>
+<span class="w">          </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ghcr.io/example/taskflow-api:1.8.0</span>
+<span class="w">          </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">containerPort</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3000</span>
+<span class="w">  </span><span class="nt">strategy</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">canary</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">canaryService</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-api-canary</span>
+<span class="w">      </span><span class="nt">stableService</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-api-stable</span>
+<span class="w">      </span><span class="nt">trafficRouting</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">istio</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">virtualService</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-api</span>
+<span class="w">            </span><span class="nt">routes</span><span class="p">:</span>
+<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">primary</span>
+<span class="w">      </span><span class="nt">analysis</span><span class="p">:</span><span class="w">                      </span><span class="c1"># runs in the background from step 1</span>
+<span class="w">        </span><span class="nt">templates</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">templateName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-canary-health</span>
+<span class="w">        </span><span class="nt">startingStep</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">        </span><span class="nt">args</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">service</span>
+<span class="w">            </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-api-canary</span>
+<span class="w">      </span><span class="nt">steps</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">setWeight</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">pause</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> duration</span><span class="p">:</span><span class="w"> </span><span class="nv">10m</span><span class="w"> </span><span class="p p-Indicator">}</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">setWeight</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">pause</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> duration</span><span class="p">:</span><span class="w"> </span><span class="nv">10m</span><span class="w"> </span><span class="p p-Indicator">}</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">setWeight</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">50</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">pause</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> duration</span><span class="p">:</span><span class="w"> </span><span class="nv">20m</span><span class="w"> </span><span class="p p-Indicator">}</span>
+<span class="nn">---</span>
+<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">argoproj.io/v1alpha1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AnalysisTemplate</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-canary-health</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">args</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">service</span>
+<span class="w">  </span><span class="nt">metrics</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">error-rate</span>
+<span class="w">      </span><span class="nt">interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2m</span>
+<span class="w">      </span><span class="nt">failureLimit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">      </span><span class="nt">successCondition</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">result[0] &lt; 0.01</span>
+<span class="w">      </span><span class="nt">provider</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">prometheus</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://prometheus.monitoring.svc.cluster.local:9090</span>
+<span class="w">          </span><span class="nt">query</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">            </span><span class="no">sum(rate(http_requests_total{service="{{args.service}}",code=~"5.."}[2m]))</span>
+<span class="w">            </span><span class="no">/</span>
+<span class="w">            </span><span class="no">sum(rate(http_requests_total{service="{{args.service}}"}[2m]))</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">p99-latency-seconds</span>
+<span class="w">      </span><span class="nt">interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2m</span>
+<span class="w">      </span><span class="nt">failureLimit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">      </span><span class="nt">successCondition</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">result[0] &lt; 0.5</span>
+<span class="w">      </span><span class="nt">provider</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">prometheus</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://prometheus.monitoring.svc.cluster.local:9090</span>
+<span class="w">          </span><span class="nt">query</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">            </span><span class="no">histogram_quantile(0.99,</span>
+<span class="w">              </span><span class="no">sum by (le) (rate(http_request_duration_seconds_bucket{service="{{args.service}}"}[2m])))</span>
+</code></pre></div>
+<p>If either metric fails more than once, Argo Rollouts aborts: traffic goes
+back to the stable Service and the canary pods scale down. Fixed
+thresholds are a simple start; comparing against the stable version
+(baseline) is more robust when error rates vary by time of day.</p>
+<h3 id="weighted-target-groups-on-an-aws-application-load-balancer">Weighted target groups on an AWS Application Load Balancer<a class="headerlink" href="#weighted-target-groups-on-an-aws-application-load-balancer" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Send 10% of the listener's traffic to the green target group</span>
+aws<span class="w"> </span>elbv2<span class="w"> </span>modify-listener<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--listener-arn<span class="w"> </span><span class="s2">"&lt;listener-arn&gt;"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--default-actions<span class="w"> </span><span class="s1">'[{</span>
+<span class="s1">    "Type": "forward",</span>
+<span class="s1">    "ForwardConfig": {</span>
+<span class="s1">      "TargetGroups": [</span>
+<span class="s1">        { "TargetGroupArn": "&lt;blue-target-group-arn&gt;",  "Weight": 90 },</span>
+<span class="s1">        { "TargetGroupArn": "&lt;green-target-group-arn&gt;", "Weight": 10 }</span>
+<span class="s1">      ],</span>
+<span class="s1">      "TargetGroupStickinessConfig": { "Enabled": true, "DurationSeconds": 3600 }</span>
+<span class="s1">    }</span>
+<span class="s1">  }]'</span>
+</code></pre></div>
+<p>The same call with weights 0 and 100 completes a blue-green switch; with
+100 and 0 it rolls back. Stickiness keeps each client on one target group
+for an hour so a user does not bounce between versions.</p>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Get readiness and graceful shutdown right first; every strategy depends
+  on them.</li>
+<li>Default to rolling for low-risk services, and add canary analysis where
+  a bad release is expensive.</li>
+<li>Compare canaries with a baseline running at the same time, on
+  user-facing metrics, and automate the abort.</li>
+<li>Start canaries small (1% or internal users), then increase in steps
+  that leave enough requests for a meaningful comparison.</li>
+<li>Keep the previous version runnable (old ReplicaSet, blue environment,
+  previous image) for the whole bake period.</li>
+<li>Make every schema, cache, event, and API change compatible with both
+  versions during the rollout and rollback window.</li>
+<li>Avoid DNS for fast traffic shifts; use load balancer, gateway, or mesh
+  weights.</li>
+<li>Turn off schedulers in idle environments and version your cache keys.</li>
+<li>Run one canary at a time per service, so a failure is attributable.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>A rolling deploy took the service down even though pods were
+  "ready".</strong>
+  <em>Detect:</em> errors climb with each batch; pods show Ready while the app
+  fails requests. <em>Cause:</em> the readiness probe returns 200 before the app
+  can serve (database not connected, cache not warm). <em>Fix:</em> make
+  readiness check what requests need, add <code>minReadySeconds</code>, and gate the
+  rollout on error rate, not just readiness.</li>
+<li><strong>The canary looked healthy and the full rollout still failed.</strong>
+  <em>Detect:</em> errors appear only above 50% traffic. <em>Cause:</em> a capacity or
+  shared-resource problem (connection pool, cache stampede, lock
+  contention) that 1% of traffic could not reveal. <em>Fix:</em> add a larger
+  step with a longer soak, and include saturation metrics in the
+  analysis.</li>
+<li><strong>After a blue-green switch, users were logged out.</strong>
+  <em>Detect:</em> a spike in sign-ins and session-not-found errors at the switch
+  time. <em>Cause:</em> sessions stored in instance memory, or a session format
+  change. <em>Fix:</em> external session store, format compatible across
+  versions.</li>
+<li><strong>The rollback took 20 minutes.</strong>
+  <em>Detect:</em> traffic graphs show the old version receiving requests only
+  slowly after the rollback command. <em>Cause:</em> the switch used DNS and
+  clients cached the record, or blue had been scaled to zero. <em>Fix:</em> shift
+  with load balancer weights and keep blue warm during the bake period.</li>
+<li><strong>Nightly emails went out twice.</strong>
+  <em>Detect:</em> duplicate job logs from two deployments. <em>Cause:</em> the idle
+  blue environment still ran its scheduler. <em>Fix:</em> enable schedulers only
+  in the live color or run jobs as a separate single-instance workload.</li>
+<li><strong>Old instances crash during a rolling deploy.</strong>
+  <em>Detect:</em> errors only on v1 pods, parsing cache entries or messages.
+  <em>Cause:</em> v2 writes data in a format v1 cannot read. <em>Fix:</em> version cache
+  keys, make consumers tolerant of unknown fields, and split format
+  changes across releases.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Recreate:</strong> stop all old instances, then start new ones.</li>
+<li><strong>Rolling update:</strong> replace instances in batches.</li>
+<li><strong>maxSurge / maxUnavailable:</strong> how far above or below the desired
+  instance count a rolling update may go.</li>
+<li><strong>Blue-green deployment:</strong> two full environments with a router switch.</li>
+<li><strong>Canary:</strong> a small, measured share of traffic sent to a new version.</li>
+<li><strong>Baseline:</strong> the old version, running at the same time, used for
+  comparison.</li>
+<li><strong>Canary analysis:</strong> the automated comparison that decides promote or
+  abort.</li>
+<li><strong>Bake time:</strong> how long a version runs at a step before moving on.</li>
+<li><strong>Weighted routing:</strong> splitting traffic between targets by configured
+  weights.</li>
+<li><strong>Stickiness:</strong> keeping a client on the same target across requests.</li>
+<li><strong>A/B test:</strong> a controlled experiment between product variants,
+  measured on user behavior.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Treating a rolling update as safe by default; without metric gates it
+  rolls a bad version to everyone.</li>
+<li>Running a canary and not looking at it, or comparing it with last
+  week's numbers.</li>
+<li>Expecting statistical certainty from a 1% canary on a low-traffic
+  service.</li>
+<li>Thinking blue-green makes database changes reversible.</li>
+<li>Using DNS for canaries or fast rollbacks.</li>
+<li>Calling an experiment a canary (or a canary an experiment) and using
+  the wrong metrics and duration.</li>
+<li>Forgetting long-lived connections, schedulers, caches, and queue
+  consumers when two versions run at once.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>What do <code>maxSurge</code> and <code>maxUnavailable</code> control, and what happens with
+   <code>maxSurge: 1, maxUnavailable: 0</code> and four replicas?</li>
+<li>Why does a Kubernetes rolling update not roll back automatically, and
+   what does <code>progressDeadlineSeconds</code> do?</li>
+<li>Name three things that must stay compatible when blue and green share
+   one database.</li>
+<li>Why should a canary be compared with a baseline running at the same
+   time rather than with the previous day?</li>
+<li>A service handles 50 requests per second with a 0.5% error rate. A
+   canary at 5% runs for 10 minutes. How many requests does it see, and
+   roughly how many errors are expected if it is healthy? Could it detect
+   an increase to 1%?</li>
+<li>Why is DNS a poor mechanism for a 1% canary or a fast rollback?</li>
+<li>Give three differences between a canary and an A/B test.</li>
+<li>Which strategy would you choose for a breaking schema change that
+   cannot be split, and why?</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://martinfowler.com/bliki/BlueGreenDeployment.html">Martin Fowler: BlueGreenDeployment</a></li>
+<li><a href="https://martinfowler.com/bliki/CanaryRelease.html">Martin Fowler (Danilo Sato): CanaryRelease</a></li>
+<li><a href="https://sre.google/workbook/canarying-releases/">Google SRE Workbook: Canarying releases</a></li>
+<li><a href="https://kubernetes.io/docs/concepts/workloads/controllers/deployment/">Kubernetes: Deployments and rolling updates</a></li>
+<li><a href="https://argo-rollouts.readthedocs.io/en/stable/features/canary/">Argo Rollouts: Canary strategy</a></li>
+<li><a href="https://gateway-api.sigs.k8s.io/guides/traffic-splitting/">Gateway API: Traffic splitting</a></li>
+<li>Next: <a href="../advanced-deployment-patterns/">advanced deployment patterns</a>. Back to the
+  <a href="../">deployment strategies overview</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../deploying-backend-services/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Deploying Backend Services">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Deploying Backend Services</span>
+      </a>
+    
+    
+      <a href="../advanced-deployment-patterns/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: Advanced Deployment Patterns">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">Advanced Deployment Patterns</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

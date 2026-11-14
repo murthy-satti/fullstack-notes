@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="448" viewBox="0 0 860 448" role="img" aria-labelledby="rjs-title rjs-desc">
+  <title id="rjs-title">States of a resumable meeting-notes summary job</title>
+  <desc id="rjs-desc">The client posts to the note's summary endpoint and receives 202 Accepted with a job ID; the same note revision always maps to the same job through an idempotency key, and the client polls the job endpoint for status and progress. The job starts queued. A worker claims it with an atomic update that sets a 60-second lease and increments attempts, moving it to running. While running, the worker saves a checkpoint after each chunk and renews the lease. When all chunks are done it combines them and the job becomes succeeded. If a chunk fails, the job returns to queued and can be retried after an exponential backoff; when the fifth attempt fails, the job becomes failed. If a worker crashes mid-job, its lease expires after 60 seconds, the next worker claims the job and resumes at the number of saved partial summaries, so no chunk is summarized or paid for twice. The job document itself is the checkpoint, holding status, lease owner, lease expiry, attempts, total chunks, the partial summaries, and the idempotency key.</desc>
+  <defs>
+    <marker id="rjs-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 8 4 0 8z" fill="#40566b"/></marker>
+    <marker id="rjs-arrow-async" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 8 4 0 8z" fill="#60788d"/></marker>
+  </defs>
+  <rect width="860" height="448" rx="14" fill="#f5f7fb"/>
+  <g font-family="Arial, sans-serif">
+    <text x="30" y="32" font-size="15" font-weight="bold" fill="#36424e">A resumable summary job: leases, checkpoints, retries</text>
+
+    <rect x="30" y="70" width="220" height="132" rx="8" fill="#fff0d9" stroke="#bd7a20" stroke-width="1.5"/>
+    <text x="140" y="94" font-size="14" font-weight="bold" fill="#66400f" text-anchor="middle">Client and API</text>
+    <text x="44" y="118" font-size="11.5" fill="#66400f">POST /notes/:id/summary</text>
+    <text x="44" y="135" font-size="11.5" fill="#66400f">returns 202 and a jobId;</text>
+    <text x="44" y="152" font-size="11.5" fill="#66400f">same revision, same job</text>
+    <text x="44" y="176" font-size="11.5" fill="#66400f">GET /jobs/:id returns</text>
+    <text x="44" y="193" font-size="11.5" fill="#66400f">status and done/total</text>
+    <line x1="250" y1="108" x2="288" y2="108" stroke="#40566b" stroke-width="1.6" marker-end="url(#rjs-arrow)"/>
+
+    <rect x="290" y="84" width="120" height="48" rx="24" fill="#e5efff" stroke="#4774aa" stroke-width="1.5"/>
+    <text x="350" y="113" font-size="14" font-weight="bold" fill="#263e5a" text-anchor="middle">queued</text>
+    <rect x="500" y="84" width="130" height="48" rx="24" fill="#f0e9fb" stroke="#8062a8" stroke-width="1.5"/>
+    <text x="565" y="113" font-size="14" font-weight="bold" fill="#463365" text-anchor="middle">running</text>
+    <rect x="710" y="84" width="120" height="48" rx="24" fill="#e7f3e9" stroke="#53845b" stroke-width="1.5"/>
+    <text x="770" y="113" font-size="14" font-weight="bold" fill="#294a2e" text-anchor="middle">succeeded</text>
+    <rect x="710" y="232" width="120" height="48" rx="24" fill="#fbe9e7" stroke="#b5524b" stroke-width="1.5"/>
+    <text x="770" y="261" font-size="14" font-weight="bold" fill="#6e2a24" text-anchor="middle">failed</text>
+
+    <line x1="410" y1="108" x2="498" y2="108" stroke="#40566b" stroke-width="1.6" marker-end="url(#rjs-arrow)"/>
+    <text x="455" y="66" font-size="11.5" fill="#36424e" text-anchor="middle">claim: lease 60 s,</text>
+    <text x="455" y="80" font-size="11.5" fill="#36424e" text-anchor="middle">attempts + 1</text>
+    <path d="M545 84 C545 52 585 52 585 82" fill="none" stroke="#40566b" stroke-width="1.6" marker-end="url(#rjs-arrow)"/>
+    <text x="640" y="52" font-size="11.5" fill="#36424e">checkpoint each chunk,</text>
+    <text x="640" y="66" font-size="11.5" fill="#36424e">renew the lease</text>
+    <line x1="630" y1="108" x2="708" y2="108" stroke="#40566b" stroke-width="1.6" marker-end="url(#rjs-arrow)"/>
+    <rect x="636" y="112" width="66" height="18" rx="4" fill="#f5f7fb"/>
+    <text x="669" y="125" font-size="11" fill="#36424e" text-anchor="middle">all done</text>
+
+    <path d="M545 132 C545 186 350 186 350 136" fill="none" stroke="#40566b" stroke-width="1.6" marker-end="url(#rjs-arrow)"/>
+    <rect x="332" y="182" width="232" height="20" rx="4" fill="#f5f7fb"/>
+    <text x="448" y="196" font-size="11.5" fill="#36424e" text-anchor="middle">chunk failed: retry after backoff</text>
+    <line x1="615" y1="132" x2="708" y2="248" stroke="#40566b" stroke-width="1.6" marker-end="url(#rjs-arrow)"/>
+    <text x="766" y="186" font-size="11.5" fill="#36424e" text-anchor="middle">fifth attempt</text>
+    <text x="766" y="200" font-size="11.5" fill="#36424e" text-anchor="middle">failed</text>
+
+    <rect x="250" y="232" width="410" height="80" rx="8" fill="#fff0d9" stroke="#bd7a20" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <text x="264" y="252" font-size="13" font-weight="bold" fill="#66400f">Worker crashed mid-job</text>
+    <text x="264" y="270" font-size="11.5" fill="#66400f">its lease expires after 60 s; the next worker claims</text>
+    <text x="264" y="286" font-size="11.5" fill="#66400f">the job and resumes at partials.length, so no chunk</text>
+    <text x="264" y="302" font-size="11.5" fill="#66400f">is summarized, or paid for, twice</text>
+    <line x1="640" y1="232" x2="612" y2="136" stroke="#60788d" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#rjs-arrow-async)"/>
+
+    <rect x="30" y="332" width="800" height="76" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="1.5"/>
+    <text x="44" y="354" font-size="13" font-weight="bold" fill="#263e5a">The job document is the checkpoint</text>
+    <text x="44" y="376" font-size="11.5" fill="#263e5a">{ status: "running", leaseOwner: "worker-a", leaseUntil, attempts: 2, totalChunks: 12,</text>
+    <text x="56" y="394" font-size="11.5" fill="#263e5a">partials: ["s0", "s1", "s2"], idempotencyKey: "w1:note-7:3" }</text>
+
+    <text x="30" y="434" font-size="13" fill="#40566b">Claim with a lease, save progress after every step, and let any worker finish what another started.</text>
+  </g>
+</svg>

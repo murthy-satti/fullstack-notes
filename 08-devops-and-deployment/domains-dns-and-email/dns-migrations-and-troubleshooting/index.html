@@ -1,0 +1,4615 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../connecting-domains-to-hosting/">
+      
+      
+        <link rel="next" href="../cdn-setup-and-edge-caching/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>DNS Migrations and Troubleshooting - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#dns-migrations-and-troubleshooting" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              DNS Migrations and Troubleshooting
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../05-application-architecture/" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../06-ai-and-machine-learning/" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+          <span class="md-ellipsis">&larr; Back to DevOps</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../05-application-architecture/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../06-ai-and-machine-learning/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI and Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
+        
+          
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-label="DevOps module lessons" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+                  <span class="md-ellipsis">&larr; Back to DevOps</span>
+                </a>
+              
+            </div>
+          
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                  
+  
+  
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+    
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_11" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_11" id="__nav_9_11_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Domains, DNS and Email
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_11_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_11">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Domains, DNS and Email
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_11_2" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_11_2" id="__nav_9_11_2_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Foundations
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_11_2_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_11_2">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Foundations
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../domains-and-dns-records/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Domains and DNS Records
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_11_3" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_11_3" id="__nav_9_11_3_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Web Traffic
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_11_3_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_11_3">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Web Traffic
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../connecting-domains-to-hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Connecting Domains to Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DNS Migrations and Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DNS Migrations and Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#propagation-is-cache-expiry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "Propagation" is cache expiry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changing-a-record-with-zero-downtime" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changing a record with zero downtime
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#moving-a-zone-to-a-new-dns-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Moving a zone to a new DNS provider
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#asking-the-right-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Asking the right server
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-troubleshooting-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A troubleshooting flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#failure-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Failure patterns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#testing-the-new-target-before-the-switch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing the new target before the switch
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#walking-the-delegation-with-dig-trace" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Walking the delegation with dig +trace
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-are-different-resolvers-seeing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What are different resolvers seeing?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#comparing-two-providers-before-a-cutover" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comparing two providers before a cutover
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#one-source-of-truth-for-both-providers-dnscontrol" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        One source of truth for both providers (DNSControl)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#running-dns-changes-through-ci" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running DNS changes through CI
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cdn-setup-and-edge-caching/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CDN Setup and Edge Caching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_11_4" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_11_4" id="__nav_9_11_4_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Email
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_11_4_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_11_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Email
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../email-deliverability-spf-dkim-dmarc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Email Deliverability: SPF, DKIM and DMARC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#propagation-is-cache-expiry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "Propagation" is cache expiry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changing-a-record-with-zero-downtime" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changing a record with zero downtime
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#moving-a-zone-to-a-new-dns-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Moving a zone to a new DNS provider
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#asking-the-right-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Asking the right server
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-troubleshooting-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A troubleshooting flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#failure-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Failure patterns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#testing-the-new-target-before-the-switch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing the new target before the switch
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#walking-the-delegation-with-dig-trace" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Walking the delegation with dig +trace
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-are-different-resolvers-seeing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What are different resolvers seeing?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#comparing-two-providers-before-a-cutover" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comparing two providers before a cutover
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#one-source-of-truth-for-both-providers-dnscontrol" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        One source of truth for both providers (DNSControl)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#running-dns-changes-through-ci" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running DNS changes through CI
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="dns-migrations-and-troubleshooting">DNS Migrations and Troubleshooting<a class="headerlink" href="#dns-migrations-and-troubleshooting" title="Permanent link">&para;</a></h1>
+<p>Sooner or later TaskFlow moves: the API to a new load balancer, the web
+app to another platform, or the whole zone from the registrar's free DNS
+to Route 53 or Cloudflare. This lesson turns DNS caching into a runbook
+for changing records with zero downtime, moving a zone to a new provider
+without losing mail or certificates, and handling DNSSEC during a move.
+It then covers the tools for finding out what DNS is really answering
+(<code>dig +trace</code>, asking authoritative servers directly, comparing public
+resolvers) and a troubleshooting flow for the failures you will meet.</p>
+<p>Record types and TTL basics are covered in
+<a href="../domains-and-dns-records/">domains and DNS records</a>; moving traffic
+between regions with health-checked DNS is covered in
+<a href="../../load-balancing-and-multi-server/global-traffic-management/">global traffic management</a>.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>DNS changes are rare, so teams are out of practice, and they are
+unforgiving: a wrong answer is cached by thousands of resolvers you do
+not control, for as long as the TTL you set. A nameserver change that
+forgets the MX records breaks inbound mail for days; a DNSSEC key that
+does not match its DS record makes the whole domain unresolvable for
+validating resolvers; and because the <code>.com</code> delegation is cached for
+two days, there is no quick undo. The outages below show that when DNS
+fails, everything behind it fails at once, including the tools you would
+use to fix it.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Meta (October 2021).</strong> In
+  <a href="https://engineering.fb.com/2021/10/05/networking-traffic/outage-details/">More details about the October 4 outage</a>,
+  Meta explains that when its backbone failed, its DNS servers withdrew
+  their BGP route announcements because they could not reach the data
+  centers. "The end result was that our DNS servers became unreachable
+  even though they were still operational," which took every Meta service
+  off the internet and slowed the recovery itself.</li>
+<li><strong>AWS (October 2025).</strong> The
+  <a href="https://aws.amazon.com/message/101925/">summary of the DynamoDB disruption in us-east-1</a>
+  describes a race condition in DynamoDB's DNS automation that left the
+  regional endpoint with an empty DNS record, so clients could not
+  connect. DNS was restored in under three hours, but cached answers had
+  to expire before everyone recovered, and AWS disabled the automation
+  worldwide until it was fixed.</li>
+<li><strong>Cloudflare 1.1.1.1 (July 2025).</strong> The
+  <a href="https://blog.cloudflare.com/cloudflare-1-1-1-1-incident-on-july-14-2025/">incident report</a>
+  explains how a configuration error withdrew the resolver's prefixes for
+  62 minutes. Users whose devices relied only on 1.1.1.1 lost all name
+  resolution: a reminder that resolvers are dependencies too, and that
+  checking from several resolvers is part of every diagnosis.</li>
+<li><strong>Route 53 zone import.</strong> The Route 53 guide on
+  <a href="https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resource-record-sets-creating-import.html">importing a zone file</a>
+  lists the rules that trip up migrations: at most 1,000 records per
+  import, the SOA and apex NS records are ignored, names without a
+  trailing dot get the zone appended (creating
+  <code>mail.example.com.example.com</code>), and Route 53 cannot export zone files.</li>
+</ul>
+<p><strong>Popular tools and providers:</strong> <code>dig</code>, <code>delv</code>, <code>kdig</code>, <code>drill</code>,
+<code>nslookup</code> and <code>Resolve-DnsName</code>, DNSViz, DNSControl and OctoDNS for DNS
+as code, Terraform, and the cache flush pages of Google Public DNS and
+Cloudflare's 1.1.1.1.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="propagation-is-cache-expiry">"Propagation" is cache expiry<a class="headerlink" href="#propagation-is-cache-expiry" title="Permanent link">&para;</a></h3>
+<p>Nothing is pushed anywhere when you change a record. The authoritative
+servers serve the new data within seconds; every recursive resolver
+keeps its cached copy until that copy's TTL runs out, then asks again.
+Because each resolver cached the record at a different moment, users see
+a mix of old and new answers until the last cached copy expires. Several
+caches are involved:</p>
+<table>
+<thead>
+<tr>
+<th>Cache</th>
+<th>Controlled by</th>
+<th>Typical lifetime</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Record answers in recursive resolvers</td>
+<td>The record's TTL</td>
+<td>Your TTL, sometimes clamped by the resolver</td>
+</tr>
+<tr>
+<td>"Does not exist" answers</td>
+<td>SOA TTL and minimum (RFC 2308)</td>
+<td>Often minutes to an hour</td>
+</tr>
+<tr>
+<td>The delegation (NS records at the parent)</td>
+<td>The TLD registry</td>
+<td>172,800 s (2 days) for <code>.com</code></td>
+</tr>
+<tr>
+<td>DS records at the parent</td>
+<td>The TLD registry</td>
+<td>86,400 s (1 day) for <code>.com</code></td>
+</tr>
+<tr>
+<td>Operating system and browser caches</td>
+<td>OS and browser</td>
+<td>Short, but they exist</td>
+</tr>
+<tr>
+<td>Application caches</td>
+<td>The runtime and your code</td>
+<td>Varies; long-lived processes may keep connections to old IPs</td>
+</tr>
+</tbody>
+</table>
+<p>Two consequences shape every runbook. A low TTL only helps if it was
+lowered at least one <em>old</em> TTL before the change. And a nameserver
+change cannot be rolled back quickly: whatever you publish at the
+registry, many resolvers keep using the previous delegation for up to
+two days.</p>
+<h3 id="changing-a-record-with-zero-downtime">Changing a record with zero downtime<a class="headerlink" href="#changing-a-record-with-zero-downtime" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: a timeline for moving api.example.com from an old to a new load balancer. Two days before, the TTL is lowered from 86400 to 300 seconds; for the next day, resolvers that cached the old answer still hold it for up to the old TTL. Before the change, the new target is tested with curl --resolve using the real hostname. At T0 the record is changed. During the next 300 seconds resolvers switch one by one as their cached copies expire, so both the old and new load balancers receive traffic; the old one must stay up and correct. After traffic on the old target falls to zero, plus a safety margin of a day for misbehaving caches, the TTL is raised back to 3600 and the old target is removed." src="../dns-record-change-timeline.svg" /></p>
+<ol>
+<li><strong>Lower the TTL early.</strong> If the record's TTL is 86400, lower it to
+   300 at least a day before the change (better two). Until the old TTL
+   has passed, some resolvers still hold the long-lived copy.</li>
+<li><strong>Prepare the new target fully.</strong> It must serve the same hostname:
+   certificate, virtual host or alternate domain name, firewall rules,
+   and capacity.</li>
+<li><strong>Test it before DNS points at it.</strong> <code>curl --resolve</code> sends a real
+   request with the real hostname (and SNI) to the new address.</li>
+<li><strong>Change the record</strong>, ideally through code review.</li>
+<li><strong>Run old and new in parallel.</strong> For at least one new TTL, and in
+   practice until the old target's traffic reaches zero, both serve
+   users. The old target must keep working (and keep its certificate).</li>
+<li><strong>Verify</strong> on the authoritative servers, on several public resolvers,
+   over IPv4 and IPv6, and in your monitoring.</li>
+<li><strong>Raise the TTL</strong> again, then decommission the old target (and remove
+   any DNS records that still point at it).</li>
+</ol>
+<h3 id="moving-a-zone-to-a-new-dns-provider">Moving a zone to a new DNS provider<a class="headerlink" href="#moving-a-zone-to-a-new-dns-provider" title="Permanent link">&para;</a></h3>
+<p>Changing nameservers moves <em>every</em> record at once, so the work is in
+making the new provider an exact copy before anyone notices.</p>
+<p><img alt="Diagram: a nameserver migration from an old to a new DNS provider. Step 1, export or list every record at the old provider and import it into the new one, translating provider-specific records such as aliases. Step 2, compare the answers of both providers' nameservers for every name and type. Step 3, if DNSSEC is on, remove the DS record at the registrar and wait at least one day. Step 4, change the nameservers at the registrar. For up to two days afterwards, resolvers still holding the old .com delegation keep asking the old provider while others ask the new one, so both zones must stay identical: changes go to both, or are frozen. Step 5, after the delegation TTL plus a margin, query volume at the old provider falls to zero, the new provider can sign the zone and publish a new DS, and the old zone is deleted." src="../nameserver-migration-cutover.svg" /></p>
+<ol>
+<li><strong>Inventory everything.</strong> Export a zone file where the old provider
+   offers one, or list records through its API
+   (<code>aws route53 list-resource-record-sets</code> for Route 53, which cannot
+   export zone files). Include the records nobody remembers: DKIM selectors, the
+   DMARC record, platform verification tokens, ACM validation CNAMEs,
+   CAA, SRV, wildcards, and NS records that delegate subdomains to other
+   providers.</li>
+<li><strong>Translate provider-specific records.</strong> Route 53 alias records,
+   Cloudflare proxied records, and flattened CNAMEs have no standard zone
+   file form. Recreate them with the new provider's equivalent.</li>
+<li><strong>Import and compare.</strong> Query the new provider's nameservers directly
+   (<code>dig @&lt;new-ns&gt; ... +norecurse</code>) for every name and type and diff
+   against the old ones (a script follows below).</li>
+<li><strong>Handle DNSSEC first.</strong> Either remove the DS record at the registrar
+   and wait out the DS record's TTL, a day or more, before the move (the
+   simple path; Route 53's domain-transfer guide asks for 24 hours), or
+   use a multi-signer setup (RFC 8901) in
+   which both providers' keys are published. Never change nameservers
+   while a DS record points at keys the new provider does not have.</li>
+<li><strong>Change the nameservers at the registrar.</strong></li>
+<li><strong>Keep the old zone serving identical data</strong> for at least two days
+   (the <code>.com</code> delegation TTL) plus a margin; a week is common. Freeze
+   changes, or apply each change to both providers, which DNS as code
+   makes easy.</li>
+<li><strong>Verify and finish.</strong> <code>dig +trace</code> shows the new nameservers,
+   query counts at the old provider fall to zero, the new provider signs
+   the zone and you publish its DS, then delete the old zone.</li>
+</ol>
+<p>Moving the <em>registration</em> to another registrar is a separate operation
+that does not need to touch DNS; see
+<a href="../domains-and-dns-records/">domains and DNS records</a> for its rules.</p>
+<h3 id="asking-the-right-server">Asking the right server<a class="headerlink" href="#asking-the-right-server" title="Permanent link">&para;</a></h3>
+<p>Most DNS confusion comes from asking the wrong question. Separate three:</p>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Command</th>
+<th>Tells you</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>What does my zone say?</td>
+<td><code>dig @ns1.dns-host.example.net api.example.com +norecurse</code></td>
+<td>The authoritative truth, no caches involved</td>
+</tr>
+<tr>
+<td>Where does the world look for my zone?</td>
+<td><code>dig +trace api.example.com</code></td>
+<td>The delegation at every level, from the root down</td>
+</tr>
+<tr>
+<td>What are users getting right now?</td>
+<td><code>dig @1.1.1.1 api.example.com</code> (and <code>8.8.8.8</code>, <code>9.9.9.9</code>, your office resolver)</td>
+<td>Cached answers and the TTL they have left</td>
+</tr>
+</tbody>
+</table>
+<p>Supporting tools:</p>
+<ul>
+<li><code>dig +dnssec</code> shows signatures; <code>dig +cd</code> (checking disabled) asks a
+  validating resolver to skip validation. An answer that fails normally
+  but works with <code>+cd</code> is a DNSSEC problem. <code>delv</code> validates locally and
+  explains why a chain fails, and DNSViz draws the chain.</li>
+<li><code>dig -x 198.51.100.20</code> checks reverse DNS (PTR).</li>
+<li>On Windows, <code>Resolve-DnsName -Server 8.8.8.8 -Name api.example.com</code>
+  and <code>nslookup api.example.com 8.8.8.8</code> do the same jobs;
+  <code>ipconfig /flushdns</code> clears the local cache. On Linux with
+  systemd-resolved, <code>resolvectl flush-caches</code>; on macOS,
+  <code>sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder</code>.</li>
+<li>Google Public DNS and Cloudflare's 1.1.1.1 each have a page to flush a
+  name from their own cache. That fixes those resolvers only; every other
+  resolver still waits for its TTL.</li>
+</ul>
+<h3 id="a-troubleshooting-flow">A troubleshooting flow<a class="headerlink" href="#a-troubleshooting-flow" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: a flowchart for a name that does not resolve or resolves wrongly. First question: does an authoritative server return the right answer when asked directly with norecurse? If not, fix the zone: a typo, a record created under the zone name twice, a CNAME conflict, or a missing record. If yes, second question: does the delegation from the parent point at those servers, as dig +trace shows? If not, fix the nameservers at the registrar or the lame server. If yes, third question: do only validating resolvers return SERVFAIL while dig +cd works? If yes, it is DNSSEC: the DS record and the zone's keys disagree. If not, fourth question: do public resolvers still return the old answer with TTL remaining? If yes, wait for the TTL or flush public caches, and lower TTLs earlier next time. If not, DNS is fine and the problem is in another layer: TLS, the host's configuration, a firewall, or the application." src="../dns-troubleshooting-flowchart.svg" /></p>
+<p>Work from the source outward: first prove the zone is right, then the
+delegation, then DNSSEC, then caches. Only when all four are clean is
+the problem somewhere else; the
+<a href="../../linux-server-operations/troubleshooting-cpu-memory-disk-and-network/">troubleshooting lesson for Linux servers</a>
+covers the network checks that come next.</p>
+<h3 id="failure-patterns">Failure patterns<a class="headerlink" href="#failure-patterns" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Usual cause</th>
+<th>How to confirm</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mail stops after a nameserver change</td>
+<td>MX, SPF, or DKIM records were not copied</td>
+<td><code>dig @&lt;new-ns&gt; example.com MX +norecurse</code> is empty</td>
+</tr>
+<tr>
+<td>The site works but certificate renewal fails</td>
+<td>CAA does not list the CA, or an ACM validation CNAME was deleted</td>
+<td><code>dig example.com CAA</code>; the CA or ACM error message</td>
+</tr>
+<tr>
+<td>The console refuses a record, or mail breaks after adding one</td>
+<td>A CNAME at the apex or next to other records</td>
+<td>The record list at that name</td>
+</tr>
+<tr>
+<td>A record exists but nobody can find it</td>
+<td>The zone name was appended: <code>_dmarc.example.com.example.com</code></td>
+<td><code>dig</code> the doubled name</td>
+</tr>
+<tr>
+<td><code>SERVFAIL</code> for some users only</td>
+<td>DNSSEC: DS and keys disagree</td>
+<td><code>dig +cd</code> works; DNSViz shows the break</td>
+</tr>
+<tr>
+<td>A new subdomain is <code>NXDOMAIN</code> for some users</td>
+<td>Negative caching of a lookup made before the record existed</td>
+<td>The SOA minimum and TTL; it clears by itself</td>
+</tr>
+<tr>
+<td>Half the answers old, half new, for days</td>
+<td>Two delegated nameserver sets with different data</td>
+<td><code>dig @</code> each NS listed in <code>dig +trace</code></td>
+</tr>
+<tr>
+<td>Some clients use the old IP for hours</td>
+<td>Long-lived processes or connection pools that resolved once</td>
+<td>Client logs; restart or add connection max age</td>
+</tr>
+</tbody>
+</table>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Change</th>
+<th>Approach</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Point one name at a new target</td>
+<td>Lower the TTL early, test with <code>curl --resolve</code>, change, run old and new in parallel</td>
+</tr>
+<tr>
+<td>Move a zone to another DNS provider</td>
+<td>Full migration: inventory, translate, compare, DNSSEC first, keep both zones identical for the delegation TTL</td>
+</tr>
+<tr>
+<td>Move only the registration</td>
+<td>Registrar transfer; DNS does not change (move DNS first if the old registrar hosts it)</td>
+</tr>
+<tr>
+<td>Survive a DNS provider outage</td>
+<td>Two providers serving the same zone at all times, kept in sync by DNS as code, prepared in advance</td>
+</tr>
+<tr>
+<td>Fail over between regions automatically</td>
+<td>Health-checked DNS routing, covered in <a href="../../load-balancing-and-multi-server/global-traffic-management/">global traffic management</a></td>
+</tr>
+</tbody>
+</table>
+<p>When not to:</p>
+<ul>
+<li>Do not keep very low TTLs permanently "just in case". They add query
+  volume and cost, and make your DNS provider's outages hit users
+  sooner.</li>
+<li>Do not plan to "switch nameservers" during an outage: the delegation
+  is cached for days. Redundant DNS must already be in place.</li>
+<li>Do not change nameservers, DNSSEC, and records in the same step;
+  each one has its own cache and its own rollback.</li>
+</ul>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="testing-the-new-target-before-the-switch">Testing the new target before the switch<a class="headerlink" href="#testing-the-new-target-before-the-switch" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Send a real request for api.example.com to the NEW load balancer's address</span>
+curl<span class="w"> </span>-sv<span class="w"> </span>--resolve<span class="w"> </span>api.example.com:443:198.51.100.40<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>https://api.example.com/healthz<span class="w"> </span>-o<span class="w"> </span>/dev/null<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-E<span class="w"> </span><span class="s1">'subject:|subjectAltName|HTTP/'</span>
+</code></pre></div>
+<p><code>--resolve host:port:address</code> overrides DNS for that one request, so TLS
+uses the real server name and the request carries the real <code>Host</code>
+header. A certificate or virtual host problem shows up here, not in
+front of users.</p>
+<h3 id="walking-the-delegation-with-dig-trace">Walking the delegation with dig +trace<a class="headerlink" href="#walking-the-delegation-with-dig-trace" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>; Example output of: dig +trace www.example.com (trimmed, documentation names)
+.                    518400  IN  NS     a.root-servers.net.
+com.                 172800  IN  NS     a.gtld-servers.net.
+example.com.         172800  IN  NS     ns1.dns-host.example.net.
+example.com.         172800  IN  NS     ns2.dns-host.example.net.
+www.example.com.     300     IN  CNAME  taskflow-web.cdn.example.net.
+</code></pre></div>
+<p>Read it top to bottom: the root refers the resolver to the <code>.com</code>
+servers, the <code>.com</code> servers refer it to your nameservers (this is the
+delegation, cached for two days), and your nameservers answer. During a
+nameserver migration the third block is what changes; if it still lists
+the old provider, the registrar change has not happened or has not
+reached the registry.</p>
+<h3 id="what-are-different-resolvers-seeing">What are different resolvers seeing?<a class="headerlink" href="#what-are-different-resolvers-seeing" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">for</span><span class="w"> </span>r<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="m">1</span>.1.1.1<span class="w"> </span><span class="m">8</span>.8.8.8<span class="w"> </span><span class="m">9</span>.9.9.9<span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<span class="w">  </span><span class="nb">printf</span><span class="w"> </span><span class="s1">'%-8s '</span><span class="w"> </span><span class="s2">"</span><span class="nv">$r</span><span class="s2">"</span>
+<span class="w">  </span>dig<span class="w"> </span>+noall<span class="w"> </span>+answer<span class="w"> </span>@<span class="s2">"</span><span class="nv">$r</span><span class="s2">"</span><span class="w"> </span>api.example.com<span class="w"> </span>A<span class="w"> </span><span class="p">|</span><span class="w"> </span>awk<span class="w"> </span><span class="s1">'{print "ttl=" $2, $5}'</span>
+<span class="k">done</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>; Example output a few minutes after a change
+1.1.1.1  ttl=212 198.51.100.40
+8.8.8.8  ttl=41 198.51.100.20
+9.9.9.9  ttl=287 198.51.100.40
+</code></pre></div>
+<p>One resolver still serves the old address with 41 seconds left; it will
+switch on its own. A remaining TTL far above the TTL you set means a
+record or a resolver you did not expect is involved.</p>
+<h3 id="comparing-two-providers-before-a-cutover">Comparing two providers before a cutover<a class="headerlink" href="#comparing-two-providers-before-a-cutover" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="ch">#!/usr/bin/env bash</span>
+<span class="c1"># scripts/compare-zones.sh: diff answers from the old and new nameservers</span>
+<span class="c1"># Usage: scripts/compare-zones.sh names.txt   (one fully qualified name per line)</span>
+<span class="nb">set</span><span class="w"> </span>-euo<span class="w"> </span>pipefail
+<span class="nv">OLD_NS</span><span class="o">=</span><span class="s2">"ns1.old-dns.example.net"</span>
+<span class="nv">NEW_NS</span><span class="o">=</span><span class="s2">"ns1.new-dns.example.net"</span>
+<span class="nv">TYPES</span><span class="o">=(</span>A<span class="w"> </span>AAAA<span class="w"> </span>CNAME<span class="w"> </span>MX<span class="w"> </span>TXT<span class="w"> </span>CAA<span class="w"> </span>SRV<span class="o">)</span><span class="w">   </span><span class="c1"># apex NS and SOA differ by design</span>
+
+<span class="nv">status</span><span class="o">=</span><span class="m">0</span>
+<span class="k">while</span><span class="w"> </span><span class="nb">read</span><span class="w"> </span>-r<span class="w"> </span>name<span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<span class="w">  </span><span class="o">[[</span><span class="w"> </span>-z<span class="w"> </span><span class="s2">"</span><span class="nv">$name</span><span class="s2">"</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="s2">"</span><span class="nv">$name</span><span class="s2">"</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="se">\#</span>*<span class="w"> </span><span class="o">]]</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="k">continue</span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="nb">type</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="s2">"</span><span class="si">${</span><span class="nv">TYPES</span><span class="p">[@]</span><span class="si">}</span><span class="s2">"</span><span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<span class="w">    </span><span class="nv">old</span><span class="o">=</span><span class="k">$(</span>dig<span class="w"> </span>+short<span class="w"> </span>+norecurse<span class="w"> </span>@<span class="s2">"</span><span class="nv">$OLD_NS</span><span class="s2">"</span><span class="w"> </span><span class="s2">"</span><span class="nv">$name</span><span class="s2">"</span><span class="w"> </span><span class="s2">"</span><span class="nv">$type</span><span class="s2">"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="k">)</span>
+<span class="w">    </span><span class="nv">new</span><span class="o">=</span><span class="k">$(</span>dig<span class="w"> </span>+short<span class="w"> </span>+norecurse<span class="w"> </span>@<span class="s2">"</span><span class="nv">$NEW_NS</span><span class="s2">"</span><span class="w"> </span><span class="s2">"</span><span class="nv">$name</span><span class="s2">"</span><span class="w"> </span><span class="s2">"</span><span class="nv">$type</span><span class="s2">"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="k">)</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="o">[[</span><span class="w"> </span><span class="s2">"</span><span class="nv">$old</span><span class="s2">"</span><span class="w"> </span>!<span class="o">=</span><span class="w"> </span><span class="s2">"</span><span class="nv">$new</span><span class="s2">"</span><span class="w"> </span><span class="o">]]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<span class="w">      </span><span class="nb">printf</span><span class="w"> </span><span class="s1">'DIFF %s %s\n  old: %s\n  new: %s\n'</span><span class="w"> </span><span class="s2">"</span><span class="nv">$name</span><span class="s2">"</span><span class="w"> </span><span class="s2">"</span><span class="nv">$type</span><span class="s2">"</span><span class="w"> </span><span class="s2">"</span><span class="si">${</span><span class="nv">old</span><span class="k">:-</span><span class="p">&lt;none&gt;</span><span class="si">}</span><span class="s2">"</span><span class="w"> </span><span class="s2">"</span><span class="si">${</span><span class="nv">new</span><span class="k">:-</span><span class="p">&lt;none&gt;</span><span class="si">}</span><span class="s2">"</span>
+<span class="w">      </span><span class="nv">status</span><span class="o">=</span><span class="m">1</span>
+<span class="w">    </span><span class="k">fi</span>
+<span class="w">  </span><span class="k">done</span>
+<span class="k">done</span><span class="w"> </span>&lt;<span class="w"> </span><span class="s2">"</span><span class="si">${</span><span class="nv">1</span><span class="p">:?names file required</span><span class="si">}</span><span class="s2">"</span>
+<span class="nb">exit</span><span class="w"> </span><span class="s2">"</span><span class="nv">$status</span><span class="s2">"</span>
+</code></pre></div>
+<p>Build <code>names.txt</code> from the old provider's export, including underscore
+names such as <code>_dmarc.example.com</code> and <code>s1._domainkey.example.com</code>.
+Expect real differences only where a provider-specific feature answers
+differently by design (a proxied record returns the proxy's addresses);
+every other <code>DIFF</code> is a missing or wrong record.</p>
+<h3 id="one-source-of-truth-for-both-providers-dnscontrol">One source of truth for both providers (DNSControl)<a class="headerlink" href="#one-source-of-truth-for-both-providers-dnscontrol" title="Permanent link">&para;</a></h3>
+<p>During the overlap, DNSControl can push the same records to the old and
+the new provider. A <code>SERVICE()</code> with <code>0</code> as its second argument manages
+records without listing that provider's nameservers in the delegation.</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// dns/dnsconfig.js: the same zone pushed to the old and the new provider</span>
+<span class="nx">D</span><span class="p">(</span><span class="s2">"example.com"</span><span class="p">,</span><span class="w"> </span><span class="nx">REGISTRAR</span><span class="p">(</span><span class="s2">"none"</span><span class="p">),</span>
+<span class="w">  </span><span class="nx">SERVICE</span><span class="p">(</span><span class="s2">"old_dns"</span><span class="p">),</span><span class="w">     </span><span class="c1">// currently delegated: serves real traffic</span>
+<span class="w">  </span><span class="nx">SERVICE</span><span class="p">(</span><span class="s2">"new_dns"</span><span class="p">,</span><span class="w"> </span><span class="mf">0</span><span class="p">),</span><span class="w">  </span><span class="c1">// kept identical, not delegated yet</span>
+<span class="w">  </span><span class="nx">DefaultTTL</span><span class="p">(</span><span class="mf">300</span><span class="p">),</span>
+<span class="w">  </span><span class="nx">A</span><span class="p">(</span><span class="s2">"api"</span><span class="p">,</span><span class="w"> </span><span class="s2">"198.51.100.20"</span><span class="p">),</span>
+<span class="w">  </span><span class="nx">AAAA</span><span class="p">(</span><span class="s2">"api"</span><span class="p">,</span><span class="w"> </span><span class="s2">"2001:db8::20"</span><span class="p">),</span>
+<span class="w">  </span><span class="nx">CNAME</span><span class="p">(</span><span class="s2">"www"</span><span class="p">,</span><span class="w"> </span><span class="s2">"taskflow-web.cdn.example.net."</span><span class="p">),</span>
+<span class="w">  </span><span class="nx">MX</span><span class="p">(</span><span class="s2">"@"</span><span class="p">,</span><span class="w"> </span><span class="mf">10</span><span class="p">,</span><span class="w"> </span><span class="s2">"mx1.mail.example.net."</span><span class="p">),</span>
+<span class="w">  </span><span class="nx">MX</span><span class="p">(</span><span class="s2">"@"</span><span class="p">,</span><span class="w"> </span><span class="mf">20</span><span class="p">,</span><span class="w"> </span><span class="s2">"mx2.mail.example.net."</span><span class="p">),</span>
+<span class="w">  </span><span class="nx">TXT</span><span class="p">(</span><span class="s2">"@"</span><span class="p">,</span><span class="w"> </span><span class="s2">"v=spf1 include:_spf.mail.example.net -all"</span><span class="p">),</span>
+<span class="w">  </span><span class="nx">TXT</span><span class="p">(</span><span class="s2">"_dmarc"</span><span class="p">,</span><span class="w"> </span><span class="s2">"v=DMARC1; p=none; rua=mailto:dmarc-reports@example.com"</span><span class="p">),</span>
+<span class="w">  </span><span class="nx">CAA</span><span class="p">(</span><span class="s2">"@"</span><span class="p">,</span><span class="w"> </span><span class="s2">"issue"</span><span class="p">,</span><span class="w"> </span><span class="s2">"letsencrypt.org"</span><span class="p">),</span>
+<span class="p">);</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">"none"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"TYPE"</span><span class="p">:</span><span class="w"> </span><span class="s2">"NONE"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">"old_dns"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"TYPE"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ROUTE53"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"KeyId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"$AWS_ACCESS_KEY_ID"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"SecretKey"</span><span class="p">:</span><span class="w"> </span><span class="s2">"$AWS_SECRET_ACCESS_KEY"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"Token"</span><span class="p">:</span><span class="w"> </span><span class="s2">"$AWS_SESSION_TOKEN"</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">"new_dns"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"TYPE"</span><span class="p">:</span><span class="w"> </span><span class="s2">"CLOUDFLAREAPI"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"accountid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"$CLOUDFLARE_ACCOUNT_ID"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"apitoken"</span><span class="p">:</span><span class="w"> </span><span class="s2">"$CLOUDFLARE_API_TOKEN"</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>The second file is <code>dns/creds.json</code>; values starting with <code>$</code> are read
+from environment variables, so no secret is committed.
+<code>dnscontrol preview</code> prints the changes for each provider and
+<code>dnscontrol push</code> applies them. On the cutover day you change the nameservers at the
+registrar, swap the <code>0</code> to the old provider's <code>SERVICE()</code>, and after the
+overlap remove it.</p>
+<h3 id="running-dns-changes-through-ci">Running DNS changes through CI<a class="headerlink" href="#running-dns-changes-through-ci" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># .github/workflows/dns.yml</span>
+<span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DNS</span>
+
+<span class="nt">on</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">pull_request</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">paths</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"dns/**"</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">push</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">branches</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">main</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">paths</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"dns/**"</span><span class="p p-Indicator">]</span>
+
+<span class="nt">permissions</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">contents</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">read</span>
+<span class="w">  </span><span class="nt">id-token</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">write</span><span class="w">   </span><span class="c1"># OIDC for AWS</span>
+
+<span class="nt">concurrency</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">group</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dns</span>
+<span class="w">  </span><span class="nt">cancel-in-progress</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+
+<span class="nt">jobs</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">dns</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
+<span class="w">    </span><span class="nt">steps</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/checkout@v7</span>
+
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aws-actions/configure-aws-credentials@v6</span>
+<span class="w">        </span><span class="nt">with</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">role-to-assume</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:iam::123456789012:role/taskflow-dns</span>
+<span class="w">          </span><span class="nt">aws-region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-1</span>
+
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Preview DNS changes</span>
+<span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">          </span><span class="no">docker run --rm -v "$PWD/dns:/dns" \</span>
+<span class="w">            </span><span class="no">-e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN \</span>
+<span class="w">            </span><span class="no">-e CLOUDFLARE_ACCOUNT_ID -e CLOUDFLARE_API_TOKEN \</span>
+<span class="w">            </span><span class="no">ghcr.io/dnscontrol/dnscontrol preview</span>
+<span class="w">        </span><span class="nt">env</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">CLOUDFLARE_ACCOUNT_ID</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ vars.CLOUDFLARE_ACCOUNT_ID }}</span>
+<span class="w">          </span><span class="nt">CLOUDFLARE_API_TOKEN</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ secrets.CLOUDFLARE_DNS_TOKEN }}</span>
+
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Push DNS changes</span>
+<span class="w">        </span><span class="nt">if</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">github.event_name == 'push'</span>
+<span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">          </span><span class="no">docker run --rm -v "$PWD/dns:/dns" \</span>
+<span class="w">            </span><span class="no">-e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN \</span>
+<span class="w">            </span><span class="no">-e CLOUDFLARE_ACCOUNT_ID -e CLOUDFLARE_API_TOKEN \</span>
+<span class="w">            </span><span class="no">ghcr.io/dnscontrol/dnscontrol push</span>
+<span class="w">        </span><span class="nt">env</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">CLOUDFLARE_ACCOUNT_ID</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ vars.CLOUDFLARE_ACCOUNT_ID }}</span>
+<span class="w">          </span><span class="nt">CLOUDFLARE_API_TOKEN</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ secrets.CLOUDFLARE_DNS_TOKEN }}</span>
+</code></pre></div>
+<ul>
+<li>Pull requests get a preview, so reviewers see exactly which records
+  change at each provider; only merges to <code>main</code> push.</li>
+<li>AWS credentials come from OIDC (<code>configure-aws-credentials</code> exports
+  short-lived keys as environment variables); the Cloudflare token is
+  scoped to DNS edits on this zone. Short-lived credentials and OIDC are
+  covered in
+  <a href="../../ci-cd/pipeline-and-supply-chain-security/">pipeline and supply chain security</a>.</li>
+<li><code>concurrency</code> stops two pushes from racing each other.</li>
+<li>The image is shown untagged, as in DNSControl's documentation; in a
+  real pipeline pin it to a release tag or digest so a new DNSControl
+  version cannot change behaviour unreviewed.</li>
+</ul>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Manage zones as code and review every change; keep an export of each
+  zone outside the provider.</li>
+<li>Lower TTLs at least one old TTL before planned changes, and raise them
+  afterwards.</li>
+<li>Test new targets with <code>curl --resolve</code> before changing DNS.</li>
+<li>Keep old targets serving until their traffic is gone.</li>
+<li>For nameserver moves: inventory, translate, diff, handle DNSSEC first,
+  and keep both zones identical for at least the delegation TTL.</li>
+<li>Diagnose from the source outward: authoritative answer, delegation,
+  DNSSEC, caches, then other layers.</li>
+<li>Check from several resolvers and over IPv4 and IPv6.</li>
+<li>Prepare secondary DNS before you need it; it cannot be added in the
+  middle of an outage.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Inbound mail disappears after moving DNS to a new provider.</strong>
+  <em>Detect:</em> senders' bounces or a drop in received mail;
+  <code>dig @&lt;new-ns&gt; example.com MX +norecurse</code> returns nothing.
+  <em>Cause:</em> only web records were copied before the nameserver change.
+  <em>Fix:</em> add the MX, SPF, DKIM, and DMARC records at the new provider
+  immediately; diff every name and type before future cutovers.</li>
+<li><strong>The domain returns SERVFAIL for many users right after a move.</strong>
+  <em>Detect:</em> validating resolvers fail, <code>dig +cd</code> succeeds, DNSViz shows a
+  DS without a matching DNSKEY. <em>Cause:</em> the DS record at the registrar
+  still points at the old provider's key. <em>Fix:</em> remove the DS (or add the
+  new provider's key) and wait for the cached DS to expire; next time,
+  remove DS a day before the move.</li>
+<li><strong>Half the users get old answers days after an edit.</strong>
+  <em>Detect:</em> <code>dig +trace</code> lists nameservers from two providers, and they
+  answer differently. <em>Cause:</em> the old provider's zone is still delegated
+  (or cached as delegated) and was not updated. <em>Fix:</em> apply the change to
+  both providers until the old delegation has expired everywhere.</li>
+<li><strong>The cutover went fine, but the API still gets traffic on the old
+  load balancer.</strong> <em>Detect:</em> the old target's request count stays above
+  zero long after the TTL. <em>Cause:</em> clients with connection pools or DNS
+  caches that resolved once (long-running workers, mobile apps). <em>Fix:</em>
+  keep the old target up longer, set a maximum connection age on clients,
+  and restart long-lived workers.</li>
+<li><strong>A freshly created subdomain is NXDOMAIN for some people.</strong>
+  <em>Detect:</em> authoritative servers answer, some resolvers say the name
+  does not exist. <em>Cause:</em> those resolvers looked it up before it existed
+  and cached the negative answer. <em>Fix:</em> wait out the negative TTL (the SOA
+  minimum), flush the public resolvers you can, and create records before
+  announcing them.</li>
+<li><strong>Certificate renewals fail after the DNS move.</strong>
+  <em>Detect:</em> ACM shows renewal pending, or the ACME client reports a CAA
+  or validation error. <em>Cause:</em> the ACM validation CNAME or a CAA entry was
+  left behind. <em>Fix:</em> restore the record, and include underscore names in
+  every inventory.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Propagation:</strong> The informal name for resolvers' caches expiring at
+  different times after a change.</li>
+<li><strong>Delegation TTL:</strong> How long resolvers cache the parent's NS records
+  for your zone (two days at <code>.com</code>).</li>
+<li><strong>Negative caching:</strong> Caching the answer that a name does not exist.</li>
+<li><strong>Authoritative answer:</strong> An answer from a server that holds the zone,
+  marked with the <code>aa</code> flag in <code>dig</code> output.</li>
+<li><strong>Lame delegation:</strong> A nameserver listed in the delegation that does
+  not actually serve the zone.</li>
+<li><strong><code>dig +trace</code>:</strong> Resolving a name step by step from the root, showing
+  each delegation.</li>
+<li><strong><code>--resolve</code> (curl):</strong> Overriding DNS for one request to test a target
+  with the real hostname.</li>
+<li><strong>Multi-signer DNSSEC:</strong> Two providers serving one signed zone with both
+  sets of keys published (RFC 8901).</li>
+<li><strong>DNS as code:</strong> Managing zones in version-controlled files applied by
+  tools such as DNSControl, OctoDNS, or Terraform.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Believing "DNS propagation takes 48 hours" for every change; ordinary
+  record changes take one TTL, while nameserver changes are bounded by
+  the delegation TTL.</li>
+<li>Lowering the TTL at the same moment as the change.</li>
+<li>Copying only web records when changing nameservers, forgetting MX,
+  TXT, DKIM, CAA, and validation records.</li>
+<li>Changing nameservers while a DS record points at the old provider's
+  keys.</li>
+<li>Testing only from one's own laptop, whose resolver may have been
+  flushed or may have just cached the new answer.</li>
+<li>Shutting down the old target as soon as DNS is changed.</li>
+<li>Expecting to switch DNS providers quickly during an outage.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Why is "propagation" a misleading word? What actually happens after
+   you change a record?</li>
+<li>A record has a TTL of 86400. You plan to change it on Thursday at
+   10:00. When must you lower the TTL, and to what? (By Wednesday 10:00 at
+   the latest, so every cached copy of the long TTL has expired; 300
+   seconds is typical.)</li>
+<li>Why must the old zone stay identical for about two days after a <code>.com</code>
+   nameserver change, and what sets that number?</li>
+<li>Describe the safe order of steps for moving a DNSSEC-signed zone to a
+   new provider.</li>
+<li>Which three questions separate "zone wrong", "delegation wrong", and
+   "caches stale", and which commands answer each?</li>
+<li>A domain fails with SERVFAIL on 8.8.8.8 but resolves with <code>dig +cd</code>.
+   What do you suspect, and what tool shows the broken link?</li>
+<li>Why test a new target with <code>curl --resolve</code> rather than by editing
+   DNS and waiting?</li>
+<li>Your DNS provider is down. Why can you not simply switch the
+   nameservers to another provider, and what should have been prepared?</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://www.rfc-editor.org/rfc/rfc2308">RFC 2308: Negative Caching of DNS Queries</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc8901">RFC 8901: Multi-Signer DNSSEC Models</a></li>
+<li><a href="https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/MigratingDNS.html">Amazon Route 53: Making Route 53 the DNS service for an existing domain</a></li>
+<li><a href="https://docs.dnscontrol.org/">DNSControl documentation</a></li>
+<li><a href="https://dnsviz.net/">DNSViz</a></li>
+<li><a href="https://developers.google.com/speed/public-dns/cache">Google Public DNS: Flush cache</a></li>
+<li><a href="https://one.one.one.one/purge-cache/">Cloudflare 1.1.1.1: Purge cache</a></li>
+<li>Next: <a href="../cdn-setup-and-edge-caching/">CDN setup and edge caching</a>. Back to the <a href="../">domains, DNS and email overview</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../connecting-domains-to-hosting/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Connecting Domains to Hosting">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Connecting Domains to Hosting</span>
+      </a>
+    
+    
+      <a href="../cdn-setup-and-edge-caching/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: CDN Setup and Edge Caching">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">CDN Setup and Edge Caching</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

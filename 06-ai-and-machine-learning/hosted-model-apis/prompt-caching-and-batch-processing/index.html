@@ -1,0 +1,3704 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../streaming-responses-end-to-end/">
+      
+      
+        <link rel="next" href="../choosing-models-and-providers/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Prompt Caching and Batch Processing - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#prompt-caching-and-batch-processing" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Prompt Caching and Batch Processing
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../05-application-architecture/" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../08-devops-and-deployment/" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to AI and Machine Learning">
+          <span class="md-ellipsis">&larr; Back to AI</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../05-application-architecture/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        
+          
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-label="AI module lessons" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to AI and Machine Learning">
+                  <span class="md-ellipsis">&larr; Back to AI</span>
+                </a>
+              
+            </div>
+          
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                  
+  
+  
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+    
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_4" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_7_4" id="__nav_7_4_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Access
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_4_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_7_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Model Access
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_4_1" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_7_4_1" id="__nav_7_4_1_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hosted Model APIs
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_7_4_1_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_7_4_1">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Hosted Model APIs
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../calling-model-apis-from-a-backend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calling Model APIs from a Backend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../streaming-responses-end-to-end/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Streaming Responses End to End
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Prompt Caching and Batch Processing
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Prompt Caching and Batch Processing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-a-prompt-cache-saves" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What a prompt cache saves
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#automatic-prefix-caching-versus-explicit-breakpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Automatic prefix caching versus explicit breakpoints
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#structuring-prompts-so-the-cache-hits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Structuring prompts so the cache hits
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#measuring-whether-the-cache-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Measuring whether the cache works
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#batch-apis-asynchronous-cheaper-slower" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Batch APIs: asynchronous, cheaper, slower
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-cache-friendly-request-for-project-qa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A cache-friendly request for project Q&amp;A
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-anthropic-and-gemini-equivalents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Anthropic and Gemini equivalents
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nightly-digests-with-the-batch-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nightly digests with the Batch API
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#testing-both-features-without-a-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing both features without a provider
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../choosing-models-and-providers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Choosing Models and Providers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../local-models/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Running Models Locally
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../model-serving-and-inference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Serving and Inference Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../08-devops-and-deployment/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DevOps and Deployment
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-a-prompt-cache-saves" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What a prompt cache saves
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#automatic-prefix-caching-versus-explicit-breakpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Automatic prefix caching versus explicit breakpoints
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#structuring-prompts-so-the-cache-hits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Structuring prompts so the cache hits
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#measuring-whether-the-cache-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Measuring whether the cache works
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#batch-apis-asynchronous-cheaper-slower" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Batch APIs: asynchronous, cheaper, slower
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-cache-friendly-request-for-project-qa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A cache-friendly request for project Q&amp;A
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-anthropic-and-gemini-equivalents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Anthropic and Gemini equivalents
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nightly-digests-with-the-batch-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nightly digests with the Batch API
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#testing-both-features-without-a-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing both features without a provider
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="prompt-caching-and-batch-processing">Prompt Caching and Batch Processing<a class="headerlink" href="#prompt-caching-and-batch-processing" title="Permanent link">&para;</a></h1>
+<p>Two provider features cut the cost of model calls without changing the
+model or the answer. <strong>Prompt caching</strong> lets the provider reuse the work
+it already did on a prompt prefix it has seen recently, so TaskFlow's
+project-knowledge Q&amp;A does not pay full price for the same 20,000 tokens
+of project documents on every question. <strong>Batch processing</strong> accepts a
+file of requests, runs them asynchronously within a day, and charges
+much less, which suits TaskFlow's nightly project digests and evaluation
+runs. This lesson explains how each provider implements caching
+(automatic prefix caching versus explicit cache breakpoints), how to
+structure prompts so the cache actually hits, how batch APIs work, and
+when to use each one.</p>
+<p>Costs on this page are relative ("cheaper", "a fraction of the input
+price"); provider price lists change and are linked at the end. Wider
+cost strategy is covered in
+<a href="../../deployment-cost-and-performance/cost-optimization-for-llm-apps/">cost optimization for LLM apps</a>.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>For many applications, input tokens dominate the bill. A retrieval
+question sends instructions, tool definitions, retrieved documents, and
+the conversation so far, often thousands of tokens, to get a few hundred
+tokens back. Agents are worse: every step resends the whole growing
+transcript. Most of that input is identical from one request to the next.
+Prompt caching turns that repetition into savings and also shortens time
+to first token, because the provider skips recomputing the cached prefix.</p>
+<p>Caching only works if the prefix is byte-for-byte identical. One
+timestamp in the instructions, one reordered tool definition, or one
+rewritten earlier turn makes every request a miss, and nothing in the
+response tells you so unless you read the usage fields. Teams regularly
+"enable caching" and see no change because of a single volatile line.</p>
+<p>Batch APIs address a different waste: paying interactive prices and
+competing for interactive rate limits with work nobody is waiting for.
+Nightly summaries, backfills, re-classification of old tasks, and
+evaluation runs can all wait hours. Moving them to a batch API makes them
+substantially cheaper and keeps them from eating the rate limit the
+TaskFlow Assistant needs during the day.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Anthropic prompt caching.</strong> The
+  <a href="https://platform.claude.com/docs/en/build-with-claude/prompt-caching">prompt caching guide</a>
+  offers automatic caching (one top-level <code>cache_control</code> field) and
+  explicit breakpoints on content blocks, a 5-minute lifetime refreshed on
+  every use or a 1-hour lifetime at a higher write price, cache reads at a
+  small fraction of the input price, and a prefix that always runs tools,
+  then system, then messages.</li>
+<li><strong>OpenAI prompt caching.</strong> The
+  <a href="https://developers.openai.com/api/docs/guides/prompt-caching">prompt caching guide</a>
+  describes caching that works with no code changes, plus implicit and
+  explicit breakpoint modes, 30-minute and 12-hour lifetimes, and a
+  1,024-token minimum on GPT-5.6 and later models. It includes a
+  break-even formula for deciding whether to pad a short prefix up to the
+  minimum.</li>
+<li><strong>Gemini context caching.</strong> The
+  <a href="https://aistudio.google.com/docs/caching">caching page</a> explains that
+  implicit caching is on by default for Gemini 2.5 and newer models with
+  no guaranteed savings, while explicit caches (on Gemini 3 and 2.5 models
+  through <code>generateContent</code>) guarantee the discount but add a storage
+  charge for their lifetime.</li>
+<li><strong>Batch APIs at about half price.</strong> OpenAI's
+  <a href="https://developers.openai.com/api/docs/guides/batch">Batch API guide</a>
+  (a 50% discount, separate higher rate limits, completion within 24
+  hours), Anthropic's
+  <a href="https://platform.claude.com/docs/en/build-with-claude/batch-processing">batch processing guide</a>
+  (50% off, most batches done within an hour, discounts that stack with
+  caching), and Gemini's
+  <a href="https://aistudio.google.com/docs/batch-api">Batch API page</a> (50% of the
+  standard cost, a 24-hour target) describe the same trade: wait longer,
+  pay less.</li>
+</ul>
+<p><strong>Popular tools and providers:</strong> prompt caching and batch APIs at OpenAI,
+Anthropic, and Google; cheaper slower service tiers such as OpenAI's Flex
+processing and Gemini's Flex inference; job schedulers (cron, BullMQ, a
+cloud scheduler) that submit and collect batches.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="what-a-prompt-cache-saves">What a prompt cache saves<a class="headerlink" href="#what-a-prompt-cache-saves" title="Permanent link">&para;</a></h3>
+<p>Before a model generates anything, it processes the whole input. For a
+long prompt that processing is a large share of the time and cost. A
+prompt cache keeps the processed state of a prompt <strong>prefix</strong> for a while,
+so a later request that starts with exactly the same tokens skips that
+work for the shared part and pays a reduced rate for it. The rest of the
+request (everything after the longest cached prefix) is processed
+normally.</p>
+<p>Three properties follow from "prefix" and "exactly":</p>
+<ul>
+<li>Only the beginning of a prompt can be reused. A shared paragraph in the
+  middle of two different prompts saves nothing.</li>
+<li>Any change in the prefix, even one character, makes everything after it
+  a miss.</li>
+<li>Caches are scoped: OpenAI caches are not shared across organizations or
+  across regional processing boundaries, Anthropic caches are isolated
+  per organization and, on the Claude API, per workspace, and Gemini
+  explicit caches are objects in your project.</li>
+</ul>
+<h3 id="automatic-prefix-caching-versus-explicit-breakpoints">Automatic prefix caching versus explicit breakpoints<a class="headerlink" href="#automatic-prefix-caching-versus-explicit-breakpoints" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: a grid comparing prompt caching at OpenAI, Anthropic, and Gemini in November 2026 across six rows. How it is turned on: OpenAI automatically; Anthropic with cache_control, top-level for automatic caching or per block; Gemini implicitly by default, or explicitly through a cache object. Breakpoints: OpenAI implicit, with GPT-5.6 and later adding explicit breakpoints and up to four cache writes; Anthropic up to four per request, with automatic caching using one slot; Gemini chosen for you, or the whole explicit cache object. Lifetime: OpenAI 30 minutes by default or 12 hours; Anthropic 5 minutes refreshed on use, or 1 hour; Gemini explicit caches live for the TTL you set, 1 hour by default. Minimum prefix: OpenAI 1,024 tokens on GPT-5.6 and later; Anthropic 512 to 4,096 tokens and Gemini 2,048 to 4,096 tokens depending on the model. Usage fields: cached_tokens and cache_write_tokens; cache_read_input_tokens and cache_creation_input_tokens; cachedContentTokenCount. Relative cost: writes above the input price and reads far below it at OpenAI and Anthropic; discounted hits and storage per hour for Gemini explicit caches." src="../provider-caching-mechanics.svg" /></p>
+<p>The providers agree on the idea and differ on who decides what is cached.
+The details below were checked against each provider's documentation in
+November 2026; minimums and multipliers vary by model, so check the
+table for the model you configure.</p>
+<p><strong>OpenAI</strong> caches automatically. On GPT-5.6 and later models,
+<code>prompt_cache_options.mode</code> selects how breakpoints are placed:</p>
+<ul>
+<li><strong>Implicit</strong> (the default): OpenAI places a breakpoint at the end of the
+  latest eligible message (a user message, the last of a run of tool
+  results, or the initial developer messages) and can reuse prefixes that
+  end at up to 20 earlier message boundaries.</li>
+<li><strong>Explicit</strong>: only content blocks you mark with
+  <code>prompt_cache_breakpoint</code> are written to the cache, up to four writes per
+  request. Content after the last breakpoint is billed as ordinary input
+  with no write charge. With no breakpoints, the request is not cached.</li>
+</ul>
+<p>You can mix the two: in implicit mode, up to three explicit breakpoints are
+written alongside the implicit one. <code>prompt_cache_options.ttl</code> sets the
+minimum lifetime, <code>"30m"</code> (the default) or <code>"12h"</code>; a 12-hour write costs
+more than a 30-minute write, and reads cost the same for both. Breakpoints
+cannot go in the top-level <code>instructions</code> field, so reusable instructions
+belong in a developer message. <code>prompt_cache_key</code> groups related requests;
+on models before GPT-5.6 it helps route them to the same cache, and on
+newer models it mainly keeps cache accounting separate per customer.
+Usage reports <code>input_tokens_details.cached_tokens</code> and
+<code>input_tokens_details.cache_write_tokens</code>.</p>
+<p><strong>Anthropic</strong> caches only when asked:</p>
+<ul>
+<li><strong>Automatic caching</strong>: one top-level <code>cache_control</code> field. The API puts
+  the breakpoint on the last cacheable block and moves it forward as the
+  conversation grows, which suits multi-turn chat.</li>
+<li><strong>Explicit breakpoints</strong>: <code>cache_control</code> on individual blocks (a tool
+  definition, a system block, a message block), up to four per request,
+  with automatic caching using one of the four slots.</li>
+</ul>
+<p>The default lifetime is 5 minutes, refreshed for free each time the entry
+is read, and measured from the start of the request; <code>ttl: "1h"</code> keeps it
+longer at a higher write price. Writes cost somewhat more than ordinary
+input, reads cost a small fraction of it. When looking for a cached
+prefix, the API checks at most 20 blocks back from each breakpoint. A
+prompt shorter than the model's minimum (512 to 4,096 tokens depending on
+the model) is processed without caching and without an error; usage then
+shows both <code>cache_creation_input_tokens</code> and <code>cache_read_input_tokens</code> as
+zero. A new entry only becomes available once the first response has
+started, so a burst of parallel requests with the same new prefix all
+miss: send one first and the rest after its response begins. Cached reads
+also do not count against Anthropic's input-tokens-per-minute limit,
+which raises effective throughput.</p>
+<p><strong>Gemini</strong> offers two mechanisms:</p>
+<ul>
+<li><strong>Implicit caching</strong> is enabled by default on Gemini 2.5 and newer
+  models. Savings are passed on automatically when a request hits, but
+  there is no guarantee. Google's advice is to put large, common content at
+  the beginning and send requests with similar prefixes close together.</li>
+<li><strong>Explicit caching</strong> creates a cache object (<code>caches.create</code>) holding
+  system instructions and content with a TTL (1 hour by default), which
+  requests then reference with <code>cachedContent</code>. Savings are guaranteed,
+  and storage is billed for the lifetime. It is available for Gemini 3 and
+  2.5 models through <code>generateContent</code>, but not for Gemini 4 models or the
+  Interactions API, which support implicit caching only.</li>
+</ul>
+<h3 id="structuring-prompts-so-the-cache-hits">Structuring prompts so the cache hits<a class="headerlink" href="#structuring-prompts-so-the-cache-hits" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: on the left, the parts of a project Q and A request in the order they are sent: tool definitions and instructions, both stable for the whole deployment; the project documents at version 12, stable per project, with an explicit 12-hour breakpoint at the end; the conversation history, which grows by appending and has an implicit or automatic breakpoint; and the new question, which changes on every request. A bracket marks the first four parts as the cacheable prefix. On the right: editing a tool schema makes everything miss; editing the instructions invalidates them and all later parts; a new docs version invalidates the documents and later parts; appending a turn invalidates nothing; the new question is the only part processed at full price. A red box warns that putting the current time in the instructions changes the first block on every request, so nothing is ever reused." src="../prompt-prefix-layout.svg" /></p>
+<p>The rule is to order the prompt from most stable to least stable, and to
+keep anything volatile out of the stable part:</p>
+<ol>
+<li><strong>Tools and instructions first</strong>, identical for every request. Build
+   tool definitions in a fixed order from code, and serialize JSON
+   deterministically: the same object with keys in a different order is a
+   different prefix.</li>
+<li><strong>Shared reference material next</strong>: for TaskFlow, the project's
+   glossary and documents. Include a version identifier and change it only
+   when the documents change, so a whole project's questions share one
+   cache entry until then.</li>
+<li><strong>The conversation, append-only.</strong> Each turn adds to the end, so the
+   previous request is a prefix of the next one. Rewriting or summarizing
+   earlier turns saves context but invalidates the cache from that point;
+   do it rarely and deliberately.</li>
+<li><strong>The new question, and anything per-request, last</strong>: the current
+   time, the user's name, retrieved chunks that differ per question.</li>
+</ol>
+<p>Two caveats. Retrieval-augmented prompts put different chunks in every
+request, so only what comes before the chunks is cacheable; keep stable
+material ahead of them. And per-user content in the prefix (a user's
+profile, permissions text) splits the cache per user, which is fine when
+each user sends many requests in a short time and wasteful otherwise.</p>
+<h3 id="measuring-whether-the-cache-works">Measuring whether the cache works<a class="headerlink" href="#measuring-whether-the-cache-works" title="Permanent link">&para;</a></h3>
+<p>Usage fields are the only reliable signal. TaskFlow logs, for every
+request, the input tokens, the cached tokens, the cache-write tokens, and
+a short hash of the stable part of the prompt. The hit ratio is
+<code>cached_tokens / input_tokens</code>. A healthy project Q&amp;A route might show
+80% or more after the first question in a session; a ratio stuck at zero
+means the prefix changes, the prompt is below the minimum, or requests
+are too far apart for the cache lifetime. A prefix hash that differs
+between two requests that should match points straight at the volatile
+content.</p>
+<p>A worked example of what caching is worth, using the multipliers in
+OpenAI's guide for GPT-5.6 and later (30-minute writes at 1.25 times the
+uncached input rate, reads at 0.1 times): a 20,000-token prefix is used by
+50 questions of 300 tokens within half an hour.</p>
+<ul>
+<li>Without caching: 50 x 20,300 = 1,015,000 input-token equivalents.</li>
+<li>With caching: one write (20,000 x 1.25 = 25,000), 49 reads
+  (49 x 20,000 x 0.1 = 98,000), and the questions (50 x 300 = 15,000):
+  138,000 equivalents, about 14% of the uncached cost.</li>
+</ul>
+<p>The same guide gives a break-even rule for padding a short prefix up to
+the minimum cacheable length: with minimum <code>M</code>, read multiplier <code>r</code>, write
+multiplier <code>w</code>, and <code>N</code> requests, expanding pays off when the original
+prefix is longer than <code>M x (r + (w - r) / N)</code>. With <code>M = 1,024</code>,
+<code>r = 0.1</code>, <code>w = 1.25</code>, and <code>N = 10</code>, that is 220.2 tokens, so a prefix of
+221 tokens or more is worth expanding.</p>
+<h3 id="batch-apis-asynchronous-cheaper-slower">Batch APIs: asynchronous, cheaper, slower<a class="headerlink" href="#batch-apis-asynchronous-cheaper-slower" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: the life of a batch job. Top row: build a JSONL file with one request per line and a custom_id on each, upload it with purpose batch, and create the batch with an endpoint and a 24-hour completion window. Middle row: the batch moves through validating, in_progress, finalizing, and completed. Failure states below: failed for an invalid input file, expired when 24 hours pass, and cancelled after cancelling. Completed, expired, and cancelled batches all lead to output and error files, partial for expired or cancelled batches. Bottom row: download the output and error files, match each result by custom_id because the order is not guaranteed, and retry or report the failed lines in a later batch or with normal requests." src="../batch-job-lifecycle.svg" /></p>
+<p>A batch API takes many independent requests at once and promises results
+within a window instead of seconds. In exchange it charges roughly half
+the interactive price and draws on separate, higher rate limits, so a
+large job does not compete with interactive traffic.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>OpenAI Batch API</th>
+<th>Anthropic Message Batches</th>
+<th>Gemini Batch API</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Relative price</td>
+<td>50% discount</td>
+<td>50% discount, stacks with caching</td>
+<td>50% of the standard cost</td>
+</tr>
+<tr>
+<td>Turnaround</td>
+<td>Within 24 hours, often sooner</td>
+<td>Most within 1 hour; expires after 24 hours</td>
+<td>24-hour target, usually faster</td>
+</tr>
+<tr>
+<td>Input</td>
+<td>Uploaded JSONL file (purpose <code>batch</code>), up to 50,000 requests or 200 MB</td>
+<td>Requests in the create call, up to 100,000 or 256 MB</td>
+<td>Inline requests (under 20 MB) or an uploaded JSONL file (up to 2 GB)</td>
+</tr>
+<tr>
+<td>Matching results</td>
+<td><code>custom_id</code> per line</td>
+<td><code>custom_id</code> per request</td>
+<td>A key per request</td>
+</tr>
+<tr>
+<td>Results</td>
+<td>Output file plus an error file</td>
+<td>Streamed JSONL results, available for 29 days</td>
+<td>Inline responses or an output file</td>
+</tr>
+</tbody>
+</table>
+<p>Four rules make batch jobs dependable:</p>
+<ul>
+<li><strong>Match by <code>custom_id</code>.</strong> Output order is not guaranteed, so every
+  request carries an identifier that maps back to the record it belongs
+  to (TaskFlow uses the project id).</li>
+<li><strong>Handle partial results.</strong> A batch that expires or is cancelled still
+  returns the requests that finished. Each line can succeed or fail on its
+  own; the failed ones go into the next batch or are retried as normal
+  requests.</li>
+<li><strong>Collect in a separate job.</strong> Submission records the batch id;
+  a scheduled job polls status and processes results. Neither should block
+  a web request.</li>
+<li><strong>Make submission idempotent.</strong> Record "digest batch for 2026-11-14
+  submitted as batch X" before or atomically with submitting, so a
+  restarted scheduler does not pay for the same night twice.</li>
+</ul>
+<p>Caching and batching combine. Anthropic's guide recommends the 1-hour
+cache lifetime for batches with shared context, because batch requests
+run over longer periods than 5 minutes. Gemini's batch mode supports
+context caching too.</p>
+<p>A middle ground exists for work that should finish within minutes rather
+than hours: <strong>cheaper, slower service tiers</strong> for ordinary synchronous
+requests. OpenAI's Flex processing (<code>service_tier: "flex"</code>, in beta for
+some models) is priced at Batch API rates with slower responses and
+occasional <code>429</code> "resource unavailable" errors that are not charged.
+Gemini's Flex inference (<code>serviceTier: FLEX</code>, in preview) offers a 50%
+reduction with variable latency and best-effort availability.</p>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Workload</th>
+<th>Caching</th>
+<th>Batch or flex</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Project Q&amp;A with large shared docs</td>
+<td>Yes, explicit breakpoint after the docs</td>
+<td>No</td>
+<td>Users wait; the prefix repeats</td>
+</tr>
+<tr>
+<td>Multi-turn assistant or agent loop</td>
+<td>Yes, automatic or implicit</td>
+<td>No</td>
+<td>Each turn's prompt extends the last</td>
+</tr>
+<tr>
+<td>Nightly digests for every project</td>
+<td>Little to share</td>
+<td>Batch</td>
+<td>Nobody waits; half the price</td>
+</tr>
+<tr>
+<td>Re-classifying 200,000 old tasks</td>
+<td>Shared instructions only</td>
+<td>Batch</td>
+<td>Large, independent, not urgent</td>
+</tr>
+<tr>
+<td>Evaluation runs in CI or nightly</td>
+<td>Shared instructions</td>
+<td>Batch (nightly) or flex (CI)</td>
+<td>Cost matters more than latency</td>
+</tr>
+<tr>
+<td>One-off short prompts</td>
+<td>No</td>
+<td>No</td>
+<td>Below the cache minimum; nothing repeats</td>
+</tr>
+<tr>
+<td>A prefix reused once every few hours</td>
+<td>Probably not</td>
+<td>Depends</td>
+<td>Writes cost more than plain input; the entry expires before reuse</td>
+</tr>
+</tbody>
+</table>
+<p>Avoid the 1-hour or 12-hour lifetimes unless reuse really spans that
+long: the write premium is wasted if the entry is read only once or
+twice. Avoid batch APIs for anything a user is waiting for, even if most
+batches finish within an hour; the promise is the window, not the
+typical case.</p>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="a-cache-friendly-request-for-project-qa">A cache-friendly request for project Q&amp;A<a class="headerlink" href="#a-cache-friendly-request-for-project-qa" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/ai/project-qa.ts</span>
+<span class="c1">// Project-knowledge Q&amp;A with a cache-friendly prompt: stable content first,</span>
+<span class="c1">// the user's question last, and nothing volatile in the prefix.</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">createHash</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:crypto"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="nx">OpenAI</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"openai"</span><span class="p">;</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">interface</span><span class="w"> </span><span class="nx">ProjectContext</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">projectId</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">docsVersion</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span><span class="w"> </span><span class="c1">// changes only when the project's docs change</span>
+<span class="w">  </span><span class="nx">docs</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span><span class="w"> </span><span class="c1">// glossary, conventions, current docs (thousands of tokens)</span>
+<span class="p">}</span>
+<span class="k">export</span><span class="w"> </span><span class="kd">interface</span><span class="w"> </span><span class="nx">Turn</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">role</span><span class="o">:</span><span class="w"> </span><span class="s2">"user"</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">"assistant"</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">text</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">INSTRUCTIONS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span>
+<span class="w">  </span><span class="s2">"You answer questions about one TaskFlow project using only the project documents."</span><span class="p">,</span>
+<span class="w">  </span><span class="s2">"Cite the document title for every claim. If the documents do not say, answer 'Not documented.'"</span><span class="p">,</span>
+<span class="p">].</span><span class="nx">join</span><span class="p">(</span><span class="s2">"\n"</span><span class="p">);</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">buildRequest</span><span class="p">(</span><span class="nx">model</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="nx">ctx</span><span class="o">:</span><span class="w"> </span><span class="kt">ProjectContext</span><span class="p">,</span><span class="w"> </span><span class="nx">history</span><span class="o">:</span><span class="w"> </span><span class="kt">Turn</span><span class="p">[],</span><span class="w"> </span><span class="nx">question</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">request</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">model</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">max_output_tokens</span><span class="o">:</span><span class="w"> </span><span class="kt">600</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">store</span><span class="o">:</span><span class="w"> </span><span class="kt">false</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">prompt_cache_key</span><span class="o">:</span><span class="w"> </span><span class="sb">`project:</span><span class="si">${</span><span class="nx">ctx</span><span class="p">.</span><span class="nx">projectId</span><span class="si">}</span><span class="sb">`</span><span class="p">,</span><span class="w"> </span><span class="c1">// groups related requests (helps older models route)</span>
+<span class="w">    </span><span class="nx">prompt_cache_options</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">mode</span><span class="o">:</span><span class="w"> </span><span class="s2">"implicit"</span><span class="p">,</span><span class="w"> </span><span class="nx">ttl</span><span class="o">:</span><span class="w"> </span><span class="s2">"30m"</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="c1">// GPT-5.6 and later</span>
+<span class="w">    </span><span class="nx">input</span><span class="o">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="c1">// 1. Stable for every request in the deployment.</span>
+<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nx">role</span><span class="o">:</span><span class="w"> </span><span class="s2">"developer"</span><span class="p">,</span><span class="w"> </span><span class="nx">content</span><span class="o">:</span><span class="w"> </span><span class="p">[{</span><span class="w"> </span><span class="kr">type</span><span class="o">:</span><span class="w"> </span><span class="s2">"input_text"</span><span class="p">,</span><span class="w"> </span><span class="nx">text</span><span class="o">:</span><span class="w"> </span><span class="kt">INSTRUCTIONS</span><span class="w"> </span><span class="p">}]</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="c1">// 2. Stable per project and docs version; reused all day, so cache it longer.</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nx">role</span><span class="o">:</span><span class="w"> </span><span class="s2">"developer"</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">content</span><span class="o">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">          </span><span class="p">{</span>
+<span class="w">            </span><span class="kr">type</span><span class="o">:</span><span class="w"> </span><span class="s2">"input_text"</span><span class="p">,</span>
+<span class="w">            </span><span class="nx">text</span><span class="o">:</span><span class="w"> </span><span class="sb">`Project documents (version </span><span class="si">${</span><span class="nx">ctx</span><span class="p">.</span><span class="nx">docsVersion</span><span class="si">}</span><span class="sb">):\n</span><span class="si">${</span><span class="nx">ctx</span><span class="p">.</span><span class="nx">docs</span><span class="si">}</span><span class="sb">`</span><span class="p">,</span>
+<span class="w">            </span><span class="nx">prompt_cache_breakpoint</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">mode</span><span class="o">:</span><span class="w"> </span><span class="s2">"explicit"</span><span class="p">,</span><span class="w"> </span><span class="nx">ttl</span><span class="o">:</span><span class="w"> </span><span class="s2">"12h"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">          </span><span class="p">},</span>
+<span class="w">        </span><span class="p">],</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="c1">// 3. Grows by appending; the implicit breakpoint follows the latest user message.</span>
+<span class="w">      </span><span class="p">...</span><span class="nx">history</span><span class="p">.</span><span class="nx">map</span><span class="p">((</span><span class="nx">t</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">({</span><span class="w"> </span><span class="nx">role</span><span class="o">:</span><span class="w"> </span><span class="kt">t.role</span><span class="p">,</span><span class="w"> </span><span class="nx">content</span><span class="o">:</span><span class="w"> </span><span class="kt">t.text</span><span class="w"> </span><span class="p">})),</span>
+<span class="w">      </span><span class="c1">// 4. Changes every request: always last.</span>
+<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nx">role</span><span class="o">:</span><span class="w"> </span><span class="s2">"user"</span><span class="p">,</span><span class="w"> </span><span class="nx">content</span><span class="o">:</span><span class="w"> </span><span class="kt">question</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">  </span><span class="p">}</span><span class="w"> </span><span class="nx">satisfies</span><span class="w"> </span><span class="nx">OpenAI</span><span class="p">.</span><span class="nx">Responses</span><span class="p">.</span><span class="nx">ResponseCreateParamsNonStreaming</span><span class="p">;</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">request</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c1">// Hash of everything before the conversation: log it with each request.</span>
+<span class="c1">// If it changes between two requests that should share a cache, something</span>
+<span class="c1">// volatile (a timestamp, a random id, reordered JSON) leaked into the prefix.</span>
+<span class="k">export</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">prefixFingerprint</span><span class="p">(</span><span class="nx">req</span><span class="o">:</span><span class="w"> </span><span class="kt">ReturnType</span><span class="o">&lt;</span><span class="ow">typeof</span><span class="w"> </span><span class="nx">buildRequest</span><span class="o">&gt;</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">stable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">([</span><span class="nx">req</span><span class="p">.</span><span class="nx">model</span><span class="p">,</span><span class="w"> </span><span class="nx">req</span><span class="p">.</span><span class="nx">input</span><span class="p">[</span><span class="mf">0</span><span class="p">],</span><span class="w"> </span><span class="nx">req</span><span class="p">.</span><span class="nx">input</span><span class="p">[</span><span class="mf">1</span><span class="p">]]);</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">createHash</span><span class="p">(</span><span class="s2">"sha256"</span><span class="p">).</span><span class="nx">update</span><span class="p">(</span><span class="nx">stable</span><span class="p">).</span><span class="nx">digest</span><span class="p">(</span><span class="s2">"hex"</span><span class="p">).</span><span class="nx">slice</span><span class="p">(</span><span class="mf">0</span><span class="p">,</span><span class="w"> </span><span class="mf">12</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">// Share of input tokens served from cache, from the usage the provider returns.</span>
+<span class="k">export</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">cacheHitRatio</span><span class="p">(</span><span class="nx">usage</span><span class="o">:</span><span class="w"> </span><span class="kt">OpenAI.Responses.ResponseUsage</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="kc">undefined</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">usage</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nx">usage</span><span class="p">.</span><span class="nx">input_tokens</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="mf">0</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="mf">0</span><span class="p">;</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">usage</span><span class="p">.</span><span class="nx">input_tokens_details</span><span class="p">.</span><span class="nx">cached_tokens</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nx">usage</span><span class="p">.</span><span class="nx">input_tokens</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<ul>
+<li>The documents get an explicit 12-hour breakpoint because the same
+  project's questions arrive all day; the conversation relies on the
+  implicit 30-minute breakpoint because sessions are short.</li>
+<li><code>satisfies</code> checks the object against the SDK's request type without
+  widening it, so a misspelled cache option fails the type check.</li>
+<li><code>prompt_cache_options</code> applies to GPT-5.6 and later models. For an older
+  model in <code>CHAT_MODEL</code>, drop it and the breakpoint, and rely on automatic
+  caching plus <code>prompt_cache_key</code>.</li>
+<li>The function never puts the date, the user's name, or retrieved chunks
+  before the conversation. If the assistant needs today's date, it goes
+  into the final user message.</li>
+</ul>
+<h3 id="the-anthropic-and-gemini-equivalents">The Anthropic and Gemini equivalents<a class="headerlink" href="#the-anthropic-and-gemini-equivalents" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/ai/cache-equivalents.ts</span>
+<span class="k">import</span><span class="w"> </span><span class="nx">Anthropic</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"@anthropic-ai/sdk"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">GoogleGenAI</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"@google/genai"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">anthropic</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">Anthropic</span><span class="p">();</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">genai</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">GoogleGenAI</span><span class="p">({</span><span class="w"> </span><span class="nx">apiKey</span><span class="o">:</span><span class="w"> </span><span class="kt">process.env.GEMINI_API_KEY</span><span class="w"> </span><span class="p">});</span>
+
+<span class="c1">// Anthropic: an explicit 1-hour breakpoint after the project documents, plus</span>
+<span class="c1">// top-level automatic caching that moves its breakpoint along the conversation.</span>
+<span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">anthropicAnswer</span><span class="p">(</span><span class="nx">docs</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="nx">history</span><span class="o">:</span><span class="w"> </span><span class="kt">Anthropic.MessageParam</span><span class="p">[],</span><span class="w"> </span><span class="nx">question</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">message</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">anthropic</span><span class="p">.</span><span class="nx">messages</span><span class="p">.</span><span class="nx">create</span><span class="p">({</span>
+<span class="w">    </span><span class="nx">model</span><span class="o">:</span><span class="w"> </span><span class="kt">process.env.ANTHROPIC_MODEL</span><span class="o">!</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">max_tokens</span><span class="o">:</span><span class="w"> </span><span class="kt">600</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">cache_control</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="kr">type</span><span class="o">:</span><span class="w"> </span><span class="s2">"ephemeral"</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="c1">// automatic: last cacheable block, 5-minute TTL</span>
+<span class="w">    </span><span class="nx">system</span><span class="o">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="kr">type</span><span class="o">:</span><span class="w"> </span><span class="s2">"text"</span><span class="p">,</span><span class="w"> </span><span class="nx">text</span><span class="o">:</span><span class="w"> </span><span class="s2">"Answer questions about one TaskFlow project using only its documents."</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="kr">type</span><span class="o">:</span><span class="w"> </span><span class="s2">"text"</span><span class="p">,</span><span class="w"> </span><span class="nx">text</span><span class="o">:</span><span class="w"> </span><span class="kt">docs</span><span class="p">,</span><span class="w"> </span><span class="nx">cache_control</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="kr">type</span><span class="o">:</span><span class="w"> </span><span class="s2">"ephemeral"</span><span class="p">,</span><span class="w"> </span><span class="nx">ttl</span><span class="o">:</span><span class="w"> </span><span class="s2">"1h"</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">    </span><span class="nx">messages</span><span class="o">:</span><span class="w"> </span><span class="p">[...</span><span class="nx">history</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">role</span><span class="o">:</span><span class="w"> </span><span class="s2">"user"</span><span class="p">,</span><span class="w"> </span><span class="nx">content</span><span class="o">:</span><span class="w"> </span><span class="kt">question</span><span class="w"> </span><span class="p">}],</span>
+<span class="w">  </span><span class="p">});</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">u</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">message</span><span class="p">.</span><span class="nx">usage</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">({</span><span class="w"> </span><span class="nx">cacheWrite</span><span class="o">:</span><span class="w"> </span><span class="kt">u.cache_creation_input_tokens</span><span class="p">,</span><span class="w"> </span><span class="nx">cacheRead</span><span class="o">:</span><span class="w"> </span><span class="kt">u.cache_read_input_tokens</span><span class="p">,</span><span class="w"> </span><span class="nx">uncached</span><span class="o">:</span><span class="w"> </span><span class="kt">u.input_tokens</span><span class="w"> </span><span class="p">});</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">message</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c1">// Gemini: implicit caching needs no code. Explicit caching creates a cache</span>
+<span class="c1">// object (Gemini 3 and 2.5 models through generateContent) and references it.</span>
+<span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">geminiWithExplicitCache</span><span class="p">(</span><span class="nx">docs</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="nx">question</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">GEMINI_CHAT_MODEL</span><span class="o">!</span><span class="p">;</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">cache</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">genai</span><span class="p">.</span><span class="nx">caches</span><span class="p">.</span><span class="nx">create</span><span class="p">({</span>
+<span class="w">    </span><span class="nx">model</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">config</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">displayName</span><span class="o">:</span><span class="w"> </span><span class="s2">"taskflow-project-docs"</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">systemInstruction</span><span class="o">:</span><span class="w"> </span><span class="s2">"Answer questions about one TaskFlow project using only its documents."</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">contents</span><span class="o">:</span><span class="w"> </span><span class="p">[{</span><span class="w"> </span><span class="nx">role</span><span class="o">:</span><span class="w"> </span><span class="s2">"user"</span><span class="p">,</span><span class="w"> </span><span class="nx">parts</span><span class="o">:</span><span class="w"> </span><span class="p">[{</span><span class="w"> </span><span class="nx">text</span><span class="o">:</span><span class="w"> </span><span class="kt">docs</span><span class="w"> </span><span class="p">}]</span><span class="w"> </span><span class="p">}],</span>
+<span class="w">      </span><span class="nx">ttl</span><span class="o">:</span><span class="w"> </span><span class="s2">"3600s"</span><span class="p">,</span><span class="w"> </span><span class="c1">// the default is 1 hour; storage is billed for the TTL</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">  </span><span class="p">});</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">response</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">genai</span><span class="p">.</span><span class="nx">models</span><span class="p">.</span><span class="nx">generateContent</span><span class="p">({</span>
+<span class="w">    </span><span class="nx">model</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">contents</span><span class="o">:</span><span class="w"> </span><span class="kt">question</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">config</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">cachedContent</span><span class="o">:</span><span class="w"> </span><span class="kt">cache.name</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="p">});</span>
+<span class="w">  </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">({</span><span class="w"> </span><span class="nx">cachedTokens</span><span class="o">:</span><span class="w"> </span><span class="kt">response.usageMetadata?.cachedContentTokenCount</span><span class="w"> </span><span class="p">});</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">response</span><span class="p">.</span><span class="nx">text</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<ul>
+<li>In the Anthropic request, the order is fixed by the API: tools, then
+  system, then messages. Putting the documents in <code>system</code> with their own
+  breakpoint keeps them cached even while the automatic breakpoint moves
+  along the messages.</li>
+<li>In Anthropic usage, <code>input_tokens</code> counts only the tokens after the
+  last breakpoint; add the three fields to get the full prompt size.</li>
+<li>A real application creates one Gemini cache per project and docs
+  version, stores its name, and deletes or lets it expire when the
+  documents change, rather than creating a cache per question as this
+  short example does.</li>
+</ul>
+<h3 id="nightly-digests-with-the-batch-api">Nightly digests with the Batch API<a class="headerlink" href="#nightly-digests-with-the-batch-api" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/jobs/nightly-digests.ts</span>
+<span class="c1">// Nightly "what happened in your project today" digests through the Batch API:</span>
+<span class="c1">// one JSONL line per project, submitted at night, collected by a later job.</span>
+<span class="k">import</span><span class="w"> </span><span class="nx">OpenAI</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">toFile</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"openai"</span><span class="p">;</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">interface</span><span class="w"> </span><span class="nx">DigestInput</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">projectId</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">activity</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span><span class="w"> </span><span class="c1">// the day's task changes and comments, as text</span>
+<span class="p">}</span>
+
+<span class="kd">interface</span><span class="w"> </span><span class="nx">BatchLine</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">custom_id</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span><span class="w"> </span><span class="c1">// how results are matched back: output order is not guaranteed</span>
+<span class="w">  </span><span class="nx">method</span><span class="o">:</span><span class="w"> </span><span class="s2">"POST"</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">url</span><span class="o">:</span><span class="w"> </span><span class="s2">"/v1/responses"</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">body</span><span class="o">:</span><span class="w"> </span><span class="kt">OpenAI.Responses.ResponseCreateParamsNonStreaming</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">DIGEST_INSTRUCTIONS</span><span class="w"> </span><span class="o">=</span>
+<span class="w">  </span><span class="s2">"Write a short digest of today's activity in this TaskFlow project: completed work, new blockers, overdue tasks."</span><span class="p">;</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">buildBatchFile</span><span class="p">(</span><span class="nx">model</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="nx">inputs</span><span class="o">:</span><span class="w"> </span><span class="kt">DigestInput</span><span class="p">[])</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">inputs</span>
+<span class="w">    </span><span class="p">.</span><span class="nx">map</span><span class="p">((</span><span class="nx">input</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="nx">BatchLine</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">({</span>
+<span class="w">      </span><span class="nx">custom_id</span><span class="o">:</span><span class="w"> </span><span class="kt">input.projectId</span><span class="p">,</span><span class="w"> </span><span class="c1">// unique within the batch; the day is in the batch metadata</span>
+<span class="w">      </span><span class="nx">method</span><span class="o">:</span><span class="w"> </span><span class="s2">"POST"</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">url</span><span class="o">:</span><span class="w"> </span><span class="s2">"/v1/responses"</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">body</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">model</span><span class="p">,</span><span class="w"> </span><span class="nx">instructions</span><span class="o">:</span><span class="w"> </span><span class="kt">DIGEST_INSTRUCTIONS</span><span class="p">,</span><span class="w"> </span><span class="nx">input</span><span class="o">:</span><span class="w"> </span><span class="kt">input.activity</span><span class="p">,</span><span class="w"> </span><span class="nx">max_output_tokens</span><span class="o">:</span><span class="w"> </span><span class="kt">400</span><span class="p">,</span><span class="w"> </span><span class="nx">store</span><span class="o">:</span><span class="w"> </span><span class="kt">false</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">}))</span>
+<span class="w">    </span><span class="p">.</span><span class="nx">map</span><span class="p">((</span><span class="nx">line</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nb">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">line</span><span class="p">))</span>
+<span class="w">    </span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s2">"\n"</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">submitDigestBatch</span><span class="p">(</span><span class="nx">client</span><span class="o">:</span><span class="w"> </span><span class="kt">OpenAI</span><span class="p">,</span><span class="w"> </span><span class="nx">jsonl</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="nx">day</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="nb">Promise</span><span class="o">&lt;</span><span class="kt">string</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">client</span><span class="p">.</span><span class="nx">files</span><span class="p">.</span><span class="nx">create</span><span class="p">({</span>
+<span class="w">    </span><span class="nx">file</span><span class="o">:</span><span class="w"> </span><span class="kt">await</span><span class="w"> </span><span class="nx">toFile</span><span class="p">(</span><span class="nx">Buffer</span><span class="p">.</span><span class="kr">from</span><span class="p">(</span><span class="nx">jsonl</span><span class="p">,</span><span class="w"> </span><span class="s2">"utf8"</span><span class="p">),</span><span class="w"> </span><span class="sb">`digests-</span><span class="si">${</span><span class="nx">day</span><span class="si">}</span><span class="sb">.jsonl`</span><span class="p">),</span>
+<span class="w">    </span><span class="nx">purpose</span><span class="o">:</span><span class="w"> </span><span class="s2">"batch"</span><span class="p">,</span>
+<span class="w">  </span><span class="p">});</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">batch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">client</span><span class="p">.</span><span class="nx">batches</span><span class="p">.</span><span class="nx">create</span><span class="p">({</span>
+<span class="w">    </span><span class="nx">input_file_id</span><span class="o">:</span><span class="w"> </span><span class="kt">file.id</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">endpoint</span><span class="o">:</span><span class="w"> </span><span class="s2">"/v1/responses"</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">completion_window</span><span class="o">:</span><span class="w"> </span><span class="s2">"24h"</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">metadata</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">job</span><span class="o">:</span><span class="w"> </span><span class="s2">"nightly-digests"</span><span class="p">,</span><span class="w"> </span><span class="nx">day</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="p">});</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">batch</span><span class="p">.</span><span class="nx">id</span><span class="p">;</span><span class="w"> </span><span class="c1">// store it; a later job collects the results</span>
+<span class="p">}</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">interface</span><span class="w"> </span><span class="nx">DigestResult</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">projectId</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">text?</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">error?</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c1">// Called by a scheduled job every few minutes until the batch is final.</span>
+<span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">collectDigestBatch</span><span class="p">(</span><span class="nx">client</span><span class="o">:</span><span class="w"> </span><span class="kt">OpenAI</span><span class="p">,</span><span class="w"> </span><span class="nx">batchId</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="nb">Promise</span><span class="o">&lt;</span><span class="nx">DigestResult</span><span class="p">[]</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="kc">null</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">batch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">client</span><span class="p">.</span><span class="nx">batches</span><span class="p">.</span><span class="nx">retrieve</span><span class="p">(</span><span class="nx">batchId</span><span class="p">);</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">([</span><span class="s2">"validating"</span><span class="p">,</span><span class="w"> </span><span class="s2">"in_progress"</span><span class="p">,</span><span class="w"> </span><span class="s2">"finalizing"</span><span class="p">,</span><span class="w"> </span><span class="s2">"cancelling"</span><span class="p">].</span><span class="nx">includes</span><span class="p">(</span><span class="nx">batch</span><span class="p">.</span><span class="nx">status</span><span class="p">))</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w"> </span><span class="c1">// not yet</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">batch</span><span class="p">.</span><span class="nx">status</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">"failed"</span><span class="p">)</span><span class="w"> </span><span class="k">throw</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="ne">Error</span><span class="p">(</span><span class="sb">`Batch </span><span class="si">${</span><span class="nx">batchId</span><span class="si">}</span><span class="sb"> failed validation`</span><span class="p">);</span>
+
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">results</span><span class="o">:</span><span class="w"> </span><span class="kt">DigestResult</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[];</span>
+<span class="w">  </span><span class="c1">// "completed", "expired" and "cancelled" batches can all have partial output.</span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="nx">fileId</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="p">[</span><span class="nx">batch</span><span class="p">.</span><span class="nx">output_file_id</span><span class="p">,</span><span class="w"> </span><span class="nx">batch</span><span class="p">.</span><span class="nx">error_file_id</span><span class="p">])</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">fileId</span><span class="p">)</span><span class="w"> </span><span class="k">continue</span><span class="p">;</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">body</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="p">(</span><span class="k">await</span><span class="w"> </span><span class="nx">client</span><span class="p">.</span><span class="nx">files</span><span class="p">.</span><span class="nx">content</span><span class="p">(</span><span class="nx">fileId</span><span class="p">)).</span><span class="nx">text</span><span class="p">();</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="nx">line</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="nx">body</span><span class="p">.</span><span class="nx">split</span><span class="p">(</span><span class="s2">"\n"</span><span class="p">).</span><span class="nx">filter</span><span class="p">(</span><span class="nb">Boolean</span><span class="p">))</span><span class="w"> </span><span class="nx">results</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">parseResultLine</span><span class="p">(</span><span class="nx">line</span><span class="p">));</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">results</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">parseResultLine</span><span class="p">(</span><span class="nx">line</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="nx">DigestResult</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">row</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">line</span><span class="p">)</span><span class="w"> </span><span class="kr">as</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">custom_id</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span>
+<span class="w">    </span><span class="nx">response</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">status_code</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">;</span><span class="w"> </span><span class="nx">body</span><span class="o">:</span><span class="w"> </span><span class="kt">OpenAI.Responses.Response</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
+<span class="w">    </span><span class="nx">error</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">code</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span><span class="w"> </span><span class="nx">message</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
+<span class="w">  </span><span class="p">};</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">projectId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">row</span><span class="p">.</span><span class="nx">custom_id</span><span class="p">;</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">row</span><span class="p">.</span><span class="nx">error</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="nx">row</span><span class="p">.</span><span class="nx">response</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nx">row</span><span class="p">.</span><span class="nx">response</span><span class="p">.</span><span class="nx">status_code</span><span class="w"> </span><span class="o">!==</span><span class="w"> </span><span class="mf">200</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">projectId</span><span class="p">,</span><span class="w"> </span><span class="nx">error</span><span class="o">:</span><span class="w"> </span><span class="kt">row.error?.message</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="sb">`HTTP </span><span class="si">${</span><span class="nx">row</span><span class="p">.</span><span class="nx">response</span><span class="o">?</span><span class="p">.</span><span class="nx">status_code</span><span class="si">}</span><span class="sb">`</span><span class="w"> </span><span class="p">};</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="c1">// output_text is an SDK convenience getter; raw JSON needs the output items.</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">row</span><span class="p">.</span><span class="nx">response</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">output</span>
+<span class="w">    </span><span class="p">.</span><span class="nx">flatMap</span><span class="p">((</span><span class="nx">item</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">(</span><span class="nx">item</span><span class="p">.</span><span class="kr">type</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">"message"</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="nx">item</span><span class="p">.</span><span class="nx">content</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="p">[]))</span>
+<span class="w">    </span><span class="p">.</span><span class="nx">flatMap</span><span class="p">((</span><span class="nx">part</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">(</span><span class="nx">part</span><span class="p">.</span><span class="kr">type</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">"output_text"</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="p">[</span><span class="nx">part</span><span class="p">.</span><span class="nx">text</span><span class="p">]</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="p">[]))</span>
+<span class="w">    </span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s2">""</span><span class="p">);</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">projectId</span><span class="p">,</span><span class="w"> </span><span class="nx">text</span><span class="w"> </span><span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div>
+<ul>
+<li>Each line of the input file is a complete request with its own
+  <code>custom_id</code>, HTTP method, endpoint path, and body. The whole file must
+  target the endpoint given to <code>batches.create</code>.</li>
+<li><code>toFile</code> turns an in-memory buffer into an upload; for very large jobs,
+  write the JSONL to disk and stream it instead.</li>
+<li>Results arrive in two files: the output file holds lines with an HTTP
+  status and body (a <code>429</code> or <code>500</code> on one line is possible), and the
+  error file holds lines that could not be processed at all. Both are
+  parsed into the same result shape.</li>
+<li>The collector returns <code>null</code> while the batch is running, so a scheduler
+  can call it every few minutes without special cases.</li>
+</ul>
+<p>The Anthropic version sends the requests directly in the create call and
+streams results back:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/jobs/nightly-digests-anthropic.ts</span>
+<span class="k">import</span><span class="w"> </span><span class="nx">Anthropic</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"@anthropic-ai/sdk"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="kr">type</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">DigestInput</span><span class="p">,</span><span class="w"> </span><span class="nx">DigestResult</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"./nightly-digests.js"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">anthropic</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">Anthropic</span><span class="p">();</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">submit</span><span class="p">(</span><span class="nx">inputs</span><span class="o">:</span><span class="w"> </span><span class="kt">DigestInput</span><span class="p">[])</span><span class="o">:</span><span class="w"> </span><span class="nb">Promise</span><span class="o">&lt;</span><span class="kt">string</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">batch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">anthropic</span><span class="p">.</span><span class="nx">messages</span><span class="p">.</span><span class="nx">batches</span><span class="p">.</span><span class="nx">create</span><span class="p">({</span>
+<span class="w">    </span><span class="nx">requests</span><span class="o">:</span><span class="w"> </span><span class="kt">inputs.map</span><span class="p">((</span><span class="nx">input</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">({</span>
+<span class="w">      </span><span class="nx">custom_id</span><span class="o">:</span><span class="w"> </span><span class="kt">input.projectId</span><span class="p">,</span><span class="w"> </span><span class="c1">// results come back in any order</span>
+<span class="w">      </span><span class="nx">params</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nx">model</span><span class="o">:</span><span class="w"> </span><span class="kt">process.env.ANTHROPIC_MODEL</span><span class="o">!</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">max_tokens</span><span class="o">:</span><span class="w"> </span><span class="kt">400</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">system</span><span class="o">:</span><span class="w"> </span><span class="s2">"Write a short digest of today's activity in this TaskFlow project."</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">messages</span><span class="o">:</span><span class="w"> </span><span class="p">[{</span><span class="w"> </span><span class="nx">role</span><span class="o">:</span><span class="w"> </span><span class="s2">"user"</span><span class="p">,</span><span class="w"> </span><span class="nx">content</span><span class="o">:</span><span class="w"> </span><span class="kt">input.activity</span><span class="w"> </span><span class="p">}],</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">    </span><span class="p">})),</span>
+<span class="w">  </span><span class="p">});</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">batch</span><span class="p">.</span><span class="nx">id</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">collect</span><span class="p">(</span><span class="nx">batchId</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="nb">Promise</span><span class="o">&lt;</span><span class="nx">DigestResult</span><span class="p">[]</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="kc">null</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">batch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">anthropic</span><span class="p">.</span><span class="nx">messages</span><span class="p">.</span><span class="nx">batches</span><span class="p">.</span><span class="nx">retrieve</span><span class="p">(</span><span class="nx">batchId</span><span class="p">);</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">batch</span><span class="p">.</span><span class="nx">processing_status</span><span class="w"> </span><span class="o">!==</span><span class="w"> </span><span class="s2">"ended"</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">results</span><span class="o">:</span><span class="w"> </span><span class="kt">DigestResult</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[];</span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="nx">row</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">anthropic</span><span class="p">.</span><span class="nx">messages</span><span class="p">.</span><span class="nx">batches</span><span class="p">.</span><span class="nx">results</span><span class="p">(</span><span class="nx">batchId</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">row</span><span class="p">.</span><span class="nx">result</span><span class="p">.</span><span class="kr">type</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">"succeeded"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="kd">const</span><span class="w"> </span><span class="nx">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">row</span><span class="p">.</span><span class="nx">result</span><span class="p">.</span><span class="nx">message</span><span class="p">.</span><span class="nx">content</span><span class="p">.</span><span class="nx">flatMap</span><span class="p">((</span><span class="nx">b</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">(</span><span class="nx">b</span><span class="p">.</span><span class="kr">type</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">"text"</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="p">[</span><span class="nx">b</span><span class="p">.</span><span class="nx">text</span><span class="p">]</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="p">[])).</span><span class="nx">join</span><span class="p">(</span><span class="s2">""</span><span class="p">);</span>
+<span class="w">      </span><span class="nx">results</span><span class="p">.</span><span class="nx">push</span><span class="p">({</span><span class="w"> </span><span class="nx">projectId</span><span class="o">:</span><span class="w"> </span><span class="kt">row.custom_id</span><span class="p">,</span><span class="w"> </span><span class="nx">text</span><span class="w"> </span><span class="p">});</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">results</span><span class="p">.</span><span class="nx">push</span><span class="p">({</span><span class="w"> </span><span class="nx">projectId</span><span class="o">:</span><span class="w"> </span><span class="kt">row.custom_id</span><span class="p">,</span><span class="w"> </span><span class="nx">error</span><span class="o">:</span><span class="w"> </span><span class="kt">row.result.type</span><span class="w"> </span><span class="p">});</span><span class="w"> </span><span class="c1">// errored, canceled, or expired</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">results</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="testing-both-features-without-a-provider">Testing both features without a provider<a class="headerlink" href="#testing-both-features-without-a-provider" title="Permanent link">&para;</a></h3>
+<p>The pure parts run locally: the prefix fingerprint stays the same across
+conversation turns and changes when the documents' version changes, and
+the hit ratio of a usage object with 9,600 cached tokens out of 12,000 is
+0.8. The batch flow runs against a stub server that implements the
+files and batches endpoints, with the real OpenAI SDK. Output of that test
+run (no provider called):</p>
+<div class="highlight"><pre><span></span><code>fingerprint  426c41d51fa2 for turn 1 and turn 3; different for docs v13
+batch        uploaded 3 lines with purpose "batch"; batch_1 created
+poll 1       in_progress -&gt; collector returned null
+poll 2       completed -&gt; 3 results matched by custom_id:
+             p1  text: "Done: 3 tasks."
+             p2  error: "HTTP 429"            (line-level failure in the output file)
+             p3  error: "max_output_tokens too large"  (from the error file)
+</code></pre></div>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Order prompts from most stable to least stable: tools, instructions,
+  shared documents, conversation, then the new input.</li>
+<li>Keep timestamps, user names, request ids, and retrieved chunks out of
+  the cached prefix.</li>
+<li>Serialize tool definitions and JSON deterministically, and version
+  shared documents.</li>
+<li>Keep conversations append-only; summarize old turns rarely and on
+  purpose.</li>
+<li>Log cached and cache-write tokens and a prefix fingerprint for every
+  request; alert when the hit ratio drops.</li>
+<li>Choose cache lifetimes from measured reuse intervals; long lifetimes
+  cost more to write.</li>
+<li>Send the first request with a new prefix before a parallel burst on
+  providers where entries appear only after the first response starts.</li>
+<li>Move work nobody waits for to batch APIs, match results by
+  <code>custom_id</code>, retry only failed lines, and make submission idempotent.</li>
+<li>Consider flex service tiers for work that should finish in minutes and
+  can tolerate slower responses and occasional capacity errors.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Caching was enabled but the bill did not change.</strong>
+  <em>Detect:</em> <code>cached_tokens</code> (or <code>cache_read_input_tokens</code>) stays at zero;
+  the prefix fingerprint differs on every request. <em>Cause:</em> a volatile
+  value (current time, request id, user name) or non-deterministic JSON
+  in the prefix. <em>Fix:</em> move volatile content to the end, sort and
+  stabilize serialization, and add the fingerprint to logs.</li>
+<li><strong>The hit ratio collapsed after a deploy.</strong>
+  <em>Detect:</em> cached tokens drop to zero at the deploy time for every route.
+  <em>Cause:</em> a changed tool schema or instruction text invalidated every
+  cached prefix (expected once), or a new field was added to the start of
+  the prompt (a lasting regression). <em>Fix:</em> expect one cold period after
+  prompt changes; if it persists, compare fingerprints before and after.</li>
+<li><strong>Costs rose after switching to the 1-hour (or 12-hour) cache.</strong>
+  <em>Detect:</em> cache-write tokens are high and reads per write are low.
+  <em>Cause:</em> entries are written at the higher long-lifetime rate but rarely
+  reused. <em>Fix:</em> measure reuse intervals per route and use the default
+  lifetime unless reuse spans it.</li>
+<li><strong>A burst of identical requests all miss the cache.</strong>
+  <em>Detect:</em> parallel requests at the same moment each show cache writes.
+  <em>Cause:</em> the entry becomes available only after the first response
+  starts. <em>Fix:</em> send one request first (or pre-warm where the provider
+  supports it) and release the rest after it starts.</li>
+<li><strong>Some projects never get their nightly digest.</strong>
+  <em>Detect:</em> the batch ended with fewer successes than lines; failed lines
+  are not retried. <em>Cause:</em> line-level errors or an expired batch, with
+  results matched by position or only the output file read. <em>Fix:</em> read
+  both files, match by <code>custom_id</code>, and resubmit failed lines.</li>
+<li><strong>The nightly batch ran twice.</strong>
+  <em>Detect:</em> two batches with the same metadata day; doubled batch spend.
+  <em>Cause:</em> the scheduler retried submission after a timeout without
+  checking for an existing batch. <em>Fix:</em> record the submission per day
+  with a unique key before submitting, and look it up on retry.</li>
+<li><strong>The explicit Gemini cache bill keeps growing.</strong>
+  <em>Detect:</em> storage charges for caches nobody uses. <em>Cause:</em> caches created
+  per request or per user with long TTLs. <em>Fix:</em> one cache per shared
+  context and version, short TTLs, and deletion when the content changes.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Prompt caching:</strong> Reusing the provider's processed state for an
+  identical prompt prefix across requests.</li>
+<li><strong>Prefix:</strong> The beginning of a prompt, up to a cache breakpoint.</li>
+<li><strong>Cache breakpoint:</strong> The position up to which a prefix is written to
+  the cache.</li>
+<li><strong>Automatic (implicit) caching:</strong> Caching where the provider chooses
+  what to cache with little or no configuration.</li>
+<li><strong>Explicit caching:</strong> Caching where the developer marks breakpoints or
+  creates cache objects.</li>
+<li><strong>Cache write:</strong> Storing a new prefix, usually billed above the normal
+  input rate.</li>
+<li><strong>Cache read (hit):</strong> Reusing a stored prefix, billed at a fraction of
+  the input rate.</li>
+<li><strong>TTL:</strong> How long a cache entry or batch result remains available.</li>
+<li><strong>Batch API:</strong> An asynchronous interface that processes many requests
+  within a window at a lower price.</li>
+<li><strong>custom_id:</strong> The identifier that matches each batch result to its
+  request.</li>
+<li><strong>Flex tier:</strong> A cheaper service tier for synchronous requests with
+  slower and less guaranteed processing.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Assuming caching works because it was "turned on", without reading the
+  usage fields.</li>
+<li>Putting the date or user details in the system prompt.</li>
+<li>Expecting a shared paragraph in the middle of prompts to be cached.</li>
+<li>Rewriting earlier conversation turns on every request.</li>
+<li>Using long cache lifetimes for prefixes that are rarely reused.</li>
+<li>Firing a burst of parallel requests with a brand-new prefix.</li>
+<li>Matching batch results by position instead of <code>custom_id</code>.</li>
+<li>Ignoring the error file and line-level failures of a batch.</li>
+<li>Using a batch API for anything a user is waiting for.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Why can a prompt cache only reuse a prefix, and what does that imply
+   for the order of a prompt?</li>
+<li>Compare OpenAI's implicit and explicit modes with Anthropic's automatic
+   and explicit caching. Who decides where the breakpoint goes in each?</li>
+<li>A request shows <code>cache_creation_input_tokens: 0</code> and
+   <code>cache_read_input_tokens: 0</code> although <code>cache_control</code> is set. Give two
+   possible reasons.</li>
+<li>Using a write multiplier of 1.25 and a read multiplier of 0.1, what is
+   the relative input cost of reusing a 10,000-token prefix for 20
+   requests with 500-token questions, compared with no caching?
+   (Cached: 12,500 + 19 x 1,000 + 10,000 = 41,500; uncached:
+   20 x 10,500 = 210,000; about 20%.)</li>
+<li>Where should TaskFlow put today's date if the assistant needs it, and
+   why?</li>
+<li>Which TaskFlow workloads belong in a batch API, and which do not?</li>
+<li>How do you make nightly batch submission safe against a scheduler that
+   retries?</li>
+<li>When would you choose a flex service tier over a batch API?</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://developers.openai.com/api/docs/guides/prompt-caching">OpenAI: Prompt caching</a></li>
+<li><a href="https://developers.openai.com/api/docs/guides/batch">OpenAI: Batch API</a></li>
+<li><a href="https://developers.openai.com/api/docs/guides/flex-processing">OpenAI: Flex processing</a></li>
+<li><a href="https://platform.claude.com/docs/en/build-with-claude/prompt-caching">Anthropic: Prompt caching</a></li>
+<li><a href="https://platform.claude.com/docs/en/build-with-claude/batch-processing">Anthropic: Batch processing</a></li>
+<li><a href="https://aistudio.google.com/docs/caching">Gemini API: Context caching</a></li>
+<li><a href="https://aistudio.google.com/docs/batch-api">Gemini API: Batch API</a></li>
+<li><a href="https://aistudio.google.com/docs/flex-inference">Gemini API: Flex inference</a></li>
+<li>Next: <a href="../choosing-models-and-providers/">choosing models and providers</a>. Back to the <a href="../">hosted model APIs overview</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../streaming-responses-end-to-end/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Streaming Responses End to End">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Streaming Responses End to End</span>
+      </a>
+    
+    
+      <a href="../choosing-models-and-providers/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: Choosing Models and Providers">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">Choosing Models and Providers</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

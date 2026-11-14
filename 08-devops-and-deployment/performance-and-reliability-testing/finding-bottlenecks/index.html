@@ -1,0 +1,4990 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../load-testing-with-k6/">
+      
+      
+        <link rel="next" href="../chaos-engineering-and-game-days/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Finding Bottlenecks - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#finding-bottlenecks" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Finding Bottlenecks
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../05-application-architecture/" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../06-ai-and-machine-learning/" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+          <span class="md-ellipsis">&larr; Back to DevOps</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../05-application-architecture/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../06-ai-and-machine-learning/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI and Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
+        
+          
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-label="DevOps module lessons" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+                  <span class="md-ellipsis">&larr; Back to DevOps</span>
+                </a>
+              
+            </div>
+          
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                  
+  
+  
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+    
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_17" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_17" id="__nav_9_17_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Performance and Reliability Testing
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_17_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_17">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Performance and Reliability Testing
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_17_2" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_17_2" id="__nav_9_17_2_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Load Testing
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_17_2_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_17_2">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Load Testing
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../load-testing-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Load Testing Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../load-testing-with-k6/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Load Testing with k6
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_17_3" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_17_3" id="__nav_9_17_3_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analysis
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_17_3_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_17_3">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Analysis
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Finding Bottlenecks
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Finding Bottlenecks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-triage-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The triage loop
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-use-method-during-a-load-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The USE method during a load test
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#finding-the-knee" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding the knee
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#event-loop-delay-and-utilization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Event-loop delay and utilization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cpu-profiling-under-load" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CPU profiling under load
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#memory-and-garbage-collection-pressure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Memory and garbage-collection pressure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#slow-queries-and-missing-indexes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Slow queries and missing indexes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#connection-pool-exhaustion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connection pool exhaustion
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#n1-queries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        N+1 queries
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#other-common-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Other common limits
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-runtime-health-sampler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A runtime health sampler
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#profiling-under-load-and-summarizing-the-profile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Profiling under load and summarizing the profile
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#finding-the-knee-with-a-step-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding the knee with a step test
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reading-the-database-side" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading the database side
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#watching-the-connection-pool" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Watching the connection pool
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-test-that-catches-n1-queries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A test that catches N+1 queries
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-worked-investigation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A worked investigation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_17_4" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_17_4" id="__nav_9_17_4_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reliability
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_17_4_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_17_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Reliability
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../chaos-engineering-and-game-days/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Chaos Engineering and Game Days
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-triage-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The triage loop
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-use-method-during-a-load-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The USE method during a load test
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#finding-the-knee" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding the knee
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#event-loop-delay-and-utilization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Event-loop delay and utilization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cpu-profiling-under-load" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CPU profiling under load
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#memory-and-garbage-collection-pressure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Memory and garbage-collection pressure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#slow-queries-and-missing-indexes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Slow queries and missing indexes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#connection-pool-exhaustion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connection pool exhaustion
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#n1-queries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        N+1 queries
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#other-common-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Other common limits
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-runtime-health-sampler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A runtime health sampler
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#profiling-under-load-and-summarizing-the-profile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Profiling under load and summarizing the profile
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#finding-the-knee-with-a-step-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding the knee with a step test
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reading-the-database-side" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading the database side
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#watching-the-connection-pool" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Watching the connection pool
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-test-that-catches-n1-queries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A test that catches N+1 queries
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-worked-investigation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A worked investigation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="finding-bottlenecks">Finding Bottlenecks<a class="headerlink" href="#finding-bottlenecks" title="Permanent link">&para;</a></h1>
+<p>A load test tells you that something broke: p95 jumped at 230 requests per
+second, or errors appeared at twice the peak. This lesson is about finding
+out why. It covers a repeatable triage loop, the USE method applied during a
+load test, finding the knee of the latency curve, event-loop delay and
+utilization in Node.js, CPU profiling with <code>--cpu-prof</code> (and where Clinic.js
+and 0x fit), garbage-collection pressure, slow MongoDB queries and missing
+indexes, connection pool exhaustion, N+1 queries, and a worked
+investigation from symptom to fix.</p>
+<p>Operating-system tools (<code>top</code>, <code>vmstat</code>, <code>iostat</code>, <code>ss</code>) are covered in
+<a href="../../linux-server-operations/troubleshooting-cpu-memory-disk-and-network/">troubleshooting CPU, memory, disk, and network</a>,
+and the Node.js basics behind this page (the event loop, heap snapshots,
+worker threads) in
+<a href="../../../03-backend-development/nodejs/event-loop/">the event loop</a> and
+<a href="../../../03-backend-development/nodejs/errors-debugging-and-performance/">errors, debugging, and performance</a>.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>Without a method, teams guess, and the usual guesses are expensive or
+harmful: add instances, double the connection pool, raise the heap limit.
+Each can make things worse. A bigger pool pushes more concurrent queries
+into a database that is already saturated; more instances multiply the
+connections the database must hold; a bigger heap only delays a leak.</p>
+<p>A <strong>bottleneck</strong> is the first resource to saturate as load rises, and it
+caps the throughput of the whole system. Fixing it moves the limit to the
+next bottleneck, so capacity grows in steps, one diagnosis at a time.
+Knowing exactly which resource saturates decides whether the fix is a line
+of code, an index, a configuration value, or more hardware, which is the
+difference between a cheap fix and a recurring bill.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>The USE method.</strong> Brendan Gregg's
+  <a href="https://www.brendangregg.com/usemethod.html">USE method</a> is a checklist
+  for performance investigations: "For every resource, check utilization,
+  saturation, and errors." It applies to software resources too: for a
+  thread pool or a lock, saturation is the number of requests waiting.</li>
+<li><strong>Discord: GC pauses.</strong> In
+  <a href="https://discord.com/blog/why-discord-is-switching-from-go-to-rust">Why Discord is switching from Go to Rust</a>
+  (2020), Discord describes latency and CPU spikes roughly every two
+  minutes in its Read States service. The cause was Go's garbage collector,
+  which runs at least every two minutes and had to scan a very large
+  in-memory cache. Shrinking the cache cut the spikes but raised p99,
+  because more lookups went to the database; the team load-tested cache
+  sizes before rewriting the service in Rust, which removed the spikes.</li>
+<li><strong>Netflix: flame graphs for Node.js.</strong>
+  <a href="https://netflixtechblog.com/node-js-in-flames-ddd073803aa4">Node.js in Flames</a>
+  (2014) describes rising request latency on Netflix's Node.js website.
+  CPU flame graphs showed the time growing inside Express's route
+  handling; the cause was route handlers being registered again and again,
+  so every request walked an ever longer list.</li>
+<li><strong>Node.js documentation.</strong> The official
+  <a href="https://nodejs.org/en/learn/diagnostics/flame-graphs">flame graphs guide</a>
+  recommends 0x for a single-step flame graph locally, and Linux <code>perf</code>
+  with V8's <code>--perf-basic-prof</code> options for production systems.</li>
+</ul>
+<p><strong>Popular tools and providers:</strong> <code>node --cpu-prof</code> with Chrome DevTools or
+VS Code, 0x, Linux <code>perf</code>, Clinic.js (no longer actively maintained),
+<code>perf_hooks</code> and prom-client's default metrics, OpenTelemetry traces,
+MongoDB <code>explain()</code> and the database profiler, the Atlas Query Profiler
+and Performance Advisor, and continuous profilers such as Grafana
+Pyroscope.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="the-triage-loop">The triage loop<a class="headerlink" href="#the-triage-loop" title="Permanent link">&para;</a></h3>
+<p>Investigations go wrong in two ways: chasing the first thing that looks
+odd, and changing several things at once. A fixed order avoids both:</p>
+<ol>
+<li><strong>Reproduce the symptom under load</strong> with the same test, at the step
+   where it starts.</li>
+<li><strong>Rule out the test itself.</strong> If the generator is saturated or dropping
+   iterations, nothing else you read is trustworthy.</li>
+<li><strong>Check saturation, cheapest signals first:</strong> event-loop utilization,
+   then connection pools and the database, then dependencies seen in
+   traces.</li>
+<li><strong>Measure the suspect directly:</strong> a CPU profile, an <code>explain()</code> plan, a
+   pool wait-time metric.</li>
+<li><strong>Change one thing</strong>, re-run the same test, and compare with the
+   baseline. The next bottleneck appears at a higher load.</li>
+</ol>
+<p><img alt="Diagram: a triage flowchart. Start when p95 or errors rise under load. Is the load generator healthy, with no dropped iterations and CPU below 80 percent? If not, fix the test first with more VUs, more generator hosts, and stubbed third parties. If yes, is event-loop utilization above about 80 percent? If yes, the service is CPU-bound in JavaScript: record a CPU profile with --cpu-prof under load, read the flame graph, and check GC time. If not, are there pool waiters or slow queries in the database? If yes, use the slow query log, explain, indexes, N+1 checks, and the pool size. If not, do traces show slow dependencies or network time? If yes, look at timeouts, connection reuse, caching, and the dependency's own limits. If not, check other limits such as rate limiters, file descriptors, and memory. After every fix, re-run the same test and compare with the baseline." src="../bottleneck-triage-flowchart.svg" /></p>
+<h3 id="the-use-method-during-a-load-test">The USE method during a load test<a class="headerlink" href="#the-use-method-during-a-load-test" title="Permanent link">&para;</a></h3>
+<p>For every resource on the request path, check <strong>utilization</strong> (how busy
+it is), <strong>saturation</strong> (how much work is waiting), and <strong>errors</strong>. Build
+the checklist before the test, so the dashboards are ready when it runs.</p>
+<table>
+<thead>
+<tr>
+<th>Resource</th>
+<th>Utilization</th>
+<th>Saturation</th>
+<th>Errors</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CPU (host or container)</td>
+<td>CPU % per core</td>
+<td>Run-queue length; CPU throttling in containers</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Node.js event loop</td>
+<td>Event-loop utilization (ELU)</td>
+<td>Event-loop delay</td>
+<td>Request timeouts</td>
+</tr>
+<tr>
+<td>Memory and heap</td>
+<td>Heap used against the limit</td>
+<td>GC time and frequency</td>
+<td>Out-of-memory restarts</td>
+</tr>
+<tr>
+<td>Database connection pool</td>
+<td>Connections in use / <code>maxPoolSize</code></td>
+<td>Requests waiting; checkout wait time</td>
+<td>Checkout timeouts</td>
+</tr>
+<tr>
+<td>MongoDB server</td>
+<td>CPU, disk I/O, cache use</td>
+<td>Queued operations, slow operations</td>
+<td>Errors, failovers</td>
+</tr>
+<tr>
+<td>Downstream API</td>
+<td>In-flight calls against its limit</td>
+<td>Calls waiting for a socket</td>
+<td>Timeouts, 429, 5xx</td>
+</tr>
+<tr>
+<td>File descriptors</td>
+<td>Open sockets and files</td>
+<td>-</td>
+<td><code>EMFILE</code> errors</td>
+</tr>
+<tr>
+<td>Load generator</td>
+<td>CPU, network</td>
+<td>Dropped iterations</td>
+<td>Request errors at the client</td>
+</tr>
+</tbody>
+</table>
+<p>USE complements the RED view of each service (rate, errors, duration per
+route) described in
+<a href="../../monitoring-and-logging/metrics-and-dashboards/">metrics and dashboards</a>:
+RED tells you which endpoint hurts, USE tells you which resource is behind
+it. Container CPU throttling is explained in
+<a href="../../kubernetes/scaling-and-resource-management/">scaling and resource management</a>.</p>
+<h3 id="finding-the-knee">Finding the knee<a class="headerlink" href="#finding-the-knee" title="Permanent link">&para;</a></h3>
+<p>Run a <strong>step test</strong>: raise the offered load in steps and hold each one long
+enough to read steady-state numbers (a few minutes in a real test). For
+each step, compare the achieved throughput with the offered load, and
+watch p95. Below the limit, throughput follows the offered load and latency
+stays flat. At the <strong>knee</strong>, throughput stops following and latency turns
+sharply upward, because every extra request now waits in a queue. The last
+step before the knee that still meets the SLO is the measured capacity;
+plan to run well below it (see
+<a href="../../../05-application-architecture/scalability/capacity-planning/">capacity planning</a>
+for the queueing math and headroom).</p>
+<p><img alt="Diagram: results of one local step test against a lab server whose database pool has 5 connections and queries of about 21 ms, stepping the offered load from 100 to 300 requests per second with a 5 second ramp and a 20 second hold per step. Achieved throughput: 98, 144, and 194 requests per second at 100, 150, and 200 offered, then a plateau of 232 at 250 and only 209 at 300, because 5 connections divided by 0.0215 seconds per query is about 233 per second. p95 latency: 30, 29, and 40 ms, then 726 ms at 250 and 4,589 ms at 300. The knee lies between 200 and 250 requests per second. Event-loop utilization stayed at 4 to 6 percent and the pool's wait queue reached 995 requests." src="../latency-throughput-knee.svg" /></p>
+<p>The chart comes from the step-test script in the practical examples, run
+with shortened holds against a local stand-in server. Little's law
+predicted the plateau before the test: a pool of 5 connections whose
+queries take about 0.0215 s can complete at most 5 / 0.0215, about 233
+queries per second. Event-loop utilization stayed at 4-6% throughout, so
+adding CPU would not have helped; the queue was in front of the pool.</p>
+<h3 id="event-loop-delay-and-utilization">Event-loop delay and utilization<a class="headerlink" href="#event-loop-delay-and-utilization" title="Permanent link">&para;</a></h3>
+<p>Node.js runs all JavaScript on one thread. Two built-in measurements
+describe how busy it is:</p>
+<ul>
+<li><strong>Event-loop utilization (ELU):</strong> the share of time the loop spent
+  running code rather than waiting for I/O, from
+  <code>performance.eventLoopUtilization()</code>. Near 100% means the process is
+  CPU-bound.</li>
+<li><strong>Event-loop delay:</strong> how late timers fire, from
+  <code>perf_hooks.monitorEventLoopDelay()</code>. Long synchronous work (a huge
+  <code>JSON.parse</code>, a deep copy, synchronous crypto) delays every other
+  request in the process.</li>
+</ul>
+<p>Each event-loop-delay sample includes the sampling interval itself: an idle
+loop reports values close to the <code>resolution</code> (10 ms in the sampler below),
+and on Windows, where timers are coarser, about 15.6 ms. Judge the delay by
+how far p99 and the maximum rise above that baseline. A 200 ms block, in a
+local check, showed up as a 200 ms maximum.</p>
+<p>Read the two together:</p>
+<table>
+<thead>
+<tr>
+<th>ELU</th>
+<th>Event-loop delay</th>
+<th>Request latency</th>
+<th>Likely bottleneck</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>High (above about 80%)</td>
+<td>High</td>
+<td>High</td>
+<td>CPU-bound JavaScript or GC in this process</td>
+</tr>
+<tr>
+<td>Low</td>
+<td>At the baseline</td>
+<td>High</td>
+<td>Waiting on I/O: a pool, the database, a dependency, a lock</td>
+</tr>
+<tr>
+<td>Low</td>
+<td>Occasional spikes</td>
+<td>Occasional spikes</td>
+<td>Rare long synchronous tasks</td>
+</tr>
+</tbody>
+</table>
+<p>Measured on the local lab server with the sampler from the practical
+examples:</p>
+<table>
+<thead>
+<tr>
+<th>Run</th>
+<th>Throughput</th>
+<th>p95 latency</th>
+<th>ELU</th>
+<th>Event-loop delay p99</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Healthy: 100 requests/s to a cheap endpoint</td>
+<td>100/s, no errors</td>
+<td>11 ms</td>
+<td>3-5%</td>
+<td>about 20 ms</td>
+</tr>
+<tr>
+<td>CPU-bound: 150/s offered to an endpoint doing heavy synchronous work</td>
+<td>131/s achieved, 341 dropped iterations</td>
+<td>1.58 s</td>
+<td>99-100%</td>
+<td>110-403 ms</td>
+</tr>
+<tr>
+<td>Pool-bound: the 250/s step of the knee test</td>
+<td>232/s achieved</td>
+<td>726 ms</td>
+<td>4-6%</td>
+<td>about 16-23 ms</td>
+</tr>
+</tbody>
+</table>
+<p>The second and third runs are both slow, for opposite reasons; only the
+second would improve with more CPU. When the event loop is saturated,
+timers and I/O callbacks also run late, so pools and queries look slow too:
+check ELU before blaming the database.</p>
+<h3 id="cpu-profiling-under-load">CPU profiling under load<a class="headerlink" href="#cpu-profiling-under-load" title="Permanent link">&para;</a></h3>
+<p>When ELU is high, find out which functions use the CPU. Node's built-in
+sampling profiler records the stack every millisecond by default
+(<code>--cpu-prof-interval</code>, in microseconds) and writes a <code>.cpuprofile</code> file
+<strong>when the process exits</strong>:</p>
+<div class="highlight"><pre><span></span><code>node<span class="w"> </span>--cpu-prof<span class="w"> </span>--cpu-prof-dir<span class="o">=</span>./profiles<span class="w"> </span>src/server.js
+<span class="c1"># run the load test against it, then stop the server with SIGINT or SIGTERM;</span>
+<span class="c1"># the file is named like CPU.20261114.012039.16912.0.001.cpuprofile</span>
+</code></pre></div>
+<p>The process must exit normally for the profile to be written, so the
+server needs a shutdown handler that closes and calls <code>process.exit()</code> on
+SIGTERM and SIGINT (as in a graceful-shutdown handler). Open the file in
+Chrome DevTools (the Performance panel's load-profile button) or VS Code to
+see a flame chart, which puts time on the x-axis, or summarize it from the
+command line with the script in the practical examples. Profile under the
+realistic load from your test, for a bounded time, against one instance:
+profiling a process with no traffic shows only start-up code.</p>
+<p><img alt="Diagram: an illustrative flame graph of on-CPU samples for GET /tasks with a slow statistics builder. Bottom row: all on-CPU samples. Above it, GC takes 10 percent and the GET /tasks handler 90 percent. Above the handler, buildTaskStats appears in 70 percent of samples, the driver's find in 5 percent, and res.json in 15 percent. Above buildTaskStats, JSON.parse and JSON.stringify take 25 percent each and the map callback 15 percent; above res.json, JSON.stringify takes 12.5 percent. Callouts mark the widest top edges, the deep copies, as self time and the first place to look, and serializing the response as the second. Width is the share of CPU samples with frames sorted by name, not time; height is stack depth." src="../flame-graph-reading.svg" /></p>
+<p>How to read a flame graph: the x-axis is the population of samples sorted
+alphabetically, not the passage of time; the y-axis is stack depth, with
+callers below callees. A box's width is how often that frame was on the
+stack. The <strong>top edges</strong> are what was actually running, so wide plateaus at
+the top are where the CPU time goes. A flame <strong>chart</strong> (the DevTools view)
+keeps time on the x-axis instead, which is better for finding one long
+task.</p>
+<p>Two well-known tools wrap this workflow:</p>
+<ul>
+<li><strong>0x</strong> profiles a process and writes an interactive flame graph in a
+  single command (<code>npx 0x -o src/server.js</code>, then Ctrl+C); its README lists
+  Node.js 20 and later.</li>
+<li><strong>Clinic.js</strong> (Doctor, Flame, Bubbleprof, Heap Profiler), originally
+  developed by NearForm, carries a notice that it is not being actively
+  maintained and that its results may be inaccurate on current Node.js
+  versions; its last npm release dates from 2023. Prefer <code>--cpu-prof</code>, 0x,
+  or a continuous profiler on new projects.</li>
+</ul>
+<p>In production, use short, targeted captures, Linux <code>perf</code> with
+<code>--perf-basic-prof</code>, or a continuous profiler that samples all the time at
+low overhead, rather than leaving <code>--cpu-prof</code> running.</p>
+<h3 id="memory-and-garbage-collection-pressure">Memory and garbage-collection pressure<a class="headerlink" href="#memory-and-garbage-collection-pressure" title="Permanent link">&para;</a></h3>
+<p>Every allocation must eventually be collected, and collection takes time
+on the same thread. GC pressure shows up as:</p>
+<ul>
+<li>latency spikes that line up with <strong>major</strong> collections;</li>
+<li>a large share of ELU spent in GC (the <code>(garbage collector)</code> frame in a
+  profile, or <code>nodejs_gc_duration_seconds</code> from prom-client);</li>
+<li>a heap that saws up and down at a high rate, or a floor that keeps
+  rising (a leak).</li>
+</ul>
+<p>Typical causes in an API are per-request allocations that scale with data
+(serializing huge result sets, deep copies, building large strings) and
+caches without bounds. The fixes are to allocate less (smaller pages,
+projections, streaming), to bound caches, and to find leaks with heap
+snapshots taken minutes apart under load. Raising <code>--max-old-space-size</code>
+is right only when the working set is genuinely larger; for a leak it only
+delays the crash.</p>
+<h3 id="slow-queries-and-missing-indexes">Slow queries and missing indexes<a class="headerlink" href="#slow-queries-and-missing-indexes" title="Permanent link">&para;</a></h3>
+<p>Most API latency under load is database time. Three tools find it:</p>
+<ul>
+<li><strong>The slow query log.</strong> <code>mongod</code> logs operations slower than <code>slowms</code>
+  (100 ms by default). Lower it in a performance environment to see more.</li>
+<li><strong>The database profiler.</strong> <code>db.setProfilingLevel(1, { slowms: 20 })</code>
+  records slow operations into the capped <code>system.profile</code> collection.
+  MongoDB's documentation warns that the profiler can degrade performance
+  and suggests the Atlas Query Profiler, the Performance Advisor, or the
+  <code>$queryStats</code> stage first; on a self-managed test environment it is
+  fine for a short run.</li>
+<li><strong><code>explain("executionStats")</code></strong> on a suspect query, comparing
+  <code>nReturned</code> with <code>totalKeysExamined</code> and <code>totalDocsExamined</code>. A query
+  that returns 20 documents after examining 40,000 is the classic missing
+  index. A <code>COLLSCAN</code> stage is a full collection scan; a <code>SORT</code> stage means
+  an in-memory sort the index could not provide.</li>
+</ul>
+<p>For compound indexes, MongoDB's <strong>ESR guideline</strong> puts <strong>E</strong>quality fields
+first, then <strong>S</strong>ort fields, then <strong>R</strong>ange fields. TaskFlow's main list
+query, <code>{ ownerId, status: "open" }</code> sorted by <code>dueDate</code>, therefore wants
+<code>{ ownerId: 1, status: 1, dueDate: 1 }</code>. Index basics are covered in
+<a href="../../../04-databases/mongodb/indexes-and-performance/">MongoDB index design</a>
+and <a href="../../../04-databases/mongodb/query-plans-explain/">explain and query plans</a>.</p>
+<h3 id="connection-pool-exhaustion">Connection pool exhaustion<a class="headerlink" href="#connection-pool-exhaustion" title="Permanent link">&para;</a></h3>
+<p>Every query needs a connection from the driver's pool. Little's law gives
+the number of connections busy on average:</p>
+<div class="highlight"><pre><span></span><code>busy connections = requests/s × queries per request × seconds per query
+</code></pre></div>
+<p>When that approaches <code>maxPoolSize</code>, requests queue for a connection. The
+MongoDB Node.js driver's defaults are a <code>maxPoolSize</code> of 100 and a
+<code>waitQueueTimeoutMS</code> of 0, meaning no limit on the wait; the driver does not
+limit the number of waiters either, so a saturated pool shows up as rising
+latency, not errors, until your own request timeout fires. Setting
+<code>waitQueueTimeoutMS</code> makes the driver fail a checkout that waits too long
+with a <code>MongoWaitQueueTimeoutError</code>, which turns a hidden queue into a
+visible error.</p>
+<p><img alt="Diagram: one API instance receives 120 requests per second with 2 queries each, 240 queries per second. Requests wait in the driver's wait queue, unbounded by default, for one of 20 pool connections, 19 of them busy; MongoDB is at 92 percent CPU with queries of about 80 ms because of an unindexed sort. Before the fix, busy connections are 240 times 0.080 seconds, 19.2: the pool of 20 is full, requests queue, and a bigger pool only adds load to a database at 92 percent CPU. After an index that follows the equality, sort, range guideline, busy connections are 240 times 0.002 seconds, 0.48: the pool is almost idle, database CPU drops, and the knee moves to a higher rate." src="../connection-pool-queue.svg" /></p>
+<p>A full pool is usually a <strong>symptom</strong>. If the queries are slow because the
+database is saturated, a bigger pool sends more concurrent work into it and
+makes every query slower. Raise <code>maxPoolSize</code> only when the database has
+headroom and the queries are already fast, and remember that every
+instance has its own pool: 10 instances with <code>maxPoolSize: 100</code> can open
+1,000 connections to one server.</p>
+<h3 id="n1-queries">N+1 queries<a class="headerlink" href="#n1-queries" title="Permanent link">&para;</a></h3>
+<p>An N+1 pattern runs one query for a list and then one more per item, so
+the query count grows with the page size and the data. The pattern and its
+fixes (one batched <code>$in</code> query, <code>$lookup</code>, embedding, DataLoader for
+GraphQL) are explained in
+<a href="../../../05-application-architecture/scalability/performance-and-latency/">performance and latency</a>.
+Under load it shows up as database operations per second rising faster
+than requests per second. The cheapest guard is a test that counts the
+commands one request sends, shown in the practical examples.</p>
+<h3 id="other-common-limits">Other common limits<a class="headerlink" href="#other-common-limits" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Dependencies:</strong> a slow downstream service holds sockets and memory for
+  every waiting request. Traces show it (see
+  <a href="../../monitoring-and-logging/distributed-tracing/">distributed tracing</a>);
+  timeouts and bulkheads contain it (see
+  <a href="../../load-balancing-and-multi-server/resilience-patterns-across-servers/">resilience patterns across servers</a>).</li>
+<li><strong>No connection reuse:</strong> a client or proxy that opens a new TLS
+  connection per request spends CPU on handshakes; k6's
+  <code>http_req_tls_handshaking</code> and the server's CPU show it.</li>
+<li><strong>Rate limiters and quotas:</strong> a wall of 429 responses at a round number
+  is a limiter, not a capacity limit.</li>
+<li><strong>File descriptors:</strong> <code>EMFILE</code> errors mean the process hit its open-file
+  limit; see the Linux troubleshooting page.</li>
+<li><strong>Autoscaling lag:</strong> new instances arrive after the spike; see
+  <a href="../../load-balancing-and-multi-server/autoscaling-server-fleets/">autoscaling server fleets</a>.</li>
+</ul>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Symptom under load</th>
+<th>First tool</th>
+<th>Then</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Latency rises with ELU near 100%</td>
+<td>CPU profile under load (<code>--cpu-prof</code>, 0x)</td>
+<td>Optimize the hot functions or move work to worker threads</td>
+</tr>
+<tr>
+<td>Latency rises with ELU low</td>
+<td>Pool wait time, slow query log</td>
+<td><code>explain()</code>, indexes, N+1 checks</td>
+</tr>
+<tr>
+<td>Periodic latency spikes</td>
+<td>GC timing, event-loop delay maximum</td>
+<td>Reduce allocations, find the long synchronous task</td>
+</tr>
+<tr>
+<td>Memory grows during a soak test</td>
+<td>Heap snapshots minutes apart</td>
+<td>Fix the leak; bound caches</td>
+</tr>
+<tr>
+<td>One endpoint slow, others fine</td>
+<td>Traces for that route</td>
+<td>Its queries and dependencies</td>
+</tr>
+<tr>
+<td>Everything slow, servers idle</td>
+<td>Load-generator health, network</td>
+<td>Fix the test or the network path</td>
+</tr>
+</tbody>
+</table>
+<p>Do not profile or tune before you have a reproducible symptom under a
+realistic load: micro-optimizing code that is not on the critical path
+costs time and readability for nothing. And do not tune production by
+experiment; reproduce the problem in a performance environment first.</p>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="a-runtime-health-sampler">A runtime health sampler<a class="headerlink" href="#a-runtime-health-sampler" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/runtime-stats.js: event-loop delay, event-loop utilization, and GC pauses every 10 s</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">monitorEventLoopDelay</span><span class="p">,</span><span class="w"> </span><span class="nx">performance</span><span class="p">,</span><span class="w"> </span><span class="nx">PerformanceObserver</span><span class="p">,</span><span class="w"> </span><span class="nx">constants</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:perf_hooks"</span><span class="p">;</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">startRuntimeStats</span><span class="p">({</span><span class="w"> </span><span class="nx">intervalMs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">10</span><span class="nx">_000</span><span class="p">,</span><span class="w"> </span><span class="nx">log</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{})</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">delay</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">monitorEventLoopDelay</span><span class="p">({</span><span class="w"> </span><span class="nx">resolution</span><span class="o">:</span><span class="w"> </span><span class="mf">10</span><span class="w"> </span><span class="p">});</span><span class="w"> </span><span class="c1">// samples every 10 ms</span>
+<span class="w">  </span><span class="nx">delay</span><span class="p">.</span><span class="nx">enable</span><span class="p">();</span>
+<span class="w">  </span><span class="kd">let</span><span class="w"> </span><span class="nx">lastElu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">performance</span><span class="p">.</span><span class="nx">eventLoopUtilization</span><span class="p">();</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">gc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">pauses</span><span class="o">:</span><span class="w"> </span><span class="mf">0</span><span class="p">,</span><span class="w"> </span><span class="nx">major</span><span class="o">:</span><span class="w"> </span><span class="mf">0</span><span class="p">,</span><span class="w"> </span><span class="nx">totalMs</span><span class="o">:</span><span class="w"> </span><span class="mf">0</span><span class="p">,</span><span class="w"> </span><span class="nx">maxMs</span><span class="o">:</span><span class="w"> </span><span class="mf">0</span><span class="w"> </span><span class="p">};</span>
+
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">gcObserver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">PerformanceObserver</span><span class="p">((</span><span class="nx">list</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="nx">entry</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="nx">list</span><span class="p">.</span><span class="nx">getEntries</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">gc</span><span class="p">.</span><span class="nx">pauses</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mf">1</span><span class="p">;</span>
+<span class="w">      </span><span class="nx">gc</span><span class="p">.</span><span class="nx">totalMs</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="nx">entry</span><span class="p">.</span><span class="nx">duration</span><span class="p">;</span>
+<span class="w">      </span><span class="nx">gc</span><span class="p">.</span><span class="nx">maxMs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Math</span><span class="p">.</span><span class="nx">max</span><span class="p">(</span><span class="nx">gc</span><span class="p">.</span><span class="nx">maxMs</span><span class="p">,</span><span class="w"> </span><span class="nx">entry</span><span class="p">.</span><span class="nx">duration</span><span class="p">);</span>
+<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">entry</span><span class="p">.</span><span class="nx">detail</span><span class="o">?</span><span class="p">.</span><span class="nx">kind</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="nx">constants</span><span class="p">.</span><span class="nx">NODE_PERFORMANCE_GC_MAJOR</span><span class="p">)</span><span class="w"> </span><span class="nx">gc</span><span class="p">.</span><span class="nx">major</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mf">1</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">});</span>
+<span class="w">  </span><span class="nx">gcObserver</span><span class="p">.</span><span class="nx">observe</span><span class="p">({</span><span class="w"> </span><span class="nx">entryTypes</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"gc"</span><span class="p">]</span><span class="w"> </span><span class="p">});</span>
+
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">ms</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nx">ns</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nb">Number</span><span class="p">((</span><span class="nx">ns</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e6</span><span class="p">).</span><span class="nx">toFixed</span><span class="p">(</span><span class="mf">1</span><span class="p">));</span><span class="w"> </span><span class="c1">// the histogram records nanoseconds</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">timer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">setInterval</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">elu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">performance</span><span class="p">.</span><span class="nx">eventLoopUtilization</span><span class="p">(</span><span class="nx">lastElu</span><span class="p">);</span><span class="w"> </span><span class="c1">// only the last interval</span>
+<span class="w">    </span><span class="nx">lastElu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">performance</span><span class="p">.</span><span class="nx">eventLoopUtilization</span><span class="p">();</span>
+<span class="w">    </span><span class="nx">log</span><span class="p">({</span>
+<span class="w">      </span><span class="nx">eluPercent</span><span class="o">:</span><span class="w"> </span><span class="nb">Math</span><span class="p">.</span><span class="nx">round</span><span class="p">(</span><span class="nx">elu</span><span class="p">.</span><span class="nx">utilization</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">100</span><span class="p">),</span>
+<span class="w">      </span><span class="nx">loopDelayP50Ms</span><span class="o">:</span><span class="w"> </span><span class="nx">ms</span><span class="p">(</span><span class="nx">delay</span><span class="p">.</span><span class="nx">percentile</span><span class="p">(</span><span class="mf">50</span><span class="p">)),</span>
+<span class="w">      </span><span class="nx">loopDelayP99Ms</span><span class="o">:</span><span class="w"> </span><span class="nx">ms</span><span class="p">(</span><span class="nx">delay</span><span class="p">.</span><span class="nx">percentile</span><span class="p">(</span><span class="mf">99</span><span class="p">)),</span>
+<span class="w">      </span><span class="nx">loopDelayMaxMs</span><span class="o">:</span><span class="w"> </span><span class="nx">ms</span><span class="p">(</span><span class="nx">delay</span><span class="p">.</span><span class="nx">max</span><span class="p">),</span>
+<span class="w">      </span><span class="nx">gcPauses</span><span class="o">:</span><span class="w"> </span><span class="nx">gc</span><span class="p">.</span><span class="nx">pauses</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">gcMajor</span><span class="o">:</span><span class="w"> </span><span class="nx">gc</span><span class="p">.</span><span class="nx">major</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">gcTotalMs</span><span class="o">:</span><span class="w"> </span><span class="nb">Math</span><span class="p">.</span><span class="nx">round</span><span class="p">(</span><span class="nx">gc</span><span class="p">.</span><span class="nx">totalMs</span><span class="p">),</span>
+<span class="w">      </span><span class="nx">gcMaxMs</span><span class="o">:</span><span class="w"> </span><span class="nb">Number</span><span class="p">(</span><span class="nx">gc</span><span class="p">.</span><span class="nx">maxMs</span><span class="p">.</span><span class="nx">toFixed</span><span class="p">(</span><span class="mf">1</span><span class="p">)),</span>
+<span class="w">      </span><span class="nx">heapUsedMb</span><span class="o">:</span><span class="w"> </span><span class="nb">Math</span><span class="p">.</span><span class="nx">round</span><span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">memoryUsage</span><span class="p">().</span><span class="nx">heapUsed</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1048576</span><span class="p">),</span>
+<span class="w">    </span><span class="p">});</span>
+<span class="w">    </span><span class="nx">delay</span><span class="p">.</span><span class="nx">reset</span><span class="p">();</span>
+<span class="w">    </span><span class="nb">Object</span><span class="p">.</span><span class="nx">assign</span><span class="p">(</span><span class="nx">gc</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">pauses</span><span class="o">:</span><span class="w"> </span><span class="mf">0</span><span class="p">,</span><span class="w"> </span><span class="nx">major</span><span class="o">:</span><span class="w"> </span><span class="mf">0</span><span class="p">,</span><span class="w"> </span><span class="nx">totalMs</span><span class="o">:</span><span class="w"> </span><span class="mf">0</span><span class="p">,</span><span class="w"> </span><span class="nx">maxMs</span><span class="o">:</span><span class="w"> </span><span class="mf">0</span><span class="w"> </span><span class="p">});</span>
+<span class="w">  </span><span class="p">},</span><span class="w"> </span><span class="nx">intervalMs</span><span class="p">);</span>
+<span class="w">  </span><span class="nx">timer</span><span class="p">.</span><span class="nx">unref</span><span class="p">();</span><span class="w"> </span><span class="c1">// never keeps the process alive on its own</span>
+
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">stop</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">clearInterval</span><span class="p">(</span><span class="nx">timer</span><span class="p">);</span>
+<span class="w">    </span><span class="nx">delay</span><span class="p">.</span><span class="nx">disable</span><span class="p">();</span>
+<span class="w">    </span><span class="nx">gcObserver</span><span class="p">.</span><span class="nx">disconnect</span><span class="p">();</span>
+<span class="w">  </span><span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/server.js (excerpt): log runtime stats next to the request logs</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">startRuntimeStats</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"./runtime-stats.js"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">logger</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"./observability.js"</span><span class="p">;</span>
+
+<span class="nx">startRuntimeStats</span><span class="p">({</span><span class="w"> </span><span class="nx">log</span><span class="o">:</span><span class="w"> </span><span class="p">(</span><span class="nx">stats</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">logger</span><span class="p">.</span><span class="nx">info</span><span class="p">({</span><span class="w"> </span><span class="nx">runtime</span><span class="o">:</span><span class="w"> </span><span class="nx">stats</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="s2">"runtime stats"</span><span class="p">)</span><span class="w"> </span><span class="p">});</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code># two samples from the lab runs (5-second interval)
+CPU-bound:  {"eluPercent":100,"loopDelayP50Ms":88.7,"loopDelayP99Ms":403.2,"gcPauses":57,"gcMajor":1,"gcTotalMs":255,"heapUsedMb":33}
+Pool-bound: {"eluPercent":5,"loopDelayP50Ms":11.5,"loopDelayP99Ms":23.2,"gcPauses":13,"gcMajor":2,"gcTotalMs":13,"heapUsedMb":37}
+</code></pre></div>
+<p>Each line covers only the last interval: <code>eventLoopUtilization(lastElu)</code>
+returns the difference since the previous reading, and the histogram and GC
+counters are reset after each log. In production, export the same values as
+metrics (prom-client's <code>collectDefaultMetrics()</code> already provides
+<code>nodejs_eventloop_lag_p99_seconds</code> and <code>nodejs_gc_duration_seconds</code>) and put
+them on the dashboard you watch during load tests. The samples above are
+trimmed to the most telling fields.</p>
+<h3 id="profiling-under-load-and-summarizing-the-profile">Profiling under load and summarizing the profile<a class="headerlink" href="#profiling-under-load-and-summarizing-the-profile" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># terminal 1: the API under the profiler, on a performance host</span>
+node<span class="w"> </span>--cpu-prof<span class="w"> </span>--cpu-prof-dir<span class="o">=</span>./profiles<span class="w"> </span>src/server.js
+
+<span class="c1"># terminal 2: steady load on the suspect endpoint for 60 seconds</span>
+k6<span class="w"> </span>run<span class="w"> </span>--vus<span class="w"> </span><span class="m">20</span><span class="w"> </span>--duration<span class="w"> </span>60s<span class="w"> </span>-e<span class="w"> </span><span class="nv">BASE_URL</span><span class="o">=</span>http://localhost:3000<span class="w"> </span>perf/smoke.js
+
+<span class="c1"># terminal 1: stop the server with Ctrl+C (its shutdown handler exits cleanly), then</span>
+node<span class="w"> </span>perf/tools/cpuprofile-top.js<span class="w"> </span>profiles/CPU.*.cpuprofile
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1">// perf/tools/cpuprofile-top.js: the functions with the most CPU samples in a .cpuprofile</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">readFileSync</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:fs"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">profile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">readFileSync</span><span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">argv</span><span class="p">[</span><span class="mf">2</span><span class="p">],</span><span class="w"> </span><span class="s2">"utf8"</span><span class="p">));</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">totalSamples</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">profile</span><span class="p">.</span><span class="nx">samples</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">msPerSample</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nx">profile</span><span class="p">.</span><span class="nx">endTime</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nx">profile</span><span class="p">.</span><span class="nx">startTime</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1000</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nx">totalSamples</span><span class="p">;</span><span class="w"> </span><span class="c1">// times are in µs</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">selfSamples</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Map</span><span class="p">();</span>
+<span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">callFrame</span><span class="p">,</span><span class="w"> </span><span class="nx">hitCount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="nx">profile</span><span class="p">.</span><span class="nx">nodes</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">callFrame</span><span class="p">.</span><span class="nx">url</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="sb">` </span><span class="si">${</span><span class="nx">callFrame</span><span class="p">.</span><span class="nx">url</span><span class="p">.</span><span class="nx">split</span><span class="p">(</span><span class="s2">"/"</span><span class="p">).</span><span class="nx">pop</span><span class="p">()</span><span class="si">}</span><span class="sb">:</span><span class="si">${</span><span class="nx">callFrame</span><span class="p">.</span><span class="nx">lineNumber</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">1</span><span class="si">}</span><span class="sb">`</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="s2">""</span><span class="p">;</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sb">`</span><span class="si">${</span><span class="nx">callFrame</span><span class="p">.</span><span class="nx">functionName</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="s2">"(anonymous)"</span><span class="si">}${</span><span class="nx">file</span><span class="si">}</span><span class="sb">`</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">selfSamples</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nx">selfSamples</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">name</span><span class="p">)</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="mf">0</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nx">hitCount</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">"self %   self ms  function"</span><span class="p">);</span>
+<span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="p">[</span><span class="nx">name</span><span class="p">,</span><span class="w"> </span><span class="nx">hits</span><span class="p">]</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="p">[...</span><span class="nx">selfSamples</span><span class="p">].</span><span class="nx">sort</span><span class="p">((</span><span class="nx">a</span><span class="p">,</span><span class="w"> </span><span class="nx">b</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">b</span><span class="p">[</span><span class="mf">1</span><span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nx">a</span><span class="p">[</span><span class="mf">1</span><span class="p">]).</span><span class="nx">slice</span><span class="p">(</span><span class="mf">0</span><span class="p">,</span><span class="w"> </span><span class="mf">10</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">pct</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">((</span><span class="nx">hits</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nx">totalSamples</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">100</span><span class="p">).</span><span class="nx">toFixed</span><span class="p">(</span><span class="mf">1</span><span class="p">).</span><span class="nx">padStart</span><span class="p">(</span><span class="mf">6</span><span class="p">);</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">ms</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nx">hits</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nx">msPerSample</span><span class="p">).</span><span class="nx">toFixed</span><span class="p">(</span><span class="mf">0</span><span class="p">).</span><span class="nx">padStart</span><span class="p">(</span><span class="mf">8</span><span class="p">);</span>
+<span class="w">  </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`</span><span class="si">${</span><span class="nx">pct</span><span class="si">}</span><span class="sb">  </span><span class="si">${</span><span class="nx">ms</span><span class="si">}</span><span class="sb">  </span><span class="si">${</span><span class="nx">name</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>self %   self ms  function
+  78.2     18809  (idle)
+  13.8      3316  buildTaskStats stats.mjs:2
+   5.2      1254  (anonymous) stats.mjs:5
+   0.9       215  (garbage collector)
+   0.3        83  (program)
+   0.3        71  writeUtf8String
+</code></pre></div>
+<p>The output is from a 24-second profile of the lab server while k6 sent 60
+requests per second to an endpoint with a deliberately wasteful statistics
+builder. <code>(idle)</code> is time the loop waited for I/O; among the busy samples,
+<code>buildTaskStats</code> and its <code>map</code> callback dominate, so that is the function
+to fix. Each profile node records <code>hitCount</code>, the samples in which it was
+the running (top) frame, which is exactly the self time a flame graph shows
+as top edges. On a real API run, the same script points at the busiest
+handlers in seconds and works in CI, where no browser is available.</p>
+<h3 id="finding-the-knee-with-a-step-test">Finding the knee with a step test<a class="headerlink" href="#finding-the-knee-with-a-step-test" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// perf/find-the-knee.js: step the arrival rate up and watch where latency turns upward</span>
+<span class="k">import</span><span class="w"> </span><span class="nx">http</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"k6/http"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">steps</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="mf">100</span><span class="p">,</span><span class="w"> </span><span class="mf">150</span><span class="p">,</span><span class="w"> </span><span class="mf">200</span><span class="p">,</span><span class="w"> </span><span class="mf">250</span><span class="p">,</span><span class="w"> </span><span class="mf">300</span><span class="p">];</span><span class="w"> </span><span class="c1">// requests per second, held for 2 minutes each</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">options</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">scenarios</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">steps</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">executor</span><span class="o">:</span><span class="w"> </span><span class="s2">"ramping-arrival-rate"</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">startRate</span><span class="o">:</span><span class="w"> </span><span class="nx">steps</span><span class="p">[</span><span class="mf">0</span><span class="p">],</span>
+<span class="w">      </span><span class="nx">timeUnit</span><span class="o">:</span><span class="w"> </span><span class="s2">"1s"</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">preAllocatedVUs</span><span class="o">:</span><span class="w"> </span><span class="mf">100</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">maxVUs</span><span class="o">:</span><span class="w"> </span><span class="mf">1000</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">stages</span><span class="o">:</span><span class="w"> </span><span class="nx">steps</span><span class="p">.</span><span class="nx">flatMap</span><span class="p">((</span><span class="nx">rate</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nx">target</span><span class="o">:</span><span class="w"> </span><span class="nx">rate</span><span class="p">,</span><span class="w"> </span><span class="nx">duration</span><span class="o">:</span><span class="w"> </span><span class="s2">"10s"</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="c1">// move to the next step</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nx">target</span><span class="o">:</span><span class="w"> </span><span class="nx">rate</span><span class="p">,</span><span class="w"> </span><span class="nx">duration</span><span class="o">:</span><span class="w"> </span><span class="s2">"2m"</span><span class="w"> </span><span class="p">},</span><span class="w">  </span><span class="c1">// hold it</span>
+<span class="w">      </span><span class="p">]),</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nx">thresholds</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">http_req_failed</span><span class="o">:</span><span class="w"> </span><span class="p">[{</span><span class="w"> </span><span class="nx">threshold</span><span class="o">:</span><span class="w"> </span><span class="s2">"rate&lt;0.05"</span><span class="p">,</span><span class="w"> </span><span class="nx">abortOnFail</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">}],</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="p">};</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">default</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">http</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="sb">`</span><span class="si">${</span><span class="nx">__ENV</span><span class="p">.</span><span class="nx">BASE_URL</span><span class="si">}</span><span class="sb">/tasks?limit=20`</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">headers</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Authorization</span><span class="o">:</span><span class="w"> </span><span class="sb">`Bearer </span><span class="si">${</span><span class="nx">__ENV</span><span class="p">.</span><span class="nx">API_TOKEN</span><span class="si">}</span><span class="sb">`</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nx">tags</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">name</span><span class="o">:</span><span class="w"> </span><span class="s2">"GET /tasks"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="p">});</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1">// perf/tools/k6-steps-report.js: throughput and latency per time window from k6 --out json</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">createReadStream</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:fs"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">createInterface</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:readline"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="p">[</span><span class="nx">file</span><span class="p">,</span><span class="w"> </span><span class="nx">windowSeconds</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"60"</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">process</span><span class="p">.</span><span class="nx">argv</span><span class="p">.</span><span class="nx">slice</span><span class="p">(</span><span class="mf">2</span><span class="p">);</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">bySecond</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Map</span><span class="p">();</span><span class="w"> </span><span class="c1">// epoch second -&gt; request durations in ms</span>
+
+<span class="k">for</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="nx">line</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="nx">createInterface</span><span class="p">({</span><span class="w"> </span><span class="nx">input</span><span class="o">:</span><span class="w"> </span><span class="nx">createReadStream</span><span class="p">(</span><span class="nx">file</span><span class="p">)</span><span class="w"> </span><span class="p">}))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">line</span><span class="p">.</span><span class="nx">includes</span><span class="p">(</span><span class="s1">'"type":"Point"'</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="nx">line</span><span class="p">.</span><span class="nx">includes</span><span class="p">(</span><span class="s1">'"metric":"http_req_duration"'</span><span class="p">))</span><span class="w"> </span><span class="k">continue</span><span class="p">;</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">data</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">line</span><span class="p">);</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">second</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Math</span><span class="p">.</span><span class="nx">floor</span><span class="p">(</span><span class="nb">Date</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">data</span><span class="p">.</span><span class="nx">time</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1000</span><span class="p">);</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">bySecond</span><span class="p">.</span><span class="nx">has</span><span class="p">(</span><span class="nx">second</span><span class="p">))</span><span class="w"> </span><span class="nx">bySecond</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nx">second</span><span class="p">,</span><span class="w"> </span><span class="p">[]);</span>
+<span class="w">  </span><span class="nx">bySecond</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">second</span><span class="p">).</span><span class="nx">push</span><span class="p">(</span><span class="nx">data</span><span class="p">.</span><span class="nx">value</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">// Windows start at the first sample, so each one lines up with a step of the test.</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">first</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Math</span><span class="p">.</span><span class="nx">min</span><span class="p">(...</span><span class="nx">bySecond</span><span class="p">.</span><span class="nx">keys</span><span class="p">());</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">windows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Map</span><span class="p">();</span>
+<span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="p">[</span><span class="nx">second</span><span class="p">,</span><span class="w"> </span><span class="nx">durations</span><span class="p">]</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="nx">bySecond</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Math</span><span class="p">.</span><span class="nx">floor</span><span class="p">((</span><span class="nx">second</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nx">first</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">Number</span><span class="p">(</span><span class="nx">windowSeconds</span><span class="p">));</span>
+<span class="w">  </span><span class="nx">windows</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nx">windows</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">w</span><span class="p">)</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="p">[]).</span><span class="nx">concat</span><span class="p">(</span><span class="nx">durations</span><span class="p">));</span>
+<span class="p">}</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">pick</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nx">sorted</span><span class="p">,</span><span class="w"> </span><span class="nx">q</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">sorted</span><span class="p">[</span><span class="nb">Math</span><span class="p">.</span><span class="nx">min</span><span class="p">(</span><span class="nx">sorted</span><span class="p">.</span><span class="nx">length</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">1</span><span class="p">,</span><span class="w"> </span><span class="nb">Math</span><span class="p">.</span><span class="nx">ceil</span><span class="p">(</span><span class="nx">q</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nx">sorted</span><span class="p">.</span><span class="nx">length</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">1</span><span class="p">)];</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">"window   req/s    p50 ms   p95 ms   p99 ms"</span><span class="p">);</span>
+<span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="nx">w</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="p">[...</span><span class="nx">windows</span><span class="p">.</span><span class="nx">keys</span><span class="p">()].</span><span class="nx">sort</span><span class="p">((</span><span class="nx">a</span><span class="p">,</span><span class="w"> </span><span class="nx">b</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">a</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nx">b</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">windows</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">w</span><span class="p">).</span><span class="nx">sort</span><span class="p">((</span><span class="nx">a</span><span class="p">,</span><span class="w"> </span><span class="nx">b</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">a</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nx">b</span><span class="p">);</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">cols</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="nx">d</span><span class="p">.</span><span class="nx">length</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">Number</span><span class="p">(</span><span class="nx">windowSeconds</span><span class="p">),</span><span class="w"> </span><span class="nx">pick</span><span class="p">(</span><span class="nx">d</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="p">),</span><span class="w"> </span><span class="nx">pick</span><span class="p">(</span><span class="nx">d</span><span class="p">,</span><span class="w"> </span><span class="mf">0.95</span><span class="p">),</span><span class="w"> </span><span class="nx">pick</span><span class="p">(</span><span class="nx">d</span><span class="p">,</span><span class="w"> </span><span class="mf">0.99</span><span class="p">)];</span>
+<span class="w">  </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`</span><span class="si">${</span><span class="nb">String</span><span class="p">(</span><span class="nx">w</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">1</span><span class="p">).</span><span class="nx">padStart</span><span class="p">(</span><span class="mf">6</span><span class="p">)</span><span class="si">}</span><span class="sb">  </span><span class="si">${</span><span class="nx">cols</span><span class="p">.</span><span class="nx">map</span><span class="p">((</span><span class="nx">v</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">v</span><span class="p">.</span><span class="nx">toFixed</span><span class="p">(</span><span class="mf">0</span><span class="p">).</span><span class="nx">padStart</span><span class="p">(</span><span class="mf">7</span><span class="p">)).</span><span class="nx">join</span><span class="p">(</span><span class="s2">"  "</span><span class="p">)</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>$ k6 run --out json=results/knee.json perf/find-the-knee.js
+$ node perf/tools/k6-steps-report.js results/knee.json 25
+window   req/s    p50 ms   p95 ms   p99 ms
+     1       98       20       30       36
+     2      144       21       29       44
+     3      194       21       40       91
+     4      232      336      726      772
+     5      209     2365     4589     5029
+     6       43     6003     6375     6389
+</code></pre></div>
+<p>This output is from the lab run behind the knee chart, with each step held
+for 20 seconds instead of 2 minutes, so 25-second windows line up with the
+steps. Window 4 is the knee. In window 5 the achieved rate falls below the
+offered 300 per second because k6 reached its 1,000 VUs and dropped
+iterations; window 6 is the queue draining after the test ended. With real
+2-minute holds, use 130-second windows and read the steady part of each.</p>
+<h3 id="reading-the-database-side">Reading the database side<a class="headerlink" href="#reading-the-database-side" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// mongosh, in the performance environment: record operations slower than 20 ms</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">setProfilingLevel</span><span class="p">(</span><span class="mf">1</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">slowms</span><span class="o">:</span><span class="w"> </span><span class="mf">20</span><span class="w"> </span><span class="p">})</span>
+
+<span class="c1">// the slowest recent operations on the tasks collection</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">system</span><span class="p">.</span><span class="nx">profile</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span>
+<span class="w">  </span><span class="p">{</span><span class="w"> </span><span class="nx">ns</span><span class="o">:</span><span class="w"> </span><span class="s2">"taskflow.tasks"</span><span class="p">,</span><span class="w"> </span><span class="nx">millis</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">$gt</span><span class="o">:</span><span class="w"> </span><span class="mf">20</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="p">{</span><span class="w"> </span><span class="nx">op</span><span class="o">:</span><span class="w"> </span><span class="mf">1</span><span class="p">,</span><span class="w"> </span><span class="nx">millis</span><span class="o">:</span><span class="w"> </span><span class="mf">1</span><span class="p">,</span><span class="w"> </span><span class="nx">planSummary</span><span class="o">:</span><span class="w"> </span><span class="mf">1</span><span class="p">,</span><span class="w"> </span><span class="nx">keysExamined</span><span class="o">:</span><span class="w"> </span><span class="mf">1</span><span class="p">,</span><span class="w"> </span><span class="nx">docsExamined</span><span class="o">:</span><span class="w"> </span><span class="mf">1</span><span class="p">,</span><span class="w"> </span><span class="nx">nreturned</span><span class="o">:</span><span class="w"> </span><span class="mf">1</span><span class="p">,</span><span class="w"> </span><span class="nx">hasSortStage</span><span class="o">:</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="p">}</span>
+<span class="p">).</span><span class="nx">sort</span><span class="p">({</span><span class="w"> </span><span class="nx">millis</span><span class="o">:</span><span class="w"> </span><span class="o">-</span><span class="mf">1</span><span class="w"> </span><span class="p">}).</span><span class="nx">limit</span><span class="p">(</span><span class="mf">5</span><span class="p">)</span>
+
+<span class="c1">// the suspect query, with execution statistics</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">tasks</span><span class="p">.</span><span class="nx">find</span><span class="p">({</span><span class="w"> </span><span class="nx">ownerId</span><span class="o">:</span><span class="w"> </span><span class="nx">ObjectId</span><span class="p">(</span><span class="s2">"&lt;user-id&gt;"</span><span class="p">),</span><span class="w"> </span><span class="nx">status</span><span class="o">:</span><span class="w"> </span><span class="s2">"open"</span><span class="w"> </span><span class="p">})</span>
+<span class="w">  </span><span class="p">.</span><span class="nx">sort</span><span class="p">({</span><span class="w"> </span><span class="nx">dueDate</span><span class="o">:</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="p">}).</span><span class="nx">limit</span><span class="p">(</span><span class="mf">20</span><span class="p">)</span>
+<span class="w">  </span><span class="p">.</span><span class="nx">explain</span><span class="p">(</span><span class="s2">"executionStats"</span><span class="p">)</span>
+
+<span class="nx">db</span><span class="p">.</span><span class="nx">setProfilingLevel</span><span class="p">(</span><span class="mf">0</span><span class="p">)</span><span class="w"> </span><span class="c1">// switch the profiler off again</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code># trimmed and illustrative: field names as documented, layout varies by version
+before  winning plan: SORT &lt;- FETCH &lt;- IXSCAN { ownerId: 1 }
+        nReturned: 20, totalKeysExamined: 41200, totalDocsExamined: 41200, executionTimeMillis: 85
+after   winning plan: LIMIT &lt;- FETCH &lt;- IXSCAN { ownerId: 1, status: 1, dueDate: 1 }
+        nReturned: 20, totalKeysExamined: 20, totalDocsExamined: 20, executionTimeMillis: 1
+</code></pre></div>
+<p>Before, the only index was on <code>ownerId</code>: a heavy user's 41,200 tasks were
+fetched, filtered by status, and sorted in memory to return 20. After an
+ESR index, the index delivers the 20 open tasks already in <code>dueDate</code> order.
+Build indexes on large collections as a planned change (see
+<a href="../../deployment-strategies/zero-downtime-database-migrations/">zero-downtime database migrations</a>).</p>
+<h3 id="watching-the-connection-pool">Watching the connection pool<a class="headerlink" href="#watching-the-connection-pool" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/db/pool-stats.js: connection pool use and checkout waits, from MongoDB driver events</span>
+<span class="k">export</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">trackPoolWaits</span><span class="p">(</span><span class="nx">client</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">intervalMs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">10</span><span class="nx">_000</span><span class="p">,</span><span class="w"> </span><span class="nx">log</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{})</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">let</span><span class="w"> </span><span class="nx">inUse</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0</span><span class="p">;</span>
+<span class="w">  </span><span class="kd">let</span><span class="w"> </span><span class="nx">waitsMs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[];</span>
+<span class="w">  </span><span class="kd">let</span><span class="w"> </span><span class="nx">timeouts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0</span><span class="p">;</span>
+
+<span class="w">  </span><span class="nx">client</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">"connectionCheckedOut"</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nx">event</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">inUse</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mf">1</span><span class="p">;</span>
+<span class="w">    </span><span class="nx">waitsMs</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">event</span><span class="p">.</span><span class="nx">durationMS</span><span class="p">);</span><span class="w"> </span><span class="c1">// how long this checkout waited for a connection</span>
+<span class="w">  </span><span class="p">});</span>
+<span class="w">  </span><span class="nx">client</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">"connectionCheckedIn"</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">inUse</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="mf">1</span><span class="p">;</span>
+<span class="w">  </span><span class="p">});</span>
+<span class="w">  </span><span class="nx">client</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">"connectionCheckOutFailed"</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nx">event</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">event</span><span class="p">.</span><span class="nx">reason</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">"timeout"</span><span class="p">)</span><span class="w"> </span><span class="nx">timeouts</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mf">1</span><span class="p">;</span><span class="w"> </span><span class="c1">// waitQueueTimeoutMS was exceeded</span>
+<span class="w">  </span><span class="p">});</span>
+
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">timer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">setInterval</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">waitsMs</span><span class="p">.</span><span class="nx">sort</span><span class="p">((</span><span class="nx">a</span><span class="p">,</span><span class="w"> </span><span class="nx">b</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">a</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nx">b</span><span class="p">);</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">p99</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">waitsMs</span><span class="p">.</span><span class="nx">length</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="nx">waitsMs</span><span class="p">[</span><span class="nb">Math</span><span class="p">.</span><span class="nx">ceil</span><span class="p">(</span><span class="mf">0.99</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nx">waitsMs</span><span class="p">.</span><span class="nx">length</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">1</span><span class="p">]</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mf">0</span><span class="p">;</span>
+<span class="w">    </span><span class="nx">log</span><span class="p">({</span><span class="w"> </span><span class="nx">poolInUse</span><span class="o">:</span><span class="w"> </span><span class="nx">inUse</span><span class="p">,</span><span class="w"> </span><span class="nx">checkouts</span><span class="o">:</span><span class="w"> </span><span class="nx">waitsMs</span><span class="p">.</span><span class="nx">length</span><span class="p">,</span><span class="w"> </span><span class="nx">checkoutWaitP99Ms</span><span class="o">:</span><span class="w"> </span><span class="nb">Math</span><span class="p">.</span><span class="nx">round</span><span class="p">(</span><span class="nx">p99</span><span class="p">),</span><span class="w"> </span><span class="nx">checkoutTimeouts</span><span class="o">:</span><span class="w"> </span><span class="nx">timeouts</span><span class="w"> </span><span class="p">});</span>
+<span class="w">    </span><span class="nx">waitsMs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[];</span>
+<span class="w">    </span><span class="nx">timeouts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0</span><span class="p">;</span>
+<span class="w">  </span><span class="p">},</span><span class="w"> </span><span class="nx">intervalMs</span><span class="p">);</span>
+<span class="w">  </span><span class="nx">timer</span><span class="p">.</span><span class="nx">unref</span><span class="p">();</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/db/client.js (excerpt): one client per process, with a bounded wait</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">MongoClient</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"mongodb"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">trackPoolWaits</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"./pool-stats.js"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">logger</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"../observability.js"</span><span class="p">;</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">client</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">MongoClient</span><span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">MONGODB_URI</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">maxPoolSize</span><span class="o">:</span><span class="w"> </span><span class="mf">20</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">waitQueueTimeoutMS</span><span class="o">:</span><span class="w"> </span><span class="mf">2000</span><span class="p">,</span><span class="w"> </span><span class="c1">// fail a checkout after 2 s instead of waiting forever</span>
+<span class="p">});</span>
+<span class="nx">trackPoolWaits</span><span class="p">(</span><span class="nx">client</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">log</span><span class="o">:</span><span class="w"> </span><span class="p">(</span><span class="nx">stats</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">logger</span><span class="p">.</span><span class="nx">info</span><span class="p">({</span><span class="w"> </span><span class="nx">pool</span><span class="o">:</span><span class="w"> </span><span class="nx">stats</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="s2">"pool stats"</span><span class="p">)</span><span class="w"> </span><span class="p">});</span>
+</code></pre></div>
+<p>The driver emits connection pool events on the client by default.
+<code>connectionCheckedOut</code> carries <code>durationMS</code>, the time the checkout took
+(in current driver versions), which is the wait a request spent in front
+of the pool; its p99 rising while <code>poolInUse</code> sits at <code>maxPoolSize</code> is the
+signature of a saturated pool. A non-zero <code>checkoutTimeouts</code> means requests
+are now failing with <code>MongoWaitQueueTimeoutError</code> instead of waiting
+silently.</p>
+<h3 id="a-test-that-catches-n1-queries">A test that catches N+1 queries<a class="headerlink" href="#a-test-that-catches-n1-queries" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// test/integration/tasks-query-count.test.js: fail the build when GET /tasks queries per item</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">test</span><span class="p">,</span><span class="w"> </span><span class="nx">before</span><span class="p">,</span><span class="w"> </span><span class="nx">after</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:test"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="nx">assert</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"node:assert/strict"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="nx">request</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"supertest"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">MongoClient</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"mongodb"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">createApp</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"../../src/app.js"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">client</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">MongoClient</span><span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">MONGODB_URI</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">monitorCommands</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">});</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">commands</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[];</span>
+<span class="kd">let</span><span class="w"> </span><span class="nx">app</span><span class="p">;</span>
+
+<span class="nx">before</span><span class="p">(</span><span class="k">async</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">await</span><span class="w"> </span><span class="nx">client</span><span class="p">.</span><span class="nx">connect</span><span class="p">();</span>
+<span class="w">  </span><span class="nx">client</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">"commandStarted"</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nx">event</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">commands</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">event</span><span class="p">.</span><span class="nx">commandName</span><span class="p">));</span>
+<span class="w">  </span><span class="nx">app</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">createApp</span><span class="p">({</span><span class="w"> </span><span class="nx">db</span><span class="o">:</span><span class="w"> </span><span class="nx">client</span><span class="p">.</span><span class="nx">db</span><span class="p">()</span><span class="w"> </span><span class="p">});</span>
+<span class="p">});</span>
+
+<span class="nx">after</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">client</span><span class="p">.</span><span class="nx">close</span><span class="p">());</span>
+
+<span class="nx">test</span><span class="p">(</span><span class="s2">"GET /tasks sends the same number of queries for 5 and 50 tasks"</span><span class="p">,</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">commands</span><span class="p">.</span><span class="nx">length</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0</span><span class="p">;</span>
+<span class="w">  </span><span class="k">await</span><span class="w"> </span><span class="nx">request</span><span class="p">(</span><span class="nx">app</span><span class="p">).</span><span class="nx">get</span><span class="p">(</span><span class="s2">"/tasks?limit=5"</span><span class="p">).</span><span class="nx">expect</span><span class="p">(</span><span class="mf">200</span><span class="p">);</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">forFive</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">commands</span><span class="p">.</span><span class="nx">filter</span><span class="p">((</span><span class="nx">name</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">name</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">"find"</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nx">name</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">"aggregate"</span><span class="p">).</span><span class="nx">length</span><span class="p">;</span>
+
+<span class="w">  </span><span class="nx">commands</span><span class="p">.</span><span class="nx">length</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0</span><span class="p">;</span>
+<span class="w">  </span><span class="k">await</span><span class="w"> </span><span class="nx">request</span><span class="p">(</span><span class="nx">app</span><span class="p">).</span><span class="nx">get</span><span class="p">(</span><span class="s2">"/tasks?limit=50"</span><span class="p">).</span><span class="nx">expect</span><span class="p">(</span><span class="mf">200</span><span class="p">);</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">forFifty</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">commands</span><span class="p">.</span><span class="nx">filter</span><span class="p">((</span><span class="nx">name</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">name</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">"find"</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nx">name</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">"aggregate"</span><span class="p">).</span><span class="nx">length</span><span class="p">;</span>
+
+<span class="w">  </span><span class="nx">assert</span><span class="p">.</span><span class="nx">equal</span><span class="p">(</span><span class="nx">forFifty</span><span class="p">,</span><span class="w"> </span><span class="nx">forFive</span><span class="p">,</span><span class="w"> </span><span class="sb">`query count grew with page size: </span><span class="si">${</span><span class="nx">forFive</span><span class="si">}</span><span class="sb"> -&gt; </span><span class="si">${</span><span class="nx">forFifty</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre></div>
+<p>Command monitoring is off by default; <code>monitorCommands: true</code> makes the
+client emit <code>commandStarted</code> for every command. With one request at a time
+there is no doubt which request sent which command, which makes this a
+reliable guard in the integration suite from
+<a href="../../ci-cd/testing-and-quality-gates/">testing and quality gates</a>. It needs
+seeded data with at least 50 tasks for the test user.</p>
+<h3 id="a-worked-investigation">A worked investigation<a class="headerlink" href="#a-worked-investigation" title="Permanent link">&para;</a></h3>
+<p>An example investigation on TaskFlow API, with illustrative numbers. The
+setup: three API instances, <code>maxPoolSize: 20</code> each, one MongoDB replica-set
+primary.</p>
+<ol>
+<li><strong>Symptom.</strong> A breakpoint test shows p95 of <code>GET /tasks</code> flat around
+   45 ms up to 300 requests per second, then 900 ms at 360, with timeouts
+   from 400. Achieved throughput plateaus near 370 per second.
+   <code>dropped_iterations</code> is zero and the generator's CPU is 35%: the test
+   is sound.</li>
+<li><strong>USE.</strong> On the API instances, ELU is about 30% and event-loop delay is
+   at its baseline: not CPU. The pool sampler shows <code>poolInUse</code> at 20 of 20
+   and a checkout-wait p99 of 600 ms: the pool is saturated. MongoDB's CPU
+   is at 92%.</li>
+<li><strong>Little's law.</strong> At 360 requests per second, each instance serves 120,
+   each request runs 2 queries, and queries now take about 80 ms:
+   120 × 2 × 0.080 = 19.2 busy connections, which is the whole pool. A
+   larger pool would push more concurrent queries into a database already
+   at 92% CPU, so the pool is the symptom.</li>
+<li><strong>The database.</strong> The profiler shows the list query on top, with
+   <code>hasSortStage: true</code> and <code>docsExamined</code> in the tens of thousands for
+   heavy users; <code>explain()</code> confirms an in-memory sort after scanning every
+   task the user owns.</li>
+<li><strong>The fix.</strong> A single ESR index, <code>{ ownerId: 1, status: 1, dueDate: 1 }</code>,
+   built in the performance environment and then rolled out as a planned
+   change. The query now examines 20 documents and takes about 2 ms;
+   busy connections at the same load fall to 120 × 2 × 0.002 = 0.48.</li>
+<li><strong>Re-run.</strong> The same breakpoint test now holds p95 under 50 ms to 800
+   requests per second, MongoDB's CPU is about 35% at 360, and the new
+   knee appears near 850, where ELU on the API instances reaches 95%. The
+   next bottleneck is CPU: a profile under load is the next step.</li>
+</ol>
+<p>The pattern generalizes: rule out the test, read utilization and
+saturation for each resource, use Little's law to check that the numbers
+agree, fix the cause rather than the symptom, and expect the next
+bottleneck.</p>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Investigate in a fixed order: the test, then CPU, then pools and the
+  database, then dependencies.</li>
+<li>Prepare RED and USE dashboards for the request path before the test,
+  including event-loop utilization, delay, GC, pool waits, and database
+  saturation.</li>
+<li>Find capacity with a step test and read it where throughput stops
+  following the offered load.</li>
+<li>Use Little's law to check that pool sizes, concurrency, and throughput
+  agree before changing any of them.</li>
+<li>Profile under realistic load, for a bounded time, on one instance.</li>
+<li>Fix causes, not symptoms: a slow query, not a bigger pool; a leak, not a
+  bigger heap.</li>
+<li>Bound every wait: request timeouts, <code>waitQueueTimeoutMS</code>, and timeouts on
+  dependencies.</li>
+<li>Change one thing per run and re-run the same test against the baseline.</li>
+<li>Keep a regression guard for each bottleneck you fix: an index check, a
+  query-count test, a threshold.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>p95 rises with load while the CPU looks idle.</strong>
+  <em>Detect:</em> ELU and CPU are low, latency grows with the request rate, and
+  the pool's checkout wait rises. <em>Cause:</em> requests queue for database
+  connections because queries are slow or the pool is too small for
+  rate × queries × query time. <em>Fix:</em> find and fix the slow queries first;
+  then size the pool with Little's law, within the database's connection
+  budget.</li>
+<li><strong>Every endpoint slows down at once.</strong>
+  <em>Detect:</em> event-loop delay p99 and ELU jump together, on unrelated
+  routes. <em>Cause:</em> synchronous CPU work in one handler (large
+  serialization, deep copies, synchronous crypto) blocks the whole
+  process. <em>Fix:</em> profile under load, optimize or move the work to worker
+  threads (see
+  <a href="../../../03-backend-development/nodejs/worker-threads-child-processes-and-cluster/">worker threads, child processes, and cluster</a>),
+  and paginate large responses.</li>
+<li><strong>Latency spikes at regular intervals.</strong>
+  <em>Detect:</em> p99 spikes that line up with major GC events or with a timer.
+  <em>Cause:</em> large heaps with many live objects, or a periodic job running on
+  the request thread. <em>Fix:</em> allocate less per request, bound caches, and
+  move periodic jobs out of the API process.</li>
+<li><strong>Raising <code>maxPoolSize</code> made things worse.</strong>
+  <em>Detect:</em> after the change, database CPU and query time rise and p95
+  gets worse at the same load. <em>Cause:</em> the database was the real
+  bottleneck; more connections meant more concurrent work on it. <em>Fix:</em>
+  revert, find the slow queries with the profiler and <code>explain()</code>, and add
+  the missing index.</li>
+<li><strong>Database load grows faster than traffic after a release.</strong>
+  <em>Detect:</em> database operations per request jump at the deploy time.
+  <em>Cause:</em> a new N+1 query pattern. <em>Fix:</em> batch the queries, and add a
+  query-count test so it cannot come back unnoticed.</li>
+<li><strong>Requests hang instead of failing during an overload.</strong>
+  <em>Detect:</em> requests take as long as the client timeout, with no errors
+  logged by the API. <em>Cause:</em> unbounded waits: no <code>waitQueueTimeoutMS</code>, no
+  timeouts on dependencies. <em>Fix:</em> bound every wait so overload turns into
+  fast, visible errors that load shedding and retries can handle.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Bottleneck:</strong> The first resource to saturate as load rises; it caps
+  the system's throughput.</li>
+<li><strong>USE method:</strong> Checking utilization, saturation, and errors for every
+  resource.</li>
+<li><strong>Saturation:</strong> Work waiting for a resource, such as a queue length or a
+  wait time.</li>
+<li><strong>Knee:</strong> The load where throughput stops following the offered load and
+  latency rises sharply.</li>
+<li><strong>Event-loop utilization (ELU):</strong> The share of time the Node.js event
+  loop is busy running code.</li>
+<li><strong>Event-loop delay:</strong> How late the event loop runs scheduled callbacks.</li>
+<li><strong>CPU profile:</strong> A sampled record of which functions were running.</li>
+<li><strong>Flame graph:</strong> Aggregated stacks with width for sample share and
+  height for stack depth.</li>
+<li><strong>Flame chart:</strong> Stacks drawn against time.</li>
+<li><strong>Self time:</strong> Samples in which a function itself, not its callees, was
+  running.</li>
+<li><strong>GC pressure:</strong> Latency and CPU lost to garbage collection because of
+  heavy allocation.</li>
+<li><strong>Connection pool exhaustion:</strong> All pool connections busy, so requests
+  queue for one.</li>
+<li><strong>N+1 queries:</strong> One query for a list plus one per item.</li>
+<li><strong>ESR guideline:</strong> Equality, Sort, Range order for compound index fields.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Adding instances or connections before finding the saturated resource.</li>
+<li>Trusting the results of a test whose generator was saturated or dropping
+  iterations.</li>
+<li>Profiling an idle process, or a different version from the one tested.</li>
+<li>Reading a flame graph's x-axis as time.</li>
+<li>Treating event-loop delay values as pure lag, without subtracting the
+  sampling interval.</li>
+<li>Blaming the database when the event loop is saturated and every callback
+  runs late.</li>
+<li>Raising the heap limit to "fix" a memory leak.</li>
+<li>Fixing several things between runs, so nobody knows what helped.</li>
+<li>Stopping after the first fix, without re-testing for the next
+  bottleneck.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Apply the USE method to a Node.js API and its MongoDB database: name
+   the utilization, saturation, and error signal for four resources.</li>
+<li>In a step test, how do you recognize the knee, and what is the measured
+   capacity?</li>
+<li>ELU is 8% and p95 is 2 seconds. What kind of bottleneck is likely, and
+   where do you look next?</li>
+<li>An instance serves 150 requests per second, each with 3 queries of 40
+   ms. How many connections are busy on average? What happens with
+   <code>maxPoolSize: 10</code>, and is raising it the right fix? (150 x 3 x 0.040 =
+   18 busy connections; with 10 the pool saturates and requests queue;
+   first check why queries take 40 ms and whether the database has
+   headroom.)</li>
+<li>Why must a process exit normally for <code>--cpu-prof</code> to write its profile,
+   and how do you arrange that for a server?</li>
+<li>What do the x-axis, y-axis, and box width mean in a flame graph?</li>
+<li>How does <code>explain("executionStats")</code> reveal a missing index? Which
+   fields do you compare?</li>
+<li>How would you stop an N+1 pattern from reaching production again?</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://www.brendangregg.com/usemethod.html">Brendan Gregg: The USE Method</a></li>
+<li><a href="https://www.brendangregg.com/flamegraphs.html">Brendan Gregg: Flame Graphs</a></li>
+<li><a href="https://nodejs.org/en/learn/diagnostics/flame-graphs">Node.js: Flame graphs</a></li>
+<li><a href="https://nodejs.org/api/perf_hooks.html">Node.js API: perf_hooks</a></li>
+<li><a href="https://www.mongodb.com/docs/manual/reference/explain-results/">MongoDB: Explain results</a></li>
+<li><a href="https://www.mongodb.com/docs/manual/tutorial/equality-sort-range-guideline/">MongoDB: The ESR guideline</a></li>
+<li><a href="https://www.mongodb.com/docs/drivers/node/current/connect/connection-options/connection-pools/">MongoDB Node.js driver: Connection pools</a></li>
+<li>Next: <a href="../chaos-engineering-and-game-days/">chaos engineering and game days</a>. Back to the
+  <a href="../">performance and reliability testing overview</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../load-testing-with-k6/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Load Testing with k6">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Load Testing with k6</span>
+      </a>
+    
+    
+      <a href="../chaos-engineering-and-game-days/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: Chaos Engineering and Game Days">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">Chaos Engineering and Game Days</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

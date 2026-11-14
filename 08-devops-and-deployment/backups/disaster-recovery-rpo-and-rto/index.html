@@ -1,0 +1,4578 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../database-backups-and-point-in-time-recovery/">
+      
+      
+        <link rel="next" href="../restore-testing-and-runbooks/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Disaster Recovery, RPO, and RTO - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#disaster-recovery-rpo-and-rto" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Disaster Recovery, RPO, and RTO
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../05-application-architecture/" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../06-ai-and-machine-learning/" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+          <span class="md-ellipsis">&larr; Back to DevOps</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../05-application-architecture/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../06-ai-and-machine-learning/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI and Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
+        
+          
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-label="DevOps module lessons" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+                  <span class="md-ellipsis">&larr; Back to DevOps</span>
+                </a>
+              
+            </div>
+          
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                  
+  
+  
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+    
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_19" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_19" id="__nav_9_19_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backups and Disaster Recovery
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_19_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_19">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Backups and Disaster Recovery
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_19_2" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_19_2" id="__nav_9_19_2_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Foundations
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_19_2_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_19_2">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Foundations
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../backup-fundamentals-and-strategies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backup Fundamentals and Strategies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_19_3" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_19_3" id="__nav_9_19_3_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_19_3_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_19_3">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Databases
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../database-backups-and-point-in-time-recovery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Database Backups and Point-in-Time Recovery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_19_4" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_19_4" id="__nav_9_19_4_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Recovery
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_19_4_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_19_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Recovery
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Disaster Recovery, RPO, and RTO
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Disaster Recovery, RPO, and RTO
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rpo-and-rto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RPO and RTO
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#business-impact-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Business impact analysis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#disaster-scenarios-differ" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Disaster scenarios differ
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dr-strategies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DR strategies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#regions-and-availability-zones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Regions and availability zones
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dns-failover" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DNS failover
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies-on-third-parties-and-shared-services" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dependencies on third parties and shared services
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dr-plans" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DR plans
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#an-rpo-and-rto-worksheet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        An RPO and RTO worksheet
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#health-checked-dns-failover-terraform" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Health-checked DNS failover (Terraform)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-pilot-light-switch-in-infrastructure-as-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A pilot light switch in infrastructure as code
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#promoting-a-mongodb-member-in-the-dr-region" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Promoting a MongoDB member in the DR region
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../restore-testing-and-runbooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Restore Testing and Runbooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rpo-and-rto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RPO and RTO
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#business-impact-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Business impact analysis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#disaster-scenarios-differ" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Disaster scenarios differ
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dr-strategies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DR strategies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#regions-and-availability-zones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Regions and availability zones
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dns-failover" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DNS failover
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies-on-third-parties-and-shared-services" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dependencies on third parties and shared services
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dr-plans" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DR plans
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#an-rpo-and-rto-worksheet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        An RPO and RTO worksheet
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#health-checked-dns-failover-terraform" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Health-checked DNS failover (Terraform)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-pilot-light-switch-in-infrastructure-as-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A pilot light switch in infrastructure as code
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#promoting-a-mongodb-member-in-the-dr-region" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Promoting a MongoDB member in the DR region
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="disaster-recovery-rpo-and-rto">Disaster Recovery, RPO, and RTO<a class="headerlink" href="#disaster-recovery-rpo-and-rto" title="Permanent link">&para;</a></h1>
+<p>Disaster recovery (DR) is the plan and the machinery for bringing a
+service back after an event that its normal redundancy cannot absorb: a
+whole region down, a database corrupted, an account compromised, a
+critical provider gone. It is measured with two numbers: the <strong>recovery
+point objective (RPO)</strong>, how much data you may lose, and the <strong>recovery
+time objective (RTO)</strong>, how long you may be down. This lesson defines
+both with worked examples, shows how a business impact analysis sets them,
+compares the standard DR strategies (backup and restore, pilot light, warm
+standby, multi-site active/active) by cost and recovery time, and covers
+regions and availability zones, DNS failover, third-party dependencies,
+and what a DR plan contains.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>Every architecture has a failure that takes everything down at once. For
+TaskFlow running in one cloud region, that could be a regional outage, an
+engineer's script that deletes the production database, or ransomware
+that encrypts every volume the attacker can reach. Without a plan, the
+response is improvised under maximum pressure: nobody knows which backup
+to use, whether the infrastructure code still works, who can approve
+spending on a second region, or how to tell customers.</p>
+<p>DR is also a business decision with real money attached. Running a full
+second copy of production can double infrastructure cost; a plan that
+needs two days to restore may be unacceptable for a product whose
+customers run their work on it. RPO and RTO turn that trade-off into
+explicit, agreed numbers that engineering can design and test against.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>AWS disaster recovery whitepaper.</strong> AWS's
+  <a href="https://docs.aws.amazon.com/whitepapers/latest/disaster-recovery-workloads-on-aws/disaster-recovery-options-in-the-cloud.html">Disaster recovery options in the cloud</a>
+  describes four strategies (backup and restore, pilot light, warm standby,
+  and multi-site active/active) in order of increasing cost and complexity
+  and decreasing recovery time, and recommends relying on data plane rather
+  than control plane operations during failover.</li>
+<li><strong>AWS Well-Architected Framework.</strong> The reliability pillar's
+  <a href="https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/plan-for-disaster-recovery-dr.html">Plan for disaster recovery (DR)</a>
+  section asks teams to define recovery objectives per workload, use
+  defined recovery strategies, test DR implementations, and manage
+  configuration drift in the DR site.</li>
+<li><strong>NIST contingency planning.</strong> NIST
+  <a href="https://csrc.nist.gov/pubs/sp/800/34/r1/upd1/final">SP 800-34 Rev. 1</a>,
+  the <em>Contingency Planning Guide for Federal Information Systems</em>, defines
+  the business impact analysis and the relationship between maximum
+  tolerable downtime, RTO, and RPO used in many organizations' DR plans.</li>
+<li><strong>Amazon S3 (2017).</strong> Amazon's
+  <a href="https://aws.amazon.com/message/41926/">summary of the S3 service disruption in us-east-1</a>
+  shows the reach of a single-region dependency: many services in the
+  region depended on S3, and AWS's own status dashboard could not be
+  updated at first because it depended on the failing service.</li>
+</ul>
+<p><strong>Popular tools and providers:</strong> AWS Elastic Disaster Recovery, Route 53
+health checks and Application Recovery Controller, AWS Global
+Accelerator, Azure Site Recovery, Google Cloud Backup and DR, MongoDB
+Atlas multi-region clusters, Aurora Global Database, DynamoDB global
+tables, Cloudflare load balancing, and Terraform for rebuilding
+infrastructure.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="rpo-and-rto">RPO and RTO<a class="headerlink" href="#rpo-and-rto" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: on a timeline, the last recoverable copy of TaskFlow's data was made at 02:00, a region outage happens at 05:40, and service is restored at 07:10. Data from 02:00 to 05:40, 3 hours 40 minutes, is lost and must be within the RPO; downtime from 05:40 to 07:10, 1 hour 30 minutes, must be within the RTO. Inside the RTO are detect, decide, provision and restore, and verify and switch." src="../rpo-rto-timeline.svg" /></p>
+<ul>
+<li><strong>Recovery point objective (RPO):</strong> the maximum acceptable amount of data
+  loss, measured in time before the disaster. If the RPO is 1 hour, you
+  must always have a recoverable copy no older than 1 hour.</li>
+<li><strong>Recovery time objective (RTO):</strong> the maximum acceptable time from the
+  disaster until the service works again for users.</li>
+<li><strong>Maximum tolerable downtime (MTD):</strong> from the business impact analysis,
+  the point after which the damage becomes unacceptable. The RTO must sit
+  comfortably inside it.</li>
+</ul>
+<p>What determines the numbers you actually achieve:</p>
+<div class="highlight"><pre><span></span><code>Achieved RPO  ~ time since the last recoverable copy
+              = backup interval, or replication/log-shipping lag if data is copied continuously
+
+Achieved RTO  = time to detect + time to decide + time to provision infrastructure
+              + time to restore data + time to verify + time to switch traffic
+</code></pre></div>
+<p>Worked example 1: nightly backups only.</p>
+<div class="highlight"><pre><span></span><code>TaskFlow takes a full backup at 02:00 and copies it to another region.
+A region outage starts at 17:00.
+
+Data loss: everything written between 02:00 and 17:00 = 15 hours.
+Worst case (outage just before 02:00):            nearly 24 hours  -&gt; RPO is 24 h
+
+Restore in the other region:
+  detect and decide                          20 min
+  terraform apply for network, cluster, app  45 min
+  restore 200 GB at 100 MB/s                 ~33 min (2,000 s)
+  rebuild indexes, verify, smoke test        30 min
+  switch DNS (TTL 60 s) and watch            10 min
+  total                                      ~2 h 20 min                -&gt; RTO about 2.5 h
+</code></pre></div>
+<p>Worked example 2: continuous log shipping to the DR region.</p>
+<div class="highlight"><pre><span></span><code>Oplog captured continuously to the DR region with a typical lag of under 1 minute.
+Data loss: about 1 minute of writes                                   -&gt; RPO about 1 min
+If a database replica is already running in the DR region (pilot light):
+  detect and decide 15 min, promote replica 5 min, start app servers from IaC 15 min,
+  verify and switch 10 min                                             -&gt; RTO about 45 min
+</code></pre></div>
+<p>The second design costs more (a running replica, cross-region data
+transfer), but cuts the RPO from a day to a minute and the RTO by more
+than half.</p>
+<h3 id="business-impact-analysis">Business impact analysis<a class="headerlink" href="#business-impact-analysis" title="Permanent link">&para;</a></h3>
+<p>A <strong>business impact analysis (BIA)</strong> decides the targets instead of
+letting engineers guess:</p>
+<ol>
+<li>List the business functions TaskFlow supports (sign in, create and view
+   tasks, reminders, reports, billing) and the systems each depends on.</li>
+<li>Estimate the impact of losing each function over time: lost revenue,
+   contract penalties, regulatory exposure, customer churn, and manual
+   workarounds.</li>
+<li>Determine the maximum tolerable downtime and acceptable data loss per
+   function.</li>
+<li>Group systems into <strong>tiers</strong> with RTO and RPO targets, and check that
+   dependencies have targets at least as strict as what depends on them.</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>TaskFlow functions</th>
+<th>RTO</th>
+<th>RPO</th>
+<th>Implied strategy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>Authentication, task create/read/update</td>
+<td>1 hour</td>
+<td>5 minutes</td>
+<td>Pilot light or warm standby with continuous replication</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Reminders and notifications</td>
+<td>4 hours</td>
+<td>1 hour</td>
+<td>Backup and restore with frequent snapshots, or pilot light</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Reports and analytics</td>
+<td>24 hours</td>
+<td>24 hours</td>
+<td>Backup and restore, or rebuild from source data</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Internal admin tools</td>
+<td>72 hours</td>
+<td>24 hours</td>
+<td>Backup and restore</td>
+</tr>
+</tbody>
+</table>
+<h3 id="disaster-scenarios-differ">Disaster scenarios differ<a class="headerlink" href="#disaster-scenarios-differ" title="Permanent link">&para;</a></h3>
+<p>"Disaster" is not one event, and each needs a different mechanism:</p>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th>What helps</th>
+<th>What does not</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Single server or disk failure</td>
+<td>Redundancy, replicas, auto-healing</td>
+<td>DR plan (overkill)</td>
+</tr>
+<tr>
+<td>Data center (availability zone) failure</td>
+<td>Multi-AZ deployment and database replicas</td>
+<td>Single-AZ backups only</td>
+</tr>
+<tr>
+<td>Whole region unavailable</td>
+<td>Data and capacity in another region (any DR strategy)</td>
+<td>Multi-AZ alone</td>
+</tr>
+<tr>
+<td>Data corruption or accidental deletion</td>
+<td>Point-in-time backups</td>
+<td>Replication (copies the damage)</td>
+</tr>
+<tr>
+<td>Ransomware or account compromise</td>
+<td>Immutable backups in a separate account, rebuildable infrastructure</td>
+<td>Anything the attacker's credentials can reach</td>
+</tr>
+<tr>
+<td>Provider or critical SaaS outage</td>
+<td>Fallbacks, alternative providers, graceful degradation</td>
+<td>More replicas with the same provider</td>
+</tr>
+</tbody>
+</table>
+<p>A design that is excellent against a region outage (active/active
+replication) can be useless against corruption, which replicates to every
+region within seconds. Every DR strategy still needs point-in-time
+backups.</p>
+<h3 id="dr-strategies">DR strategies<a class="headerlink" href="#dr-strategies" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: four strategies showing what exists in the recovery region. Backup and restore: backup copies of data, app servers not deployed, no traffic; RPO and RTO in hours; rebuild everything. Pilot light: live data replica, app servers in IaC but switched off, no traffic; tens of minutes; switch on and scale. Warm standby: live data replica, app servers running scaled down, no traffic or test traffic; minutes; scale up. Active/active: data live in every region, app servers at full scale, serving users; near zero, but corruption still needs backups. From left to right cost and complexity increase while RPO and RTO get shorter." src="../dr-strategies-spectrum.svg" /></p>
+<table>
+<thead>
+<tr>
+<th>Strategy</th>
+<th>What runs in the DR region</th>
+<th>Typical RPO / RTO (AWS whitepaper characterization)</th>
+<th>Relative cost</th>
+<th>TaskFlow example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Backup and restore</strong></td>
+<td>Only backups (and IaC to rebuild)</td>
+<td>Hours</td>
+<td>Lowest</td>
+<td>Snapshots copied cross-region; <code>terraform apply</code> builds everything on demand</td>
+</tr>
+<tr>
+<td><strong>Pilot light</strong></td>
+<td>Live data replication; core infrastructure defined, compute switched off</td>
+<td>Tens of minutes</td>
+<td>Low</td>
+<td>MongoDB replica in the DR region; API autoscaling group at 0 instances</td>
+</tr>
+<tr>
+<td><strong>Warm standby</strong></td>
+<td>A complete, scaled-down, working copy</td>
+<td>Minutes</td>
+<td>Medium</td>
+<td>Two small API instances running against the DR replica, scaled up on failover</td>
+</tr>
+<tr>
+<td><strong>Multi-site active/active</strong></td>
+<td>Full production in two or more regions, all serving users</td>
+<td>Near zero (real time)</td>
+<td>Highest</td>
+<td>Users routed to the nearest region; multi-region database with conflict handling</td>
+</tr>
+</tbody>
+</table>
+<p>Notes that matter in practice:</p>
+<ul>
+<li><strong>Backup and restore depends entirely on infrastructure as code.</strong> If
+  the network, cluster, and services cannot be recreated by a tested
+  pipeline, restoring data alone does not bring the service back (see
+  <a href="../../infrastructure-as-code/">infrastructure as code</a>).</li>
+<li><strong>Pilot light versus warm standby:</strong> pilot light cannot serve requests
+  until servers are started; warm standby can serve immediately at reduced
+  capacity and only needs to scale up.</li>
+<li><strong>Active/active</strong> removes failover as an event but adds the hardest
+  problem: writes in several regions. Options include routing all writes to
+  one region (with fast promotion of another), partitioning writes by
+  user, or databases with multi-region writes and conflict resolution.</li>
+<li><strong>Capacity and quotas:</strong> a DR region needs enough service quota and
+  instance capacity to take full production load, verified in advance.</li>
+<li><strong>Prefer data plane operations for failover.</strong> Control planes (APIs that
+  create or reconfigure resources) are more likely to be impaired during a
+  regional event than data planes (serving traffic, health checks), which
+  is why AWS recommends failover mechanisms such as health-check-driven DNS
+  over "create resources during the disaster" where RTO is tight.</li>
+</ul>
+<h3 id="regions-and-availability-zones">Regions and availability zones<a class="headerlink" href="#regions-and-availability-zones" title="Permanent link">&para;</a></h3>
+<ul>
+<li>An <strong>availability zone (AZ)</strong> is one or more isolated data centers in a
+  region, with independent power and networking, connected to other AZs in
+  the region by low-latency links. Spreading TaskFlow's instances and
+  database members across three AZs protects against the most common
+  large failures with synchronous-ish replication and no DR process at all.</li>
+<li>A <strong>region</strong> is a separate geographic area with its own set of AZs and
+  largely independent control planes. Multi-region designs protect against
+  regional outages and some provider-wide issues, at the cost of
+  cross-region latency (tens of milliseconds or more), asynchronous
+  replication (so a non-zero RPO), data transfer charges, and data
+  residency rules about where personal data may be stored.</li>
+</ul>
+<p>Multi-AZ is the default for production; multi-region is a DR decision
+driven by the BIA.</p>
+<h3 id="dns-failover">DNS failover<a class="headerlink" href="#dns-failover" title="Permanent link">&para;</a></h3>
+<p>The usual way to move users to the recovery region is DNS:</p>
+<ul>
+<li><strong>Health-checked failover records</strong> (for example Amazon Route 53 failover
+  routing): a primary record is returned while its health check passes, and
+  a secondary record otherwise.</li>
+<li><strong>TTL matters:</strong> resolvers and clients cache answers for the record's
+  TTL, so a 1-hour TTL means up to an hour of users still going to the dead
+  region. DR-critical records use TTLs of 60 seconds or so, set <strong>before</strong>
+  the disaster. Some clients cache longer than the TTL.</li>
+<li><strong>Anycast and global load balancers</strong> (AWS Global Accelerator, Cloudflare
+  load balancing, Google Cloud's global load balancer) shift traffic
+  without waiting for DNS caches.</li>
+<li><strong>Automatic or manual?</strong> Automatic failover reacts fastest but can fail
+  over on a false alarm, which itself causes data loss (RPO) and downtime.
+  Many teams automate every step but keep the decision to a human, so
+  failover is "one button".</li>
+<li><strong>Failback</strong> is a second migration: the original region's data is now
+  stale, so it must be resynchronized before traffic returns.</li>
+</ul>
+<h3 id="dependencies-on-third-parties-and-shared-services">Dependencies on third parties and shared services<a class="headerlink" href="#dependencies-on-third-parties-and-shared-services" title="Permanent link">&para;</a></h3>
+<p>A DR region is useless if the service cannot start there. Check every
+dependency:</p>
+<ul>
+<li><strong>Identity and access:</strong> can engineers log in to the cloud account and
+  the DR region if single sign-on is down?</li>
+<li><strong>Secrets and keys:</strong> are secrets and KMS keys available in the DR region
+  (multi-region keys, replicated secrets)?</li>
+<li><strong>Container images and artifacts:</strong> is the registry replicated, or does
+  the deploy pull images from the failed region?</li>
+<li><strong>CI/CD:</strong> can you deploy if the CI system or its runners are affected?</li>
+<li><strong>DNS provider, CDN, email and SMS providers, payment gateways, auth
+  providers:</strong> what are their SLAs and their own DR, and does TaskFlow
+  degrade gracefully without them?</li>
+<li><strong>Monitoring and the status page:</strong> are they outside the failed region,
+  so you can see and communicate during the disaster?</li>
+</ul>
+<h3 id="dr-plans">DR plans<a class="headerlink" href="#dr-plans" title="Permanent link">&para;</a></h3>
+<p>A <strong>DR plan</strong> is the document people follow when it happens. It contains:</p>
+<ol>
+<li><strong>Scope and objectives:</strong> systems covered, tiers, RTO and RPO targets.</li>
+<li><strong>Scenarios</strong> and which strategy applies to each.</li>
+<li><strong>Roles and contacts:</strong> who can declare a disaster, incident roles,
+   vendor support contacts, escalation paths.</li>
+<li><strong>Decision criteria:</strong> when to fail over versus wait for the provider,
+   based on expected duration and RPO cost.</li>
+<li><strong>Runbooks:</strong> step-by-step failover, data restore, verification, and
+   failback procedures (see
+   <a href="../restore-testing-and-runbooks/">restore testing and runbooks</a>).</li>
+<li><strong>Communication:</strong> internal updates, status page, customer messages.</li>
+<li><strong>Dependencies and prerequisites:</strong> quotas, accounts, keys, images.</li>
+<li><strong>Testing schedule and results:</strong> when the plan was last exercised and
+   what the measured RTO and RPO were.</li>
+</ol>
+<p>Keep the plan versioned, reviewed after every test and architecture
+change, and available <strong>outside</strong> the systems it describes (an offline
+copy, a separate wiki, printed for the most critical steps).</p>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Situation</th>
+<th>Approach</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Early-stage product, internal tool, or tolerant users</td>
+<td>Multi-AZ plus backup and restore to another region; tested yearly</td>
+</tr>
+<tr>
+<td>Business-critical API with hours of tolerable downtime</td>
+<td>Backup and restore with fast IaC rebuild, or pilot light for the database</td>
+</tr>
+<tr>
+<td>Revenue-critical service with an RTO under an hour</td>
+<td>Pilot light or warm standby with continuous replication and rehearsed failover</td>
+</tr>
+<tr>
+<td>Global product needing near-zero downtime</td>
+<td>Multi-site active/active, with point-in-time backups for corruption</td>
+</tr>
+<tr>
+<td>Regulated workloads</td>
+<td>Strategy per regulation and BIA, with documented tests and evidence</td>
+</tr>
+</tbody>
+</table>
+<p>Do not build active/active for a service whose BIA allows hours of
+downtime, and do not claim an RTO you have never measured in a drill.</p>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="an-rpo-and-rto-worksheet">An RPO and RTO worksheet<a class="headerlink" href="#an-rpo-and-rto-worksheet" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>Service: TaskFlow API (tier 0)                Target RTO: 1 h     Target RPO: 5 min
+
+Current design: backup and restore; nightly snapshot copied to the DR region
+  Achieved RPO (worst case): 24 h                         FAILS target
+  Achieved RTO (last drill):  2 h 40 min                  FAILS target
+
+Proposed design: pilot light
+  MongoDB member in the DR region (priority 0) + continuous backup with PITR
+  API servers defined in Terraform, scaled to 0; images replicated to the DR registry
+  Route 53 failover record, TTL 60 s
+  Expected RPO: replication lag, p99 &lt; 30 s                 MEETS target
+  Expected RTO: detect 10 + decide 10 + promote 5 + scale API 15 + verify 10 = 50 min   MEETS target
+  Added monthly cost: DR database member, cross-region transfer, replicated storage
+
+Decision: approved by &lt;product owner&gt;, &lt;engineering manager&gt;; first drill scheduled &lt;date&gt;
+</code></pre></div>
+<h3 id="health-checked-dns-failover-terraform">Health-checked DNS failover (Terraform)<a class="headerlink" href="#health-checked-dns-failover-terraform" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># infra/dns-failover.tf</span>
+<span class="kr">resource</span><span class="w"> </span><span class="nc">"aws_route53_health_check"</span><span class="w"> </span><span class="nv">"api_primary"</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="na">fqdn</span><span class="w">              </span><span class="o">=</span><span class="w"> </span><span class="s2">"api-primary.example.com"</span>
+<span class="w">  </span><span class="na">port</span><span class="w">              </span><span class="o">=</span><span class="w"> </span><span class="m">443</span>
+<span class="w">  </span><span class="na">type</span><span class="w">              </span><span class="o">=</span><span class="w"> </span><span class="s2">"HTTPS"</span>
+<span class="w">  </span><span class="na">resource_path</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="s2">"/readyz"</span>
+<span class="w">  </span><span class="na">failure_threshold</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">3</span>
+<span class="w">  </span><span class="na">request_interval</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="m">30</span>
+<span class="p">}</span>
+
+<span class="kr">resource</span><span class="w"> </span><span class="nc">"aws_route53_record"</span><span class="w"> </span><span class="nv">"api_primary"</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="na">zone_id</span><span class="w">         </span><span class="o">=</span><span class="w"> </span><span class="nv">var.zone_id</span>
+<span class="w">  </span><span class="na">name</span><span class="w">            </span><span class="o">=</span><span class="w"> </span><span class="s2">"api.example.com"</span>
+<span class="w">  </span><span class="na">type</span><span class="w">            </span><span class="o">=</span><span class="w"> </span><span class="s2">"CNAME"</span>
+<span class="w">  </span><span class="na">ttl</span><span class="w">             </span><span class="o">=</span><span class="w"> </span><span class="m">60</span>
+<span class="w">  </span><span class="na">set_identifier</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="s2">"primary"</span>
+<span class="w">  </span><span class="na">health_check_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">aws_route53_health_check.api_primary.id</span>
+<span class="w">  </span><span class="na">records</span><span class="w">         </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"api-primary.example.com"</span><span class="p">]</span>
+
+<span class="w">  </span><span class="nb">failover_routing_policy</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"PRIMARY"</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kr">resource</span><span class="w"> </span><span class="nc">"aws_route53_record"</span><span class="w"> </span><span class="nv">"api_secondary"</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="na">zone_id</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="nv">var.zone_id</span>
+<span class="w">  </span><span class="na">name</span><span class="w">           </span><span class="o">=</span><span class="w"> </span><span class="s2">"api.example.com"</span>
+<span class="w">  </span><span class="na">type</span><span class="w">           </span><span class="o">=</span><span class="w"> </span><span class="s2">"CNAME"</span>
+<span class="w">  </span><span class="na">ttl</span><span class="w">            </span><span class="o">=</span><span class="w"> </span><span class="m">60</span>
+<span class="w">  </span><span class="na">set_identifier</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"secondary"</span>
+<span class="w">  </span><span class="na">records</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"api-dr.example.com"</span><span class="p">]</span>
+
+<span class="w">  </span><span class="nb">failover_routing_policy</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"SECONDARY"</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Route 53 returns the primary while its health check (which probes the
+readiness endpoint from several locations) passes, and the DR endpoint
+otherwise. The 60-second TTL bounds how long clients keep using a dead
+answer. In a pilot light setup, the DR endpoint must already be able to
+serve, or the failover will route users to nothing; many teams therefore
+make the secondary switch manual until the DR stack is scaled up.</p>
+<h3 id="a-pilot-light-switch-in-infrastructure-as-code">A pilot light switch in infrastructure as code<a class="headerlink" href="#a-pilot-light-switch-in-infrastructure-as-code" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># infra/dr-region/api.tf (applied in the DR region)</span>
+<span class="kr">variable</span><span class="w"> </span><span class="nv">"dr_active"</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="na">description</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Set to true during a disaster to bring the API up in this region"</span>
+<span class="w">  </span><span class="na">type</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="kt">bool</span>
+<span class="w">  </span><span class="na">default</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="no">false</span>
+<span class="p">}</span>
+
+<span class="kr">resource</span><span class="w"> </span><span class="nc">"aws_autoscaling_group"</span><span class="w"> </span><span class="nv">"api"</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="na">name</span><span class="w">                </span><span class="o">=</span><span class="w"> </span><span class="s2">"taskflow-api-dr"</span>
+<span class="w">  </span><span class="na">min_size</span><span class="w">            </span><span class="o">=</span><span class="w"> </span><span class="nv">var.dr_active</span><span class="w"> </span><span class="p">?</span><span class="w"> </span><span class="m">3</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="m">0</span>
+<span class="w">  </span><span class="na">max_size</span><span class="w">            </span><span class="o">=</span><span class="w"> </span><span class="nv">var.dr_active</span><span class="w"> </span><span class="p">?</span><span class="w"> </span><span class="m">12</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="m">0</span>
+<span class="w">  </span><span class="na">desired_capacity</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="nv">var.dr_active</span><span class="w"> </span><span class="p">?</span><span class="w"> </span><span class="m">3</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="m">0</span>
+<span class="w">  </span><span class="na">vpc_zone_identifier</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">var.private_subnet_ids</span>
+<span class="w">  </span><span class="na">target_group_arns</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="nv">aws_lb_target_group.api.arn</span><span class="p">]</span>
+
+<span class="w">  </span><span class="nb">launch_template</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="na">id</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="nv">aws_launch_template.api.id</span>
+<span class="w">    </span><span class="na">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"$Latest"</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1"># Failover step from the runbook: switch the pilot light on</span>
+terraform<span class="w"> </span>-chdir<span class="o">=</span>infra/dr-region<span class="w"> </span>apply<span class="w"> </span>-var<span class="w"> </span><span class="s1">'dr_active=true'</span>
+</code></pre></div>
+<p>The network, load balancer, launch template, and database replica exist
+all the time; only compute is off. Because this step calls the cloud
+control plane, practise it and know its duration; a warm standby with
+instances already running removes this dependency.</p>
+<h3 id="promoting-a-mongodb-member-in-the-dr-region">Promoting a MongoDB member in the DR region<a class="headerlink" href="#promoting-a-mongodb-member-in-the-dr-region" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// mongosh, connected to the surviving DR member, ONLY when the primary region is lost</span>
+<span class="c1">// and a majority of voting members is unreachable (the documented forced reconfiguration).</span>
+<span class="nx">cfg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">rs</span><span class="p">.</span><span class="nx">conf</span><span class="p">();</span>
+<span class="nx">cfg</span><span class="p">.</span><span class="nx">members</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">cfg</span><span class="p">.</span><span class="nx">members</span><span class="p">.</span><span class="nx">filter</span><span class="p">((</span><span class="nx">m</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">m</span><span class="p">.</span><span class="nx">host</span><span class="p">.</span><span class="nx">startsWith</span><span class="p">(</span><span class="s2">"mongo-dr-"</span><span class="p">));</span>
+<span class="nx">cfg</span><span class="p">.</span><span class="nx">members</span><span class="p">.</span><span class="nx">forEach</span><span class="p">((</span><span class="nx">m</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">m</span><span class="p">.</span><span class="nx">priority</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1</span><span class="p">;</span><span class="w"> </span><span class="nx">m</span><span class="p">.</span><span class="nx">votes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1</span><span class="p">;</span><span class="w"> </span><span class="p">});</span>
+<span class="nx">rs</span><span class="p">.</span><span class="nx">reconfig</span><span class="p">(</span><span class="nx">cfg</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">force</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">});</span>
+</code></pre></div>
+<p>A forced reconfiguration can roll back writes that the lost members had
+but the DR member had not replicated: that loss is your real RPO. Follow
+MongoDB's procedure for reconfiguring a replica set with unavailable
+members, and plan how to rejoin the old region's members afterwards.
+Managed services such as Atlas multi-region clusters handle elections
+across regions for you.</p>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Run a business impact analysis and agree RTO and RPO per tier with the
+  business, in writing.</li>
+<li>Use multiple availability zones by default; add multi-region only where
+  the BIA requires it.</li>
+<li>Keep point-in-time backups in every strategy; replication does not
+  protect against corruption.</li>
+<li>Make infrastructure fully reproducible from code, including the DR
+  region, and keep it free of drift.</li>
+<li>Pre-create everything a failover needs: quotas, keys, secrets, images,
+  DNS records with short TTLs.</li>
+<li>Automate failover steps, keep a human decision for the trigger, and plan
+  failback.</li>
+<li>Inventory third-party dependencies and their DR posture.</li>
+<li>Keep the DR plan outside the systems it protects, and test it on a
+  schedule, recording measured RTO and RPO.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Failover worked, but users kept hitting the dead region for an hour.</strong>
+  <em>Detect:</em> traffic to the DR endpoint ramps slowly; some resolvers still
+  return the old address. <em>Cause:</em> a long TTL on the API record (for
+  example 3,600 seconds) set before the incident. <em>Fix:</em> lower TTLs on
+  DR-critical records in advance, or use an anycast or global load
+  balancer.</li>
+<li><strong>The DR region could not start the application.</strong>
+  <em>Detect:</em> deployments in the DR region fail pulling images or reading
+  secrets. <em>Cause:</em> the container registry and secrets existed only in the
+  primary region. <em>Fix:</em> replicate images, secrets, and keys, and include
+  "deploy from scratch in the DR region" in drills.</li>
+<li><strong>Scaling up in the DR region failed with capacity or quota errors.</strong>
+  <em>Detect:</em> autoscaling activities fail during a drill. <em>Cause:</em> the DR
+  account or region had default service quotas, or the instance type was
+  scarce. <em>Fix:</em> raise quotas ahead of time, allow several instance types,
+  and keep warm capacity for tier 0 services.</li>
+<li><strong>More data was lost than the RPO allowed.</strong>
+  <em>Detect:</em> after failover, recent orders or tasks are missing beyond the
+  expected window. <em>Cause:</em> replication lag had grown unnoticed (minutes
+  or hours) before the disaster. <em>Fix:</em> alert on replication and
+  log-shipping lag against the RPO, not just on replication being "up".</li>
+<li><strong>Failback corrupted data.</strong>
+  <em>Detect:</em> duplicate or conflicting records after returning to the
+  primary region. <em>Cause:</em> the old primary came back and accepted writes
+  (split brain), or was promoted without resynchronizing. <em>Fix:</em> fence the
+  old primary during failover, resynchronize before failback, and script
+  failback as carefully as failover.</li>
+<li><strong>The DR plan was out of date when needed.</strong>
+  <em>Detect:</em> runbook steps reference services or commands that no longer
+  exist. <em>Cause:</em> the architecture changed and the plan did not. <em>Fix:</em>
+  review the plan in every architecture change and run regular drills.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Disaster recovery (DR):</strong> Restoring service after events beyond normal
+  redundancy.</li>
+<li><strong>RPO (recovery point objective):</strong> The maximum acceptable data loss,
+  measured in time.</li>
+<li><strong>RTO (recovery time objective):</strong> The maximum acceptable time to
+  restore service.</li>
+<li><strong>MTD (maximum tolerable downtime):</strong> The outage length beyond which harm
+  is unacceptable.</li>
+<li><strong>Business impact analysis (BIA):</strong> The assessment that sets recovery
+  priorities and objectives.</li>
+<li><strong>Backup and restore / pilot light / warm standby / active-active:</strong> DR
+  strategies of increasing cost and decreasing recovery time.</li>
+<li><strong>Availability zone:</strong> An isolated data center group within a region.</li>
+<li><strong>Failover / failback:</strong> Moving service to the recovery site, and back.</li>
+<li><strong>Split brain:</strong> Two sites both accepting writes as primary.</li>
+<li><strong>Data plane / control plane:</strong> The parts that serve traffic versus the
+  APIs that configure resources.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Setting RTO and RPO without the business, or never writing them down.</li>
+<li>Believing multi-AZ or replication is a complete DR strategy.</li>
+<li>Forgetting that active/active still needs backups for corruption.</li>
+<li>Planning a backup and restore strategy without tested infrastructure as
+  code.</li>
+<li>Long DNS TTLs on records that must fail over.</li>
+<li>Ignoring third-party dependencies, secrets, images, and quotas in the DR
+  region.</li>
+<li>Automatic failover on noisy health checks, causing unnecessary data loss.</li>
+<li>Never testing failback.</li>
+<li>Keeping the only copy of the DR plan in the system that just failed.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Define RPO, RTO, and MTD, and explain how they relate.</li>
+<li>TaskFlow takes backups every 6 hours and copies them to another region.
+   What is the worst-case RPO? If a region fails 4 hours after the last
+   backup, how much data is lost? (6 hours; 4 hours.)</li>
+<li>A restore needs 15 minutes to decide, 40 minutes to rebuild
+   infrastructure, 300 GB of data at 150 MB/s, 20 minutes to verify, and 5
+   minutes to switch DNS. What RTO can you claim? (300 GB at 150 MB/s is
+   2,000 s, about 33 minutes; total about 1 h 53 min.)</li>
+<li>Compare backup and restore, pilot light, warm standby, and
+   active/active by cost, RPO, and RTO.</li>
+<li>Why does active/active not remove the need for point-in-time backups?</li>
+<li>What is the difference between an availability zone failure and a
+   region failure, and which strategies cover each?</li>
+<li>Why should DR-critical DNS records have short TTLs, and what are the
+   alternatives?</li>
+<li>List five dependencies that could stop TaskFlow from starting in its DR
+   region.</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://docs.aws.amazon.com/whitepapers/latest/disaster-recovery-workloads-on-aws/disaster-recovery-workloads-on-aws.html">AWS whitepaper: Disaster Recovery of Workloads on AWS</a></li>
+<li><a href="https://docs.aws.amazon.com/whitepapers/latest/disaster-recovery-workloads-on-aws/business-continuity-plan-bcp.html">AWS whitepaper: Business continuity plan and objectives</a></li>
+<li><a href="https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover.html">Amazon Route 53: DNS failover</a></li>
+<li><a href="https://www.mongodb.com/docs/manual/tutorial/reconfigure-replica-set-with-unavailable-members/">MongoDB: Reconfigure a replica set with unavailable members</a></li>
+<li><a href="https://csrc.nist.gov/pubs/sp/800/34/r1/upd1/final">NIST SP 800-34 Rev. 1: Contingency Planning Guide</a></li>
+<li><a href="../../../05-application-architecture/scalability/availability-and-reliability/">Availability and reliability</a>
+  in the Application Architecture section</li>
+<li>Next: <a href="../restore-testing-and-runbooks/">restore testing and runbooks</a>.
+  Back to the <a href="../">backups overview</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../database-backups-and-point-in-time-recovery/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Database Backups and Point-in-Time Recovery">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Database Backups and Point-in-Time Recovery</span>
+      </a>
+    
+    
+      <a href="../restore-testing-and-runbooks/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: Restore Testing and Runbooks">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">Restore Testing and Runbooks</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

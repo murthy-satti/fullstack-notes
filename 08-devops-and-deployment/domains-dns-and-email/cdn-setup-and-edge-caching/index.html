@@ -1,0 +1,4832 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../dns-migrations-and-troubleshooting/">
+      
+      
+        <link rel="next" href="../email-deliverability-spf-dkim-dmarc/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>CDN Setup and Edge Caching - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#cdn-setup-and-edge-caching" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              CDN Setup and Edge Caching
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../05-application-architecture/" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../06-ai-and-machine-learning/" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+          <span class="md-ellipsis">&larr; Back to DevOps</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../05-application-architecture/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../06-ai-and-machine-learning/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI and Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
+        
+          
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-label="DevOps module lessons" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+                  <span class="md-ellipsis">&larr; Back to DevOps</span>
+                </a>
+              
+            </div>
+          
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                  
+  
+  
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+    
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_11" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_11" id="__nav_9_11_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Domains, DNS and Email
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_11_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_11">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Domains, DNS and Email
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_11_2" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_11_2" id="__nav_9_11_2_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Foundations
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_11_2_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_11_2">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Foundations
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../domains-and-dns-records/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Domains and DNS Records
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_11_3" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_11_3" id="__nav_9_11_3_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Web Traffic
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_11_3_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_11_3">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Web Traffic
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../connecting-domains-to-hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Connecting Domains to Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dns-migrations-and-troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DNS Migrations and Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CDN Setup and Edge Caching
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CDN Setup and Edge Caching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-path-of-a-request" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The path of a request
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#origins-and-how-to-protect-them" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Origins and how to protect them
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cache-keys-what-makes-two-requests-the-same" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cache keys: what makes two requests the same
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cache-rules-per-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cache rules per path
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#headers-the-cdn-reads-and-writes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Headers the CDN reads and writes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#purging-and-invalidation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Purging and invalidation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#origin-shield-and-tiered-caching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Origin shield and tiered caching
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compression" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compression
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#images-at-the-edge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Images at the edge
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-cdn-in-front-of-an-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A CDN in front of an API
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#edge-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Edge functions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#choosing-a-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Choosing a provider
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cloudfront-in-front-of-taskflow-web-and-api-terraform" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CloudFront in front of TaskFlow Web and API (Terraform)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tagging-api-responses-for-purges-express" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tagging API responses for purges (Express)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#normalizing-the-cache-key-with-a-cloudfront-function" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Normalizing the cache key with a CloudFront Function
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#checking-what-the-cdn-did" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checking what the CDN did
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_11_4" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_11_4" id="__nav_9_11_4_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Email
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_11_4_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_11_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Email
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../email-deliverability-spf-dkim-dmarc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Email Deliverability: SPF, DKIM and DMARC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-path-of-a-request" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The path of a request
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#origins-and-how-to-protect-them" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Origins and how to protect them
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cache-keys-what-makes-two-requests-the-same" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cache keys: what makes two requests the same
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cache-rules-per-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cache rules per path
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#headers-the-cdn-reads-and-writes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Headers the CDN reads and writes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#purging-and-invalidation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Purging and invalidation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#origin-shield-and-tiered-caching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Origin shield and tiered caching
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compression" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compression
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#images-at-the-edge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Images at the edge
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-cdn-in-front-of-an-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A CDN in front of an API
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#edge-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Edge functions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#choosing-a-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Choosing a provider
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cloudfront-in-front-of-taskflow-web-and-api-terraform" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CloudFront in front of TaskFlow Web and API (Terraform)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tagging-api-responses-for-purges-express" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tagging API responses for purges (Express)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#normalizing-the-cache-key-with-a-cloudfront-function" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Normalizing the cache key with a CloudFront Function
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#checking-what-the-cdn-did" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checking what the CDN did
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="cdn-setup-and-edge-caching">CDN Setup and Edge Caching<a class="headerlink" href="#cdn-setup-and-edge-caching" title="Permanent link">&para;</a></h1>
+<p>A content delivery network puts servers between TaskFlow's users and its
+origins: the S3 bucket holding TaskFlow Web and the load balancer in front
+of TaskFlow API. This lesson is the operator's view: configuring origins
+and protecting them, designing cache keys, writing cache rules per path,
+purging, origin shields and tiered caches, compression, image
+optimization at the edge, putting an API behind a CDN, edge functions at
+a high level, and how CloudFront, Cloudflare, Fastly, Akamai, and Bunny
+differ.</p>
+<p>The HTTP caching theory (<code>Cache-Control</code> directives, freshness,
+revalidation with <code>ETag</code>, shared versus private caches) is covered in
+<a href="../../../05-application-architecture/caching/http-and-cdn-caching/">HTTP and CDN caching</a>,
+and deploying hashed assets with the right headers and invalidations in
+<a href="../../deployment-strategies/deploying-frontends-and-static-sites/">deploying frontends and static sites</a>.
+This lesson assumes both.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>A well-configured CDN serves most requests from a location a few
+milliseconds from the user, absorbs traffic spikes, terminates TLS close
+to users, and leaves the origin handling a small fraction of the load.
+A badly configured one has a 20% hit ratio, serves one user's account
+page to another, floods the origin after every purge, or keeps showing
+yesterday's site. Because the CDN sits in front of everything, its
+configuration is production code: a wrong rule is wrong for every user
+in every region at once, and the CDN itself becomes a dependency whose
+outage is your outage.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Fastly (June 2021).</strong> Fastly's
+  <a href="https://www.fastly.com/blog/summary-of-june-8-outage">summary of the June 8 outage</a>
+  explains how a valid customer configuration change triggered a latent
+  software bug that made 85% of its network return errors. Monitoring
+  detected it within a minute and 95% of the network recovered within 49
+  minutes, but every site behind those servers was down meanwhile.</li>
+<li><strong>CloudFront Origin Shield.</strong> The
+  <a href="https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/origin-shield.html">Origin Shield documentation</a>
+  describes an extra caching layer through which all requests from
+  CloudFront's caches pass, consolidating misses for the same object into
+  as few as one origin request, at an extra charge.</li>
+<li><strong>Cloudflare Tiered Cache.</strong> Cloudflare's
+  <a href="https://developers.cloudflare.com/cache/how-to/tiered-cache/">Tiered Cache documentation</a>
+  explains that lower-tier data centers ask an upper tier before going to
+  the origin, and that Smart Tiered Cache, available on all plans, picks
+  the closest upper tier for each origin from latency data.</li>
+<li><strong>Fastly Instant Purge.</strong> Fastly's post
+  <a href="https://www.fastly.com/blog/fastly-instant-purge-under-150ms-for-over-a-decade">Fastly Instant Purge: under 150ms for over a decade</a>
+  explains why purges that reach every location in about 150
+  milliseconds on average let publishers cache content until it changes
+  and purge on publish.</li>
+</ul>
+<p><strong>Popular tools and providers:</strong> Amazon CloudFront, Cloudflare, Fastly,
+Akamai, Bunny CDN, Google Cloud CDN, and Azure Front Door; <code>curl -I</code>,
+CDN logs and analytics, and WebPageTest for checking behaviour.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="the-path-of-a-request">The path of a request<a class="headerlink" href="#the-path-of-a-request" title="Permanent link">&para;</a></h3>
+<p>An edge location receives the request, computes the <strong>cache key</strong>, and
+looks it up. On a hit it answers immediately. On a miss it asks the next
+tier (a regional cache or origin shield), and only if that misses too
+does it ask the origin, storing the response on the way back according
+to the response headers and the CDN's rules. Even uncacheable requests
+benefit: TLS ends close to the user and the CDN reuses warm connections
+to the origin.</p>
+<p><img alt="Diagram: users in three regions send 1,000,000 requests to their nearest edge locations. The edges answer 90% from cache and send 100,000 misses on to a single origin shield placed near the origin. The shield answers 80% of those from its own cache, merging simultaneous misses for the same object, and sends only 20,000 requests, 2% of the total, to the origin: TaskFlow Web's S3 bucket or the API load balancer. Responses flow back through the shield and the edges, each storing a copy according to its cache rules." src="../cdn-tiered-request-path.svg" /></p>
+<p>The arithmetic is worth doing for your own traffic. With an edge hit
+ratio of 90% and a shield hit ratio of 80% on the remaining misses, the
+origin sees <code>0.10 × 0.20 = 2%</code> of requests: 20,000 out of a million.
+Without the shield, every edge location fetches each object separately,
+so a new release's assets hit the origin once per location instead of
+once in total.</p>
+<h3 id="origins-and-how-to-protect-them">Origins and how to protect them<a class="headerlink" href="#origins-and-how-to-protect-them" title="Permanent link">&para;</a></h3>
+<p>An origin is wherever the CDN fetches from on a miss: an S3 bucket, a
+load balancer, a single server, or another platform. Configure:</p>
+<ul>
+<li><strong>HTTPS to the origin</strong>, with a certificate that matches the name the
+  CDN connects to. A mismatch shows up as <code>502</code> errors at the edge.</li>
+<li><strong>The <code>Host</code> header.</strong> Either forward the viewer's <code>Host</code> (the origin
+  must accept every public name) or let the CDN send the origin's own
+  name. CloudFront's managed policy <code>AllViewerExceptHostHeader</code> exists
+  for origins such as API Gateway and Lambda function URLs that expect
+  their own name.</li>
+<li><strong>Timeouts and failover.</strong> Know the CDN's origin read timeout
+  (Cloudflare's proxy read timeout is 125 seconds by default and returns
+  <code>524</code> when exceeded) and use origin failover groups where offered.</li>
+<li><strong>Origin lock-down.</strong> If the origin is reachable directly, attackers
+  and scrapers bypass the CDN's cache and protections. Use CloudFront's
+  origin access control for S3, allow only the CDN's published address
+  ranges at the load balancer or firewall, require a secret header that
+  only the CDN adds, or connect through a tunnel. Edge security as a
+  whole is covered in
+  <a href="../../devsecops-and-cloud-security/edge-protection-waf-ddos-and-bots/">edge protection, WAF, DDoS and bots</a>.</li>
+<li><strong>The client's IP.</strong> The origin sees the CDN's addresses; read the
+  client IP from the CDN's header (<code>CF-Connecting-IP</code>, <code>X-Forwarded-For</code>,
+  or CloudFront's viewer address header), and trust it only from the
+  CDN.</li>
+</ul>
+<h3 id="cache-keys-what-makes-two-requests-the-same">Cache keys: what makes two requests the same<a class="headerlink" href="#cache-keys-what-makes-two-requests-the-same" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: the anatomy of a cache key for GET https://www.example.com/api/public/templates?page=2&amp;utm_source=newsletter with Accept-Encoding br, Accept-Language en, a session Cookie, and an Authorization header. The host, the path, the page parameter, and the normalized encoding go into the cache key. The utm_source parameter is dropped from the key so newsletter links share the same entry. Accept-Language is forwarded to the origin but kept out of the key, which is only safe if the response does not depend on it. The Cookie and Authorization headers never go into a shared cache key; requests that need them bypass the cache. A warning says a value the origin uses but the key ignores serves the wrong content, and a value in the key the origin ignores only lowers the hit ratio." src="../cdn-cache-key-anatomy.svg" /></p>
+<p>The key decides correctness and hit ratio at the same time:</p>
+<ul>
+<li><strong>Include every input that changes the response</strong>: path, the query
+  parameters that matter, and headers such as <code>Accept-Language</code> only if
+  the response really varies by them.</li>
+<li><strong>Exclude everything else</strong>: tracking parameters (<code>utm_*</code>, <code>gclid</code>),
+  parameter order, and high-variety headers such as <code>User-Agent</code>. Each
+  unnecessary input splits one popular object into many rarely hit ones.</li>
+<li><strong>Never use session cookies or <code>Authorization</code> in a shared cache key</strong>
+  for content that differs per user; route those requests around the
+  cache instead.</li>
+</ul>
+<p>CloudFront separates two policies, and confusing them causes bugs: the
+<strong>cache policy</strong> lists what goes into the key, while the <strong>origin
+request policy</strong> lists extra values forwarded to the origin <em>without</em>
+being in the key. If the origin varies its response on a value that is
+forwarded but not keyed, the CDN serves the first variant to everyone.</p>
+<h3 id="cache-rules-per-path">Cache rules per path<a class="headerlink" href="#cache-rules-per-path" title="Permanent link">&para;</a></h3>
+<p>One distribution usually needs several behaviors. For TaskFlow:</p>
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>At the edge</th>
+<th>Headers or policy</th>
+<th>Key</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/assets/*</code></td>
+<td>Cache for a year</td>
+<td><code>public, max-age=31536000, immutable</code></td>
+<td>Path only</td>
+</tr>
+<tr>
+<td><code>/</code> and <code>/index.html</code></td>
+<td>Store, revalidate every time</td>
+<td><code>no-cache</code></td>
+<td>Path only</td>
+</tr>
+<tr>
+<td><code>/images/*</code></td>
+<td>Cache, resize at the edge</td>
+<td><code>public, max-age=2592000</code></td>
+<td>Path plus allowed width and format</td>
+</tr>
+<tr>
+<td><code>/api/public/*</code></td>
+<td>Cache briefly, shared</td>
+<td><code>public, max-age=0, s-maxage=60, stale-while-revalidate=300</code></td>
+<td>Path and query</td>
+</tr>
+<tr>
+<td><code>/api/*</code></td>
+<td>Never cache</td>
+<td><code>private, no-store</code>; caching disabled at the CDN</td>
+<td>Not cached</td>
+</tr>
+</tbody>
+</table>
+<p><img alt="Diagram: requests arriving at the edge are routed by path pattern, most specific first. /assets/* goes to the S3 origin with a one-year immutable cache. /index.html and / go to S3 with no-cache, so the edge revalidates each time. /images/* goes to an image resizing step and is cached per allowed width and format. /api/public/* goes to the API load balancer with a 60-second shared cache and stale-while-revalidate. Everything else under /api/* goes to the load balancer with caching disabled and the Authorization header forwarded. A note says CloudFront evaluates ordered behaviors top to bottom, so /api/public/* must come before /api/*." src="../cdn-cache-behaviors-by-path.svg" /></p>
+<p>The CDN's own settings can override the origin's headers, which is the
+source of nasty surprises. CloudFront's managed <code>CachingOptimized</code>
+policy has a minimum TTL of one second, and AWS warns that a minimum
+TTL above zero makes CloudFront cache responses for at least that long
+<em>even if</em> the origin sends <code>no-cache</code>, <code>no-store</code>, or <code>private</code>. Never
+attach such a policy to personalized API paths; use <code>CachingDisabled</code>
+there.</p>
+<h3 id="headers-the-cdn-reads-and-writes">Headers the CDN reads and writes<a class="headerlink" href="#headers-the-cdn-reads-and-writes" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Header</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Cache-Control</code></td>
+<td>Freshness for all caches; <code>s-maxage</code> targets shared caches like CDNs</td>
+</tr>
+<tr>
+<td><code>CDN-Cache-Control</code> / <code>Surrogate-Control</code></td>
+<td>Instructions for the CDN only (RFC 9213 and Fastly's equivalent), so browser and edge TTLs can differ</td>
+</tr>
+<tr>
+<td><code>Vary</code></td>
+<td>Request headers the response depends on; every value becomes a separate variant</td>
+</tr>
+<tr>
+<td><code>Cache-Tag</code> (Cloudflare), <code>Surrogate-Key</code> (Fastly), a configured header (CloudFront)</td>
+<td>Tags for purging groups of objects</td>
+</tr>
+<tr>
+<td><code>Age</code></td>
+<td>Seconds the response has spent in a shared cache</td>
+</tr>
+<tr>
+<td><code>CF-Cache-Status</code>, <code>X-Cache</code></td>
+<td>The CDN's hit or miss verdict, useful in debugging</td>
+</tr>
+</tbody>
+</table>
+<p>Cloudflare's <code>CF-Cache-Status</code> values are worth memorizing: <code>HIT</code>,
+<code>MISS</code>, <code>EXPIRED</code>, <code>STALE</code> (served because the origin was unreachable),
+<code>UPDATING</code>, <code>REVALIDATED</code>, <code>BYPASS</code> (the origin response was not
+cacheable), and <code>DYNAMIC</code> (the request was never eligible for caching).</p>
+<h3 id="purging-and-invalidation">Purging and invalidation<a class="headerlink" href="#purging-and-invalidation" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Version URLs instead of purging</strong> wherever possible; then only entry
+  points (<code>/index.html</code>) need invalidating after a deploy.</li>
+<li><strong>Purge by tag</strong> for content that appears on many URLs: tag responses
+  (<code>Cache-Tag: template-42</code>) and purge the tag when the template
+  changes. Cloudflare offers purge by URL, tag, prefix, hostname, and
+  everything on all plans, with rate limits per plan; Fastly purges
+  surrogate keys in about 150 ms on average and supports soft purges that
+  mark content stale instead of deleting it; CloudFront invalidates by
+  path and, when the distribution has a cache tag configuration, by tag,
+  with the first 1,000 paths each month free and a wildcard counting as
+  one path; Akamai's Fast Purge completes in seconds.</li>
+<li><strong>Avoid purging everything.</strong> Every edge then misses at once and the
+  origin takes the full load; tiered caching softens this but does not
+  remove it.</li>
+<li><strong>Purges do not reach browsers.</strong> Anything a browser cached with a long
+  <code>max-age</code> stays there.</li>
+</ul>
+<h3 id="origin-shield-and-tiered-caching">Origin shield and tiered caching<a class="headerlink" href="#origin-shield-and-tiered-caching" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Provider</th>
+<th>Mid-tier feature</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CloudFront</td>
+<td>Regional edge caches, plus Origin Shield</td>
+<td>Choose the Origin Shield Region with the lowest latency to the origin; extra charge per request</td>
+</tr>
+<tr>
+<td>Cloudflare</td>
+<td>Tiered Cache</td>
+<td>Smart topology on all plans; regional and custom topologies on Enterprise</td>
+</tr>
+<tr>
+<td>Fastly</td>
+<td>Shielding</td>
+<td>Pick a shield POP near the backend; shield hits and edge misses are both counted in statistics</td>
+</tr>
+<tr>
+<td>Akamai</td>
+<td>Tiered Distribution</td>
+<td>Interim parent servers near the origin, for cacheable content</td>
+</tr>
+<tr>
+<td>Bunny</td>
+<td>Origin Shield (and Perma-Cache)</td>
+<td>Origin Shield at no extra cost</td>
+</tr>
+</tbody>
+</table>
+<p>A shield matters most for origins that are expensive per request (image
+processing, video packaging, small servers) and for global audiences,
+where many edge locations would otherwise miss separately. It adds a hop
+on misses, so it helps little for content that is rarely requested or
+never cacheable.</p>
+<h3 id="compression">Compression<a class="headerlink" href="#compression" title="Permanent link">&para;</a></h3>
+<p>Let the CDN compress text at the edge. On CloudFront, enable
+"compress objects automatically" and both Gzip and Brotli in the cache
+policy; CloudFront then compresses responses between 1,000 and
+10,000,000 bytes with a compressible <code>Content-Type</code> and a <code>Content-Length</code>
+header, prefers Brotli when the browser accepts both, and never
+recompresses a response that already has <code>Content-Encoding</code>. Do not
+compress images, video, or archives again; they are already compressed.</p>
+<h3 id="images-at-the-edge">Images at the edge<a class="headerlink" href="#images-at-the-edge" title="Permanent link">&para;</a></h3>
+<p>Image services resize and convert images on request and cache each
+variant: Cloudflare Images transformations, Fastly Image Optimizer,
+Akamai Image and Video Manager, Bunny Optimizer, and on AWS the
+Dynamic Image Transformation for Amazon CloudFront solution (formerly
+Serverless Image Handler), which you deploy into your account. Two rules
+keep them cheap and safe:</p>
+<ul>
+<li><strong>Allow only a few sizes and formats.</strong> Free-form width parameters let
+  anyone create unlimited variants, and Cloudflare, for example, bills
+  each unique transformation per month.</li>
+<li><strong>Key on the parameters you allow</strong>, and let the service choose AVIF or
+  WebP from the browser's <code>Accept</code> header rather than adding
+  <code>Vary: Accept</code> yourself.</li>
+</ul>
+<p>Large media files and video belong in object storage and a video
+service, as covered in
+<a href="../../hosting-and-platforms/video-storage-and-streaming/">video storage and streaming</a>.</p>
+<h3 id="a-cdn-in-front-of-an-api">A CDN in front of an API<a class="headerlink" href="#a-cdn-in-front-of-an-api" title="Permanent link">&para;</a></h3>
+<p>Even with caching disabled, putting TaskFlow API behind a CDN gives TLS
+termination near users, connection reuse to the origin, a WAF, and DDoS
+absorption. Rules for doing it safely:</p>
+<ul>
+<li>Disable caching for everything except explicitly public <code>GET</code>
+  endpoints, and forward <code>Authorization</code>, cookies, and the query string
+  to the origin.</li>
+<li>Cache public endpoints with <code>s-maxage</code> and short TTLs, never responses
+  that set cookies or depend on the caller's identity.</li>
+<li>Check the CDN's limits: request body size, the origin timeout, and
+  WebSocket support for real-time features.</li>
+<li>Make sure rate limiting and logging use the real client IP from the
+  CDN's header.</li>
+</ul>
+<h3 id="edge-functions">Edge functions<a class="headerlink" href="#edge-functions" title="Permanent link">&para;</a></h3>
+<p>Most CDNs run small programs at the edge:</p>
+<table>
+<thead>
+<tr>
+<th>Product</th>
+<th>Runtime</th>
+<th>Typical use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CloudFront Functions</td>
+<td>JavaScript, viewer request and response only, sub-millisecond, no network access</td>
+<td>Redirects, header changes, cache key normalization, token checks</td>
+</tr>
+<tr>
+<td>Lambda@Edge</td>
+<td>Node.js or Python, also origin request and response, network access</td>
+<td>Heavier logic, calling other services, reading request bodies</td>
+</tr>
+<tr>
+<td>Cloudflare Workers</td>
+<td>JavaScript and WebAssembly in V8 isolates</td>
+<td>Full request handling, APIs, rewriting, A/B routing</td>
+</tr>
+<tr>
+<td>Fastly Compute</td>
+<td>WebAssembly</td>
+<td>Programmable routing and caching</td>
+</tr>
+<tr>
+<td>Akamai EdgeWorkers</td>
+<td>JavaScript</td>
+<td>Custom logic inside Akamai's delivery</td>
+</tr>
+<tr>
+<td>Bunny Edge Scripting</td>
+<td>JavaScript</td>
+<td>Middleware and small apps on Bunny's network</td>
+</tr>
+</tbody>
+</table>
+<p>Use them for logic that depends only on the request: redirects, header
+rules, key normalization, bucketing users for experiments, and verifying
+signed tokens. Keep business logic that needs the database at the
+origin; a function far from its data is slower, not faster.</p>
+<h3 id="choosing-a-provider">Choosing a provider<a class="headerlink" href="#choosing-a-provider" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Provider</th>
+<th>Strengths</th>
+<th>Fits</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CloudFront</td>
+<td>Deep AWS integration (S3 origin access control, ACM, WAF, Route 53 alias), Origin Shield, cache tags, flat-rate plans</td>
+<td>Origins already in AWS</td>
+</tr>
+<tr>
+<td>Cloudflare</td>
+<td>DNS, proxy, WAF, and CDN in one place; Tiered Cache and all purge types on every plan; static asset requests on Workers free</td>
+<td>Small teams to large sites, especially when DNS moves to Cloudflare</td>
+</tr>
+<tr>
+<td>Fastly</td>
+<td>Instant purge with surrogate keys, VCL and Compute programmability, shielding</td>
+<td>Content that changes often and must be purged precisely</td>
+</tr>
+<tr>
+<td>Akamai</td>
+<td>Very large network, Tiered Distribution, Fast Purge, media delivery products</td>
+<td>Large enterprises and media</td>
+</tr>
+<tr>
+<td>Bunny</td>
+<td>Low prices, Origin Shield at no extra cost, Perma-Cache, Optimizer</td>
+<td>Cost-sensitive delivery, video, small teams</td>
+</tr>
+</tbody>
+</table>
+<p>Pricing changes often and is compared in
+<a href="../../hosting-and-platforms/hosting-websites-and-frontends/">hosting websites and frontends</a>.</p>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<p>Use a CDN when:</p>
+<ul>
+<li>Users are spread across regions or the site has heavy static assets.</li>
+<li>Traffic is spiky (launches, campaigns) and the origin should not see
+  the spikes.</li>
+<li>You want TLS, WAF, and DDoS protection at the edge, even for an API.</li>
+</ul>
+<p>Think twice, or keep it simple, when:</p>
+<ul>
+<li>Every response is personalized and uncacheable, and users are close to
+  a single region: a CDN still helps with TLS and protection, but not
+  with load.</li>
+<li>The team cannot yet explain its cache keys and headers; start with
+  hashed assets and <code>no-cache</code> HTML, and cache API responses later.</li>
+<li>Data must not leave a jurisdiction and the CDN cannot restrict where it
+  caches.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Content</th>
+<th>Strategy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hashed static assets</td>
+<td>Cache for a year at edge and browser; never purge</td>
+</tr>
+<tr>
+<td>HTML entry points</td>
+<td><code>no-cache</code>; invalidate after deploys if the CDN stores it</td>
+</tr>
+<tr>
+<td>Public, slowly changing API data</td>
+<td><code>s-maxage</code> plus <code>stale-while-revalidate</code>, tag purges on change</td>
+</tr>
+<tr>
+<td>Images</td>
+<td>Edge resizing with an allowlist of sizes</td>
+</tr>
+<tr>
+<td>Per-user data</td>
+<td>Bypass the cache; <code>private, no-store</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="cloudfront-in-front-of-taskflow-web-and-api-terraform">CloudFront in front of TaskFlow Web and API (Terraform)<a class="headerlink" href="#cloudfront-in-front-of-taskflow-web-and-api-terraform" title="Permanent link">&para;</a></h3>
+<p>This extends the distribution from
+<a href="../../hosting-and-platforms/hosting-websites-and-frontends/">hosting websites and frontends</a>
+with an API origin and per-path behaviors. Only the parts that change are
+shown.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># infra/web/cdn-api.tf: API origin, origin shield, and per-path behaviors</span>
+<span class="kr">data</span><span class="w"> </span><span class="nc">"aws_cloudfront_cache_policy"</span><span class="w"> </span><span class="nv">"disabled"</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="na">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Managed-CachingDisabled"</span>
+<span class="p">}</span>
+
+<span class="kr">data</span><span class="w"> </span><span class="nc">"aws_cloudfront_origin_request_policy"</span><span class="w"> </span><span class="nv">"all_viewer_except_host"</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="na">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Managed-AllViewerExceptHostHeader"</span>
+<span class="p">}</span>
+
+<span class="c1"># Public API responses: honor the origin's s-maxage, never key on cookies</span>
+<span class="kr">resource</span><span class="w"> </span><span class="nc">"aws_cloudfront_cache_policy"</span><span class="w"> </span><span class="nv">"public_api"</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="na">name</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="s2">"taskflow-public-api"</span>
+<span class="w">  </span><span class="na">min_ttl</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="m">0</span>
+<span class="w">  </span><span class="na">default_ttl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span>
+<span class="w">  </span><span class="na">max_ttl</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="m">300</span>
+
+<span class="w">  </span><span class="nb">parameters_in_cache_key_and_forwarded_to_origin</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="na">enable_accept_encoding_brotli</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="no">true</span>
+<span class="w">    </span><span class="na">enable_accept_encoding_gzip</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="no">true</span>
+
+<span class="w">    </span><span class="nb">cookies_config</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="na">cookie_behavior</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"none"</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="nb">headers_config</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="na">header_behavior</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"none"</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="nb">query_strings_config</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="na">query_string_behavior</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"all"</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kr">resource</span><span class="w"> </span><span class="nc">"aws_cloudfront_distribution"</span><span class="w"> </span><span class="nv">"web"</span><span class="w"> </span><span class="p">{</span>
+<span class="c1">  # ... default origin (S3), default_cache_behavior, viewer_certificate as before ...</span>
+
+<span class="w">  </span><span class="nb">origin</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="na">origin_id</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="s2">"api-alb"</span>
+<span class="w">    </span><span class="na">domain_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"origin-api.example.com"</span><span class="c1"> # a name on the load balancer's certificate</span>
+
+<span class="w">    </span><span class="nb">custom_origin_config</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="na">http_port</span><span class="w">              </span><span class="o">=</span><span class="w"> </span><span class="m">80</span>
+<span class="w">      </span><span class="na">https_port</span><span class="w">             </span><span class="o">=</span><span class="w"> </span><span class="m">443</span>
+<span class="w">      </span><span class="na">origin_protocol_policy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"https-only"</span>
+<span class="w">      </span><span class="na">origin_ssl_protocols</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"TLSv1.2"</span><span class="p">]</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="nb">origin_shield</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="na">enabled</span><span class="w">              </span><span class="o">=</span><span class="w"> </span><span class="no">true</span>
+<span class="w">      </span><span class="na">origin_shield_region</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"us-east-1"</span><span class="c1"> # the Region closest to the origin</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="nb">custom_header</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="na">name</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="s2">"X-Origin-Verify"</span>
+<span class="w">      </span><span class="na">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">var.origin_verify_secret</span><span class="c1"> # the load balancer rejects requests without it</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="c1">  # Most specific pattern first: CloudFront evaluates ordered behaviors in order</span>
+<span class="w">  </span><span class="nb">ordered_cache_behavior</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="na">path_pattern</span><span class="w">             </span><span class="o">=</span><span class="w"> </span><span class="s2">"/api/public/*"</span>
+<span class="w">    </span><span class="na">target_origin_id</span><span class="w">         </span><span class="o">=</span><span class="w"> </span><span class="s2">"api-alb"</span>
+<span class="w">    </span><span class="na">viewer_protocol_policy</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="s2">"https-only"</span>
+<span class="w">    </span><span class="na">allowed_methods</span><span class="w">          </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"GET", "HEAD", "OPTIONS"</span><span class="p">]</span>
+<span class="w">    </span><span class="na">cached_methods</span><span class="w">           </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"GET", "HEAD"</span><span class="p">]</span>
+<span class="w">    </span><span class="na">compress</span><span class="w">                 </span><span class="o">=</span><span class="w"> </span><span class="no">true</span>
+<span class="w">    </span><span class="na">cache_policy_id</span><span class="w">          </span><span class="o">=</span><span class="w"> </span><span class="nv">aws_cloudfront_cache_policy.public_api.id</span>
+<span class="w">    </span><span class="na">origin_request_policy_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">data.aws_cloudfront_origin_request_policy.all_viewer_except_host.id</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="nb">ordered_cache_behavior</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="na">path_pattern</span><span class="w">             </span><span class="o">=</span><span class="w"> </span><span class="s2">"/api/*"</span>
+<span class="w">    </span><span class="na">target_origin_id</span><span class="w">         </span><span class="o">=</span><span class="w"> </span><span class="s2">"api-alb"</span>
+<span class="w">    </span><span class="na">viewer_protocol_policy</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="s2">"https-only"</span>
+<span class="w">    </span><span class="na">allowed_methods</span><span class="w">          </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"</span><span class="p">]</span>
+<span class="w">    </span><span class="na">cached_methods</span><span class="w">           </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"GET", "HEAD"</span><span class="p">]</span>
+<span class="w">    </span><span class="na">compress</span><span class="w">                 </span><span class="o">=</span><span class="w"> </span><span class="no">true</span>
+<span class="w">    </span><span class="na">cache_policy_id</span><span class="w">          </span><span class="o">=</span><span class="w"> </span><span class="nv">data.aws_cloudfront_cache_policy.disabled.id</span>
+<span class="w">    </span><span class="na">origin_request_policy_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">data.aws_cloudfront_origin_request_policy.all_viewer_except_host.id</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<ul>
+<li><code>max_ttl = 300</code> caps how long the origin can ask the CDN to keep a
+  public API response; <code>min_ttl = 0</code> means <code>no-store</code> from the origin is
+  respected.</li>
+<li><code>AllViewerExceptHostHeader</code> forwards headers, cookies, and query
+  strings, but sends <code>Host: origin-api.example.com</code>, which matches the
+  load balancer's certificate.</li>
+<li>The secret header plus a load balancer rule that rejects requests
+  without it (and a security group allowing only CloudFront's managed
+  prefix list) keeps clients from bypassing the CDN. Store the secret in
+  a secrets manager and rotate it.</li>
+</ul>
+<h3 id="tagging-api-responses-for-purges-express">Tagging API responses for purges (Express)<a class="headerlink" href="#tagging-api-responses-for-purges-express" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/routes/public-templates.js: cacheable at the CDN, purgeable by tag</span>
+<span class="k">import</span><span class="w"> </span><span class="nx">express</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"express"</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Templates</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"../models/templates.js"</span><span class="p">;</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">router</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">express</span><span class="p">.</span><span class="nx">Router</span><span class="p">();</span>
+
+<span class="nx">router</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">"/api/public/templates/:id"</span><span class="p">,</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="nx">req</span><span class="p">,</span><span class="w"> </span><span class="nx">res</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">template</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">Templates</span><span class="p">.</span><span class="nx">findById</span><span class="p">(</span><span class="nx">req</span><span class="p">.</span><span class="nx">params</span><span class="p">.</span><span class="nx">id</span><span class="p">);</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">template</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="nx">res</span><span class="p">.</span><span class="nx">status</span><span class="p">(</span><span class="mf">404</span><span class="p">).</span><span class="nx">json</span><span class="p">({</span><span class="w"> </span><span class="nx">error</span><span class="o">:</span><span class="w"> </span><span class="s2">"not found"</span><span class="w"> </span><span class="p">});</span>
+
+<span class="w">  </span><span class="c1">// Browsers revalidate; the CDN may serve it for 60 s, and stale for 300 s while refreshing</span>
+<span class="w">  </span><span class="nx">res</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s2">"Cache-Control"</span><span class="p">,</span><span class="w"> </span><span class="s2">"public, max-age=0, s-maxage=60, stale-while-revalidate=300"</span><span class="p">);</span>
+<span class="w">  </span><span class="c1">// Cloudflare reads Cache-Tag (comma-separated); Fastly uses Surrogate-Key (space-separated);</span>
+<span class="w">  </span><span class="c1">// CloudFront reads whichever header name its cache tag configuration specifies</span>
+<span class="w">  </span><span class="nx">res</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s2">"Cache-Tag"</span><span class="p">,</span><span class="w"> </span><span class="sb">`template-</span><span class="si">${</span><span class="nx">template</span><span class="p">.</span><span class="nx">id</span><span class="si">}</span><span class="sb">,templates`</span><span class="p">);</span>
+<span class="w">  </span><span class="nx">res</span><span class="p">.</span><span class="nx">json</span><span class="p">(</span><span class="nx">template</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1"># Purge one template everywhere after it changes (Cloudflare API)</span>
+curl<span class="w"> </span>-s<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span><span class="s2">"https://api.cloudflare.com/client/v4/zones/</span><span class="si">${</span><span class="nv">CF_ZONE_ID</span><span class="si">}</span><span class="s2">/purge_cache"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Authorization: Bearer </span><span class="si">${</span><span class="nv">CLOUDFLARE_API_TOKEN</span><span class="si">}</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--data<span class="w"> </span><span class="s1">'{"tags":["template-42"]}'</span>
+
+<span class="c1"># CloudFront equivalents: a path, and a tag (needs a cache tag configuration)</span>
+aws<span class="w"> </span>cloudfront<span class="w"> </span>create-invalidation<span class="w"> </span>--distribution-id<span class="w"> </span><span class="s2">"</span><span class="nv">$DIST_ID</span><span class="s2">"</span><span class="w"> </span>--paths<span class="w"> </span><span class="s2">"/index.html"</span>
+aws<span class="w"> </span>cloudfront<span class="w"> </span>create-invalidation<span class="w"> </span>--distribution-id<span class="w"> </span><span class="s2">"</span><span class="nv">$DIST_ID</span><span class="s2">"</span><span class="w"> </span>--paths<span class="w"> </span><span class="s2">"#template-42"</span>
+</code></pre></div>
+<p>Purge from the code path that changes the data (after the database
+commit), not by hand, and keep the TTL as a safety net if a purge is
+lost.</p>
+<h3 id="normalizing-the-cache-key-with-a-cloudfront-function">Normalizing the cache key with a CloudFront Function<a class="headerlink" href="#normalizing-the-cache-key-with-a-cloudfront-function" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// cloudfront/strip-tracking-params.js: viewer-request function</span>
+<span class="c1">// For behaviors whose cache key includes all query strings</span>
+<span class="kd">function</span><span class="w"> </span><span class="nx">handler</span><span class="p">(</span><span class="nx">event</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">var</span><span class="w"> </span><span class="nx">request</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">event</span><span class="p">.</span><span class="nx">request</span><span class="p">;</span>
+<span class="w">  </span><span class="kd">var</span><span class="w"> </span><span class="nx">query</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">request</span><span class="p">.</span><span class="nx">querystring</span><span class="p">;</span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">var</span><span class="w"> </span><span class="nx">name</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="nx">query</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">name</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="s2">"utm_"</span><span class="p">)</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="mf">0</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nx">name</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">"gclid"</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nx">name</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">"fbclid"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="ow">delete</span><span class="w"> </span><span class="nx">query</span><span class="p">[</span><span class="nx">name</span><span class="p">];</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">request</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Newsletter links with <code>?utm_source=...</code> now share one cache entry with
+everyone else. Associate the function with the viewer request event of
+the <code>/api/public/*</code> behavior.</p>
+<h3 id="checking-what-the-cdn-did">Checking what the CDN did<a class="headerlink" href="#checking-what-the-cdn-did" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-sI<span class="w"> </span>https://www.example.com/assets/index-B7x9q2Lc.js<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-iE<span class="w"> </span><span class="s1">'^(cache-control|age|x-cache|cf-cache-status)'</span>
+curl<span class="w"> </span>-sI<span class="w"> </span>https://www.example.com/api/tasks<span class="w"> </span>-H<span class="w"> </span><span class="s2">"Authorization: Bearer &lt;token&gt;"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-iE<span class="w"> </span><span class="s1">'^(cache-control|age|x-cache|cf-cache-status)'</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>; Example output (CloudFront)
+cache-control: public, max-age=31536000, immutable
+age: 5321
+x-cache: Hit from cloudfront
+
+cache-control: private, no-store
+x-cache: Miss from cloudfront
+</code></pre></div>
+<p>The asset was served from cache and has been there for about 90
+minutes; the personal API response was fetched from the origin, as it
+must be. An <code>Age</code> header on a personalized response is an incident.</p>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Hash asset filenames and cache them for a year; serve HTML with
+  <code>no-cache</code>.</li>
+<li>Send an explicit <code>Cache-Control</code> header on every response, including
+  errors.</li>
+<li>Keep cache keys minimal but complete; strip tracking parameters and
+  never key shared content on cookies or <code>Authorization</code>.</li>
+<li>Disable caching for personalized paths at the CDN, not only in headers,
+  and never attach a minimum TTL above zero to them.</li>
+<li>Purge by tag from code after data changes; avoid purge-everything.</li>
+<li>Enable a shield or tiered cache for global audiences and expensive
+  origins.</li>
+<li>Lock the origin so only the CDN can reach it, and log the real client
+  IP from the CDN's header.</li>
+<li>Allowlist image sizes and formats for edge transformations.</li>
+<li>Treat the CDN as a dependency: monitor hit ratio, error rates, and
+  origin load, and know your fallback if it fails.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>The hit ratio is stuck at 20%.</strong>
+  <em>Detect:</em> CDN analytics show many distinct keys for the same path,
+  differing by <code>utm_*</code> parameters, cookies, or <code>User-Agent</code>. <em>Cause:</em>
+  unnecessary inputs in the cache key, or <code>Vary: User-Agent</code> from the
+  origin. <em>Fix:</em> remove them from the key, normalize query strings, and
+  stop sending high-variety <code>Vary</code> headers.</li>
+<li><strong>One user sees another user's data.</strong>
+  <em>Detect:</em> responses for a personal endpoint carry an <code>Age</code> header or a
+  <code>HIT</code> status. <em>Cause:</em> the path uses a cache policy with a minimum TTL
+  above zero, or the origin forgot <code>private, no-store</code>. <em>Fix:</em> treat it as
+  a security incident: purge, switch the behavior to <code>CachingDisabled</code>,
+  add <code>private, no-store</code>, and test that two users get different
+  responses.</li>
+<li><strong>The origin falls over right after a deploy.</strong>
+  <em>Detect:</em> origin requests per second spike just after an invalidation
+  of <code>/*</code>. <em>Cause:</em> purge-everything turned every edge cold at once.
+  <em>Fix:</em> hash assets, invalidate only entry points, and enable a shield or
+  tiered cache.</li>
+<li><strong>The edge returns 502 for the API.</strong>
+  <em>Detect:</em> CDN logs show origin TLS or connection errors; the origin
+  sees no requests. <em>Cause:</em> the origin certificate does not match the
+  origin domain name the CDN uses, or the origin firewall blocks the
+  CDN's ranges. <em>Fix:</em> align the origin name and certificate (or the
+  <code>Host</code> policy) and allow the CDN's published ranges.</li>
+<li><strong>The image bill grows every month.</strong>
+  <em>Detect:</em> unique transformations far exceed the number of images times
+  the sizes you use. <em>Cause:</em> free-form width and quality parameters,
+  sometimes abused by bots. <em>Fix:</em> allowlist sizes and formats and reject
+  others at the edge.</li>
+<li><strong>The whole site is down while the origin is healthy.</strong>
+  <em>Detect:</em> errors come from the CDN's own error pages in many regions;
+  the provider's status page reports an incident. <em>Cause:</em> a CDN outage,
+  as in Fastly's 2021 incident. <em>Fix:</em> for critical sites, keep a tested
+  fallback (a second CDN or a direct origin path behind a short-TTL DNS
+  record) and practice switching.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Edge location (PoP):</strong> A CDN site that serves users nearby.</li>
+<li><strong>Origin:</strong> The server or bucket the CDN fetches from on a miss.</li>
+<li><strong>Cache key:</strong> The request properties that identify a cached object.</li>
+<li><strong>Cache behavior / cache rule:</strong> The settings applied to a path
+  pattern.</li>
+<li><strong>Cache policy and origin request policy:</strong> CloudFront's split between
+  values in the key and values only forwarded to the origin.</li>
+<li><strong>Origin shield / tiered cache:</strong> A mid-tier cache that collapses edge
+  misses before they reach the origin.</li>
+<li><strong>Request collapsing:</strong> Merging simultaneous misses for the same object
+  into one origin request.</li>
+<li><strong>Purge (invalidation):</strong> Removing objects from CDN caches before they
+  expire.</li>
+<li><strong>Surrogate key / cache tag:</strong> A label on cached objects used to purge
+  them as a group.</li>
+<li><strong>Soft purge:</strong> Marking objects stale instead of deleting them, so they
+  can still be served while refreshing.</li>
+<li><strong>Edge function:</strong> Code that runs at CDN locations on requests or
+  responses.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Assuming a CDN speeds up everything; uncacheable responses gain only
+  TLS and connection benefits.</li>
+<li>Including cookies, <code>User-Agent</code>, or tracking parameters in the cache
+  key.</li>
+<li>Forwarding a header to the origin that changes the response without
+  putting it in the key.</li>
+<li>Attaching a policy with a nonzero minimum TTL to personalized paths.</li>
+<li>Purging everything after each deploy instead of versioning assets.</li>
+<li>Leaving the origin open to direct traffic.</li>
+<li>Believing a purge clears browsers' caches.</li>
+<li>Letting arbitrary image sizes be generated on demand.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Walk through what happens to a request on an edge miss with an origin
+   shield enabled.</li>
+<li>With an edge hit ratio of 95% and a shield hit ratio of 60%, what
+   fraction of 20 million daily requests reaches the origin? (0.05 ×
+   0.40 = 2%, so 400,000 requests.)</li>
+<li>What is the difference between CloudFront's cache policy and origin
+   request policy, and what goes wrong if you confuse them?</li>
+<li>Why can a cache policy with a one-second minimum TTL leak personal
+   data even when the origin sends <code>no-store</code>?</li>
+<li>Design cache rules for <code>/assets/*</code>, <code>/index.html</code>, <code>/api/public/*</code>,
+   and <code>/api/*</code> for TaskFlow, including the order of the behaviors.</li>
+<li>When would you purge by tag instead of by URL, and what do Cloudflare,
+   Fastly, and CloudFront call the tag header?</li>
+<li>What does an edge function do well, and what should stay at the
+   origin?</li>
+<li>How would you keep TaskFlow Web available if its CDN had a global
+   outage?</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/controlling-the-cache-key.html">Amazon CloudFront: Control the cache key with a policy</a></li>
+<li><a href="https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-managed-cache-policies.html">Amazon CloudFront: Use managed cache policies</a></li>
+<li><a href="https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/edge-functions-choosing.html">Amazon CloudFront: Differences between CloudFront Functions and Lambda@Edge</a></li>
+<li><a href="https://developers.cloudflare.com/cache/how-to/purge-cache/">Cloudflare: Purge cache</a></li>
+<li><a href="https://developers.cloudflare.com/cache/concepts/cache-responses/">Cloudflare: Cloudflare cache responses</a></li>
+<li><a href="https://www.fastly.com/documentation/guides/full-site-delivery/purging/working-with-surrogate-keys/">Fastly: Working with surrogate keys</a></li>
+<li><a href="https://www.fastly.com/documentation/guides/getting-started/hosts/shielding/">Fastly: Shielding</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc9213">RFC 9213: Targeted HTTP Cache Control</a></li>
+<li>Next: <a href="../email-deliverability-spf-dkim-dmarc/">email deliverability: SPF, DKIM and DMARC</a>. Back to the <a href="../">domains, DNS and email overview</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../dns-migrations-and-troubleshooting/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: DNS Migrations and Troubleshooting">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">DNS Migrations and Troubleshooting</span>
+      </a>
+    
+    
+      <a href="../email-deliverability-spf-dkim-dmarc/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: Email Deliverability: SPF, DKIM and DMARC">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">Email Deliverability: SPF, DKIM and DMARC</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

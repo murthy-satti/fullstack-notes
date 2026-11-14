@@ -1,0 +1,4742 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../distributed-tracing/">
+      
+      
+        <link rel="next" href="../alerting-and-on-call/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>SLIs, SLOs, and Error Budgets - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#slis-slos-and-error-budgets" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              SLIs, SLOs, and Error Budgets
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../05-application-architecture/" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../06-ai-and-machine-learning/" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+          <span class="md-ellipsis">&larr; Back to DevOps</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../05-application-architecture/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../06-ai-and-machine-learning/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI and Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
+        
+          
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-label="DevOps module lessons" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+                  <span class="md-ellipsis">&larr; Back to DevOps</span>
+                </a>
+              
+            </div>
+          
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                  
+  
+  
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+    
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_16" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_16" id="__nav_9_16_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monitoring and Logging
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_16_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_16">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Monitoring and Logging
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_16_2" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_16_2" id="__nav_9_16_2_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Foundations
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_16_2_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_16_2">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Foundations
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../observability-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Observability Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_16_3" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_16_3" id="__nav_9_16_3_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The Signals
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_16_3_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_16_3">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    The Signals
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../structured-logging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Structured Logging
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../metrics-and-dashboards/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metrics and Dashboards
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../distributed-tracing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Distributed Tracing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_16_4" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_16_4" id="__nav_9_16_4_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reliability Practice
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_16_4_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_16_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Reliability Practice
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SLIs, SLOs, and Error Budgets
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SLIs, SLOs, and Error Budgets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sli-slo-and-sla" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SLI, SLO, and SLA
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#choosing-good-slis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Choosing good SLIs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#slo-targets-and-the-nines" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SLO targets and the nines
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-budget-math" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error budget math
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-budget-policies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error budget policies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alerting-on-slos-multiwindow-multi-burn-rate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alerting on SLOs: multiwindow, multi-burn-rate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#slo-documents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SLO documents
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sli-recording-rules-for-taskflow-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SLI recording rules for TaskFlow API
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multiwindow-multi-burn-rate-alerts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multiwindow, multi-burn-rate alerts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-budget-remaining" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error budget remaining
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#an-slo-document-for-taskflow-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        An SLO document for TaskFlow API
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../alerting-and-on-call/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Alerting and On-Call
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../error-tracking-and-uptime-monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error Tracking and Uptime Monitoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../incident-response-and-postmortems/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Incident Response and Postmortems
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sli-slo-and-sla" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SLI, SLO, and SLA
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#choosing-good-slis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Choosing good SLIs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#slo-targets-and-the-nines" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SLO targets and the nines
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-budget-math" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error budget math
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-budget-policies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error budget policies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alerting-on-slos-multiwindow-multi-burn-rate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alerting on SLOs: multiwindow, multi-burn-rate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#slo-documents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SLO documents
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sli-recording-rules-for-taskflow-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SLI recording rules for TaskFlow API
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multiwindow-multi-burn-rate-alerts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multiwindow, multi-burn-rate alerts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-budget-remaining" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error budget remaining
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#an-slo-document-for-taskflow-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        An SLO document for TaskFlow API
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="slis-slos-and-error-budgets">SLIs, SLOs, and Error Budgets<a class="headerlink" href="#slis-slos-and-error-budgets" title="Permanent link">&para;</a></h1>
+<p>"Is TaskFlow reliable enough?" is an argument until you put numbers on it.
+A <strong>service level indicator (SLI)</strong> measures one aspect of the service as
+users experience it, a <strong>service level objective (SLO)</strong> sets a target for
+that measurement over a time window, and the <strong>error budget</strong> is the amount
+of unreliability the target still allows. This lesson defines SLIs, SLOs,
+and SLAs, shows how to choose good SLIs, computes the "nines" correctly,
+works through error budget math, explains error budget policies, and builds
+the multiwindow, multi-burn-rate alerts recommended by Google's SRE
+Workbook, ending with an SLO document for TaskFlow API.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>Without an agreed target, reliability work is driven by whoever shouts
+loudest: product wants features, operations wants stability, and every
+incident triggers a debate about whether things are "bad enough" to slow
+down. An SLO turns that into a shared, measurable contract inside the team.
+If the service is meeting its SLO, you ship; if it is burning the budget
+too fast, you stop and fix reliability. Nobody has to win an argument.</p>
+<p>SLOs also fix alerting. Instead of paging on CPU, memory, or every error
+spike, you page when users are being hurt fast enough to threaten the
+objective. That single change removes most alert noise, as the next lesson
+on <a href="../alerting-and-on-call/">alerting and on-call</a> shows.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Google SRE book.</strong> The chapter
+  <a href="https://sre.google/sre-book/service-level-objectives/">Service Level Objectives</a>
+  defines SLIs, SLOs, and SLAs, explains why 100% is the wrong target, and
+  recommends choosing a small number of indicators that reflect what users
+  care about.</li>
+<li><strong>Google SRE Workbook: error budgets in practice.</strong> The chapter
+  <a href="https://sre.google/workbook/implementing-slos/">Implementing SLOs</a>
+  walks through choosing SLIs, measuring them, and using error budgets to
+  make decisions, and the
+  <a href="https://sre.google/workbook/error-budget-policy/">Example Error Budget Policy</a>
+  shows a policy that halts non-critical releases when a service exceeds
+  its budget.</li>
+<li><strong>Google SRE Workbook: alerting.</strong> The chapter
+  <a href="https://sre.google/workbook/alerting-on-slos/">Alerting on SLOs</a>
+  compares six alerting approaches and recommends multiwindow,
+  multi-burn-rate alerts, with a table of burn rates (14.4, 6, and 1) and
+  windows for a 99.9% SLO.</li>
+<li><strong>Cloud provider SLAs.</strong> Public SLAs such as the
+  <a href="https://aws.amazon.com/compute/sla/">Amazon Compute Service Level Agreement</a>
+  promise a monthly uptime percentage and define service credits when it is
+  missed, which is the contractual layer that sits on top of internal SLOs.</li>
+</ul>
+<p><strong>Popular tools and providers:</strong> Prometheus recording and alerting rules,
+Sloth and Pyrra (generate SLO rules for Prometheus), the OpenSLO
+specification, Grafana SLO, Datadog SLOs, Google Cloud Service Monitoring,
+Nobl9, and Amazon CloudWatch Application Signals.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="sli-slo-and-sla">SLI, SLO, and SLA<a class="headerlink" href="#sli-slo-and-sla" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Term</th>
+<th>What it is</th>
+<th>Who it is for</th>
+<th>TaskFlow example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>SLI</strong> (indicator)</td>
+<td>A measurement, usually a ratio of good events to valid events</td>
+<td>Engineers</td>
+<td>Proportion of <code>/tasks</code> requests that return a non-5xx response</td>
+</tr>
+<tr>
+<td><strong>SLO</strong> (objective)</td>
+<td>A target for an SLI over a window</td>
+<td>The team and its stakeholders</td>
+<td>99.9% of requests succeed over a rolling 30 days</td>
+</tr>
+<tr>
+<td><strong>SLA</strong> (agreement)</td>
+<td>A contract with consequences, usually money or service credits</td>
+<td>Customers and lawyers</td>
+<td>99.5% monthly availability or a 10% credit</td>
+</tr>
+<tr>
+<td><strong>Error budget</strong></td>
+<td><code>1 - SLO</code>: how much failure the SLO allows</td>
+<td>The team, to make decisions</td>
+<td>0.1% of requests may fail: about 50,000 of 50 million a month</td>
+</tr>
+</tbody>
+</table>
+<p>An SLA should always be <strong>looser</strong> than the internal SLO. If TaskFlow
+promises customers 99.5%, the team aims for 99.9% so it notices and reacts
+long before the contract is at risk. Many internal services have SLOs and
+no SLA at all.</p>
+<h3 id="choosing-good-slis">Choosing good SLIs<a class="headerlink" href="#choosing-good-slis" title="Permanent link">&para;</a></h3>
+<p>The SRE books recommend expressing SLIs as a ratio:</p>
+<div class="highlight"><pre><span></span><code>SLI = good events / valid events   (x 100%)
+</code></pre></div>
+<p>Common SLI types:</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Question</th>
+<th>TaskFlow SLI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Availability</strong></td>
+<td>Did the request succeed?</td>
+<td>Non-5xx responses / all API requests (excluding health checks)</td>
+</tr>
+<tr>
+<td><strong>Latency</strong></td>
+<td>Was it fast enough?</td>
+<td>Requests served in under 300 ms / all requests</td>
+</tr>
+<tr>
+<td><strong>Freshness</strong></td>
+<td>Is the data recent enough?</td>
+<td>Reminder emails sent within 5 minutes of the due time / reminders due</td>
+</tr>
+<tr>
+<td><strong>Correctness</strong></td>
+<td>Was the answer right?</td>
+<td>Synthetic task reads that return the expected content / synthetic reads</td>
+</tr>
+<tr>
+<td><strong>Throughput or coverage</strong></td>
+<td>Did the batch process everything?</td>
+<td>Nightly export jobs that complete by 06:00 / jobs scheduled</td>
+</tr>
+</tbody>
+</table>
+<p>Guidelines that make SLIs trustworthy:</p>
+<ul>
+<li><strong>Measure as close to the user as practical.</strong> Load balancer or ingress
+  logs and metrics see requests that never reached the app (a crashed pod,
+  a full connection queue). Application metrics miss those. Real-user or
+  synthetic measurements from outside catch DNS and CDN failures too.</li>
+<li><strong>Define "valid" carefully.</strong> Exclude health checks and synthetic
+  traffic you do not want to count. Decide deliberately how to treat
+  <code>4xx</code>: a <code>404</code> for a missing task is the client's problem (good, or not
+  valid), but a <code>429</code> caused by your own overloaded rate limiter may well
+  be a failure.</li>
+<li><strong>Use thresholds, not averages, for latency.</strong> "99% of requests faster
+  than 300 ms" is understandable and directly measurable from a histogram
+  bucket at <code>le="0.3"</code>. Some teams use two thresholds (p90 under 100 ms
+  and p99 under 500 ms).</li>
+<li><strong>Few SLIs per user journey.</strong> Two or three (availability, latency,
+  maybe freshness) for each critical journey such as "create a task" and
+  "list my tasks". Twenty SLIs is a dashboard, not an objective.</li>
+</ul>
+<h3 id="slo-targets-and-the-nines">SLO targets and the nines<a class="headerlink" href="#slo-targets-and-the-nines" title="Permanent link">&para;</a></h3>
+<p>Allowed full-outage time per window:</p>
+<table>
+<thead>
+<tr>
+<th>SLO</th>
+<th>Error budget</th>
+<th>Per 30 days (43,200 min)</th>
+<th>Per year (365 days)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>99%</td>
+<td>1%</td>
+<td>432 min = <strong>7 h 12 min</strong></td>
+<td>3.65 days</td>
+</tr>
+<tr>
+<td>99.5%</td>
+<td>0.5%</td>
+<td>216 min = <strong>3 h 36 min</strong></td>
+<td>1.83 days</td>
+</tr>
+<tr>
+<td>99.9%</td>
+<td>0.1%</td>
+<td>43.2 min = <strong>43 min 12 s</strong></td>
+<td>8.76 hours</td>
+</tr>
+<tr>
+<td>99.95%</td>
+<td>0.05%</td>
+<td>21.6 min = <strong>21 min 36 s</strong></td>
+<td>4.38 hours</td>
+</tr>
+<tr>
+<td>99.99%</td>
+<td>0.01%</td>
+<td>4.32 min = <strong>4 min 19 s</strong></td>
+<td>52.6 minutes</td>
+</tr>
+<tr>
+<td>99.999%</td>
+<td>0.001%</td>
+<td>0.432 min = <strong>26 s</strong></td>
+<td>5.26 minutes</td>
+</tr>
+</tbody>
+</table>
+<p>How to compute any row: window length times <code>(1 - SLO)</code>. For 99.95% over
+30 days: <code>43,200 min x 0.0005 = 21.6 min</code>.</p>
+<p>Choosing a target:</p>
+<ul>
+<li><strong>Each extra nine costs far more than the last</strong> in engineering and
+  infrastructure (the SRE book warns an increment may cost 100x more):
+  redundancy across zones, faster detection, automated rollback, on-call
+  staffing.</li>
+<li><strong>You cannot be more reliable than your dependencies</strong> without
+  redundancy. If TaskFlow depends on a single managed database with a
+  99.95% SLA and a single region, a 99.99% SLO is fiction.</li>
+<li><strong>Users cannot tell the difference above a point.</strong> Their own Wi-Fi and
+  mobile networks fail more often than 0.01% of the time.</li>
+<li><strong>Start from current performance.</strong> Measure the SLI for a few weeks,
+  set the SLO slightly below what you already achieve, and tighten it as
+  the service improves.</li>
+<li><strong>Prefer request-based SLOs over time-based ones</strong> for APIs: "0.1% of
+  requests may fail" handles partial outages (one bad pod out of ten)
+  better than "the service is up or down each minute".</li>
+</ul>
+<h3 id="error-budget-math">Error budget math<a class="headerlink" href="#error-budget-math" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: for a 99.9% SLO over 30 days, the error budget is 43.2 minutes of full outage (30 d x 24 h x 60 min x 0.001). The budget-remaining line falls about 1% a day, drops 41.7% on day 9 because of an 18-minute outage (18 / 43.2), continues to 37.3% on day 21, drops 23.1% because a bad deploy caused 25% errors for 40 minutes, and ends at 5.2% on day 30. A dashed line shows an even spend reaching 0% on day 30. A red policy line at 25% marks where the error budget policy freezes risky releases, crossed on day 21." src="../error-budget-burndown.svg" /></p>
+<p>A worked example for TaskFlow API:</p>
+<div class="highlight"><pre><span></span><code>SLO: 99.9% of API requests succeed, rolling 30 days
+Traffic: ~50,000,000 requests per 30 days (about 19 requests/second on average)
+
+Error budget = 50,000,000 x (1 - 0.999) = 50,000 failed requests
+
+Incident A: full outage for 15 minutes at 20 requests/second
+  failed = 15 x 60 x 20 = 18,000            -&gt; 36% of the budget
+
+Incident B: bad deploy, 5% of requests fail for 2 hours at 25 requests/second
+  failed = 2 x 3,600 x 25 x 0.05 = 9,000     -&gt; 18% of the budget
+
+Background: 0.02% of requests fail all month
+  failed = 50,000,000 x 0.0002 = 10,000      -&gt; 20% of the budget
+
+Total used = 37,000 of 50,000 = 74%; 26% remaining
+</code></pre></div>
+<p>The <strong>burn rate</strong> is how fast the budget is being consumed relative to
+the rate that would use exactly all of it over the window:</p>
+<div class="highlight"><pre><span></span><code>burn rate = observed error ratio / (1 - SLO)
+
+0.1% errors on a 99.9% SLO  -&gt; burn rate 1    -&gt; budget lasts exactly 30 days
+0.5% errors                 -&gt; burn rate 5    -&gt; budget gone in 30 / 5 = 6 days
+1.44% errors                -&gt; burn rate 14.4 -&gt; budget gone in about 2.1 days (50 h)
+100% errors (full outage)   -&gt; burn rate 1,000 -&gt; budget gone in about 43 minutes
+</code></pre></div>
+<p>Burn rate is the bridge between SLOs and alerting: a burn rate of 1 is
+exactly on budget, anything far above it is an emergency.</p>
+<h3 id="error-budget-policies">Error budget policies<a class="headerlink" href="#error-budget-policies" title="Permanent link">&para;</a></h3>
+<p>An SLO without consequences is a dashboard. An <strong>error budget policy</strong> is
+a short, agreed document saying what the team does as the budget runs low.
+A typical policy for TaskFlow:</p>
+<table>
+<thead>
+<tr>
+<th>Budget remaining (rolling 30 days)</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>More than 50%</td>
+<td>Normal development; experiments and risky migrations allowed</td>
+</tr>
+<tr>
+<td>25% to 50%</td>
+<td>Extra review for risky changes; prioritize reliability bugs from recent incidents</td>
+</tr>
+<tr>
+<td>Below 25%</td>
+<td>Freeze non-critical feature releases; only fixes and reliability work ship</td>
+</tr>
+<tr>
+<td>Exhausted</td>
+<td>Freeze continues until the SLI is back within the SLO over the window; postmortem required for any single incident using more than 20%</td>
+</tr>
+</tbody>
+</table>
+<p>Good policies are agreed in advance by engineering and product leadership,
+apply automatically (no meeting needed to decide), define exceptions
+(security fixes always ship), and are reviewed when they do not seem to
+work. The budget is also permission: with 70% left near the end of the
+window, the team can afford a risky but valuable migration.</p>
+<h3 id="alerting-on-slos-multiwindow-multi-burn-rate">Alerting on SLOs: multiwindow, multi-burn-rate<a class="headerlink" href="#alerting-on-slos-multiwindow-multi-burn-rate" title="Permanent link">&para;</a></h3>
+<p>The naive alert "error ratio over 0.1% for 5 minutes" fires on every small
+blip and resolves before anyone looks. The opposite, "budget below 10%",
+fires days too late. The SRE Workbook's recommendation is to alert on
+<strong>burn rate</strong>, over <strong>two windows at once</strong>:</p>
+<ul>
+<li>A <strong>long window</strong> proves the burn is significant (not a 30-second
+  spike).</li>
+<li>A <strong>short window</strong>, one-twelfth of the long one, proves it is still
+  happening, so the alert resolves soon after a fix instead of firing for
+  another hour.</li>
+</ul>
+<p>Recommended starting parameters for a 99.9% SLO over 30 days, from the
+SRE Workbook:</p>
+<table>
+<thead>
+<tr>
+<th>Severity</th>
+<th>Budget consumed</th>
+<th>Long window</th>
+<th>Short window</th>
+<th>Burn rate</th>
+<th>Error ratio threshold</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Page</td>
+<td>2%</td>
+<td>1 hour</td>
+<td>5 minutes</td>
+<td>14.4</td>
+<td>14.4 x 0.1% = 1.44%</td>
+</tr>
+<tr>
+<td>Page</td>
+<td>5%</td>
+<td>6 hours</td>
+<td>30 minutes</td>
+<td>6</td>
+<td>6 x 0.1% = 0.6%</td>
+</tr>
+<tr>
+<td>Ticket</td>
+<td>10%</td>
+<td>3 days</td>
+<td>6 hours</td>
+<td>1</td>
+<td>1 x 0.1% = 0.1%</td>
+</tr>
+</tbody>
+</table>
+<p>Where 14.4 comes from: 2% of a 30-day budget consumed in 1 hour means
+burning at <code>0.02 x 720 hours / 1 hour = 14.4</code> times the sustainable rate.
+Likewise <code>0.05 x 720 / 6 = 6</code> and <code>0.10 x 720 / 72 = 1</code>.</p>
+<p><img alt="Diagram: SLO 99.9%, page when the 1-hour and 5-minute error ratios both exceed 14.4 x 0.1% = 1.44%. Over 90 minutes, the actual error ratio jumps from 0.05% to 10% at minute 10 and the fix lands at minute 30. The 5-minute window rises to 10% by minute 15 and falls back by minute 35. The 1-hour window rises to about 3.4% by minute 30, stays there until minute 70, then falls back by minute 90. The page fires while both windows are above the threshold, from minute 18.4 to 34.3. With the 1-hour window alone, the alert would keep paging until minute 81.6, 52 minutes after the fix." src="../burn-rate-alert-windows.svg" /></p>
+<p>Properties of this scheme:</p>
+<ul>
+<li><strong>Detection time scales with severity.</strong> A full outage (100% errors,
+  burn rate 1,000) trips the 1-hour condition after about
+  <code>0.0144 x 60 min = 52 s</code>; a 2% error ratio takes about 43 minutes; a
+  slow 0.2% leak never pages but opens a ticket within days.</li>
+<li><strong>Fast reset.</strong> The short window drops below the threshold minutes
+  after a fix.</li>
+<li><strong>Precision.</strong> A page always means at least 2% (or 5%) of the monthly
+  budget is being lost, which is worth waking someone for.</li>
+</ul>
+<p>Low-traffic services need care: with 20 requests an hour, one failure is
+a 5% error ratio. Options are synthetic traffic to keep a steady
+denominator, longer windows, or a minimum count of failed requests before
+alerting.</p>
+<h3 id="slo-documents">SLO documents<a class="headerlink" href="#slo-documents" title="Permanent link">&para;</a></h3>
+<p>An SLO is written down and versioned, like code. The SRE Workbook's
+<a href="https://sre.google/workbook/slo-document/">example SLO document</a> includes
+the service overview, the SLIs and SLOs with their exact measurement,
+the rationale for each target, the error budget, clarifications and
+caveats, and links to the error budget policy and dashboards. Keep it in
+the service's repository and review it at least quarterly.</p>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Situation</th>
+<th>Approach</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>User-facing API or website</td>
+<td>Availability and latency SLOs per critical journey</td>
+</tr>
+<tr>
+<td>Asynchronous pipeline (reminders, exports)</td>
+<td>Freshness and completeness SLOs</td>
+</tr>
+<tr>
+<td>Internal platform used by other teams</td>
+<td>SLOs agreed with those teams; they are your users</td>
+</tr>
+<tr>
+<td>Prototype or internal tool with no users yet</td>
+<td>Skip formal SLOs; basic alerts are enough</td>
+</tr>
+<tr>
+<td>Hard regulatory or safety guarantees</td>
+<td>SLOs help operations, but they do not replace formal requirements and testing</td>
+</tr>
+<tr>
+<td>Contract with customers</td>
+<td>An SLA, backed by a stricter internal SLO</td>
+</tr>
+</tbody>
+</table>
+<p>SLOs are not a tool for ranking teams or punishing incidents, and they do
+not replace debugging telemetry; they decide <strong>when</strong> to act, not <strong>what</strong>
+is broken.</p>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="sli-recording-rules-for-taskflow-api">SLI recording rules for TaskFlow API<a class="headerlink" href="#sli-recording-rules-for-taskflow-api" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># prometheus/rules/taskflow-slo-recording.yml</span>
+<span class="nt">groups</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-slo-sli</span>
+<span class="w">    </span><span class="nt">rules</span><span class="p">:</span>
+<span class="w">      </span><span class="c1"># Availability SLI: share of requests that failed (5xx), per window.</span>
+<span class="w">      </span><span class="c1"># Health checks and unmatched routes are not valid events.</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">record</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow:slo_errors:ratio_rate5m</span>
+<span class="w">        </span><span class="nt">expr</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">          </span><span class="no">sum(rate(http_request_duration_seconds_count{job="taskflow-api", route!~"unmatched|/healthz|/readyz", status_code=~"5.."}[5m]))</span>
+<span class="w">          </span><span class="no">/</span>
+<span class="w">          </span><span class="no">sum(rate(http_request_duration_seconds_count{job="taskflow-api", route!~"unmatched|/healthz|/readyz"}[5m]))</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">record</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow:slo_errors:ratio_rate30m</span>
+<span class="w">        </span><span class="nt">expr</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">          </span><span class="no">sum(rate(http_request_duration_seconds_count{job="taskflow-api", route!~"unmatched|/healthz|/readyz", status_code=~"5.."}[30m]))</span>
+<span class="w">          </span><span class="no">/</span>
+<span class="w">          </span><span class="no">sum(rate(http_request_duration_seconds_count{job="taskflow-api", route!~"unmatched|/healthz|/readyz"}[30m]))</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">record</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow:slo_errors:ratio_rate1h</span>
+<span class="w">        </span><span class="nt">expr</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">          </span><span class="no">sum(rate(http_request_duration_seconds_count{job="taskflow-api", route!~"unmatched|/healthz|/readyz", status_code=~"5.."}[1h]))</span>
+<span class="w">          </span><span class="no">/</span>
+<span class="w">          </span><span class="no">sum(rate(http_request_duration_seconds_count{job="taskflow-api", route!~"unmatched|/healthz|/readyz"}[1h]))</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">record</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow:slo_errors:ratio_rate6h</span>
+<span class="w">        </span><span class="nt">expr</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">          </span><span class="no">sum(rate(http_request_duration_seconds_count{job="taskflow-api", route!~"unmatched|/healthz|/readyz", status_code=~"5.."}[6h]))</span>
+<span class="w">          </span><span class="no">/</span>
+<span class="w">          </span><span class="no">sum(rate(http_request_duration_seconds_count{job="taskflow-api", route!~"unmatched|/healthz|/readyz"}[6h]))</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">record</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow:slo_errors:ratio_rate3d</span>
+<span class="w">        </span><span class="nt">expr</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">          </span><span class="no">sum(rate(http_request_duration_seconds_count{job="taskflow-api", route!~"unmatched|/healthz|/readyz", status_code=~"5.."}[3d]))</span>
+<span class="w">          </span><span class="no">/</span>
+<span class="w">          </span><span class="no">sum(rate(http_request_duration_seconds_count{job="taskflow-api", route!~"unmatched|/healthz|/readyz"}[3d]))</span>
+
+<span class="w">      </span><span class="c1"># Latency SLI: share of valid requests slower than 300 ms (bucket boundary at 0.3).</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">record</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow:slo_latency_bad:ratio_rate1h</span>
+<span class="w">        </span><span class="nt">expr</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">          </span><span class="no">1 - (</span>
+<span class="w">            </span><span class="no">sum(rate(http_request_duration_seconds_bucket{job="taskflow-api", route!~"unmatched|/healthz|/readyz", le="0.3"}[1h]))</span>
+<span class="w">            </span><span class="no">/</span>
+<span class="w">            </span><span class="no">sum(rate(http_request_duration_seconds_count{job="taskflow-api", route!~"unmatched|/healthz|/readyz"}[1h]))</span>
+<span class="w">          </span><span class="no">)</span>
+</code></pre></div>
+<p>Tools such as Sloth or Pyrra generate exactly this kind of rule set from a
+short SLO definition, which avoids copy-paste mistakes across windows.</p>
+<h3 id="multiwindow-multi-burn-rate-alerts">Multiwindow, multi-burn-rate alerts<a class="headerlink" href="#multiwindow-multi-burn-rate-alerts" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># prometheus/rules/taskflow-slo-alerts.yml</span>
+<span class="nt">groups</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-slo-alerts</span>
+<span class="w">    </span><span class="nt">rules</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">alert</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TaskflowErrorBudgetBurnFast</span>
+<span class="w">        </span><span class="nt">expr</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">          </span><span class="no">taskflow:slo_errors:ratio_rate1h &gt; (14.4 * 0.001)</span>
+<span class="w">          </span><span class="no">and</span>
+<span class="w">          </span><span class="no">taskflow:slo_errors:ratio_rate5m &gt; (14.4 * 0.001)</span>
+<span class="w">        </span><span class="nt">labels</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">severity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">page</span>
+<span class="w">          </span><span class="nt">service</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-api</span>
+<span class="w">        </span><span class="nt">annotations</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">summary</span><span class="p">:</span><span class="w"> </span><span class="s">"TaskFlow</span><span class="nv"> </span><span class="s">API</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">burning</span><span class="nv"> </span><span class="s">its</span><span class="nv"> </span><span class="s">30-day</span><span class="nv"> </span><span class="s">error</span><span class="nv"> </span><span class="s">budget</span><span class="nv"> </span><span class="s">at</span><span class="nv"> </span><span class="s">14x</span><span class="nv"> </span><span class="s">or</span><span class="nv"> </span><span class="s">more"</span>
+<span class="w">          </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">"1h</span><span class="nv"> </span><span class="s">error</span><span class="nv"> </span><span class="s">ratio</span><span class="nv"> </span><span class="s">{{</span><span class="nv"> </span><span class="s">$value</span><span class="nv"> </span><span class="s">|</span><span class="nv"> </span><span class="s">humanizePercentage</span><span class="nv"> </span><span class="s">}};</span><span class="nv"> </span><span class="s">at</span><span class="nv"> </span><span class="s">this</span><span class="nv"> </span><span class="s">rate</span><span class="nv"> </span><span class="s">2%</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">monthly</span><span class="nv"> </span><span class="s">budget</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">gone</span><span class="nv"> </span><span class="s">every</span><span class="nv"> </span><span class="s">hour."</span>
+<span class="w">          </span><span class="nt">runbook_url</span><span class="p">:</span><span class="w"> </span><span class="s">"https://runbooks.example.com/taskflow-api/error-budget-burn"</span>
+
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">alert</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TaskflowErrorBudgetBurnSustained</span>
+<span class="w">        </span><span class="nt">expr</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">          </span><span class="no">taskflow:slo_errors:ratio_rate6h &gt; (6 * 0.001)</span>
+<span class="w">          </span><span class="no">and</span>
+<span class="w">          </span><span class="no">taskflow:slo_errors:ratio_rate30m &gt; (6 * 0.001)</span>
+<span class="w">        </span><span class="nt">labels</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">severity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">page</span>
+<span class="w">          </span><span class="nt">service</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-api</span>
+<span class="w">        </span><span class="nt">annotations</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">summary</span><span class="p">:</span><span class="w"> </span><span class="s">"TaskFlow</span><span class="nv"> </span><span class="s">API</span><span class="nv"> </span><span class="s">has</span><span class="nv"> </span><span class="s">burned</span><span class="nv"> </span><span class="s">5%</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">its</span><span class="nv"> </span><span class="s">error</span><span class="nv"> </span><span class="s">budget</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">6</span><span class="nv"> </span><span class="s">hours"</span>
+<span class="w">          </span><span class="nt">runbook_url</span><span class="p">:</span><span class="w"> </span><span class="s">"https://runbooks.example.com/taskflow-api/error-budget-burn"</span>
+
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">alert</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TaskflowErrorBudgetBurnSlow</span>
+<span class="w">        </span><span class="nt">expr</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">          </span><span class="no">taskflow:slo_errors:ratio_rate3d &gt; (1 * 0.001)</span>
+<span class="w">          </span><span class="no">and</span>
+<span class="w">          </span><span class="no">taskflow:slo_errors:ratio_rate6h &gt; (1 * 0.001)</span>
+<span class="w">        </span><span class="nt">labels</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">severity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ticket</span>
+<span class="w">          </span><span class="nt">service</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-api</span>
+<span class="w">        </span><span class="nt">annotations</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">summary</span><span class="p">:</span><span class="w"> </span><span class="s">"TaskFlow</span><span class="nv"> </span><span class="s">API</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">on</span><span class="nv"> </span><span class="s">track</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">exhaust</span><span class="nv"> </span><span class="s">its</span><span class="nv"> </span><span class="s">error</span><span class="nv"> </span><span class="s">budget</span><span class="nv"> </span><span class="s">this</span><span class="nv"> </span><span class="s">month"</span>
+<span class="w">          </span><span class="nt">runbook_url</span><span class="p">:</span><span class="w"> </span><span class="s">"https://runbooks.example.com/taskflow-api/error-budget-burn"</span>
+</code></pre></div>
+<p>No <code>for:</code> clause is needed: the windows already provide the smoothing,
+and adding <code>for</code> only delays detection. The <code>severity</code> label is what
+Alertmanager routes on (pager versus ticket queue), covered in
+<a href="../alerting-and-on-call/">alerting and on-call</a>.</p>
+<h3 id="error-budget-remaining">Error budget remaining<a class="headerlink" href="#error-budget-remaining" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code># Budget remaining over the last 30 days, as a fraction (1 = untouched, 0 = exhausted)
+1 - (
+  (
+    sum(increase(http_request_duration_seconds_count{job="taskflow-api", route!~"unmatched|/healthz|/readyz", status_code=~"5.."}[30d]))
+    /
+    sum(increase(http_request_duration_seconds_count{job="taskflow-api", route!~"unmatched|/healthz|/readyz"}[30d]))
+  ) / 0.001
+)
+</code></pre></div>
+<p>A query over 30 days of raw data is expensive; in production compute it
+from a recording rule, or from long-term storage such as Mimir or Thanos,
+and show it as the headline panel on the service dashboard.</p>
+<h3 id="an-slo-document-for-taskflow-api">An SLO document for TaskFlow API<a class="headerlink" href="#an-slo-document-for-taskflow-api" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># docs/slo/taskflow-api.yaml (team-owned, reviewed quarterly)</span>
+<span class="nt">service</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-api</span>
+<span class="nt">owner</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tasks-team</span>
+<span class="nt">window</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rolling 30 days</span>
+<span class="nt">user_journeys</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">create and list tasks</span>
+<span class="w">    </span><span class="nt">endpoints</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"POST</span><span class="nv"> </span><span class="s">/tasks"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"GET</span><span class="nv"> </span><span class="s">/tasks"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"GET</span><span class="nv"> </span><span class="s">/tasks/:id"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"PATCH</span><span class="nv"> </span><span class="s">/tasks/:id"</span><span class="p p-Indicator">]</span>
+<span class="nt">slos</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">availability</span>
+<span class="w">    </span><span class="nt">sli</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">share of valid requests that do not return 5xx, measured at the ingress</span>
+<span class="w">    </span><span class="nt">valid_events</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">all API requests except health checks and synthetic probes</span>
+<span class="w">    </span><span class="nt">objective</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">99.9%</span>
+<span class="w">    </span><span class="nt">error_budget</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.1% of requests (about 50,000 per 30 days at current traffic)</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">latency</span>
+<span class="w">    </span><span class="nt">sli</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">share of valid requests served in under 300 ms, measured at the ingress</span>
+<span class="w">    </span><span class="nt">objective</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">99%</span>
+<span class="nt">rationale</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">&gt;</span>
+<span class="w">  </span><span class="no">Current performance over the last quarter is 99.95% availability and 99.4% under</span>
+<span class="w">  </span><span class="no">300 ms. Targets leave headroom for planned migrations. The managed database</span>
+<span class="w">  </span><span class="no">plan's SLA is stricter than 99.9%, so it does not cap these objectives.</span>
+<span class="nt">alerting</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">multiwindow multi-burn-rate (14.4 / 6 page, 1 ticket), see taskflow-slo-alerts.yml</span>
+<span class="nt">error_budget_policy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docs/slo/error-budget-policy.md</span>
+<span class="nt">dashboard</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://grafana.example.com/d/taskflow-slo</span>
+<span class="nt">review</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quarterly, or after any incident consuming more than 20% of the budget</span>
+</code></pre></div>
+<p>The format is illustrative; the content follows the structure of the SRE
+Workbook's example document. The OpenSLO project defines a standard YAML
+schema for the same information if you want tooling to read it.</p>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Write SLIs as good events divided by valid events, measured as close to
+  users as practical.</li>
+<li>Pick two or three SLIs per critical user journey; leave the rest to
+  dashboards.</li>
+<li>Set SLOs from measured current performance and real user needs, never
+  100%, and keep SLAs looser than SLOs.</li>
+<li>Use request-based SLOs for APIs; time-based ones hide partial failures.</li>
+<li>Align histogram buckets with latency SLO thresholds.</li>
+<li>Alert on burn rate with long and short windows; page only for fast
+  burns.</li>
+<li>Agree an error budget policy in advance with product leadership, and
+  follow it.</li>
+<li>Version the SLO document with the service and review it regularly.</li>
+<li>Report budget remaining on the main dashboard and in planning
+  meetings.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>The SLO dashboard is green while customers complain.</strong>
+  <em>Detect:</em> support tickets and social media reports of errors, while the
+  application-level SLI stays above target. <em>Cause:</em> the SLI is measured in
+  the app, so requests that fail before reaching it (crashed pods, ingress
+  timeouts, DNS or certificate problems) are invisible. <em>Fix:</em> measure at
+  the load balancer or ingress, add synthetic checks from outside, and
+  include those failures in the SLI.</li>
+<li><strong>The burn-rate page fires every night for a few minutes.</strong>
+  <em>Detect:</em> repeated short pages at low-traffic hours, each with a handful
+  of failed requests. <em>Cause:</em> tiny denominators make a few errors look
+  like a high error ratio. <em>Fix:</em> add a minimum event count to the alert,
+  generate steady synthetic traffic, or use longer windows for low-traffic
+  services.</li>
+<li><strong>The budget is always exhausted, and nothing changes.</strong>
+  <em>Detect:</em> budget remaining sits at zero for months while features keep
+  shipping. <em>Cause:</em> an SLO set above what the system can deliver, or no
+  error budget policy with agreed consequences. <em>Fix:</em> reset the target to
+  measured performance, agree a policy with leadership, and invest in the
+  top causes of budget burn.</li>
+<li><strong>The budget is never touched, and the team is still afraid to deploy.</strong>
+  <em>Detect:</em> 95% of the budget remains every month, yet releases are slow
+  and heavily gated. <em>Cause:</em> the SLO is looser than needed, or the team is
+  not using the budget as permission. <em>Fix:</em> spend it deliberately on
+  faster releases and experiments, or tighten the SLO if users need more.</li>
+<li><strong>Latency SLI values jump when the dashboard is changed from 5m to 1h.</strong>
+  <em>Detect:</em> the "requests under 300 ms" ratio looks different across
+  panels and the alert disagrees with the dashboard. <em>Cause:</em> the
+  histogram has no bucket at 0.3 s, so the ratio is interpolated, or
+  panels average ratios instead of dividing summed rates. <em>Fix:</em> add a
+  <code>le="0.3"</code> bucket and compute ratios as <code>sum(rate(good[1h])) /
+  sum(rate(valid[1h]))</code>, with the same range for both.</li>
+<li><strong>A dependency outage burns the whole budget and the team argues about
+  whether it counts.</strong>
+  <em>Detect:</em> a postmortem debate over excluding the incident. <em>Cause:</em> the
+  SLO document did not define how dependency failures are treated.
+  <em>Fix:</em> users felt it, so it counts; record the decision in the SLO
+  document and invest in redundancy or graceful degradation for that
+  dependency.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>SLI:</strong> A measured indicator of service level, usually good events /
+  valid events.</li>
+<li><strong>SLO:</strong> A target value for an SLI over a time window.</li>
+<li><strong>SLA:</strong> A contract with customers that includes consequences for missing
+  a target.</li>
+<li><strong>Error budget:</strong> <code>1 - SLO</code>; the allowed amount of failure in the window.</li>
+<li><strong>Burn rate:</strong> Observed error ratio divided by the error budget ratio; 1
+  means on budget.</li>
+<li><strong>Rolling window:</strong> A window that moves with time (the last 30 days), as
+  opposed to a calendar month.</li>
+<li><strong>Error budget policy:</strong> Agreed actions taken as the budget is consumed.</li>
+<li><strong>Multiwindow, multi-burn-rate alert:</strong> An alert that requires both a
+  long and a short window to exceed a burn-rate threshold, at several
+  severities.</li>
+<li><strong>The nines:</strong> Shorthand for availability levels (three nines = 99.9%).</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Targeting 100%, which forbids change and is impossible anyway.</li>
+<li>Using SLA numbers as internal SLOs, leaving no margin before contractual
+  breaches.</li>
+<li>Measuring SLIs only inside the app.</li>
+<li>Averaging latency instead of using thresholds and histograms.</li>
+<li>Having dozens of SLOs, so none of them drives decisions.</li>
+<li>Alerting on raw error ratios with a short <code>for:</code> instead of burn rates.</li>
+<li>Computing nines wrongly: 99.9% is 43 minutes a month, not 4.3, and
+  99.99% is about 4 minutes, not 43.</li>
+<li>Defining SLOs and never agreeing what happens when they are missed.</li>
+<li>Treating error budgets as a quota to be avoided rather than spent.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Explain the difference between an SLI, an SLO, and an SLA with a
+   TaskFlow example of each. Why must the SLA be looser than the SLO?</li>
+<li>How much full downtime does a 99.95% SLO allow in 30 days, and in a
+   year? (21 min 36 s; about 4.38 hours.)</li>
+<li>TaskFlow serves 80 million requests in 30 days with a 99.9% SLO. How
+   many requests may fail? A 25-minute outage at 40 requests per second
+   uses what share of that budget? (80,000; 25 x 60 x 40 = 60,000, which
+   is 75%.)</li>
+<li>The current error ratio is 0.3% on a 99.9% SLO. What is the burn rate,
+   and when will a fresh budget run out? (3; in 10 days.)</li>
+<li>Where does the burn-rate threshold 14.4 come from, and why does the
+   alert need both a 1-hour and a 5-minute window?</li>
+<li>Why should the availability SLI be measured at the ingress rather than
+   inside the Express app?</li>
+<li>Should a <code>429 Too Many Requests</code> count as a good or bad event? Argue
+   both sides.</li>
+<li>What should an error budget policy say, and who must agree to it?</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://sre.google/sre-book/service-level-objectives/">Google SRE book: Service Level Objectives</a></li>
+<li><a href="https://sre.google/workbook/implementing-slos/">Google SRE Workbook: Implementing SLOs</a></li>
+<li><a href="https://sre.google/workbook/alerting-on-slos/">Google SRE Workbook: Alerting on SLOs</a></li>
+<li><a href="https://sre.google/workbook/error-budget-policy/">Google SRE Workbook: Example error budget policy</a></li>
+<li><a href="https://openslo.com/">OpenSLO specification</a></li>
+<li><a href="https://sloth.dev/">Sloth: SLO generator for Prometheus</a></li>
+<li>Next: <a href="../alerting-and-on-call/">alerting and on-call</a>. Back to the
+  <a href="../">monitoring and logging overview</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../distributed-tracing/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Distributed Tracing">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Distributed Tracing</span>
+      </a>
+    
+    
+      <a href="../alerting-and-on-call/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: Alerting and On-Call">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">Alerting and On-Call</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

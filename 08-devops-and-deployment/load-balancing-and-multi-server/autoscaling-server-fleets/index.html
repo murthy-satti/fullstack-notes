@@ -1,0 +1,4984 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../multi-az-and-multi-region-architecture/">
+      
+      
+        <link rel="next" href="../service-discovery-and-service-mesh/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Autoscaling Server Fleets - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#autoscaling-server-fleets" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Autoscaling Server Fleets
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../05-application-architecture/" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../06-ai-and-machine-learning/" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+          <span class="md-ellipsis">&larr; Back to DevOps</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../05-application-architecture/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../06-ai-and-machine-learning/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI and Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
+        
+          
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-label="DevOps module lessons" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+                  <span class="md-ellipsis">&larr; Back to DevOps</span>
+                </a>
+              
+            </div>
+          
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                  
+  
+  
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+    
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_12" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_12" id="__nav_9_12_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Load Balancing and Multi-Server Architecture
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_12_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_12">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Load Balancing and Multi-Server Architecture
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_12_2" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_12_2" id="__nav_9_12_2_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Foundations
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_12_2_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_12_2">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Foundations
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../from-one-server-to-many/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    From One Server to Many
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../load-balancers-in-depth/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Load Balancers in Depth
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_12_3" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_12_3" id="__nav_9_12_3_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Going Global
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_12_3_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_12_3">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Going Global
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../global-traffic-management/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Global Traffic Management
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../multi-az-and-multi-region-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-AZ and Multi-Region Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_12_4" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_12_4" id="__nav_9_12_4_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Running the Fleet
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_12_4_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_12_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Running the Fleet
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Autoscaling Server Fleets
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Autoscaling Server Fleets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-building-blocks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The building blocks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#immutable-images-and-launch-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Immutable images and launch templates
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scaling-policies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scaling policies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#target-tracking-with-numbers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Target tracking with numbers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#choosing-the-metric" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Choosing the metric
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-capacity-arrives-late-detection-boot-warmup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why capacity arrives late: detection, boot, warmup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-instance-lifecycle-hooks-protection-and-draining" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The instance lifecycle: hooks, protection, and draining
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#health-checks-and-self-healing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Health checks and self-healing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multiple-zones-and-static-stability" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multiple zones and static stability
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#spot-capacity-and-mixed-instance-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Spot capacity and mixed instance types
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#autoscaling-with-kubernetes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Autoscaling with Kubernetes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cost-guards" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cost guards
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-taskflow-api-fleet-in-terraform" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A TaskFlow API fleet in Terraform
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scaling-policies-target-tracking-schedule-and-forecast" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scaling policies: target tracking, schedule, and forecast
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draining-on-termination-from-inside-the-instance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Draining on termination from inside the instance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-same-fleet-on-google-cloud-and-azure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The same fleet on Google Cloud and Azure
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../service-discovery-and-service-mesh/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Service Discovery and Service Mesh
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../resilience-patterns-across-servers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resilience Patterns Across Servers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_12_5" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_12_5" id="__nav_9_12_5_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Case Studies
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_12_5_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_12_5">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Case Studies
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../how-top-companies-run-at-scale/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How Top Companies Run at Scale
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-building-blocks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The building blocks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#immutable-images-and-launch-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Immutable images and launch templates
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scaling-policies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scaling policies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#target-tracking-with-numbers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Target tracking with numbers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#choosing-the-metric" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Choosing the metric
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-capacity-arrives-late-detection-boot-warmup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why capacity arrives late: detection, boot, warmup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-instance-lifecycle-hooks-protection-and-draining" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The instance lifecycle: hooks, protection, and draining
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#health-checks-and-self-healing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Health checks and self-healing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multiple-zones-and-static-stability" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multiple zones and static stability
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#spot-capacity-and-mixed-instance-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Spot capacity and mixed instance types
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#autoscaling-with-kubernetes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Autoscaling with Kubernetes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cost-guards" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cost guards
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-taskflow-api-fleet-in-terraform" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A TaskFlow API fleet in Terraform
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scaling-policies-target-tracking-schedule-and-forecast" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scaling policies: target tracking, schedule, and forecast
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draining-on-termination-from-inside-the-instance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Draining on termination from inside the instance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-same-fleet-on-google-cloud-and-azure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The same fleet on Google Cloud and Azure
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="autoscaling-server-fleets">Autoscaling Server Fleets<a class="headerlink" href="#autoscaling-server-fleets" title="Permanent link">&para;</a></h1>
+<p>The previous lesson spread the TaskFlow API across Availability Zones and
+regions (<a href="../multi-az-and-multi-region-architecture/">multi-AZ and multi-region architecture</a>).
+This one makes each of those fleets size itself. An autoscaling group
+keeps a set of identical virtual machines running from a template,
+replaces the ones that fail their health checks, and adds or removes
+instances as load changes, so you pay for roughly the capacity you need
+instead of the peak, all day.</p>
+<p>This lesson covers the three big implementations (AWS Auto Scaling
+groups, Google Cloud managed instance groups, and Azure Virtual Machine
+Scale Sets), launch templates built on immutable machine images, the
+scaling policies (target tracking, step, scheduled, and predictive), how
+to choose the metric, why new capacity always arrives late and how
+warmup, warm pools, and headroom deal with it, lifecycle hooks, scale-in
+protection, and draining before termination, how fleet autoscaling
+relates to Kubernetes, and the cost guards that stop a scaling policy
+from running up a bill.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>Traffic is rarely flat. A business application peaks during office hours
+and sleeps at night; a consumer app peaks in the evening; a shop peaks
+during a sale. A fleet sized for the peak wastes most of its money off
+peak, and a fleet sized for the average falls over at the peak.
+Autoscaling also gives you two things beyond cost: <strong>self-healing</strong>
+(failed instances are replaced automatically) and a safe way to
+<strong>roll out new machine images</strong> by replacing instances gradually.</p>
+<p>It is also easy to get wrong in ways that only show up under load:
+scaling on a metric that does not track load, capacity that arrives ten
+minutes after the spike that needed it, scale-in that kills requests in
+flight, or a scale-out triggered by a retry storm that launches hundreds
+of instances and still does not help because the database is the real
+bottleneck.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Netflix.</strong> The post
+  <a href="https://netflixtechblog.com/scryer-netflixs-predictive-auto-scaling-engine-a3f8fc922270">Scryer: Netflix's Predictive Auto Scaling Engine</a>
+  (2013) explains why reactive autoscaling was not enough for Netflix:
+  instance startup then took 10 to 45 minutes, leaving existing servers
+  exposed during a rapid spike, and an outage that suddenly dropped
+  traffic could make reactive policies scale in just before the traffic
+  came back. Because daily and weekly patterns repeat, Netflix predicted
+  demand and provisioned ahead of it.</li>
+<li><strong>Amazon Builders' Library.</strong> The article
+  <a href="https://aws.amazon.com/builders-library/static-stability-using-availability-zones/">Static stability using Availability Zones</a>
+  argues that a service should be overprovisioned so it keeps working
+  without launching any new instances if an Availability Zone becomes
+  impaired, because reacting to an impairment depends on a control plane
+  that may itself be affected.</li>
+<li><strong>AWS.</strong> The
+  <a href="https://docs.aws.amazon.com/autoscaling/ec2/userguide/predictive-scaling-policy-overview.html">predictive scaling</a>
+  documentation describes forecasting from up to 14 days of history
+  (after at least 24 hours of data), an hourly forecast for the next 48
+  hours refreshed every 6 hours, and a forecast-only mode to check
+  accuracy before letting it scale.</li>
+<li><strong>Google Cloud.</strong> The
+  <a href="https://cloud.google.com/compute/docs/autoscaler">managed instance group autoscaler</a>
+  documentation describes an initialization period during which new VMs'
+  usage is ignored for scale-out decisions, and a stabilization period
+  (10 minutes by default) during which the autoscaler keeps enough
+  capacity for the peak it has just seen before deleting VMs.</li>
+</ul>
+<p><strong>Popular tools and providers:</strong> AWS EC2 Auto Scaling, Google Cloud
+managed instance groups, Azure Virtual Machine Scale Sets, Packer and
+image pipelines for golden images, Terraform and other IaC tools, Spot
+and preemptible capacity, and Kubernetes node autoscalers (Cluster
+Autoscaler, Karpenter) built on the same groups.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="the-building-blocks">The building blocks<a class="headerlink" href="#the-building-blocks" title="Permanent link">&para;</a></h3>
+<p>An autoscaling fleet has four parts:</p>
+<ol>
+<li><strong>A template</strong> that says what to launch: the machine image, instance
+   type, network and security groups, IAM role or service account, and a
+   small user-data script.</li>
+<li><strong>A group</strong> with a minimum, maximum, and desired size, spread over
+   subnets in several Availability Zones, that launches instances from the
+   template until the actual count matches the desired count.</li>
+<li><strong>Health checks</strong> that decide when an instance is broken and must be
+   replaced, ideally using the load balancer's application-level check
+   rather than only "the VM is running".</li>
+<li><strong>Scaling policies</strong> that change the desired size from metrics,
+   schedules, or forecasts.</li>
+</ol>
+<p>The same ideas have different names on each cloud:</p>
+<table>
+<thead>
+<tr>
+<th>Concept</th>
+<th>AWS</th>
+<th>Google Cloud</th>
+<th>Azure</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Fleet</td>
+<td>Auto Scaling group</td>
+<td>Managed instance group (zonal or regional)</td>
+<td>Virtual Machine Scale Set (Flexible orchestration recommended)</td>
+</tr>
+<tr>
+<td>Template</td>
+<td>Launch template (versioned)</td>
+<td>Instance template</td>
+<td>Scale set VM profile</td>
+</tr>
+<tr>
+<td>Replace unhealthy instances</td>
+<td>EC2 and ELB health checks</td>
+<td>Autohealing with a health check</td>
+<td>Automatic instance repairs</td>
+</tr>
+<tr>
+<td>Roll out a new template</td>
+<td>Instance refresh</td>
+<td>Rolling update (max surge, max unavailable)</td>
+<td>Rolling upgrades</td>
+</tr>
+<tr>
+<td>Pre-initialized capacity</td>
+<td>Warm pools (stopped, hibernated, or running)</td>
+<td>Standby pools of suspended or stopped VMs</td>
+<td>Standby pools (Flexible orchestration only)</td>
+</tr>
+<tr>
+<td>Predictive scaling</td>
+<td>Predictive scaling policies</td>
+<td>Predictive autoscaling (CPU only)</td>
+<td>Predictive autoscale (CPU only)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="immutable-images-and-launch-templates">Immutable images and launch templates<a class="headerlink" href="#immutable-images-and-launch-templates" title="Permanent link">&para;</a></h3>
+<p>The faster and more predictable an instance's boot, the better
+autoscaling works. Teams therefore <strong>bake</strong> everything into a golden
+machine image (the OS patches, the runtime, the agents, and the
+application build) with a tool such as Packer, and keep user data to a
+few lines of environment-specific configuration. Installing packages at
+boot makes every launch slower and makes the fleet depend on package
+mirrors being reachable during an incident. Building images is covered
+in <a href="../../infrastructure-as-code/immutable-infrastructure-and-gitops/">immutable infrastructure and GitOps</a>.</p>
+<p>A release then becomes: build image, create a new launch template
+version, and replace instances gradually. On AWS, an <strong>instance refresh</strong>
+does the replacement in batches controlled by a minimum and maximum
+healthy percentage (for example 90% and 110%: replace about 10% of the
+fleet at a time, launching before terminating), with optional
+checkpoints, a bake time, skip matching (leave instances already on the
+new configuration alone), and automatic rollback when CloudWatch alarms
+fire.</p>
+<h3 id="scaling-policies">Scaling policies<a class="headerlink" href="#scaling-policies" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Policy</th>
+<th>How it decides</th>
+<th>Good for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Target tracking</strong></td>
+<td>Keeps a metric near a target value, like a thermostat; the provider creates and manages the alarms</td>
+<td>The default for most web fleets</td>
+</tr>
+<tr>
+<td><strong>Step scaling</strong></td>
+<td>Adds or removes a fixed or percentage amount per alarm breach band</td>
+<td>Precise control, such as adding more instances the further a metric overshoots</td>
+</tr>
+<tr>
+<td><strong>Scheduled</strong></td>
+<td>Changes min, max, or desired size at set times</td>
+<td>Known patterns: office hours, a planned sale, nightly batch windows</td>
+</tr>
+<tr>
+<td><strong>Predictive</strong></td>
+<td>Forecasts load from history and launches capacity ahead of it</td>
+<td>Strong daily or weekly cycles combined with slow boots</td>
+</tr>
+</tbody>
+</table>
+<p>Policies combine. A common production setup is target tracking for the
+unexpected, plus scheduled or predictive scaling to have capacity ready
+before the expected morning ramp. When several policies are active, the
+group follows whichever asks for the most capacity, so the extra policies
+only ever add safety.</p>
+<p>Two provider details matter. AWS target tracking scales in more
+gradually than it scales out, to protect availability when traffic
+fluctuates. AWS predictive scaling in forecast-and-scale mode only ever
+adds capacity; scale-in still needs a dynamic policy. Google Cloud's and
+Azure's predictive options forecast CPU only.</p>
+<h3 id="target-tracking-with-numbers">Target tracking with numbers<a class="headerlink" href="#target-tracking-with-numbers" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: a target tracking loop for TaskFlow API; the load balancer receives 15,000 requests per minute and reports RequestCountPerTarget to CloudWatch each minute; with 10 instances the metric is 1,500 against a target of 1,000, so the alarm fires and the policy raises the Auto Scaling group's desired capacity from 10 to 15; the group launches 5 instances from launch template version 7 and registers them; the arithmetic panel shows about 10 times 1,500 divided by 1,000 equals 15 instances, inside min 6 and max 40, 1,000 per target after warmup, a night-time need of 4 kept at the minimum of 6, and max size 40 as a cost guard." src="../target-tracking-loop.svg" /></p>
+<p>Target tracking assumes the metric moves <strong>in proportion</strong> to the number
+of instances. If 10 instances each see 1,500 requests per minute and the
+target is 1,000, the group needs roughly 10 × 1,500 / 1,000 = 15
+instances to bring each one back to 1,000. The provider rounds
+conservatively, so with small groups the metric may settle a little
+below the target rather than exactly on it.</p>
+<h3 id="choosing-the-metric">Choosing the metric<a class="headerlink" href="#choosing-the-metric" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Works when</th>
+<th>Watch out for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Average CPU utilization</td>
+<td>The service is CPU-bound and instances are identical</td>
+<td>I/O-bound services sit at low CPU while queues build; mixed instance sizes skew the average</td>
+</tr>
+<tr>
+<td>Request count per target</td>
+<td>Web services where each request costs about the same</td>
+<td>Expensive and cheap requests mixed; it says nothing about response time</td>
+</tr>
+<tr>
+<td>Backlog per instance (queue depth ÷ instances)</td>
+<td>Queue workers</td>
+<td>Raw queue length is not proportional to fleet size; divide by instances</td>
+</tr>
+<tr>
+<td>Custom business metric</td>
+<td>You can publish a per-instance load measure</td>
+<td>It must rise and fall in proportion to fleet size</td>
+</tr>
+<tr>
+<td>Latency</td>
+<td>Never as the target tracking metric</td>
+<td>Latency does not fall in proportion to instances; use it for alarms instead</td>
+</tr>
+<tr>
+<td>Memory</td>
+<td>Rarely</td>
+<td>Garbage-collected runtimes keep memory high when idle</td>
+</tr>
+</tbody>
+</table>
+<p>For queue workers, derive the target from what users will tolerate.
+If a message takes 2 seconds to process and a message may wait at most
+10 minutes, one instance can own a backlog of 600 / 2 = 300 messages. With
+15,000 messages waiting, the fleet needs 15,000 / 300 = 50 instances, and
+the target tracking metric is "messages per instance" with a target of
+300.</p>
+<h3 id="why-capacity-arrives-late-detection-boot-warmup">Why capacity arrives late: detection, boot, warmup<a class="headerlink" href="#why-capacity-arrives-late-detection-boot-warmup" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: a 10-minute timeline; offered load jumps from 10,000 to 15,000 requests per minute at minute 0; the metric stays above target while the alarm collects datapoints until about minute 3, when the group raises desired capacity from 10 to 15 and launches 5 instances; they boot and start the app until minute 6, pass health checks by minute 7, then serve traffic while their warmup period keeps them out of the average until minute 9; the existing 10 instances are overloaded from minute 0 to about minute 7 and return near target afterwards; headroom, warm pools, scheduled or predictive scaling, and faster boot shrink the overloaded period." src="../scale-out-warmup-timeline.svg" /></p>
+<p>A reactive policy can only respond after the metric has been high for
+long enough to trust it, and then the instance still has to boot, start
+the application, and pass health checks. For several minutes the
+existing fleet carries the new load alone. The defenses, in order of
+cost:</p>
+<ul>
+<li><strong>Headroom.</strong> A target of 50% to 60% CPU instead of 80% means the fleet
+  absorbs a large jump while new instances start.</li>
+<li><strong>Faster boot.</strong> Golden images, small user data, and lazy loading of
+  rarely used data.</li>
+<li><strong>Warmup.</strong> A warmup period (AWS default instance warmup, Google
+  Cloud's initialization period) keeps freshly launched instances' noisy
+  start-up metrics out of the average, so the group does not overreact.</li>
+<li><strong>Warm pools and standby pools.</strong> Pre-initialized instances kept
+  stopped or hibernated (you pay for their disks, not their compute), so a
+  scale-out resumes them instead of building them from scratch.</li>
+<li><strong>Scheduled and predictive scaling.</strong> Capacity that is already running
+  when the expected ramp starts; AWS can launch ahead of the forecast by
+  a configurable buffer.</li>
+</ul>
+<h3 id="the-instance-lifecycle-hooks-protection-and-draining">The instance lifecycle: hooks, protection, and draining<a class="headerlink" href="#the-instance-lifecycle-hooks-protection-and-draining" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: scale-out takes an instance from the warm pool in Warmed:Stopped, where only volumes are billed, to Pending, then Pending:Wait, where a launch hook finishes setup and warms caches, then InService, registered in the target group and health checked; scale-in picks an unprotected instance, which becomes Terminating, is deregistered from target groups with a deregistration delay of 300 seconds by default, then Terminating:Wait, where a termination hook with a one-hour default heartbeat lets it flush and finish jobs before completing, and finally Terminated, or back to the warm pool with a reuse policy; scale-in protection keeps chosen instances out of the selection." src="../asg-instance-lifecycle.svg" /></p>
+<ul>
+<li><strong>Lifecycle hooks</strong> pause an instance in a wait state at launch or at
+  termination so your code can act: finish bootstrapping before it takes
+  traffic, or upload logs and finish a job before it disappears. A hook
+  waits up to its heartbeat timeout (one hour by default on AWS, with a
+  48-hour overall limit) until your code calls
+  <code>complete-lifecycle-action</code>. An instance can read its target state from
+  the instance metadata item <code>autoscaling/target-lifecycle-state</code>.</li>
+<li><strong>Scale-in protection</strong> removes specific instances from scale-in
+  selection, for example a worker in the middle of a long job that sets
+  protection when it takes the job and clears it when done.</li>
+<li><strong>Termination policies</strong> decide which instance goes first; the default
+  first balances instances across Availability Zones.</li>
+<li><strong>Draining.</strong> Deregistration from the load balancer stops new requests
+  while the target group's deregistration delay (300 seconds by default
+  on an Application Load Balancer) lets requests in flight finish. Set it
+  close to your longest normal request, not to the default, or every
+  scale-in and rollout waits five minutes per batch. The application must
+  still handle <code>SIGTERM</code> gracefully, as described for containers in
+  <a href="../../kubernetes/health-probes-and-rolling-updates/">health probes and rolling updates</a>.</li>
+</ul>
+<h3 id="health-checks-and-self-healing">Health checks and self-healing<a class="headerlink" href="#health-checks-and-self-healing" title="Permanent link">&para;</a></h3>
+<p>By default AWS only replaces instances whose EC2 status checks fail:
+a VM that is running but whose application is hung stays in service.
+Setting the group's health check type to <strong>ELB</strong> makes it replace
+instances the load balancer considers unhealthy, using the same
+<code>/readyz</code>-style check that controls traffic. A <strong>health check grace
+period</strong> (or Google Cloud's autohealing initial delay) prevents the group
+from killing instances that are still booting. Be careful with health
+checks that depend on shared dependencies: if the database is down and
+every instance fails, the group replaces the whole fleet in a loop and
+makes recovery slower.</p>
+<h3 id="multiple-zones-and-static-stability">Multiple zones and static stability<a class="headerlink" href="#multiple-zones-and-static-stability" title="Permanent link">&para;</a></h3>
+<p>A group spread over three Availability Zones keeps roughly a third of its
+instances in each. If one zone fails, the group launches replacements in
+the others, but only if the control plane can launch them and there is
+capacity to launch into. The statically stable alternative is to run
+enough capacity that losing a zone does not require launching anything.</p>
+<p>Worked example: the API needs 12 instances at peak. Spread over 3 zones
+that is 4 per zone; losing a zone leaves 8, a third short. Running 6 per
+zone (18 instances, 50% overprovisioning) means losing any zone still
+leaves 12. With 4 zones, 4 per zone (16 instances) leaves 12 after a loss:
+more zones make static stability cheaper.</p>
+<h3 id="spot-capacity-and-mixed-instance-types">Spot capacity and mixed instance types<a class="headerlink" href="#spot-capacity-and-mixed-instance-types" title="Permanent link">&para;</a></h3>
+<p>Spot (AWS), Spot VMs (Google Cloud), and Azure Spot VMs are spare
+capacity at a discount that the provider can reclaim; AWS gives a
+two-minute interruption notice. A mixed instances policy keeps a base of
+On-Demand instances and fills the rest with Spot across several instance
+types, so one type running out does not stop scaling. Use Spot for
+stateless, interruption-tolerant capacity behind a load balancer, never
+for the minimum capacity you need to survive.</p>
+<h3 id="autoscaling-with-kubernetes">Autoscaling with Kubernetes<a class="headerlink" href="#autoscaling-with-kubernetes" title="Permanent link">&para;</a></h3>
+<p>On Kubernetes, scaling happens at two layers. The HorizontalPodAutoscaler
+changes the number of Pods, and a node autoscaler (Cluster Autoscaler or
+Karpenter) adds nodes when Pods cannot be scheduled, usually through the
+same cloud groups this page describes (managed node groups are Auto
+Scaling groups, GKE node pools are managed instance groups, AKS node pools
+are scale sets). The ideas carry over: target tracking becomes the HPA
+formula, warmup becomes readiness and startup probes, and draining
+becomes Pod termination. See
+<a href="../../kubernetes/scaling-and-resource-management/">scaling and resource management</a>.</p>
+<h3 id="cost-guards">Cost guards<a class="headerlink" href="#cost-guards" title="Permanent link">&para;</a></h3>
+<p>Autoscaling spends money automatically, so put limits around it:</p>
+<ul>
+<li>A <strong>maximum size</strong> you would be willing to pay for and that downstream
+  systems (database connections, third-party rate limits) can survive.</li>
+<li><strong>Alarms</strong> on group size and on scaling activity, and a budget alert.</li>
+<li>Care with <strong>automatic maximum increases</strong> (AWS predictive scaling can
+  raise the maximum when the forecast approaches it).</li>
+<li><strong>Scale on the bottleneck.</strong> If the database is saturated, adding API
+  instances adds connections and makes it worse; fix or scale the database
+  first.</li>
+<li><strong>Scale-in.</strong> A fleet that never scales in (a missing scale-in policy, or
+  a metric that never falls) quietly costs as much as a fixed peak fleet.</li>
+</ul>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Workload</th>
+<th>Approach</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Steady, predictable load</td>
+<td>A fixed-size group (min = max) for self-healing only</td>
+</tr>
+<tr>
+<td>Web API with daily cycles and boots under a few minutes</td>
+<td>Target tracking on request count or CPU, plus a scheduled minimum before the morning ramp</td>
+</tr>
+<tr>
+<td>Strong weekly patterns and slow boots</td>
+<td>Predictive scaling (start in forecast-only mode) plus target tracking</td>
+</tr>
+<tr>
+<td>Very slow boots (large caches, JIT warmup)</td>
+<td>Warm or standby pools, plus a lower target</td>
+</tr>
+<tr>
+<td>Queue workers</td>
+<td>Target tracking on backlog per instance, scale-in protection for long jobs</td>
+</tr>
+<tr>
+<td>Stateful nodes (databases, brokers)</td>
+<td>Do not autoscale on load; scale deliberately</td>
+</tr>
+<tr>
+<td>Containers already on Kubernetes</td>
+<td>HPA plus a node autoscaler</td>
+</tr>
+<tr>
+<td>Spiky, small workloads</td>
+<td>Serverless platforms that scale per request may be simpler</td>
+</tr>
+</tbody>
+</table>
+<p>Do not autoscale to hide a bug (a memory leak "fixed" by replacing
+instances), do not let scaling policies fight manual changes, and do not
+use autoscaling for components whose state lives on the instance.</p>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="a-taskflow-api-fleet-in-terraform">A TaskFlow API fleet in Terraform<a class="headerlink" href="#a-taskflow-api-fleet-in-terraform" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># infra/api-fleet.tf: launch template, group, warm pool, and draining hook</span>
+<span class="kr">resource</span><span class="w"> </span><span class="nc">"aws_launch_template"</span><span class="w"> </span><span class="nv">"api"</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="na">name_prefix</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="s2">"taskflow-api-"</span>
+<span class="w">  </span><span class="na">image_id</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="nv">var.api_ami_id</span><span class="c1">            # golden image built by Packer</span>
+<span class="w">  </span><span class="na">instance_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"c7g.large"</span>
+<span class="w">  </span><span class="na">vpc_security_group_ids</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="nv">aws_security_group.api.id</span><span class="p">]</span>
+
+<span class="w">  </span><span class="nb">iam_instance_profile</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="na">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">aws_iam_instance_profile.api.name</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="nb">metadata_options</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="na">http_tokens</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"required"</span><span class="c1">                # IMDSv2 only</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="na">user_data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">base64encode</span><span class="p">(</span><span class="nf">templatefile</span><span class="p">(</span><span class="s2">"${path.module}/api-user-data.sh"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="na">environment</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">var.environment</span>
+<span class="w">  </span><span class="p">}))</span>
+<span class="p">}</span>
+
+<span class="kr">resource</span><span class="w"> </span><span class="nc">"aws_autoscaling_group"</span><span class="w"> </span><span class="nv">"api"</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="na">name_prefix</span><span class="w">               </span><span class="o">=</span><span class="w"> </span><span class="s2">"taskflow-api-"</span>
+<span class="w">  </span><span class="na">min_size</span><span class="w">                  </span><span class="o">=</span><span class="w"> </span><span class="m">6</span>
+<span class="w">  </span><span class="na">max_size</span><span class="w">                  </span><span class="o">=</span><span class="w"> </span><span class="m">40</span>
+<span class="w">  </span><span class="na">vpc_zone_identifier</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="nv">var.private_subnet_ids</span><span class="c1">   # three AZs</span>
+<span class="w">  </span><span class="na">target_group_arns</span><span class="w">         </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="nv">aws_lb_target_group.api.arn</span><span class="p">]</span>
+<span class="w">  </span><span class="na">health_check_type</span><span class="w">         </span><span class="o">=</span><span class="w"> </span><span class="s2">"ELB"</span>
+<span class="w">  </span><span class="na">health_check_grace_period</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">120</span>
+<span class="w">  </span><span class="na">default_instance_warmup</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="m">180</span>
+
+<span class="w">  </span><span class="nb">launch_template</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="na">id</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="nv">aws_launch_template.api.id</span>
+<span class="w">    </span><span class="na">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">aws_launch_template.api.latest_version</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="c1">  # Replace ~10% at a time, launching before terminating; roll back on alarms</span>
+<span class="w">  </span><span class="nb">instance_refresh</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="na">strategy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Rolling"</span>
+<span class="w">    </span><span class="nb">preferences</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="na">min_healthy_percentage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">90</span>
+<span class="w">      </span><span class="na">max_healthy_percentage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">110</span>
+<span class="w">      </span><span class="na">skip_matching</span><span class="w">          </span><span class="o">=</span><span class="w"> </span><span class="no">true</span>
+<span class="w">      </span><span class="na">auto_rollback</span><span class="w">          </span><span class="o">=</span><span class="w"> </span><span class="no">true</span>
+<span class="w">      </span><span class="nb">alarm_specification</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="na">alarms</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="nv">aws_cloudwatch_metric_alarm.api_5xx.alarm_name</span><span class="p">]</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="nb">warm_pool</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="na">pool_state</span><span class="w">                  </span><span class="o">=</span><span class="w"> </span><span class="s2">"Stopped"</span>
+<span class="w">    </span><span class="na">min_size</span><span class="w">                    </span><span class="o">=</span><span class="w"> </span><span class="m">4</span>
+<span class="w">    </span><span class="na">max_group_prepared_capacity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">12</span>
+<span class="w">    </span><span class="nb">instance_reuse_policy</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="na">reuse_on_scale_in</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="no">true</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="nb">initial_lifecycle_hook</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="na">name</span><span class="w">                 </span><span class="o">=</span><span class="w"> </span><span class="s2">"drain"</span>
+<span class="w">    </span><span class="na">lifecycle_transition</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"autoscaling:EC2_INSTANCE_TERMINATING"</span>
+<span class="w">    </span><span class="na">heartbeat_timeout</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="m">300</span>
+<span class="w">    </span><span class="na">default_result</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="s2">"CONTINUE"</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="nb">lifecycle</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="na">ignore_changes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="nb">desired_capacity</span><span class="p">]</span><span class="c1">     # owned by the scaling policies</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Key choices: the ELB health check replaces instances whose application is
+broken, not just their VM; the warmup keeps new instances out of the
+averages for three minutes; any change to the launch template starts an
+instance refresh that rolls back if the 5xx alarm fires; four stopped
+instances wait in the warm pool; and the termination hook gives each
+instance up to five minutes to drain.</p>
+<h3 id="scaling-policies-target-tracking-schedule-and-forecast">Scaling policies: target tracking, schedule, and forecast<a class="headerlink" href="#scaling-policies-target-tracking-schedule-and-forecast" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># infra/api-scaling.tf</span>
+<span class="kr">resource</span><span class="w"> </span><span class="nc">"aws_autoscaling_policy"</span><span class="w"> </span><span class="nv">"requests_per_target"</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="na">name</span><span class="w">                   </span><span class="o">=</span><span class="w"> </span><span class="s2">"requests-per-target"</span>
+<span class="w">  </span><span class="na">autoscaling_group_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">aws_autoscaling_group.api.name</span>
+<span class="w">  </span><span class="na">policy_type</span><span class="w">            </span><span class="o">=</span><span class="w"> </span><span class="s2">"TargetTrackingScaling"</span>
+
+<span class="w">  </span><span class="nb">target_tracking_configuration</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nb">predefined_metric_specification</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="na">predefined_metric_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"ALBRequestCountPerTarget"</span>
+<span class="w">      </span><span class="na">resource_label</span><span class="w">         </span><span class="o">=</span><span class="w"> </span><span class="s2">"${aws_lb.public.arn_suffix}/${aws_lb_target_group.api.arn_suffix}"</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="na">target_value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1000</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1"># Raise the floor before the weekday morning ramp, lower it in the evening.</span>
+<span class="c1"># -1 means "leave unchanged"; the provider defaults these fields to 0.</span>
+<span class="kr">resource</span><span class="w"> </span><span class="nc">"aws_autoscaling_schedule"</span><span class="w"> </span><span class="nv">"weekday_morning"</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="na">scheduled_action_name</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="s2">"weekday-morning"</span>
+<span class="w">  </span><span class="na">autoscaling_group_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">aws_autoscaling_group.api.name</span>
+<span class="w">  </span><span class="na">recurrence</span><span class="w">             </span><span class="o">=</span><span class="w"> </span><span class="s2">"30 7 * * MON-FRI"</span>
+<span class="w">  </span><span class="na">time_zone</span><span class="w">              </span><span class="o">=</span><span class="w"> </span><span class="s2">"Europe/Berlin"</span>
+<span class="w">  </span><span class="na">min_size</span><span class="w">               </span><span class="o">=</span><span class="w"> </span><span class="m">12</span>
+<span class="w">  </span><span class="na">max_size</span><span class="w">               </span><span class="o">=</span><span class="w"> </span><span class="err">-</span><span class="m">1</span>
+<span class="w">  </span><span class="na">desired_capacity</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="err">-</span><span class="m">1</span>
+<span class="p">}</span>
+
+<span class="kr">resource</span><span class="w"> </span><span class="nc">"aws_autoscaling_schedule"</span><span class="w"> </span><span class="nv">"weekday_evening"</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="na">scheduled_action_name</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="s2">"weekday-evening"</span>
+<span class="w">  </span><span class="na">autoscaling_group_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">aws_autoscaling_group.api.name</span>
+<span class="w">  </span><span class="na">recurrence</span><span class="w">             </span><span class="o">=</span><span class="w"> </span><span class="s2">"0 20 * * MON-FRI"</span>
+<span class="w">  </span><span class="na">time_zone</span><span class="w">              </span><span class="o">=</span><span class="w"> </span><span class="s2">"Europe/Berlin"</span>
+<span class="w">  </span><span class="na">min_size</span><span class="w">               </span><span class="o">=</span><span class="w"> </span><span class="m">6</span>
+<span class="w">  </span><span class="na">max_size</span><span class="w">               </span><span class="o">=</span><span class="w"> </span><span class="err">-</span><span class="m">1</span>
+<span class="w">  </span><span class="na">desired_capacity</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="err">-</span><span class="m">1</span>
+<span class="p">}</span>
+
+<span class="c1"># Learn the weekly pattern first; switch mode to "ForecastAndScale" once the</span>
+<span class="c1"># forecast matches reality.</span>
+<span class="kr">resource</span><span class="w"> </span><span class="nc">"aws_autoscaling_policy"</span><span class="w"> </span><span class="nv">"predictive_cpu"</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="na">name</span><span class="w">                   </span><span class="o">=</span><span class="w"> </span><span class="s2">"predictive-cpu"</span>
+<span class="w">  </span><span class="na">autoscaling_group_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">aws_autoscaling_group.api.name</span>
+<span class="w">  </span><span class="na">policy_type</span><span class="w">            </span><span class="o">=</span><span class="w"> </span><span class="s2">"PredictiveScaling"</span>
+
+<span class="w">  </span><span class="nb">predictive_scaling_configuration</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="na">mode</span><span class="w">                   </span><span class="o">=</span><span class="w"> </span><span class="s2">"ForecastOnly"</span>
+<span class="w">    </span><span class="na">scheduling_buffer_time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">300</span><span class="c1">           # launch 5 minutes ahead of the forecast</span>
+<span class="w">    </span><span class="nb">metric_specification</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="na">target_value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">50</span>
+<span class="w">      </span><span class="nb">predefined_metric_pair_specification</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="na">predefined_metric_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"ASGCPUUtilization"</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="draining-on-termination-from-inside-the-instance">Draining on termination from inside the instance<a class="headerlink" href="#draining-on-termination-from-inside-the-instance" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="ch">#!/usr/bin/env bash</span>
+<span class="c1"># /usr/local/bin/asg-drain-watcher.sh: run every 5 s by a systemd timer</span>
+<span class="nb">set</span><span class="w"> </span>-euo<span class="w"> </span>pipefail
+
+<span class="nv">IMDS</span><span class="o">=</span>http://169.254.169.254
+<span class="nv">token</span><span class="o">=</span><span class="k">$(</span>curl<span class="w"> </span>-sf<span class="w"> </span>-X<span class="w"> </span>PUT<span class="w"> </span><span class="s2">"</span><span class="nv">$IMDS</span><span class="s2">/latest/api/token"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"X-aws-ec2-metadata-token-ttl-seconds: 60"</span><span class="k">)</span>
+md<span class="o">()</span><span class="w"> </span><span class="o">{</span><span class="w"> </span>curl<span class="w"> </span>-sf<span class="w"> </span>-H<span class="w"> </span><span class="s2">"X-aws-ec2-metadata-token: </span><span class="nv">$token</span><span class="s2">"</span><span class="w"> </span><span class="s2">"</span><span class="nv">$IMDS</span><span class="s2">/latest/meta-data/</span><span class="nv">$1</span><span class="s2">"</span><span class="p">;</span><span class="w"> </span><span class="o">}</span>
+
+<span class="nv">state</span><span class="o">=</span><span class="k">$(</span>md<span class="w"> </span>autoscaling/target-lifecycle-state<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"InService"</span><span class="k">)</span>
+<span class="o">[</span><span class="w"> </span><span class="s2">"</span><span class="nv">$state</span><span class="s2">"</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Terminated"</span><span class="w"> </span><span class="o">]</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">exit</span><span class="w"> </span><span class="m">0</span>
+
+<span class="nv">instance_id</span><span class="o">=</span><span class="k">$(</span>md<span class="w"> </span>instance-id<span class="k">)</span>
+<span class="nv">region</span><span class="o">=</span><span class="k">$(</span>md<span class="w"> </span>placement/region<span class="k">)</span>
+
+<span class="c1"># The load balancer has stopped sending new requests. Stop the service:</span>
+<span class="c1"># systemd sends SIGTERM, and the API finishes in-flight work and exits.</span>
+systemctl<span class="w"> </span>stop<span class="w"> </span>taskflow-api
+/usr/local/bin/flush-logs-and-metrics.sh
+
+aws<span class="w"> </span>autoscaling<span class="w"> </span>complete-lifecycle-action<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--region<span class="w"> </span><span class="s2">"</span><span class="nv">$region</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--auto-scaling-group-name<span class="w"> </span>taskflow-api<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--lifecycle-hook-name<span class="w"> </span>drain<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--instance-id<span class="w"> </span><span class="s2">"</span><span class="nv">$instance_id</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--lifecycle-action-result<span class="w"> </span>CONTINUE
+</code></pre></div>
+<p>The instance role needs permission for
+<code>autoscaling:CompleteLifecycleAction</code> on its own group. If the script
+fails, the hook's <code>default_result</code> continues termination when the
+heartbeat timeout expires, so a broken script delays but never blocks
+scale-in.</p>
+<h3 id="the-same-fleet-on-google-cloud-and-azure">The same fleet on Google Cloud and Azure<a class="headerlink" href="#the-same-fleet-on-google-cloud-and-azure" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Google Cloud: a regional MIG with autohealing and a CPU autoscaler</span>
+gcloud<span class="w"> </span>compute<span class="w"> </span>instance-groups<span class="w"> </span>managed<span class="w"> </span>create<span class="w"> </span>taskflow-api<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--region<span class="o">=</span>europe-west1<span class="w"> </span>--template<span class="o">=</span>taskflow-api-v7<span class="w"> </span>--size<span class="o">=</span><span class="m">6</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--health-check<span class="o">=</span>taskflow-api-readyz<span class="w"> </span>--initial-delay<span class="o">=</span><span class="m">120</span>
+
+gcloud<span class="w"> </span>compute<span class="w"> </span>instance-groups<span class="w"> </span>managed<span class="w"> </span>set-autoscaling<span class="w"> </span>taskflow-api<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--region<span class="o">=</span>europe-west1<span class="w"> </span>--min-num-replicas<span class="o">=</span><span class="m">6</span><span class="w"> </span>--max-num-replicas<span class="o">=</span><span class="m">40</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--target-cpu-utilization<span class="o">=</span><span class="m">0</span>.6<span class="w"> </span>--cool-down-period<span class="o">=</span><span class="m">120</span>
+
+<span class="c1"># Azure: a Flexible scale set and a CPU autoscale rule pair</span>
+az<span class="w"> </span>vmss<span class="w"> </span>create<span class="w"> </span>--resource-group<span class="w"> </span>taskflow<span class="w"> </span>--name<span class="w"> </span>taskflow-api<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--orchestration-mode<span class="w"> </span>Flexible<span class="w"> </span>--image<span class="w"> </span>&lt;image-id&gt;<span class="w"> </span>--instance-count<span class="w"> </span><span class="m">6</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--zones<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="m">3</span>
+az<span class="w"> </span>monitor<span class="w"> </span>autoscale<span class="w"> </span>create<span class="w"> </span>--resource-group<span class="w"> </span>taskflow<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--resource<span class="w"> </span>taskflow-api<span class="w"> </span>--resource-type<span class="w"> </span>Microsoft.Compute/virtualMachineScaleSets<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--name<span class="w"> </span>taskflow-api-autoscale<span class="w"> </span>--min-count<span class="w"> </span><span class="m">6</span><span class="w"> </span>--max-count<span class="w"> </span><span class="m">40</span><span class="w"> </span>--count<span class="w"> </span><span class="m">6</span>
+az<span class="w"> </span>monitor<span class="w"> </span>autoscale<span class="w"> </span>rule<span class="w"> </span>create<span class="w"> </span>--resource-group<span class="w"> </span>taskflow<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--autoscale-name<span class="w"> </span>taskflow-api-autoscale<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--condition<span class="w"> </span><span class="s2">"Percentage CPU &gt; 60 avg 5m"</span><span class="w"> </span>--scale<span class="w"> </span>out<span class="w"> </span><span class="m">3</span>
+az<span class="w"> </span>monitor<span class="w"> </span>autoscale<span class="w"> </span>rule<span class="w"> </span>create<span class="w"> </span>--resource-group<span class="w"> </span>taskflow<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--autoscale-name<span class="w"> </span>taskflow-api-autoscale<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--condition<span class="w"> </span><span class="s2">"Percentage CPU &lt; 30 avg 10m"</span><span class="w"> </span>--scale<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="m">1</span>
+</code></pre></div>
+<p>On Google Cloud the <code>--cool-down-period</code> flag sets the initialization
+period. On Azure, metric rules come in pairs, and the scale-in rule uses a
+lower threshold and a longer window than the scale-out rule so the two
+cannot chase each other.</p>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Bake golden images and keep boot under a few minutes; measure it.</li>
+<li>Spread every group over at least three Availability Zones, and size it
+  so losing a zone does not require launching anything.</li>
+<li>Use the load balancer's health check for replacement, with a grace
+  period longer than boot.</li>
+<li>Scale on a metric that falls in proportion to fleet size; keep latency
+  for alarms.</li>
+<li>Leave headroom in the target, and add scheduled or predictive scaling for
+  known ramps.</li>
+<li>Set warmup so new instances do not distort the averages.</li>
+<li>Drain before termination: a deregistration delay that matches your
+  longest requests, a termination hook, and graceful <code>SIGTERM</code> handling.</li>
+<li>Roll out images with instance refresh or rolling updates, with alarms
+  that stop and roll back.</li>
+<li>Cap maximum size, alarm on fleet size, and scale the real bottleneck.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Latency spikes every weekday morning before the fleet catches up.</strong>
+  <em>Detect:</em> p99 latency and CPU climb from 08:00, and scaling activity
+  shows instances launching after the peak has started. <em>Cause:</em> reactive
+  scaling plus a multi-minute boot cannot follow a steep, predictable ramp.
+  <em>Fix:</em> raise the minimum with a scheduled action before the ramp, try
+  predictive scaling in forecast-only mode, and lower the target.</li>
+<li><strong>The fleet oscillates: scale out, scale in, scale out.</strong>
+  <em>Detect:</em> the activity history shows launches and terminations every few
+  minutes. <em>Cause:</em> new instances' start-up CPU distorts the average (no
+  warmup), or step and target tracking policies with overlapping
+  thresholds fight each other. <em>Fix:</em> set a default warmup, keep scale-in
+  slower than scale-out, and use one primary policy.</li>
+<li><strong>Every scale-in produces a burst of 502 errors.</strong>
+  <em>Detect:</em> load balancer 5xx errors coincide with terminations.
+  <em>Cause:</em> instances are terminated while requests are in flight: a
+  deregistration delay of zero, no termination hook, or an app that exits
+  immediately on <code>SIGTERM</code>. <em>Fix:</em> a delay that covers the longest normal
+  request, a draining hook, and graceful shutdown in the application.</li>
+<li><strong>A broken application stays in service for hours.</strong>
+  <em>Detect:</em> the load balancer marks targets unhealthy, but the group never
+  replaces them. <em>Cause:</em> the group uses only EC2 status checks. <em>Fix:</em>
+  switch the health check type to ELB with a sensible grace period.</li>
+<li><strong>A traffic spike launched 200 instances and the site still failed.</strong>
+  <em>Detect:</em> the group hit its maximum while database CPU and connection
+  counts were saturated. <em>Cause:</em> the bottleneck was the database, and
+  each new instance opened more connections. <em>Fix:</em> a lower maximum,
+  connection pooling or a proxy, load shedding at the edge, and scaling
+  decisions based on the real bottleneck.</li>
+<li><strong>A new image rolled out and half the fleet failed to boot.</strong>
+  <em>Detect:</em> an instance refresh stalls with new instances failing health
+  checks. <em>Cause:</em> a broken image or user-data change. <em>Fix:</em> checkpoints,
+  alarm-based automatic rollback, and testing new images in staging with
+  the same refresh settings.</li>
+<li><strong>Scale-out silently stops in one zone.</strong>
+  <em>Detect:</em> activity history shows "insufficient capacity" errors for one
+  instance type. <em>Cause:</em> the provider has no spare capacity of that type in
+  that zone. <em>Fix:</em> allow several instance types (a mixed instances policy)
+  and keep static-stability headroom.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Autoscaling group:</strong> A set of identical instances kept between a
+  minimum and maximum size from a template.</li>
+<li><strong>Launch template / instance template:</strong> The versioned definition of
+  what each instance runs.</li>
+<li><strong>Golden image:</strong> A pre-baked machine image containing the OS,
+  runtime, agents, and application.</li>
+<li><strong>Desired capacity:</strong> The instance count the group is currently
+  working toward.</li>
+<li><strong>Target tracking:</strong> A policy that keeps a metric near a target value.</li>
+<li><strong>Step / scheduled / predictive scaling:</strong> Scaling by alarm bands, by
+  time, or by forecast.</li>
+<li><strong>Warmup / initialization period:</strong> Time during which a new instance's
+  metrics are ignored or not trusted.</li>
+<li><strong>Warm pool / standby pool:</strong> Pre-initialized stopped, hibernated, or
+  suspended instances ready for fast scale-out.</li>
+<li><strong>Lifecycle hook:</strong> A pause at launch or termination for custom actions.</li>
+<li><strong>Scale-in protection:</strong> A flag that keeps an instance from being chosen
+  for scale-in.</li>
+<li><strong>Deregistration delay:</strong> How long a load balancer lets in-flight
+  requests finish on a deregistering target.</li>
+<li><strong>Instance refresh / rolling update:</strong> Gradual replacement of instances
+  with a new template.</li>
+<li><strong>Static stability:</strong> Surviving an impairment without needing to make
+  changes, such as launching instances.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Scaling on latency or raw queue length with target tracking.</li>
+<li>Assuming new capacity arrives within seconds of a spike.</li>
+<li>Installing software at boot instead of baking an image.</li>
+<li>Leaving the health check type at EC2 status checks only.</li>
+<li>Terminating instances without draining.</li>
+<li>Setting no maximum, or a maximum the database cannot survive.</li>
+<li>Relying on launching replacements during a zone failure instead of
+  pre-provisioned headroom.</li>
+<li>Running the minimum capacity on Spot instances.</li>
+<li>Treating autoscaling as a fix for leaks and crashes.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>What are the four building blocks of an autoscaling fleet, and what is
+   each called on AWS, Google Cloud, and Azure?</li>
+<li>A target tracking policy targets 1,000 requests per target per minute.
+   Eight instances receive 14,000 requests per minute. About how many
+   instances does the group need, and why does the metric have to be
+   proportional to the fleet size?</li>
+<li>A worker takes 4 seconds per message, and messages may wait at most 5
+   minutes. What target backlog per instance would you choose, and how many
+   instances does a backlog of 9,000 messages need?</li>
+<li>Walk through the minutes between a traffic spike and new instances
+   taking traffic. Name four ways to shorten or hide that gap.</li>
+<li>How do a deregistration delay, a termination lifecycle hook, and
+   graceful <code>SIGTERM</code> handling work together during scale-in?</li>
+<li>Why should a group use the load balancer's health check, and what can go
+   wrong if that check depends on the database?</li>
+<li>Your API needs 18 instances at peak across 3 zones. How many must you run
+   to stay statically stable through the loss of one zone? How many with 4
+   zones?</li>
+<li>Which cost guards would you put around an autoscaling group, and why can
+   scaling out make a database bottleneck worse?</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-scaling-target-tracking.html">AWS: Target tracking scaling policies</a></li>
+<li><a href="https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-warm-pools.html">AWS: Warm pools for Amazon EC2 Auto Scaling</a></li>
+<li><a href="https://docs.aws.amazon.com/autoscaling/ec2/userguide/instance-refresh-overview.html">AWS: Instance refresh</a></li>
+<li><a href="https://docs.aws.amazon.com/autoscaling/ec2/userguide/lifecycle-hooks.html">AWS: Lifecycle hooks</a></li>
+<li><a href="https://cloud.google.com/compute/docs/autoscaler/predictive-autoscaling">Google Cloud: Predictive autoscaling</a></li>
+<li><a href="https://learn.microsoft.com/en-us/azure/virtual-machine-scale-sets/standby-pools-overview">Azure: Standby pools for Virtual Machine Scale Sets</a></li>
+<li><a href="../../../05-application-architecture/scalability/stateless-services-and-autoscaling/">Stateless services and autoscaling</a>
+  in the Application Architecture section</li>
+<li>Next: <a href="../service-discovery-and-service-mesh/">service discovery and service mesh</a>.
+  Back to the <a href="../">load balancing and multi-server overview</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../multi-az-and-multi-region-architecture/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Multi-AZ and Multi-Region Architecture">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Multi-AZ and Multi-Region Architecture</span>
+      </a>
+    
+    
+      <a href="../service-discovery-and-service-mesh/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: Service Discovery and Service Mesh">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">Service Discovery and Service Mesh</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

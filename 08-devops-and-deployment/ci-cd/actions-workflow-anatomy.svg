@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="440" viewBox="0 0 880 440" role="img" aria-labelledby="awa-title awa-desc">
+  <title id="awa-title">Anatomy of a GitHub Actions workflow: event, workflow, jobs, steps</title>
+  <desc id="awa-desc">Events such as push, pull_request, workflow_dispatch, schedule, and release trigger a workflow file in .github/workflows, which declares its triggers with on, plus permissions, env, and concurrency. The workflow contains jobs. The lint job runs on its own ubuntu-latest runner with four steps: uses actions/checkout, uses actions/setup-node, run npm ci, and run npm run lint. The test job runs on another runner with a MongoDB service container and steps for checkout, setup-node, npm ci, and npm test. The build job declares needs lint and test, so it starts only after both succeed; its steps check out, build and push the image, and it exposes the image digest as a job output. Jobs run in parallel unless connected by needs, steps in a job run in order on the same runner, and each job reports a status check, logs, and optional artifacts and outputs.</desc>
+  <defs>
+    <marker id="awa-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#40566b"/>
+    </marker>
+  </defs>
+  <rect width="880" height="440" rx="14" fill="#f5f7fb"/>
+  <g font-family="Arial, sans-serif" text-anchor="middle">
+    <g font-size="12.5" font-weight="700" fill="#40566b">
+      <text x="95" y="34">Events</text>
+      <text x="270" y="34">Workflow</text>
+      <text x="470" y="34">Jobs (each on its own runner)</text>
+      <text x="750" y="34">Dependent job</text>
+    </g>
+
+    <g font-size="11.5" font-weight="700" fill="#66400f">
+      <rect x="20" y="52" width="150" height="28" rx="14" fill="#fff0d9" stroke="#bd7a20" stroke-width="1.5"/>
+      <text x="95" y="70">push</text>
+      <rect x="20" y="92" width="150" height="28" rx="14" fill="#fff0d9" stroke="#bd7a20" stroke-width="1.5"/>
+      <text x="95" y="110">pull_request</text>
+      <rect x="20" y="132" width="150" height="28" rx="14" fill="#fff0d9" stroke="#bd7a20" stroke-width="1.5"/>
+      <text x="95" y="150">workflow_dispatch</text>
+      <rect x="20" y="172" width="150" height="28" rx="14" fill="#fff0d9" stroke="#bd7a20" stroke-width="1.5"/>
+      <text x="95" y="190">schedule (cron)</text>
+      <rect x="20" y="212" width="150" height="28" rx="14" fill="#fff0d9" stroke="#bd7a20" stroke-width="1.5"/>
+      <text x="95" y="230">release</text>
+    </g>
+    <g fill="none" stroke="#40566b" stroke-width="1.6">
+      <path d="M170 66 198 132" marker-end="url(#awa-arrow)"/>
+      <path d="M170 106 198 140" marker-end="url(#awa-arrow)"/>
+      <path d="M170 146H198" marker-end="url(#awa-arrow)"/>
+      <path d="M170 186 198 154" marker-end="url(#awa-arrow)"/>
+      <path d="M170 226 198 162" marker-end="url(#awa-arrow)"/>
+    </g>
+
+    <rect x="200" y="96" width="140" height="110" rx="8" fill="#f0e9fb" stroke="#8062a8" stroke-width="2"/>
+    <text x="270" y="118" font-size="12.5" font-weight="700" fill="#463365">ci.yml</text>
+    <g font-size="11" fill="#463365">
+      <text x="270" y="136">.github/workflows/</text>
+      <text x="270" y="156">on, permissions,</text>
+      <text x="270" y="172">env, concurrency,</text>
+      <text x="270" y="188">jobs</text>
+    </g>
+    <g fill="none" stroke="#40566b" stroke-width="1.8">
+      <path d="M340 130 378 100" marker-end="url(#awa-arrow)"/>
+      <path d="M340 172 378 222" marker-end="url(#awa-arrow)"/>
+    </g>
+
+    <rect x="380" y="48" width="180" height="128" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="470" y="68" font-size="12.5" font-weight="700" fill="#263e5a">job: lint</text>
+    <text x="470" y="84" font-size="10.5" fill="#263e5a">runs-on: ubuntu-latest</text>
+    <g font-size="11" fill="#36424e" text-anchor="start">
+      <text x="392" y="106">1  uses: actions/checkout</text>
+      <text x="392" y="124">2  uses: actions/setup-node</text>
+      <text x="392" y="142">3  run: npm ci</text>
+      <text x="392" y="160">4  run: npm run lint</text>
+    </g>
+
+    <rect x="380" y="190" width="180" height="160" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="470" y="210" font-size="12.5" font-weight="700" fill="#263e5a">job: test</text>
+    <text x="470" y="226" font-size="10.5" fill="#263e5a">runs-on: ubuntu-latest</text>
+    <rect x="392" y="234" width="156" height="24" rx="6" fill="#f0e9fb" stroke="#8062a8" stroke-width="1.5"/>
+    <text x="470" y="250" font-size="11" fill="#463365">services: mongo:8.0</text>
+    <g font-size="11" fill="#36424e" text-anchor="start">
+      <text x="392" y="278">1  uses: actions/checkout</text>
+      <text x="392" y="296">2  uses: actions/setup-node</text>
+      <text x="392" y="314">3  run: npm ci</text>
+      <text x="392" y="332">4  run: npm test</text>
+    </g>
+
+    <rect x="640" y="122" width="220" height="136" rx="8" fill="#e7f3e9" stroke="#53845b" stroke-width="2"/>
+    <text x="750" y="142" font-size="12.5" font-weight="700" fill="#294a2e">job: build</text>
+    <text x="750" y="158" font-size="10.5" fill="#294a2e">needs: [lint, test]</text>
+    <g font-size="11" fill="#36424e" text-anchor="start">
+      <text x="652" y="182">1  uses: actions/checkout</text>
+      <text x="652" y="200">2  uses: docker/build-push-action</text>
+      <text x="652" y="222" font-weight="700" fill="#294a2e">outputs: digest</text>
+      <text x="652" y="240" fill="#294a2e">read as needs.build.outputs</text>
+    </g>
+    <g fill="none" stroke="#40566b" stroke-width="1.8">
+      <path d="M560 112 638 166" marker-end="url(#awa-arrow)"/>
+      <path d="M560 270 638 214" marker-end="url(#awa-arrow)"/>
+    </g>
+    <text x="600" y="118" font-size="10.5" font-style="italic" fill="#40566b" text-anchor="start">needs</text>
+    <text x="604" y="268" font-size="10.5" font-style="italic" fill="#40566b" text-anchor="start">needs</text>
+
+    <path d="M24 368H856" stroke="#c9d1db" stroke-width="1.5"/>
+    <g font-size="11.5" fill="#36424e">
+      <text x="155" y="392">Jobs run in parallel unless linked by needs.</text>
+      <text x="440" y="392">Steps run in order on one runner.</text>
+      <text x="710" y="392">Each job reports a check, logs, artifacts.</text>
+    </g>
+    <text x="440" y="424" font-size="13" fill="#40566b">An event starts a workflow; a workflow is a graph of jobs; a job is an ordered list of steps.</text>
+  </g>
+</svg>

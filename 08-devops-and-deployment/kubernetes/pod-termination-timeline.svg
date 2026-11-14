@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="440" viewBox="0 0 860 440" role="img" aria-labelledby="ptt-title ptt-desc">
+  <title id="ptt-title">Pod termination timeline</title>
+  <desc id="ptt-desc">At 0 seconds the Pod is deleted, for example by a rollout, and the API server sets its deletionTimestamp. Two things then happen in parallel. First, the Pod's endpoint is marked terminating in the EndpointSlice, and kube-proxy on every node and the ingress controllers update their rules over roughly the next one to two seconds; after that no new connections arrive. Second, the kubelet runs the preStop hook, here a 5 second sleep, while the container keeps serving normally. At 5 seconds the kubelet sends SIGTERM; the app stops accepting connections, drains in-flight requests, closes its database pools, and exits with code 0 at about 7 seconds. terminationGracePeriodSeconds is 30 seconds, counted from deletion and including the preStop hook; if the container were still running at 30 seconds, the kubelet would send SIGKILL. The preStop sleep exists because endpoint removal is asynchronous: without it, SIGTERM could arrive while kube-proxy and load balancers still send new requests.</desc>
+  <rect width="860" height="440" rx="14" fill="#f5f7fb"/>
+  <g font-family="Arial, sans-serif" text-anchor="middle">
+    <path d="M160 40H820" stroke="#40566b" stroke-width="1.5"/>
+    <path d="M160 34V46M820 34V46" stroke="#40566b" stroke-width="1.5"/>
+    <text x="490" y="30" font-size="12" font-weight="700" fill="#40566b">terminationGracePeriodSeconds: 30 s (counted from deletion, includes preStop)</text>
+
+    <g font-size="12" font-weight="700" fill="#36424e" text-anchor="start">
+      <text x="24" y="82">API server</text>
+      <text x="24" y="132">endpoints</text>
+      <text x="24" y="182">kubelet</text>
+      <text x="24" y="232">container</text>
+    </g>
+    <g font-size="10.5" fill="#36424e" text-anchor="start">
+      <text x="24" y="146">kube-proxy, ingress</text>
+      <text x="24" y="196">preStop hook</text>
+      <text x="24" y="246">your app</text>
+    </g>
+
+    <path d="M160 60V280" stroke="#40566b" stroke-width="1.5" stroke-dasharray="3 3"/>
+    <rect x="168" y="66" width="300" height="24" rx="6" fill="#fff0d9" stroke="#bd7a20" stroke-width="1.5"/>
+    <text x="318" y="83" font-size="11.5" fill="#66400f">Pod deleted: deletionTimestamp set, state Terminating</text>
+
+    <rect x="160" y="116" width="44" height="28" rx="6" fill="#fff0d9" stroke="#bd7a20" stroke-width="1.5"/>
+    <text x="182" y="135" font-size="11" fill="#66400f">1-2 s</text>
+    <rect x="204" y="116" width="616" height="28" rx="6" fill="#e7f3e9" stroke="#53845b" stroke-width="1.5"/>
+    <text x="512" y="135" font-size="11.5" fill="#294a2e">endpoint removed everywhere: no new connections</text>
+
+    <rect x="160" y="166" width="110" height="28" rx="6" fill="#f0e9fb" stroke="#8062a8" stroke-width="1.5"/>
+    <text x="215" y="185" font-size="11.5" fill="#463365">preStop: sleep 5</text>
+
+    <rect x="160" y="216" width="110" height="28" rx="6" fill="#e5efff" stroke="#4774aa" stroke-width="1.5"/>
+    <text x="215" y="235" font-size="11.5" fill="#263e5a">still serving</text>
+    <rect x="270" y="216" width="44" height="28" rx="6" fill="#e5efff" stroke="#4774aa" stroke-width="1.5"/>
+    <text x="292" y="235" font-size="11" fill="#263e5a">drain</text>
+    <rect x="314" y="216" width="62" height="28" rx="6" fill="#e7f3e9" stroke="#53845b" stroke-width="1.5"/>
+    <text x="345" y="235" font-size="11" font-weight="700" fill="#294a2e">exit 0</text>
+    <rect x="376" y="216" width="444" height="28" rx="6" fill="#ffffff" stroke="#c9d1db" stroke-width="1.5" stroke-dasharray="5 4"/>
+    <text x="598" y="235" font-size="11.5" fill="#36424e">unused grace time: the Pod is gone at about 7 s</text>
+
+    <path d="M270 160V250" stroke="#b5524b" stroke-width="2"/>
+    <text x="276" y="160" font-size="11.5" font-weight="700" fill="#6e2a24" text-anchor="start">SIGTERM at 5 s</text>
+    <path d="M820 60V280" stroke="#b5524b" stroke-width="2" stroke-dasharray="6 4"/>
+    <text x="814" y="270" font-size="11.5" font-weight="700" fill="#6e2a24" text-anchor="end">SIGKILL at 30 s if still running</text>
+
+    <path d="M160 292H820" stroke="#8a96a3" stroke-width="1.5"/>
+    <g stroke="#8a96a3" stroke-width="1.5">
+      <path d="M160 288V296"/>
+      <path d="M270 288V296"/>
+      <path d="M380 288V296"/>
+      <path d="M490 288V296"/>
+      <path d="M600 288V296"/>
+      <path d="M710 288V296"/>
+      <path d="M820 288V296"/>
+    </g>
+    <g font-size="11" fill="#36424e">
+      <text x="160" y="310">0 s</text>
+      <text x="270" y="310">5 s</text>
+      <text x="380" y="310">10 s</text>
+      <text x="490" y="310">15 s</text>
+      <text x="600" y="310">20 s</text>
+      <text x="710" y="310">25 s</text>
+      <text x="820" y="310">30 s</text>
+    </g>
+
+    <rect x="24" y="328" width="812" height="56" rx="8" fill="#ffffff" stroke="#c9d1db" stroke-width="1.5"/>
+    <text x="430" y="351" font-size="11.5" fill="#36424e">Endpoint removal and the kubelet's shutdown start at the same moment and do not wait for each other.</text>
+    <text x="430" y="370" font-size="11.5" fill="#36424e">The preStop sleep keeps the app serving until load balancers have stopped sending it new requests.</text>
+
+    <text x="430" y="420" font-size="13" fill="#40566b">Sleep briefly, then drain on SIGTERM, and finish well inside the grace period.</text>
+  </g>
+</svg>

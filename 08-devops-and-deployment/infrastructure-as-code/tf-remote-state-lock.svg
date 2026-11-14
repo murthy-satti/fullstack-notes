@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="460" viewBox="0 0 860 460" role="img" aria-labelledby="trs-title trs-desc">
+  <title id="trs-title">Two Terraform runs sharing remote state with a lock</title>
+  <desc id="trs-desc">CI run A starts an apply. 1, it creates the lock file next to the state object in the S3 bucket, a write that succeeds only if no lock exists, and the lock is acquired. 2, it reads the current state. 3, it calls the cloud APIs to create and update resources. Meanwhile CI run B starts. 4, it tries to create the same lock file, but the lock already exists, so B gets a state-locked error naming A as the holder and waits or fails. 5, A writes the new state, which the versioned bucket keeps as a new object version. 6, A deletes the lock file. 7, B retries and acquires the lock, now planning against A's new state.</desc>
+  <defs>
+    <marker id="trs-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#40566b"/>
+    </marker>
+    <marker id="trs-arrow-ret" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#60788d"/>
+    </marker>
+    <marker id="trs-arrow-red" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#b5524b"/>
+    </marker>
+  </defs>
+  <rect width="860" height="460" rx="14" fill="#f5f7fb"/>
+  <g font-family="Arial, sans-serif" text-anchor="middle">
+    <rect x="40" y="20" width="140" height="44" rx="8" fill="#f0e9fb" stroke="#8062a8" stroke-width="2"/>
+    <text x="110" y="39" font-size="14" font-weight="700" fill="#463365">CI run A</text>
+    <text x="110" y="55" font-size="11.5" fill="#463365">apply</text>
+    <rect x="280" y="20" width="170" height="44" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="365" y="39" font-size="14" font-weight="700" fill="#263e5a">S3 state bucket</text>
+    <text x="365" y="55" font-size="11.5" fill="#263e5a">versioned, encrypted</text>
+    <rect x="510" y="20" width="140" height="44" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="580" y="39" font-size="14" font-weight="700" fill="#263e5a">Cloud APIs</text>
+    <text x="580" y="55" font-size="11.5" fill="#263e5a">real resources</text>
+    <rect x="690" y="20" width="140" height="44" rx="8" fill="#f0e9fb" stroke="#8062a8" stroke-width="2"/>
+    <text x="760" y="39" font-size="14" font-weight="700" fill="#463365">CI run B</text>
+    <text x="760" y="55" font-size="11.5" fill="#463365">plan or apply</text>
+
+    <g fill="none" stroke="#8a96a3" stroke-width="1.5" stroke-dasharray="4 4">
+      <path d="M110 64V416"/>
+      <path d="M365 64V416"/>
+      <path d="M580 64V416"/>
+      <path d="M760 64V416"/>
+    </g>
+
+    <path d="M110 100H363" fill="none" stroke="#40566b" stroke-width="2" marker-end="url(#trs-arrow)"/>
+    <rect x="125" y="83" width="225" height="14" fill="#f5f7fb"/>
+    <text x="237" y="94" font-size="11.5" fill="#36424e">1. create .tflock only if absent</text>
+    <path d="M365 128H112" fill="none" stroke="#60788d" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#trs-arrow-ret)"/>
+    <rect x="175" y="111" width="125" height="14" fill="#f5f7fb"/>
+    <text x="237" y="122" font-size="11.5" fill="#294a2e">lock acquired</text>
+
+    <path d="M110 164H363" fill="none" stroke="#40566b" stroke-width="2" marker-end="url(#trs-arrow)"/>
+    <rect x="175" y="147" width="125" height="14" fill="#f5f7fb"/>
+    <text x="237" y="158" font-size="11.5" fill="#36424e">2. read state</text>
+
+    <path d="M110 204H578" fill="none" stroke="#40566b" stroke-width="2" marker-end="url(#trs-arrow)"/>
+    <rect x="390" y="187" width="170" height="14" fill="#f5f7fb"/>
+    <text x="475" y="198" font-size="11.5" fill="#36424e">3. create, update resources</text>
+
+    <path d="M760 248H367" fill="none" stroke="#40566b" stroke-width="2" marker-end="url(#trs-arrow)"/>
+    <rect x="600" y="231" width="150" height="14" fill="#f5f7fb"/>
+    <text x="675" y="242" font-size="11.5" fill="#36424e">4. create .tflock</text>
+    <path d="M365 280H758" fill="none" stroke="#b5524b" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#trs-arrow-red)"/>
+    <rect x="575" y="263" width="180" height="14" fill="#f5f7fb"/>
+    <text x="665" y="274" font-size="11.5" fill="#6e2a24">exists: "state locked by A"</text>
+
+    <path d="M110 320H363" fill="none" stroke="#40566b" stroke-width="2" marker-end="url(#trs-arrow)"/>
+    <rect x="125" y="303" width="225" height="14" fill="#f5f7fb"/>
+    <text x="237" y="314" font-size="11.5" fill="#36424e">5. write new state (new version)</text>
+    <path d="M110 356H363" fill="none" stroke="#40566b" stroke-width="2" marker-end="url(#trs-arrow)"/>
+    <rect x="160" y="339" width="155" height="14" fill="#f5f7fb"/>
+    <text x="237" y="350" font-size="11.5" fill="#36424e">6. delete .tflock</text>
+
+    <path d="M760 396H367" fill="none" stroke="#53845b" stroke-width="2" marker-end="url(#trs-arrow)"/>
+    <rect x="575" y="379" width="185" height="14" fill="#f5f7fb"/>
+    <text x="667" y="390" font-size="11.5" fill="#294a2e">7. retry: lock acquired</text>
+
+    <text x="430" y="444" font-size="13" fill="#40566b">Only one run can hold the lock; the other waits and then plans against the newest state.</text>
+  </g>
+</svg>

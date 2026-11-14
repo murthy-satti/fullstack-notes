@@ -1,0 +1,5379 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../setting-up-a-production-server/">
+      
+      
+        <link rel="next" href="../troubleshooting-cpu-memory-disk-and-network/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Running Apps with systemd and nginx - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#running-apps-with-systemd-and-nginx" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Running Apps with systemd and nginx
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../05-application-architecture/" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../06-ai-and-machine-learning/" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+          <span class="md-ellipsis">&larr; Back to DevOps</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../05-application-architecture/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../06-ai-and-machine-learning/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI and Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
+        
+          
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-label="DevOps module lessons" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to DevOps and Deployment">
+                  <span class="md-ellipsis">&larr; Back to DevOps</span>
+                </a>
+              
+            </div>
+          
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                  
+  
+  
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+    
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_10" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_10" id="__nav_9_10_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Linux Server Operations
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_10_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_10">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Linux Server Operations
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_10_2" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_10_2" id="__nav_9_10_2_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Access and Setup
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_10_2_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_10_2">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Access and Setup
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ssh-and-remote-access/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SSH and Remote Access
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../setting-up-a-production-server/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Setting Up a Production Server
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_10_3" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_10_3" id="__nav_9_10_3_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Running Applications
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_10_3_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_9_10_3">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Running Applications
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Running Apps with systemd and nginx
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Running Apps with systemd and nginx
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-request-path-on-one-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The request path on one server
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#unit-files-templates-and-instances" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unit files, templates, and instances
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#service-types-and-readiness" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Service types and readiness
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#restart-policy-and-the-start-limit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Restart policy and the start limit
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stopping-cleanly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stopping cleanly
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#environment-configuration-and-credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment, configuration, and credentials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resource-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resource limits
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sandboxing-the-service" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sandboxing the service
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#logs-in-the-journal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logs in the journal
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nginx-in-front-of-nodejs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        nginx in front of Node.js
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tls-with-certbot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TLS with certbot
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zero-downtime-deploys-on-one-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Zero-downtime deploys on one server
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#systemd-compared-with-pm2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        systemd compared with PM2
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-template-unit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The template unit
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#enable-start-and-inspect" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Enable, start, and inspect
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reading-the-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading the logs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#measure-the-sandbox" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Measure the sandbox
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-nginx-site" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The nginx site
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-the-first-certificate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Get the first certificate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-deploy-script" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The deploy script
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#roll-back-by-hand" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Roll back by hand
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-pm2-equivalent-for-comparison" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The PM2 equivalent, for comparison
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_10_4" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_9_10_4" id="__nav_9_10_4_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day-to-Day Operations
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_10_4_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_9_10_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Day-to-Day Operations
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../troubleshooting-cpu-memory-disk-and-network/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting CPU, Memory, Disk, and Network
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../scheduled-jobs-and-log-rotation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scheduled Jobs and Log Rotation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-request-path-on-one-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The request path on one server
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#unit-files-templates-and-instances" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unit files, templates, and instances
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#service-types-and-readiness" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Service types and readiness
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#restart-policy-and-the-start-limit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Restart policy and the start limit
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stopping-cleanly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stopping cleanly
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#environment-configuration-and-credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment, configuration, and credentials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resource-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resource limits
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sandboxing-the-service" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sandboxing the service
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#logs-in-the-journal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logs in the journal
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nginx-in-front-of-nodejs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        nginx in front of Node.js
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tls-with-certbot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TLS with certbot
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zero-downtime-deploys-on-one-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Zero-downtime deploys on one server
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#systemd-compared-with-pm2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        systemd compared with PM2
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-template-unit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The template unit
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#enable-start-and-inspect" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Enable, start, and inspect
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reading-the-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading the logs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#measure-the-sandbox" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Measure the sandbox
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-nginx-site" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The nginx site
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-the-first-certificate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Get the first certificate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-deploy-script" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The deploy script
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#roll-back-by-hand" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Roll back by hand
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-pm2-equivalent-for-comparison" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The PM2 equivalent, for comparison
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="running-apps-with-systemd-and-nginx">Running Apps with systemd and nginx<a class="headerlink" href="#running-apps-with-systemd-and-nginx" title="Permanent link">&para;</a></h1>
+<p>This lesson deploys the TaskFlow API on one Ubuntu 26.04 server from end
+to end: a systemd template unit that runs two instances of the app, the
+journal that collects their output, an nginx site that terminates TLS
+and proxies HTTP and WebSocket traffic with sensible limits, a
+certificate from certbot, and a deploy script that unpacks each release
+into its own directory, switches a symlink, and restarts the instances
+one at a time so users never see an error.</p>
+<p>The application side of this story (health endpoints, graceful
+shutdown, PM2 cluster mode) is covered in
+<a href="../../deployment-strategies/deploying-backend-services/">deploying backend services</a>.
+This lesson goes deeper on the operating-system side: what systemd does
+with each setting, how to sandbox a Node.js process, how nginx
+inheritance and timeouts really behave, and how to roll a release across
+two instances on a single machine.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>A Node.js process started by hand in <code>tmux</code> or with <code>nohup</code> is not a
+service. It stops when it crashes and nobody notices, does not come back
+after a reboot, runs as whatever user started it, writes logs to a
+terminal nobody reads, and can use all the memory on the machine. systemd
+fixes every one of these with a few lines of configuration that the
+operating system enforces, not your code.</p>
+<p>nginx in front of Node.js matters for different reasons. It terminates
+TLS, absorbs slow clients so the event loop is not tied up waiting for
+uploads, rejects oversized bodies before they reach the app, and can
+send each request to whichever instance is up. Together they make the
+difference between a deploy that drops requests and one that nobody
+notices.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Express documentation.</strong> The
+  <a href="https://expressjs.com/en/advanced/best-practice-performance.html">production best practices</a>
+  guide says that to make an app restart when the server restarts you
+  should "use the init system built into your OS. The main init system in
+  use today is systemd", that the best place for compression on a
+  high-traffic site is "at a reverse proxy level", and that Express should
+  run "behind a reverse proxy like Nginx or HAProxy in production".</li>
+<li><strong>systemd documentation.</strong> The
+  <a href="https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html">systemd.service</a>
+  manual states "It is recommended to use <code>Type=exec</code> for long-running
+  services", and the
+  <a href="https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html">systemd.exec</a>
+  manual warns that environment variables "are not suitable for passing
+  secrets" and offers credentials and dozens of sandboxing options
+  instead.</li>
+<li><strong>nginx documentation.</strong> The
+  <a href="https://nginx.org/en/docs/http/websocket.html">WebSocket proxying</a>
+  guide explains that <code>Upgrade</code> and <code>Connection</code> are hop-by-hop headers
+  that must be passed explicitly and that idle WebSocket connections are
+  closed after 60 seconds by default. The
+  <a href="https://nginx.org/en/CHANGES">nginx changelog</a> shows that version
+  1.29.7 (March 2026) made upstream keep-alive and HTTP/1.1 the proxy
+  defaults; Ubuntu 26.04 ships nginx 1.28.3, so its configurations must
+  still set them explicitly.</li>
+<li><strong>PM2 documentation.</strong> PM2's
+  <a href="https://pm2.keymetrics.io/docs/usage/startup/">startup guide</a>
+  generates an init-system script so the process list survives reboots;
+  on Linux that means PM2 itself runs as a systemd service.</li>
+</ul>
+<p><strong>Popular tools and providers:</strong> systemd, nginx (Ubuntu's package or
+nginx.org's own repository), Caddy, HAProxy, Traefik, PM2, certbot, and
+supervisord on systems without systemd.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="the-request-path-on-one-server">The request path on one server<a class="headerlink" href="#the-request-path-on-one-server" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: a client sends HTTPS to nginx on port 443, which terminates TLS, gzips JSON, enforces client_max_body_size 10m, applies timeouts and buffering, and upgrades /ws/ to WebSocket; nginx passes requests to the upstream taskflow_api, which balances between 127.0.0.1:3001 and 127.0.0.1:3002, keeps 16 idle keep-alive connections, and retries on connection errors; the two upstream servers are the systemd instances taskflow-api@3001 and taskflow-api@3002, running Node 24 as the taskflow user; they query MongoDB over TLS on a private network and write stdout and stderr to journald; certbot.timer renews the certificate and its deploy hook reloads nginx." src="../single-server-request-path.svg" /></p>
+<p>Only nginx listens on public interfaces (ports 80 and 443). Each
+TaskFlow API instance listens on <code>127.0.0.1</code>, so a firewall mistake
+cannot expose it, and two instances exist so one can restart while the
+other serves. The app reads its bind address from the environment:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/server.js (excerpt): listen on loopback only; nginx is the public entry point</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">PORT</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Number</span><span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">PORT</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="mf">3000</span><span class="p">);</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">HOST</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">HOST</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="s2">"127.0.0.1"</span><span class="p">;</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">server</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">app</span><span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="nx">PORT</span><span class="p">,</span><span class="w"> </span><span class="nx">HOST</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nb">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">({</span><span class="w"> </span><span class="nx">level</span><span class="o">:</span><span class="w"> </span><span class="mf">30</span><span class="p">,</span><span class="w"> </span><span class="nx">msg</span><span class="o">:</span><span class="w"> </span><span class="sb">`listening on </span><span class="si">${</span><span class="nx">HOST</span><span class="si">}</span><span class="sb">:</span><span class="si">${</span><span class="nx">PORT</span><span class="si">}</span><span class="sb">`</span><span class="w"> </span><span class="p">}));</span>
+<span class="p">});</span>
+</code></pre></div>
+<h3 id="unit-files-templates-and-instances">Unit files, templates, and instances<a class="headerlink" href="#unit-files-templates-and-instances" title="Permanent link">&para;</a></h3>
+<p>A <strong>unit file</strong> describes one thing systemd manages. Administrator units
+live in <code>/etc/systemd/system/</code>, package units in <code>/usr/lib/systemd/system/</code>,
+and a unit is changed without editing its file through <strong>drop-ins</strong>:
+<code>systemctl edit nginx</code> writes <code>/etc/systemd/system/nginx.service.d/override.conf</code>
+and reloads systemd. After editing unit files by hand, run
+<code>systemctl daemon-reload</code>; <code>systemctl cat unit</code> shows exactly what systemd
+loaded. Lines that start with <code>#</code> or <code>;</code> are comments, and systemd has no
+trailing comments: text after a setting on the same line becomes part of
+its value.</p>
+<p>A <strong>template</strong> has an <code>@</code> before the suffix: <code>taskflow-api@.service</code>.
+Starting <code>taskflow-api@3001.service</code> creates an <strong>instance</strong> in which the
+specifier <code>%i</code> expands to <code>3001</code>. One template therefore runs any number
+of instances, each with its own port, process, cgroup, logs, and restart
+counter:</p>
+<table>
+<thead>
+<tr>
+<th>Section</th>
+<th>Purpose</th>
+<th>Settings used here</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>[Unit]</code></td>
+<td>What it is and how it relates to other units</td>
+<td><code>Description=</code>, <code>After=</code>/<code>Wants=network-online.target</code>, start limits</td>
+</tr>
+<tr>
+<td><code>[Service]</code></td>
+<td>How to run, restart, stop, limit, and sandbox the process</td>
+<td><code>Type=</code>, <code>User=</code>, <code>ExecStart=</code>, <code>Restart=</code>, <code>MemoryMax=</code>, <code>Protect*=</code></td>
+</tr>
+<tr>
+<td><code>[Install]</code></td>
+<td>What <code>systemctl enable</code> hooks it into</td>
+<td><code>WantedBy=multi-user.target</code> (start at boot)</td>
+</tr>
+</tbody>
+</table>
+<p><code>After=</code> only orders startup; <code>Wants=</code> pulls the other unit in without
+failing if it fails. Ordering after <code>network-online.target</code> matters for
+an app that connects to a remote database at startup.</p>
+<h3 id="service-types-and-readiness">Service types and readiness<a class="headerlink" href="#service-types-and-readiness" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th><code>Type=</code></th>
+<th>systemd considers the service started when...</th>
+<th>Fit for Node.js</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>simple</code></td>
+<td><code>fork()</code> returned, even if the binary then fails to execute</td>
+<td>Works, but a typo in <code>ExecStart=</code> still looks like a successful start</td>
+</tr>
+<tr>
+<td><code>exec</code></td>
+<td>The program has been executed</td>
+<td>The recommended default for long-running services</td>
+</tr>
+<tr>
+<td><code>notify</code></td>
+<td>The process sends <code>READY=1</code> over <code>sd_notify</code></td>
+<td>Node.js has no built-in <code>sd_notify</code>; needs a library</td>
+</tr>
+<tr>
+<td><code>forking</code></td>
+<td>The parent process exits after forking a daemon</td>
+<td>Old-style daemons only</td>
+</tr>
+<tr>
+<td><code>oneshot</code></td>
+<td>The process exits</td>
+<td>Scripts and jobs (used by timers)</td>
+</tr>
+</tbody>
+</table>
+<p><code>Type=exec</code> still does not mean "ready to serve": the app may need a few
+seconds to connect to MongoDB. That is why the deploy script below waits
+for <code>/readyz</code> and <code>/version</code> instead of trusting <code>systemctl restart</code>.</p>
+<h3 id="restart-policy-and-the-start-limit">Restart policy and the start limit<a class="headerlink" href="#restart-policy-and-the-start-limit" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: a state machine. From inactive, systemctl start leads to activating, where ExecStart runs; when the program has been executed it is active. systemctl stop leads to deactivating, where SIGTERM is sent and SIGKILL follows after TimeoutStopSec, and when all processes have exited it is inactive again. A crash, an error exit, or an OOM kill leads to auto-restart, which waits RestartSec, growing with RestartSteps to 2, 4, 8 seconds and so on, and then starts the service again. When the start limit is hit, for example 5 starts in 10 seconds, the service ends in failed with result start-limit-hit until someone runs systemctl reset-failed and starts it again." src="../systemd-service-states.svg" /></p>
+<table>
+<thead>
+<tr>
+<th><code>Restart=</code></th>
+<th>Restarts after</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>no</code> (default)</td>
+<td>Never</td>
+</tr>
+<tr>
+<td><code>on-failure</code></td>
+<td>An unclean exit code, a signal, a timeout, a watchdog timeout, or an OOM kill</td>
+</tr>
+<tr>
+<td><code>on-abnormal</code></td>
+<td>Signals, timeouts, watchdog, and OOM kills, but not error exit codes</td>
+</tr>
+<tr>
+<td><code>always</code></td>
+<td>Any exit, including a clean one, except when you stop it yourself</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><code>RestartSec=</code> (default 100 ms) is the pause before a restart. Since
+  systemd 254, <code>RestartSteps=</code> and <code>RestartMaxDelaySec=</code> grow that pause
+  exponentially, which keeps a crash loop from hammering a database that
+  is struggling.</li>
+<li><code>StartLimitIntervalSec=</code> and <code>StartLimitBurst=</code> belong in <code>[Unit]</code>
+  (defaults: 5 starts in 10 seconds). When a unit exceeds them, systemd
+  stops restarting it and the result is <code>start-limit-hit</code>.
+  <code>systemctl reset-failed</code> clears the counter.</li>
+<li>Choose <code>on-failure</code> when a clean exit means "done"; choose <code>always</code>
+  when the process should never stop on its own, even with exit code 0.</li>
+</ul>
+<h3 id="stopping-cleanly">Stopping cleanly<a class="headerlink" href="#stopping-cleanly" title="Permanent link">&para;</a></h3>
+<p>On <code>systemctl stop</code> (and on every restart), systemd sends <code>KillSignal=</code>
+(default <code>SIGTERM</code>) to the main process. With the default
+<code>KillMode=control-group</code>, every other process left in the unit's cgroup
+gets it too. If anything is still running after <code>TimeoutStopSec=</code>
+(default 90 seconds, from <code>DefaultTimeoutStopSec=</code>), systemd sends
+<code>SIGKILL</code>. The app's own shutdown deadline must be shorter than
+<code>TimeoutStopSec</code>, which must be longer than the drain delay plus the
+longest request; the Node.js side of that sequence is in
+<a href="../../deployment-strategies/deploying-backend-services/#graceful-shutdown">deploying backend services</a>.</p>
+<h3 id="environment-configuration-and-credentials">Environment, configuration, and credentials<a class="headerlink" href="#environment-configuration-and-credentials" title="Permanent link">&para;</a></h3>
+<p><code>EnvironmentFile=</code> reads <code>KEY=value</code> lines "shortly before the process is
+executed". Empty lines and lines starting with <code>#</code> or <code>;</code> are ignored,
+single and double quotes work like a POSIX shell's, and a leading <code>-</code> on
+the path makes a missing file acceptable. Two rules cause most surprises:</p>
+<ul>
+<li><strong>Values from <code>EnvironmentFile=</code> override <code>Environment=</code>.</strong> If
+  <code>api.env</code> contained <code>PORT=3000</code>, both instances would try to use port
+  3000 and the second would fail. Per-instance values (<code>PORT=%i</code>) must
+  not appear in the shared file.</li>
+<li><strong>Edits need the right reload.</strong> A changed environment file takes
+  effect on the next restart of the service. A changed unit file needs
+  <code>systemctl daemon-reload</code> first, or systemd keeps using the old one and
+  warns that the unit "changed on disk".</li>
+</ul>
+<p>Secrets travel better as credentials:
+<code>LoadCredential=mongodb-uri:/etc/taskflow/credentials/mongodb-uri</code> makes
+systemd read the root-only file and expose a read-only copy at
+<code>$CREDENTIALS_DIRECTORY/mongodb-uri</code> that only the service's user can
+read; the app-side helper is in
+<a href="../setting-up-a-production-server/#step-12-configuration-and-secret-files">setting up a production server</a>.</p>
+<h3 id="resource-limits">Resource limits<a class="headerlink" href="#resource-limits" title="Permanent link">&para;</a></h3>
+<p>Every service runs in its own cgroup, so limits apply to the instance and
+all of its children:</p>
+<ul>
+<li><strong><code>MemoryHigh=</code></strong> is "the main mechanism to control memory usage": above
+  it, the kernel throttles the unit and reclaims its memory aggressively.
+  <strong><code>MemoryMax=</code></strong> is the hard ceiling: "If memory usage cannot be
+  contained under the limit, out-of-memory killer is invoked inside the
+  unit." The service then fails with result <code>oom-kill</code>, and
+  <code>Restart=on-failure</code> brings it back. One leaking instance can no longer
+  take down nginx or the other instance.</li>
+<li>Set V8's old-space limit (<code>--max-old-space-size</code>) well below
+  <code>MemoryHigh</code>, so the garbage collector works harder before the cgroup
+  starts throttling. Buffers, native modules, and thread stacks live
+  outside the V8 heap and need room too.</li>
+<li><strong><code>TasksMax=</code></strong> caps processes and threads; <strong><code>CPUQuota=200%</code></strong> would
+  cap a unit at two CPUs' worth of time.</li>
+<li><strong><code>LimitNOFILE=</code></strong> sets the open-file limit. systemd's default is
+  <code>1024:524288</code> (soft:hard), and Node.js raises its own soft limit to the
+  hard limit at startup, so a Node service rarely hits the soft limit;
+  nginx and most other programs do not do this.</li>
+</ul>
+<h3 id="sandboxing-the-service">Sandboxing the service<a class="headerlink" href="#sandboxing-the-service" title="Permanent link">&para;</a></h3>
+<p>systemd can remove most of what a compromised web app could abuse. The
+settings below suit a typical Node.js API; test them in staging, because
+an over-tight sandbox shows up as odd runtime errors.</p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Effect</th>
+<th>Node.js notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NoNewPrivileges=yes</code></td>
+<td>No privilege gain through setuid binaries</td>
+<td>Safe</td>
+</tr>
+<tr>
+<td><code>ProtectSystem=strict</code></td>
+<td>The whole file system is read-only except <code>/dev</code>, <code>/proc</code>, <code>/sys</code></td>
+<td>Add <code>ReadWritePaths=/srv/taskflow/shared</code> for uploads</td>
+</tr>
+<tr>
+<td><code>ProtectHome=yes</code></td>
+<td><code>/home</code>, <code>/root</code>, <code>/run/user</code> look empty</td>
+<td>Safe; the app needs no home directory</td>
+</tr>
+<tr>
+<td><code>PrivateTmp=yes</code></td>
+<td>A private <code>/tmp</code> and <code>/var/tmp</code></td>
+<td>Safe; temp files vanish with the service</td>
+</tr>
+<tr>
+<td><code>PrivateDevices=yes</code></td>
+<td>Only pseudo devices such as <code>/dev/null</code> and <code>/dev/urandom</code></td>
+<td>Safe</td>
+</tr>
+<tr>
+<td><code>ProtectKernelTunables=</code>, <code>ProtectKernelModules=</code>, <code>ProtectKernelLogs=</code>, <code>ProtectControlGroups=</code>, <code>ProtectClock=</code>, <code>ProtectHostname=</code></td>
+<td>Kernel settings, modules, logs, cgroups, clock, and hostname become untouchable</td>
+<td>Safe</td>
+</tr>
+<tr>
+<td><code>RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK</code></td>
+<td>Only these socket types can be created</td>
+<td><code>AF_NETLINK</code> is used by glibc's <code>getaddrinfo()</code> to see which address families are configured and by <code>os.networkInterfaces()</code></td>
+</tr>
+<tr>
+<td><code>RestrictNamespaces=yes</code>, <code>RestrictRealtime=yes</code>, <code>RestrictSUIDSGID=yes</code>, <code>LockPersonality=yes</code></td>
+<td>No namespaces, real-time scheduling, setuid files, or personality changes</td>
+<td>Safe</td>
+</tr>
+<tr>
+<td><code>CapabilityBoundingSet=</code> (empty)</td>
+<td>No Linux capabilities, ever</td>
+<td>Ports above 1024 need none</td>
+</tr>
+<tr>
+<td><code>SystemCallFilter=@system-service</code> with <code>SystemCallErrorNumber=EPERM</code></td>
+<td>Only common system calls; others fail with <code>EPERM</code> instead of killing the process with <code>SIGSYS</code></td>
+<td>Covers Node.js; the <code>EPERM</code> setting turns a surprise into a logged error</td>
+</tr>
+<tr>
+<td><code>ProtectProc=invisible</code></td>
+<td>Other users' processes are hidden in <code>/proc</code></td>
+<td>Safe</td>
+</tr>
+<tr>
+<td><code>MemoryDenyWriteExecute=yes</code></td>
+<td>Forbids writable and executable memory</td>
+<td><strong>Do not use</strong>: the manual notes it is incompatible with JIT engines, and V8 is one</td>
+</tr>
+<tr>
+<td><code>ProcSubset=pid</code></td>
+<td>Hides everything in <code>/proc</code> that is not about processes</td>
+<td><strong>Avoid</strong>: <code>os.cpus()</code> reads <code>/proc/stat</code> and returns an empty array without it</td>
+</tr>
+</tbody>
+</table>
+<p><code>systemd-analyze security taskflow-api@3001.service</code> estimates the
+result from 0.0 (tightly sandboxed) to 10.0 (fully exposed) and lists
+every setting it checked with its contribution. It only measures what
+systemd enforces, not your code, so use it to find settings you missed,
+not as a security grade. <code>DynamicUser=yes</code> is a further option that
+allocates a throwaway user per run, but a fixed <code>taskflow</code> user is
+simpler when the app owns files in <code>shared/</code>.</p>
+<h3 id="logs-in-the-journal">Logs in the journal<a class="headerlink" href="#logs-in-the-journal" title="Permanent link">&para;</a></h3>
+<p>By default, a service's stdout and stderr go to systemd-journald, which
+stores each line with fields such as <code>_SYSTEMD_UNIT</code>, <code>_PID</code>, and
+<code>SYSLOG_IDENTIFIER</code> (the program name unless <code>SyslogIdentifier=</code> sets
+one; without it every instance shows up as <code>node</code>). Things to know:</p>
+<ul>
+<li><strong>Priorities.</strong> Every line from stdout or stderr is stored at
+  priority <code>info</code> unless it starts with a kernel-style prefix such as
+  <code>&lt;3&gt;</code> (error) or <code>&lt;4&gt;</code> (warning). <code>journalctl -p err</code> therefore shows
+  none of a Node.js app's errors; search your JSON log level instead
+  (<code>-g '"level":50'</code> for pino's error level), or emit prefixes.</li>
+<li><strong>Rate limits.</strong> journald drops a service's messages beyond 10,000 per
+  30 seconds, a burst it multiplies by a factor of 1 to 6 based on free
+  disk space (5 for up to 64 GB free), and logs how many it suppressed.
+  <code>LogRateLimitIntervalSec=</code> and <code>LogRateLimitBurst=</code> change it per unit.</li>
+<li><strong>Storage.</strong> Recent systemd versions keep the journal on disk
+  (<code>Storage=persistent</code>), capped by default at 10% of the file system
+  (at most 4 GiB). Size limits and vacuuming are covered in
+  <a href="../scheduled-jobs-and-log-rotation/">scheduled jobs and log rotation</a>.</li>
+<li><strong>Shipping.</strong> The journal is the server's local buffer, not your log
+  platform. An agent such as Vector, Fluent Bit, or the OpenTelemetry
+  Collector reads it and ships JSON lines to a central store, as
+  described in <a href="../../monitoring-and-logging/structured-logging/">structured logging</a>.</li>
+</ul>
+<h3 id="nginx-in-front-of-nodejs">nginx in front of Node.js<a class="headerlink" href="#nginx-in-front-of-nodejs" title="Permanent link">&para;</a></h3>
+<p>nginx accepts client connections and, by default, buffers both request
+bodies and responses, so a slow mobile client uploading a 5 MB file ties
+up an nginx connection rather than the Node.js event loop. The rest is
+configuration, and four behaviors cause most production surprises:</p>
+<ul>
+<li><strong><code>proxy_set_header</code> is all-or-nothing per level.</strong> The directives are
+  inherited from the enclosing block "if and only if there are no
+  <code>proxy_set_header</code> directives defined on the current level". A
+  <code>location</code> that sets <code>Upgrade</code> and <code>Connection</code> silently loses the
+  server-level <code>X-Forwarded-For</code> and <code>X-Forwarded-Proto</code>. Keep the common
+  headers in a snippet and <code>include</code> it in every proxied <code>location</code>.</li>
+<li><strong>WebSockets need explicit headers and a longer timeout.</strong> <code>Upgrade</code>
+  and <code>Connection</code> are hop-by-hop, so nginx does not forward them unless
+  told to, and <code>proxy_read_timeout</code> (default 60 seconds) closes a quiet
+  WebSocket unless you raise it or send pings.</li>
+<li><strong>Compression is off for JSON.</strong> Ubuntu's <code>nginx.conf</code> turns <code>gzip on</code>
+  but leaves <code>gzip_types</code> commented out, and the default <code>gzip_types</code> is
+  <code>text/html</code> only. API responses stay uncompressed until you add
+  <code>application/json</code>. <code>gzip_proxied</code> is often misread: it concerns
+  requests that arrived through another proxy (detected by a <code>Via</code>
+  header, as CDNs add), not the responses nginx gets from Node.js.</li>
+<li><strong>Proxy defaults changed in nginx 1.29.7.</strong> From that version, nginx
+  speaks HTTP/1.1 to upstreams and keeps upstream connections alive by
+  default. Ubuntu 26.04's nginx 1.28.3 still defaults to HTTP/1.0 with
+  <code>Connection: close</code>, so set <code>proxy_http_version 1.1</code>, an empty
+  <code>Connection</code> header, and <code>keepalive</code> in the <code>upstream</code> yourself; the
+  settings are harmless on newer versions.</li>
+</ul>
+<p>Limits and timeouts worth setting deliberately:</p>
+<table>
+<thead>
+<tr>
+<th>Directive</th>
+<th>Default</th>
+<th>Set here</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>client_max_body_size</code></td>
+<td><code>1m</code></td>
+<td><code>10m</code></td>
+<td>Larger uploads get <code>413 Request Entity Too Large</code> from nginx before reaching Node</td>
+</tr>
+<tr>
+<td><code>client_body_timeout</code>, <code>client_header_timeout</code></td>
+<td><code>60s</code></td>
+<td><code>15s</code></td>
+<td>Clients that stall get <code>408</code> instead of holding a connection</td>
+</tr>
+<tr>
+<td><code>proxy_connect_timeout</code></td>
+<td><code>60s</code></td>
+<td><code>2s</code></td>
+<td>A loopback connect is instant; failing fast lets nginx try the other instance</td>
+</tr>
+<tr>
+<td><code>proxy_read_timeout</code></td>
+<td><code>60s</code></td>
+<td><code>30s</code> (API), <code>1h</code> (WebSocket)</td>
+<td>Longest normal response, and long-lived sockets</td>
+</tr>
+<tr>
+<td><code>keepalive_timeout</code> (client side)</td>
+<td><code>75s</code></td>
+<td><code>65s</code></td>
+<td>Idle client connections are cheap but not free</td>
+</tr>
+<tr>
+<td><code>keepalive_timeout</code> (upstream)</td>
+<td><code>60s</code></td>
+<td>default</td>
+<td>Must stay below Node's <code>server.keepAliveTimeout</code> (65 s in TaskFlow) so nginx closes idle upstream connections first</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Failover between instances.</strong> In the <code>upstream</code> block, each server
+defaults to <code>max_fails=1</code> and <code>fail_timeout=10s</code>: one failed attempt
+marks it unavailable for 10 seconds. <code>proxy_next_upstream</code> (default
+<code>error timeout</code>) retries a request on the other instance when a
+connection fails, but nginx does not retry non-idempotent requests such
+as <code>POST</code> once it has sent them upstream, and cannot retry anything once
+it has started sending the response to the client.</p>
+<p><strong>Reloading.</strong> <code>nginx -t</code> checks the configuration; <code>systemctl reload
+nginx</code> sends <code>HUP</code>, after which the master process applies the new
+configuration, starts new workers, and asks the old ones to "shut down
+gracefully", letting them finish their current requests. If the new
+configuration cannot be applied, nginx keeps running with the old one.
+Run <code>nginx -t</code> first anyway, because a broken file still breaks the next
+full restart or reboot.</p>
+<p><strong>Real client addresses.</strong> nginx passes the client address in
+<code>X-Forwarded-For</code>, and Express needs <code>app.set("trust proxy", 1)</code> to use
+it. If a load balancer or CDN sits in front of nginx too, use the realip
+module (<code>set_real_ip_from</code> with the balancer's ranges and
+<code>real_ip_header X-Forwarded-For</code>) so nginx itself logs and rate-limits by
+the real client.</p>
+<h3 id="tls-with-certbot">TLS with certbot<a class="headerlink" href="#tls-with-certbot" title="Permanent link">&para;</a></h3>
+<p>Certificates come from Let's Encrypt through certbot, renewed by a
+systemd timer that runs <code>certbot renew</code> twice a day; the full lifecycle,
+challenge types, and monitoring are covered in
+<a href="../../ssl-certificates/obtaining-and-renewing-certificates/">obtaining and renewing certificates</a>.
+Two details matter for this setup. The port 80 server keeps serving
+<code>/.well-known/acme-challenge/</code> while redirecting everything else, so
+renewal works forever. And on the very first issuance the HTTPS server
+block cannot load yet, because the certificate files do not exist: start
+with the port 80 block only, obtain the certificate, then add the HTTPS
+block and reload.</p>
+<h3 id="zero-downtime-deploys-on-one-server">Zero-downtime deploys on one server<a class="headerlink" href="#zero-downtime-deploys-on-one-server" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: a timeline from 0 to 33 seconds. At 0 seconds the deploy script switches the current symlink to release 1.9.0 and restarts taskflow-api@3001, which drains and closes until 7 seconds, starts until 10 seconds, and then serves 1.9.0; taskflow-api@3002 keeps serving 1.8.0. At 11 seconds, with 3001 ready on 1.9.0, the script restarts 3002, which drains and closes until 18 seconds, starts until 21 seconds, and then serves 1.9.0. nginx sends requests to both instances for the first 5 seconds, to 3002 only from 5 to 10 seconds, to both with mixed versions from 10 to 16 seconds, to 3001 only from 16 to 21 seconds, and to both on 1.9.0 after that." src="../rolling-restart-two-instances.svg" /></p>
+<p>Node.js cannot swap its code in place, so on one server "reload" means
+replacing processes one at a time:</p>
+<ol>
+<li><strong>Prepare the release</strong> in <code>/srv/taskflow/releases/1.9.0</code>: download
+   the artifact CI built, verify its checksum, unpack it as root so the
+   app cannot modify it. Nothing running is touched yet.</li>
+<li><strong>Migrate</strong> the database with changes that the old version still
+   understands, once (<a href="../../deployment-strategies/zero-downtime-database-migrations/">zero-downtime database migrations</a>).</li>
+<li><strong>Switch</strong> the <code>current</code> symlink atomically: create a new symlink and
+   rename it over the old one. Running processes keep the directory they
+   started in; new processes start in the new release.</li>
+<li><strong>Restart instance 3001.</strong> It receives <code>SIGTERM</code>, drains, and closes;
+   while it refuses connections, nginx sends everything to 3002.</li>
+<li><strong>Wait</strong> until 3001 answers <code>/readyz</code> and reports <code>1.9.0</code> on
+   <code>/version</code>, then restart 3002 the same way.</li>
+<li><strong>Roll back</strong> automatically if an instance does not become ready:
+   point <code>current</code> at the previous release and restart the instances
+   again.</li>
+</ol>
+<p>For a few seconds both versions serve requests at once, so every release
+must be compatible with its predecessor, the same rule as for any
+rolling deployment (<a href="../../deployment-strategies/rolling-blue-green-and-canary/">rolling, blue-green, and canary</a>).
+Two alternatives exist on one host: systemd socket activation keeps the
+listening socket open across a restart (described in the deploying
+backend services lesson), and a blue-green variant runs a second pair of
+instances on other ports and switches nginx's upstream with a reload,
+which lets old workers finish their requests on the old pair.</p>
+<h3 id="systemd-compared-with-pm2">systemd compared with PM2<a class="headerlink" href="#systemd-compared-with-pm2" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>systemd only</th>
+<th>PM2 (itself started by systemd)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Supervisor</td>
+<td>The init system, PID 1</td>
+<td>A Node.js daemon, started by a unit that <code>pm2 startup</code> generates</td>
+</tr>
+<tr>
+<td>Using several CPU cores</td>
+<td>One template instance per core, balanced by nginx</td>
+<td>Cluster mode: workers share one port</td>
+</tr>
+<tr>
+<td>Zero-downtime restart</td>
+<td>Rolling restart script (this lesson) or socket activation</td>
+<td><code>pm2 reload</code> in cluster mode</td>
+</tr>
+<tr>
+<td>Logs</td>
+<td>journald: structured fields, rate limits, size caps</td>
+<td>Files under the user's <code>~/.pm2/logs</code>, rotated with the <code>pm2-logrotate</code> module</td>
+</tr>
+<tr>
+<td>Memory limits</td>
+<td>Kernel-enforced cgroups (<code>MemoryHigh=</code>, <code>MemoryMax=</code>)</td>
+<td><code>max_memory_restart</code>: restart when memory exceeds a threshold</td>
+</tr>
+<tr>
+<td>Sandboxing and secrets</td>
+<td><code>ProtectSystem=</code>, <code>SystemCallFilter=</code>, <code>LoadCredential=</code>, and more</td>
+<td>None of its own</td>
+</tr>
+<tr>
+<td>Language</td>
+<td>Any program</td>
+<td>Built for Node.js, works for others</td>
+</tr>
+<tr>
+<td>License</td>
+<td>Part of the OS</td>
+<td>PM2 is AGPL-3.0</td>
+</tr>
+</tbody>
+</table>
+<p>PM2 is convenient on a developer-friendly VM, and its cluster mode is the
+simplest way to use every core behind one port. systemd gives the same
+supervision with one fewer moving part, plus isolation and limits PM2
+cannot provide. If you use PM2, still run it under systemd and keep its
+logs rotated.</p>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Situation</th>
+<th>Recommended setup</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>One small API on one VM</td>
+<td>systemd template with two instances, nginx in front, this lesson's deploy script</td>
+</tr>
+<tr>
+<td>A VM with many cores and CPU-bound load</td>
+<td>One instance per core as template units, or PM2 cluster mode under systemd</td>
+</tr>
+<tr>
+<td>Several VMs</td>
+<td>The same units on each VM behind a load balancer, deployed one VM at a time (<a href="../../load-balancing-and-multi-server/from-one-server-to-many/">from one server to many</a>)</td>
+</tr>
+<tr>
+<td>Apps already packaged as containers</td>
+<td>Docker or Compose with restart policies, or an orchestrator; systemd then supervises the container runtime</td>
+</tr>
+<tr>
+<td>A team that does not want to operate servers</td>
+<td>A PaaS or serverless container platform</td>
+</tr>
+</tbody>
+</table>
+<p>Avoid running a single instance where a restart must not drop requests,
+running the app as root or as a login user, and editing files under
+<code>/srv/taskflow/current</code> on the server instead of deploying a new release.</p>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="the-template-unit">The template unit<a class="headerlink" href="#the-template-unit" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># /etc/systemd/system/taskflow-api@.service: one instance per port, e.g. taskflow-api@3001</span>
+<span class="k">[Unit]</span>
+<span class="na">Description</span><span class="o">=</span><span class="s">TaskFlow API on port %i</span>
+<span class="na">Documentation</span><span class="o">=</span><span class="s">https://docs.example.com/runbooks/taskflow-api</span>
+<span class="na">After</span><span class="o">=</span><span class="s">network-online.target</span>
+<span class="na">Wants</span><span class="o">=</span><span class="s">network-online.target</span>
+<span class="c1"># Give up after 5 failed starts within 2 minutes (result: start-limit-hit)</span>
+<span class="na">StartLimitIntervalSec</span><span class="o">=</span><span class="s">120</span>
+<span class="na">StartLimitBurst</span><span class="o">=</span><span class="s">5</span>
+
+<span class="k">[Service]</span>
+<span class="na">Type</span><span class="o">=</span><span class="s">exec</span>
+<span class="na">User</span><span class="o">=</span><span class="s">taskflow</span>
+<span class="na">Group</span><span class="o">=</span><span class="s">taskflow</span>
+<span class="na">WorkingDirectory</span><span class="o">=</span><span class="s">/srv/taskflow/current</span>
+<span class="c1"># Shared settings first; per-instance values must not appear in api.env</span>
+<span class="na">EnvironmentFile</span><span class="o">=</span><span class="s">/etc/taskflow/api.env</span>
+<span class="na">Environment</span><span class="o">=</span><span class="s">PORT=%i HOST=127.0.0.1</span>
+<span class="na">LoadCredential</span><span class="o">=</span><span class="s">mongodb-uri:/etc/taskflow/credentials/mongodb-uri</span>
+<span class="na">ExecStart</span><span class="o">=</span><span class="s">/usr/bin/node --max-old-space-size=448 src/server.js</span>
+<span class="na">SyslogIdentifier</span><span class="o">=</span><span class="s">taskflow-api-%i</span>
+
+<span class="c1"># Restart after crashes: 2 s, then growing to at most 60 s between attempts</span>
+<span class="na">Restart</span><span class="o">=</span><span class="s">on-failure</span>
+<span class="na">RestartSec</span><span class="o">=</span><span class="s">2s</span>
+<span class="na">RestartSteps</span><span class="o">=</span><span class="s">5</span>
+<span class="na">RestartMaxDelaySec</span><span class="o">=</span><span class="s">60s</span>
+
+<span class="c1"># Stop: SIGTERM, then SIGKILL after 30 s (the app's own deadline is 25 s)</span>
+<span class="na">KillSignal</span><span class="o">=</span><span class="s">SIGTERM</span>
+<span class="na">TimeoutStopSec</span><span class="o">=</span><span class="s">30s</span>
+
+<span class="c1"># Resource limits for this instance</span>
+<span class="na">MemoryHigh</span><span class="o">=</span><span class="s">600M</span>
+<span class="na">MemoryMax</span><span class="o">=</span><span class="s">700M</span>
+<span class="na">TasksMax</span><span class="o">=</span><span class="s">128</span>
+<span class="na">LimitNOFILE</span><span class="o">=</span><span class="s">65536</span>
+
+<span class="c1"># Sandbox</span>
+<span class="na">NoNewPrivileges</span><span class="o">=</span><span class="s">yes</span>
+<span class="na">ProtectSystem</span><span class="o">=</span><span class="s">strict</span>
+<span class="na">ReadWritePaths</span><span class="o">=</span><span class="s">/srv/taskflow/shared</span>
+<span class="na">ProtectHome</span><span class="o">=</span><span class="s">yes</span>
+<span class="na">PrivateTmp</span><span class="o">=</span><span class="s">yes</span>
+<span class="na">PrivateDevices</span><span class="o">=</span><span class="s">yes</span>
+<span class="na">ProtectKernelTunables</span><span class="o">=</span><span class="s">yes</span>
+<span class="na">ProtectKernelModules</span><span class="o">=</span><span class="s">yes</span>
+<span class="na">ProtectKernelLogs</span><span class="o">=</span><span class="s">yes</span>
+<span class="na">ProtectControlGroups</span><span class="o">=</span><span class="s">yes</span>
+<span class="na">ProtectClock</span><span class="o">=</span><span class="s">yes</span>
+<span class="na">ProtectHostname</span><span class="o">=</span><span class="s">yes</span>
+<span class="na">ProtectProc</span><span class="o">=</span><span class="s">invisible</span>
+<span class="na">RestrictAddressFamilies</span><span class="o">=</span><span class="s">AF_UNIX AF_INET AF_INET6 AF_NETLINK</span>
+<span class="na">RestrictNamespaces</span><span class="o">=</span><span class="s">yes</span>
+<span class="na">RestrictRealtime</span><span class="o">=</span><span class="s">yes</span>
+<span class="na">RestrictSUIDSGID</span><span class="o">=</span><span class="s">yes</span>
+<span class="na">LockPersonality</span><span class="o">=</span><span class="s">yes</span>
+<span class="na">CapabilityBoundingSet</span><span class="o">=</span>
+<span class="na">SystemCallArchitectures</span><span class="o">=</span><span class="s">native</span>
+<span class="na">SystemCallFilter</span><span class="o">=</span><span class="s">@system-service</span>
+<span class="na">SystemCallErrorNumber</span><span class="o">=</span><span class="s">EPERM</span>
+<span class="na">UMask</span><span class="o">=</span><span class="s">0027</span>
+<span class="c1"># Never set MemoryDenyWriteExecute=yes for Node.js: V8 compiles code at runtime</span>
+
+<span class="k">[Install]</span>
+<span class="na">WantedBy</span><span class="o">=</span><span class="s">multi-user.target</span>
+</code></pre></div>
+<ul>
+<li><code>WorkingDirectory=/srv/taskflow/current</code> follows the symlink when the
+  process starts, so a restarted instance runs the newly linked release
+  while the other keeps its old directory.</li>
+<li><code>--max-old-space-size=448</code> keeps the V8 heap well under <code>MemoryHigh=600M</code>,
+  leaving room for buffers and native memory.</li>
+<li><code>SyslogIdentifier=taskflow-api-%i</code> labels each instance's journal
+  lines, so they are not all called <code>node</code>.</li>
+</ul>
+<h3 id="enable-start-and-inspect">Enable, start, and inspect<a class="headerlink" href="#enable-start-and-inspect" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Check the unit file for errors, then load it</span>
+sudo<span class="w"> </span>systemd-analyze<span class="w"> </span>verify<span class="w"> </span>/etc/systemd/system/taskflow-api@.service
+sudo<span class="w"> </span>systemctl<span class="w"> </span>daemon-reload
+
+<span class="c1"># Start both instances now and at every boot</span>
+sudo<span class="w"> </span>systemctl<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>--now<span class="w"> </span>taskflow-api@3001<span class="w"> </span>taskflow-api@3002
+
+systemctl<span class="w"> </span>status<span class="w"> </span>taskflow-api@3001
+systemctl<span class="w"> </span>show<span class="w"> </span>taskflow-api@3001<span class="w"> </span>-p<span class="w"> </span>NRestarts<span class="w"> </span>-p<span class="w"> </span>Result<span class="w"> </span>-p<span class="w"> </span>MemoryCurrent
+</code></pre></div>
+<p>Example output of <code>systemctl status</code> (trimmed):</p>
+<div class="highlight"><pre><span></span><code>● taskflow-api@3001.service - TaskFlow API on port 3001
+     Loaded: loaded (/etc/systemd/system/taskflow-api@.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-11-13 09:12:41 UTC; 2h 3min ago
+   Main PID: 41873 (node)
+      Tasks: 11 (limit: 128)
+     Memory: 182.4M (high: 600M, max: 700M, available: 417.6M, peak: 201.7M)
+        CPU: 1min 12.904s
+     CGroup: /system.slice/system-taskflow\x2dapi.slice/taskflow-api@3001.service
+             └─41873 /usr/bin/node --max-old-space-size=448 src/server.js
+</code></pre></div>
+<p><code>NRestarts</code> counts automatic restarts since the unit was started, and
+<code>Result</code> shows why it last stopped (<code>success</code>, <code>exit-code</code>, <code>signal</code>,
+<code>oom-kill</code>, <code>start-limit-hit</code>, and so on).</p>
+<h3 id="reading-the-logs">Reading the logs<a class="headerlink" href="#reading-the-logs" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Follow both instances live</span>
+journalctl<span class="w"> </span>-u<span class="w"> </span><span class="s1">'taskflow-api@*'</span><span class="w"> </span>-f
+
+<span class="c1"># The last hour for one instance, without a pager</span>
+journalctl<span class="w"> </span>-u<span class="w"> </span>taskflow-api@3001<span class="w"> </span>--since<span class="w"> </span><span class="s2">"1 hour ago"</span><span class="w"> </span>--no-pager
+
+<span class="c1"># Errors only: pino writes "level":50 for errors, and the journal stores everything as info</span>
+journalctl<span class="w"> </span>-u<span class="w"> </span><span class="s1">'taskflow-api@*'</span><span class="w"> </span>--since<span class="w"> </span>today<span class="w"> </span>-g<span class="w"> </span><span class="s1">'"level":(50|60)'</span><span class="w"> </span>-o<span class="w"> </span>cat
+
+<span class="c1"># Why did it stop? systemd's own messages about the unit, including the exit status</span>
+journalctl<span class="w"> </span>-u<span class="w"> </span>taskflow-api@3001<span class="w"> </span>-b<span class="w"> </span>-o<span class="w"> </span>short-iso<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-E<span class="w"> </span><span class="s1">'Main process exited|Failed|Scheduled restart'</span>
+
+<span class="c1"># Machine-readable entries with fields, for scripts</span>
+journalctl<span class="w"> </span>-u<span class="w"> </span>taskflow-api@3001<span class="w"> </span>-n<span class="w"> </span><span class="m">5</span><span class="w"> </span>-o<span class="w"> </span>json<span class="w"> </span>--output-fields<span class="o">=</span>MESSAGE,_PID,SYSLOG_IDENTIFIER
+</code></pre></div>
+<p>Example output of the stop-reason query:</p>
+<div class="highlight"><pre><span></span><code>2026-11-13T07:41:08+00:00 taskflow-app-1 systemd[1]: taskflow-api@3001.service: Main process exited, code=killed, status=9/KILL
+2026-11-13T07:41:08+00:00 taskflow-app-1 systemd[1]: taskflow-api@3001.service: Failed with result 'oom-kill'.
+2026-11-13T07:41:10+00:00 taskflow-app-1 systemd[1]: taskflow-api@3001.service: Scheduled restart job, restart counter is at 1.
+</code></pre></div>
+<p>An <code>oom-kill</code> result with <code>status=9/KILL</code> means the instance hit
+<code>MemoryMax</code>; the troubleshooting lesson shows how to find out why.</p>
+<h3 id="measure-the-sandbox">Measure the sandbox<a class="headerlink" href="#measure-the-sandbox" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Every check with its exposure contribution, then the overall estimate on the last line</span>
+sudo<span class="w"> </span>systemd-analyze<span class="w"> </span>security<span class="w"> </span>taskflow-api@3001.service
+
+<span class="c1"># Compare with an unhardened unit on the same machine</span>
+sudo<span class="w"> </span>systemd-analyze<span class="w"> </span>security<span class="w"> </span>cron.service<span class="w"> </span><span class="p">|</span><span class="w"> </span>tail<span class="w"> </span>-n<span class="w"> </span><span class="m">1</span>
+</code></pre></div>
+<p>The report lists each sandboxing setting as enabled or not with its
+weight, and ends with a line of the form "Overall exposure level for
+<em>unit</em>: <em>score</em> <em>label</em>" (the manual's own example, for
+<code>systemd-logind.service</code>, scores 4.1 and is labelled OK). Read it as a
+to-do list: settings still open in this unit, such as network access
+(<code>PrivateNetwork=</code>, <code>IPAddressDeny=</code>), are open because an API that
+talks to MongoDB needs them.</p>
+<h3 id="the-nginx-site">The nginx site<a class="headerlink" href="#the-nginx-site" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># /etc/nginx/snippets/taskflow-proxy.conf: shared proxy settings, included in every proxied location</span>
+<span class="k">proxy_http_version</span><span class="w"> </span><span class="mi">1</span><span class="s">.1</span><span class="p">;</span>
+<span class="k">proxy_set_header</span><span class="w"> </span><span class="s">Host</span><span class="w"> </span><span class="nv">$host</span><span class="p">;</span>
+<span class="k">proxy_set_header</span><span class="w"> </span><span class="s">X-Real-IP</span><span class="w"> </span><span class="nv">$remote_addr</span><span class="p">;</span>
+<span class="k">proxy_set_header</span><span class="w"> </span><span class="s">X-Forwarded-For</span><span class="w"> </span><span class="nv">$proxy_add_x_forwarded_for</span><span class="p">;</span>
+<span class="k">proxy_set_header</span><span class="w"> </span><span class="s">X-Forwarded-Proto</span><span class="w"> </span><span class="nv">$scheme</span><span class="p">;</span>
+<span class="k">proxy_set_header</span><span class="w"> </span><span class="s">X-Request-Id</span><span class="w"> </span><span class="nv">$request_id</span><span class="p">;</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1"># /etc/nginx/sites-available/taskflow-api.conf (enable with a symlink in sites-enabled)</span>
+<span class="k">upstream</span><span class="w"> </span><span class="s">taskflow_api</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kn">server</span><span class="w"> </span><span class="n">127.0.0.1</span><span class="p">:</span><span class="mi">3001</span><span class="w"> </span><span class="s">max_fails=1</span><span class="w"> </span><span class="s">fail_timeout=10s</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">server</span><span class="w"> </span><span class="n">127.0.0.1</span><span class="p">:</span><span class="mi">3002</span><span class="w"> </span><span class="s">max_fails=1</span><span class="w"> </span><span class="s">fail_timeout=10s</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">keepalive</span><span class="w"> </span><span class="mi">16</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c1"># Connection header for WebSocket requests: "upgrade" when the client asks, otherwise "close"</span>
+<span class="k">map</span><span class="w"> </span><span class="nv">$http_upgrade</span><span class="w"> </span><span class="nv">$connection_upgrade</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kn">default</span><span class="w"> </span><span class="s">upgrade</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">''</span><span class="w">      </span><span class="s">close</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">server</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kn">listen</span><span class="w"> </span><span class="mi">80</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">listen</span><span class="w"> </span><span class="s">[::]:80</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">server_name</span><span class="w"> </span><span class="s">api.example.com</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1"># Let's Encrypt HTTP-01 challenges must stay reachable over plain HTTP</span>
+<span class="w">    </span><span class="kn">location</span><span class="w"> </span><span class="s">^~</span><span class="w"> </span><span class="s">/.well-known/acme-challenge/</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kn">root</span><span class="w"> </span><span class="s">/var/www/acme</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">default_type</span><span class="w"> </span><span class="s">"text/plain"</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kn">location</span><span class="w"> </span><span class="s">/</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kn">return</span><span class="w"> </span><span class="mi">301</span><span class="w"> </span><span class="s">https://</span><span class="nv">$host$request_uri</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">server</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kn">listen</span><span class="w"> </span><span class="mi">443</span><span class="w"> </span><span class="s">ssl</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">listen</span><span class="w"> </span><span class="s">[::]:443</span><span class="w"> </span><span class="s">ssl</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">http2</span><span class="w"> </span><span class="no">on</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">server_name</span><span class="w"> </span><span class="s">api.example.com</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kn">ssl_certificate</span><span class="w">     </span><span class="s">/etc/letsencrypt/live/api.example.com/fullchain.pem</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">ssl_certificate_key</span><span class="w"> </span><span class="s">/etc/letsencrypt/live/api.example.com/privkey.pem</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kn">server_tokens</span><span class="w"> </span><span class="no">off</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">access_log</span><span class="w"> </span><span class="s">/var/log/nginx/taskflow-api.access.log</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">error_log</span><span class="w">  </span><span class="s">/var/log/nginx/taskflow-api.error.log</span><span class="w"> </span><span class="s">warn</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1"># Limits: body size and slow clients</span>
+<span class="w">    </span><span class="kn">client_max_body_size</span><span class="w"> </span><span class="mi">10m</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">client_body_timeout</span><span class="w"> </span><span class="s">15s</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">client_header_timeout</span><span class="w"> </span><span class="s">15s</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">keepalive_timeout</span><span class="w"> </span><span class="s">65s</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1"># Compress JSON and text responses (Ubuntu's nginx.conf only turns gzip on)</span>
+<span class="w">    </span><span class="kn">gzip</span><span class="w"> </span><span class="no">on</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">gzip_types</span><span class="w"> </span><span class="s">application/json</span><span class="w"> </span><span class="s">text/plain</span><span class="w"> </span><span class="s">text/css</span><span class="w"> </span><span class="s">application/javascript</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">gzip_min_length</span><span class="w"> </span><span class="mi">1024</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">gzip_vary</span><span class="w"> </span><span class="no">on</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">gzip_proxied</span><span class="w"> </span><span class="s">any</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1"># Upstream timeouts and failover to the other instance</span>
+<span class="w">    </span><span class="kn">proxy_connect_timeout</span><span class="w"> </span><span class="s">2s</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">proxy_send_timeout</span><span class="w"> </span><span class="s">30s</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">proxy_read_timeout</span><span class="w"> </span><span class="s">30s</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">proxy_next_upstream</span><span class="w"> </span><span class="s">error</span><span class="w"> </span><span class="s">timeout</span><span class="w"> </span><span class="s">http_502</span><span class="w"> </span><span class="s">http_503</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">proxy_next_upstream_tries</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1"># Job endpoints for local cron and timers only (they call 127.0.0.1:3001 directly)</span>
+<span class="w">    </span><span class="kn">location</span><span class="w"> </span><span class="s">^~</span><span class="w"> </span><span class="s">/internal/</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kn">return</span><span class="w"> </span><span class="mi">404</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1"># Live task updates over WebSocket</span>
+<span class="w">    </span><span class="kn">location</span><span class="w"> </span><span class="s">/ws/</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kn">include</span><span class="w"> </span><span class="s">snippets/taskflow-proxy.conf</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">Upgrade</span><span class="w"> </span><span class="nv">$http_upgrade</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">Connection</span><span class="w"> </span><span class="nv">$connection_upgrade</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">proxy_read_timeout</span><span class="w"> </span><span class="s">1h</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">proxy_send_timeout</span><span class="w"> </span><span class="s">1h</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">proxy_pass</span><span class="w"> </span><span class="s">http://taskflow_api</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kn">location</span><span class="w"> </span><span class="s">/</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kn">include</span><span class="w"> </span><span class="s">snippets/taskflow-proxy.conf</span><span class="p">;</span>
+<span class="w">        </span><span class="c1"># Empty Connection header: keep upstream connections alive (nginx before 1.29.7)</span>
+<span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">Connection</span><span class="w"> </span><span class="s">""</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">proxy_pass</span><span class="w"> </span><span class="s">http://taskflow_api</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1"># Enable the site, test, and reload without dropping connections</span>
+sudo<span class="w"> </span>ln<span class="w"> </span>-s<span class="w"> </span>/etc/nginx/sites-available/taskflow-api.conf<span class="w"> </span>/etc/nginx/sites-enabled/
+sudo<span class="w"> </span>nginx<span class="w"> </span>-t<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>sudo<span class="w"> </span>systemctl<span class="w"> </span>reload<span class="w"> </span>nginx
+
+<span class="c1"># Check what the outside sees: TLS, compression, and the proxied response</span>
+curl<span class="w"> </span>-sS<span class="w"> </span>-o<span class="w"> </span>/dev/null<span class="w"> </span>-w<span class="w"> </span><span class="s1">'%{http_code} %{size_download} bytes\n'</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-H<span class="w"> </span><span class="s1">'Accept-Encoding: gzip'</span><span class="w"> </span>https://api.example.com/tasks
+curl<span class="w"> </span>-sSI<span class="w"> </span>https://api.example.com/tasks<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-iE<span class="w"> </span><span class="s1">'^(content-encoding|vary|server):'</span>
+</code></pre></div>
+<ul>
+<li>Each proxied <code>location</code> includes the snippet, because setting any
+  <code>proxy_set_header</code> in a location discards the inherited ones.</li>
+<li><code>proxy_next_upstream error timeout http_502 http_503</code> retries on the
+  other instance when a connection fails or an instance answers 502 or
+  503, which covers the moment an instance closes during a restart;
+  <code>proxy_next_upstream_tries 2</code> stops a failing request from being tried
+  against both instances more than once.</li>
+<li>With a CDN or load balancer in front, <code>gzip_proxied any</code> lets nginx
+  compress responses to requests that arrive with a <code>Via</code> header.</li>
+<li><code>location ^~ /internal/</code> keeps job endpoints off the public site; the
+  <code>^~</code> modifier means no regular-expression location can override it.
+  Scheduled jobs call them on <code>127.0.0.1</code> directly (see
+  <a href="../scheduled-jobs-and-log-rotation/">scheduled jobs and log rotation</a>).</li>
+</ul>
+<h3 id="get-the-first-certificate">Get the first certificate<a class="headerlink" href="#get-the-first-certificate" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># 1. Temporarily enable only the port 80 server block, then obtain the certificate</span>
+sudo<span class="w"> </span>install<span class="w"> </span>-d<span class="w"> </span>-m<span class="w"> </span><span class="m">755</span><span class="w"> </span>/var/www/acme
+sudo<span class="w"> </span>certbot<span class="w"> </span>certonly<span class="w"> </span>--webroot<span class="w"> </span>-w<span class="w"> </span>/var/www/acme<span class="w"> </span>-d<span class="w"> </span>api.example.com<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--deploy-hook<span class="w"> </span><span class="s2">"systemctl reload nginx"</span>
+
+<span class="c1"># 2. Enable the full site (with the 443 block), test, and reload</span>
+sudo<span class="w"> </span>nginx<span class="w"> </span>-t<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>sudo<span class="w"> </span>systemctl<span class="w"> </span>reload<span class="w"> </span>nginx
+
+<span class="c1"># 3. Prove that renewal works end to end</span>
+sudo<span class="w"> </span>certbot<span class="w"> </span>renew<span class="w"> </span>--dry-run
+systemctl<span class="w"> </span>list-timers<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-i<span class="w"> </span>certbot
+</code></pre></div>
+<h3 id="the-deploy-script">The deploy script<a class="headerlink" href="#the-deploy-script" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="ch">#!/usr/bin/env bash</span>
+<span class="c1"># /usr/local/sbin/deploy-taskflow-api: release directory, symlink switch, rolling restart</span>
+<span class="c1"># usage: deploy-taskflow-api 1.9.0   (runs as root, through sudo or the CI deploy key)</span>
+<span class="nb">set</span><span class="w"> </span>-euo<span class="w"> </span>pipefail
+
+<span class="nv">VERSION</span><span class="o">=</span><span class="s2">"</span><span class="nv">$1</span><span class="s2">"</span>
+<span class="nv">APP_DIR</span><span class="o">=</span>/srv/taskflow
+<span class="nv">RELEASE</span><span class="o">=</span><span class="s2">"</span><span class="nv">$APP_DIR</span><span class="s2">/releases/</span><span class="nv">$VERSION</span><span class="s2">"</span>
+<span class="nv">ARTIFACT_URL</span><span class="o">=</span><span class="s2">"https://artifacts.example.com/taskflow-api/taskflow-api-</span><span class="nv">$VERSION</span><span class="s2">.tar.gz"</span>
+<span class="nv">PORTS</span><span class="o">=(</span><span class="m">3001</span><span class="w"> </span><span class="m">3002</span><span class="o">)</span>
+<span class="nv">KEEP</span><span class="o">=</span><span class="m">5</span>
+
+log<span class="o">()</span><span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="nb">printf</span><span class="w"> </span><span class="s1">'%s %s\n'</span><span class="w"> </span><span class="s2">"</span><span class="k">$(</span>date<span class="w"> </span>-u<span class="w"> </span>+%FT%TZ<span class="k">)</span><span class="s2">"</span><span class="w"> </span><span class="s2">"</span><span class="nv">$*</span><span class="s2">"</span><span class="p">;</span><span class="w"> </span><span class="o">}</span>
+
+<span class="c1"># Only one deploy at a time on this machine</span>
+<span class="nb">exec</span><span class="w"> </span><span class="m">9</span>&gt;<span class="w"> </span>/run/lock/taskflow-deploy.lock
+flock<span class="w"> </span>-n<span class="w"> </span><span class="m">9</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">{</span><span class="w"> </span>log<span class="w"> </span><span class="s2">"another deploy is running"</span><span class="p">;</span><span class="w"> </span><span class="nb">exit</span><span class="w"> </span><span class="m">1</span><span class="p">;</span><span class="w"> </span><span class="o">}</span>
+
+wait_until_serving<span class="o">()</span><span class="w"> </span><span class="o">{</span><span class="w">   </span><span class="c1"># port version: ready, and running the expected version</span>
+<span class="w">  </span><span class="nb">local</span><span class="w"> </span><span class="nv">port</span><span class="o">=</span><span class="s2">"</span><span class="nv">$1</span><span class="s2">"</span><span class="w"> </span><span class="nv">want</span><span class="o">=</span><span class="s2">"</span><span class="nv">$2</span><span class="s2">"</span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span>_<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="k">$(</span>seq<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="m">30</span><span class="k">)</span><span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span>curl<span class="w"> </span>-fsS<span class="w"> </span>--max-time<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="s2">"http://127.0.0.1:</span><span class="nv">$port</span><span class="s2">/readyz"</span><span class="w"> </span>&gt;<span class="w"> </span>/dev/null<span class="w"> </span><span class="o">&amp;&amp;</span>
+<span class="w">       </span>curl<span class="w"> </span>-fsS<span class="w"> </span>--max-time<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="s2">"http://127.0.0.1:</span><span class="nv">$port</span><span class="s2">/version"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-q<span class="w"> </span><span class="s2">"\"version\":\"</span><span class="nv">$want</span><span class="s2">\""</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="m">0</span>
+<span class="w">    </span><span class="k">fi</span>
+<span class="w">    </span>sleep<span class="w"> </span><span class="m">1</span>
+<span class="w">  </span><span class="k">done</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="m">1</span>
+<span class="o">}</span>
+
+rolling_restart<span class="o">()</span><span class="w"> </span><span class="o">{</span><span class="w">   </span><span class="c1"># version</span>
+<span class="w">  </span><span class="nb">local</span><span class="w"> </span>port
+<span class="w">  </span><span class="k">for</span><span class="w"> </span>port<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="s2">"</span><span class="si">${</span><span class="nv">PORTS</span><span class="p">[@]</span><span class="si">}</span><span class="s2">"</span><span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<span class="w">    </span>log<span class="w"> </span><span class="s2">"restarting taskflow-api@</span><span class="nv">$port</span><span class="s2">"</span>
+<span class="w">    </span>systemctl<span class="w"> </span>restart<span class="w"> </span><span class="s2">"taskflow-api@</span><span class="nv">$port</span><span class="s2">"</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span>!<span class="w"> </span>wait_until_serving<span class="w"> </span><span class="s2">"</span><span class="nv">$port</span><span class="s2">"</span><span class="w"> </span><span class="s2">"</span><span class="nv">$1</span><span class="s2">"</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<span class="w">      </span>log<span class="w"> </span><span class="s2">"taskflow-api@</span><span class="nv">$port</span><span class="s2"> is not serving </span><span class="nv">$1</span><span class="s2">"</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="m">1</span>
+<span class="w">    </span><span class="k">fi</span>
+<span class="w">  </span><span class="k">done</span>
+<span class="o">}</span>
+
+switch_to<span class="o">()</span><span class="w"> </span><span class="o">{</span><span class="w">   </span><span class="c1"># release directory: atomic symlink replacement</span>
+<span class="w">  </span>ln<span class="w"> </span>-sfn<span class="w"> </span><span class="s2">"</span><span class="nv">$1</span><span class="s2">"</span><span class="w"> </span><span class="s2">"</span><span class="nv">$APP_DIR</span><span class="s2">/current.tmp"</span>
+<span class="w">  </span>mv<span class="w"> </span>-T<span class="w"> </span><span class="s2">"</span><span class="nv">$APP_DIR</span><span class="s2">/current.tmp"</span><span class="w"> </span><span class="s2">"</span><span class="nv">$APP_DIR</span><span class="s2">/current"</span>
+<span class="o">}</span>
+
+<span class="nv">previous</span><span class="o">=</span><span class="s2">"</span><span class="k">$(</span>readlink<span class="w"> </span>-f<span class="w"> </span><span class="s2">"</span><span class="nv">$APP_DIR</span><span class="s2">/current"</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">true</span><span class="k">)</span><span class="s2">"</span>
+
+<span class="c1"># 1. Prepare the release once: download, verify, unpack as root, make it read-only to others</span>
+<span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span>!<span class="w"> </span>-d<span class="w"> </span><span class="s2">"</span><span class="nv">$RELEASE</span><span class="s2">"</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<span class="w">  </span><span class="nv">tmp</span><span class="o">=</span><span class="s2">"</span><span class="k">$(</span>mktemp<span class="w"> </span>-d<span class="w"> </span><span class="s2">"</span><span class="nv">$APP_DIR</span><span class="s2">/releases/.incoming.XXXXXX"</span><span class="k">)</span><span class="s2">"</span>
+<span class="w">  </span>curl<span class="w"> </span>-fsSL<span class="w"> </span><span class="s2">"</span><span class="nv">$ARTIFACT_URL</span><span class="s2">"</span><span class="w"> </span>-o<span class="w"> </span><span class="s2">"</span><span class="nv">$tmp</span><span class="s2">/release.tar.gz"</span>
+<span class="w">  </span><span class="nv">expected</span><span class="o">=</span><span class="s2">"</span><span class="k">$(</span>curl<span class="w"> </span>-fsSL<span class="w"> </span><span class="s2">"</span><span class="nv">$ARTIFACT_URL</span><span class="s2">.sha256"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>cut<span class="w"> </span>-d<span class="s1">' '</span><span class="w"> </span>-f1<span class="k">)</span><span class="s2">"</span><span class="w">   </span><span class="c1"># bare hash or sha256sum output</span>
+<span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"</span><span class="nv">$expected</span><span class="s2">  </span><span class="nv">$tmp</span><span class="s2">/release.tar.gz"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sha256sum<span class="w"> </span>-c<span class="w"> </span>-
+<span class="w">  </span>tar<span class="w"> </span>--no-same-owner<span class="w"> </span>-xzf<span class="w"> </span><span class="s2">"</span><span class="nv">$tmp</span><span class="s2">/release.tar.gz"</span><span class="w"> </span>-C<span class="w"> </span><span class="s2">"</span><span class="nv">$tmp</span><span class="s2">"</span>
+<span class="w">  </span>rm<span class="w"> </span><span class="s2">"</span><span class="nv">$tmp</span><span class="s2">/release.tar.gz"</span>
+<span class="w">  </span>chmod<span class="w"> </span>-R<span class="w"> </span>go-w<span class="w"> </span><span class="s2">"</span><span class="nv">$tmp</span><span class="s2">"</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>chmod<span class="w"> </span><span class="m">755</span><span class="w"> </span><span class="s2">"</span><span class="nv">$tmp</span><span class="s2">"</span>
+<span class="w">  </span>mv<span class="w"> </span><span class="s2">"</span><span class="nv">$tmp</span><span class="s2">"</span><span class="w"> </span><span class="s2">"</span><span class="nv">$RELEASE</span><span class="s2">"</span>
+<span class="k">fi</span>
+
+<span class="c1"># 2. Backward-compatible migrations, once, with the same user, settings, and credential as the app</span>
+systemd-run<span class="w"> </span>--wait<span class="w"> </span>--pipe<span class="w"> </span>--collect<span class="w"> </span>--unit<span class="o">=</span><span class="s2">"taskflow-migrate-</span><span class="nv">$VERSION</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--uid<span class="o">=</span>taskflow<span class="w"> </span>--gid<span class="o">=</span>taskflow<span class="w"> </span>--working-directory<span class="o">=</span><span class="s2">"</span><span class="nv">$RELEASE</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-p<span class="w"> </span><span class="nv">EnvironmentFile</span><span class="o">=</span>/etc/taskflow/api.env<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-p<span class="w"> </span><span class="nv">LoadCredential</span><span class="o">=</span>mongodb-uri:/etc/taskflow/credentials/mongodb-uri<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>/usr/bin/node<span class="w"> </span>scripts/migrate.js
+
+<span class="c1"># 3. Switch, then restart instances one at a time</span>
+touch<span class="w"> </span><span class="s2">"</span><span class="nv">$RELEASE</span><span class="s2">"</span><span class="w">            </span><span class="c1"># newest mtime: protects it from the cleanup below</span>
+switch_to<span class="w"> </span><span class="s2">"</span><span class="nv">$RELEASE</span><span class="s2">"</span>
+<span class="k">if</span><span class="w"> </span>rolling_restart<span class="w"> </span><span class="s2">"</span><span class="nv">$VERSION</span><span class="s2">"</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<span class="w">  </span>log<span class="w"> </span><span class="s2">"deployed </span><span class="nv">$VERSION</span><span class="s2">"</span>
+<span class="w">  </span>ls<span class="w"> </span>-1dt<span class="w"> </span><span class="s2">"</span><span class="nv">$APP_DIR</span><span class="s2">"</span>/releases/*/<span class="w"> </span><span class="p">|</span><span class="w"> </span>tail<span class="w"> </span>-n<span class="w"> </span>+<span class="k">$((</span><span class="nv">KEEP</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">1</span><span class="k">))</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>xargs<span class="w"> </span>-r<span class="w"> </span>rm<span class="w"> </span>-rf
+<span class="w">  </span><span class="nb">exit</span><span class="w"> </span><span class="m">0</span>
+<span class="k">fi</span>
+
+<span class="c1"># 4. Failure: point back at the previous release and restart again</span>
+log<span class="w"> </span><span class="s2">"deploy of </span><span class="nv">$VERSION</span><span class="s2"> failed; rolling back to </span><span class="si">${</span><span class="nv">previous</span><span class="k">:-</span><span class="nv">nothing</span><span class="si">}</span><span class="s2">"</span>
+<span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">"</span><span class="nv">$previous</span><span class="s2">"</span><span class="w"> </span><span class="o">]</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="s2">"</span><span class="nv">$previous</span><span class="s2">"</span><span class="w"> </span>!<span class="o">=</span><span class="w"> </span><span class="s2">"</span><span class="nv">$RELEASE</span><span class="s2">"</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<span class="w">  </span>switch_to<span class="w"> </span><span class="s2">"</span><span class="nv">$previous</span><span class="s2">"</span>
+<span class="w">  </span>rolling_restart<span class="w"> </span><span class="s2">"</span><span class="k">$(</span>basename<span class="w"> </span><span class="s2">"</span><span class="nv">$previous</span><span class="s2">"</span><span class="k">)</span><span class="s2">"</span><span class="w"> </span><span class="o">||</span><span class="w"> </span>log<span class="w"> </span><span class="s2">"ROLLBACK FAILED: page the on-call engineer"</span>
+<span class="k">fi</span>
+<span class="nb">exit</span><span class="w"> </span><span class="m">1</span>
+</code></pre></div>
+<p>What each part guarantees:</p>
+<ul>
+<li><strong>Idempotent preparation.</strong> A release directory appears only after it
+  has been downloaded, verified against its published SHA-256 sum, and
+  unpacked, because <code>mv</code> renames the finished temporary directory in one
+  step. Running the script twice reuses it.</li>
+<li><strong>Read-only code.</strong> <code>tar --no-same-owner</code> run as root leaves the files
+  owned by root, and <code>go-w</code> removes write access for everyone else, so
+  the <code>taskflow</code> user can run the code but never change it.</li>
+<li><strong>Migrations in the app's sandbox.</strong> <code>systemd-run</code> starts the migration
+  as a transient service with the app's user, environment file, and
+  credential, and <code>--wait --pipe</code> shows its output and returns its exit
+  status, so a failed migration stops the deploy before any instance
+  restarts.</li>
+<li><strong>Atomic switch.</strong> <code>ln -sfn</code> followed by <code>mv -T</code> replaces the symlink
+  with a rename, so <code>current</code> always points at a complete release, never
+  at nothing.</li>
+<li><strong>Verified rollout.</strong> Each instance must answer <code>/readyz</code> and report
+  the new version on <code>/version</code> before the next one restarts; otherwise
+  the script switches back and restarts onto the previous release.</li>
+<li><strong>Locking and cleanup.</strong> <code>flock</code> prevents two concurrent deploys; the
+  five newest releases stay on disk for fast rollbacks.</li>
+</ul>
+<h3 id="roll-back-by-hand">Roll back by hand<a class="headerlink" href="#roll-back-by-hand" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Which releases exist, and which one is live?</span>
+ls<span class="w"> </span>-1t<span class="w"> </span>/srv/taskflow/releases/
+readlink<span class="w"> </span>-f<span class="w"> </span>/srv/taskflow/current
+
+<span class="c1"># Redeploy the previous version: the script finds its directory and skips the download</span>
+sudo<span class="w"> </span>/usr/local/sbin/deploy-taskflow-api<span class="w"> </span><span class="m">1</span>.8.0
+</code></pre></div>
+<p>Rolling back is just deploying an older version, which is why releases
+stay on disk and why every migration in the newer release must leave the
+schema usable by the older one.</p>
+<h3 id="the-pm2-equivalent-for-comparison">The PM2 equivalent, for comparison<a class="headerlink" href="#the-pm2-equivalent-for-comparison" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># PM2 keeps its state in ~/.pm2, so the app user first needs a home directory</span>
+sudo<span class="w"> </span>npm<span class="w"> </span>install<span class="w"> </span>-g<span class="w"> </span>pm2
+sudo<span class="w"> </span>install<span class="w"> </span>-d<span class="w"> </span>-m<span class="w"> </span><span class="m">750</span><span class="w"> </span>-o<span class="w"> </span>taskflow<span class="w"> </span>-g<span class="w"> </span>taskflow<span class="w"> </span>/var/lib/taskflow
+sudo<span class="w"> </span>usermod<span class="w"> </span>-d<span class="w"> </span>/var/lib/taskflow<span class="w"> </span>taskflow
+
+<span class="c1"># Generate and enable a systemd unit that starts PM2's daemon as taskflow at boot</span>
+sudo<span class="w"> </span>env<span class="w"> </span><span class="nv">PATH</span><span class="o">=</span><span class="s2">"</span><span class="nv">$PATH</span><span class="s2">"</span><span class="w"> </span>pm2<span class="w"> </span>startup<span class="w"> </span>systemd<span class="w"> </span>-u<span class="w"> </span>taskflow<span class="w"> </span>--hp<span class="w"> </span>/var/lib/taskflow
+
+<span class="c1"># Start the app under PM2 as that user, then save the process list for the next boot</span>
+sudo<span class="w"> </span>-u<span class="w"> </span>taskflow<span class="w"> </span>env<span class="w"> </span><span class="nv">HOME</span><span class="o">=</span>/var/lib/taskflow<span class="w"> </span>pm2<span class="w"> </span>start<span class="w"> </span>/srv/taskflow/current/ecosystem.config.cjs<span class="w"> </span>--env<span class="w"> </span>production
+sudo<span class="w"> </span>-u<span class="w"> </span>taskflow<span class="w"> </span>env<span class="w"> </span><span class="nv">HOME</span><span class="o">=</span>/var/lib/taskflow<span class="w"> </span>pm2<span class="w"> </span>save
+</code></pre></div>
+<p>The ecosystem file, cluster mode, and <code>pm2 reload</code> are shown in
+<a href="../../deployment-strategies/deploying-backend-services/#pm2-in-cluster-mode">deploying backend services</a>.
+Count the extra pieces: a global npm package, a home directory for the
+daemon's state, and a second supervisor between systemd and Node.js,
+which is why this lesson runs the app under systemd directly.</p>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Run every long-lived process as a systemd service with <code>Type=exec</code>, a
+  dedicated user, and a restart policy with backoff.</li>
+<li>Use a template unit and at least two instances on one server, behind
+  nginx, so restarts never drop traffic.</li>
+<li>Bind the app to <code>127.0.0.1</code>; only nginx listens publicly.</li>
+<li>Keep shared settings in an environment file, per-instance values in
+  the unit, and secrets in <code>LoadCredential=</code>.</li>
+<li>Cap memory with <code>MemoryHigh=</code> and <code>MemoryMax=</code>, and keep the V8 heap
+  below them.</li>
+<li>Sandbox with <code>ProtectSystem=strict</code>, an allow-list of writable paths,
+  and the other <code>Protect*</code> settings; check with <code>systemd-analyze security</code>.</li>
+<li>Set <code>SyslogIdentifier=</code>, log JSON to stdout, and ship the journal off
+  the server.</li>
+<li>In nginx, put common proxy headers in a snippet, set explicit HTTP/1.1
+  and keep-alive settings, raise timeouts only where needed, add JSON to
+  <code>gzip_types</code>, and run <code>nginx -t</code> before every reload.</li>
+<li>Deploy by preparing a release directory, switching a symlink
+  atomically, and restarting instances one at a time with verification
+  and automatic rollback.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>A burst of 502 errors on every deploy.</strong>
+  <em>Detect:</em> nginx's error log shows <code>connect() failed (111: Connection
+  refused) while connecting to upstream</code> at deploy times. <em>Cause:</em> both
+  instances restarted together (<code>systemctl restart 'taskflow-api@*'</code>), or
+  only one instance exists. <em>Fix:</em> restart one instance at a time and
+  wait for readiness, keep <code>proxy_next_upstream error</code>, and make the app
+  drain before closing.</li>
+<li><strong>Uploads fail with "413 Request Entity Too Large".</strong>
+  <em>Detect:</em> the response comes from nginx (its error page, no app log
+  line). <em>Cause:</em> <code>client_max_body_size</code> is still the 1 MB default.
+  <em>Fix:</em> raise it in the server or the upload <code>location</code> only, and keep
+  the app's own body limit in line.</li>
+<li><strong>WebSocket clients disconnect after exactly one minute of silence.</strong>
+  <em>Detect:</em> the browser console shows close code 1006 at regular
+  60-second intervals. <em>Cause:</em> <code>proxy_read_timeout</code> defaults to 60
+  seconds and nothing is sent. <em>Fix:</em> raise it in the WebSocket
+  <code>location</code> and send application-level pings more often than the
+  timeout.</li>
+<li><strong>The app logs the proxy's address instead of the client's for some
+  routes.</strong> <em>Detect:</em> <code>req.ip</code> is <code>127.0.0.1</code> only on <code>/ws/</code>.
+  <em>Cause:</em> that <code>location</code> sets its own <code>proxy_set_header</code> lines and lost
+  the inherited <code>X-Forwarded-For</code>. <em>Fix:</em> include the shared snippet in
+  every proxied location.</li>
+<li><strong>The service stays down after a crash loop.</strong>
+  <em>Detect:</em> <code>systemctl status</code> shows <code>failed (Result: start-limit-hit)</code>.
+  <em>Cause:</em> more than <code>StartLimitBurst</code> starts within
+  <code>StartLimitIntervalSec</code>, often a bad release or a missing credential.
+  <em>Fix:</em> read the journal for the first failure, fix it, then
+  <code>systemctl reset-failed taskflow-api@3001</code> and start it.</li>
+<li><strong>An instance restarts every few hours with result 'oom-kill'.</strong>
+  <em>Detect:</em> <code>journalctl -u taskflow-api@3001</code> shows <code>Failed with result
+  'oom-kill'</code> and the memory graph climbs steadily before each one.
+  <em>Cause:</em> a memory leak reaches <code>MemoryMax=</code>. <em>Fix:</em> the restarts
+  protect the server for now; take heap snapshots to find the leak.</li>
+<li><strong>Some log lines are missing during traffic peaks.</strong>
+  <em>Detect:</em> the journal contains <code>Suppressed N messages from
+  taskflow-api@3001.service</code>. <em>Cause:</em> the service exceeded journald's
+  per-service rate limit. <em>Fix:</em> log less per request (sample debug
+  lines), or raise <code>LogRateLimitBurst=</code> for that unit.</li>
+<li><strong>A new setting in api.env has no effect.</strong>
+  <em>Detect:</em> <code>systemctl show taskflow-api@3001 -p Environment</code> and the
+  app's behavior show the old value. <em>Cause:</em> the service was not
+  restarted, or the unit itself was edited without
+  <code>systemctl daemon-reload</code>. <em>Fix:</em> daemon-reload after unit edits,
+  rolling restart after environment changes.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Unit / unit file:</strong> Something systemd manages, described by an
+  INI-style file.</li>
+<li><strong>Template unit / instance:</strong> A unit file with <code>@</code> in its name, and a
+  running copy of it with a value for <code>%i</code>.</li>
+<li><strong>Drop-in:</strong> A <code>.conf</code> file in <code>unit.d/</code> that overrides part of a unit
+  without editing it.</li>
+<li><strong>cgroup:</strong> The kernel group systemd puts each service in, used for
+  accounting, limits, and killing every process of a unit.</li>
+<li><strong>Start limit:</strong> The rate limit on starts that ends a crash loop.</li>
+<li><strong>Credential:</strong> A secret systemd passes to one service as a private,
+  read-only file.</li>
+<li><strong>Upstream:</strong> nginx's name for the group of backend servers it proxies
+  to.</li>
+<li><strong>Hop-by-hop header:</strong> A header such as <code>Connection</code> or <code>Upgrade</code> that
+  applies to one connection and is not forwarded automatically.</li>
+<li><strong>Release directory:</strong> An immutable directory holding one version of
+  the app.</li>
+<li><strong>Atomic symlink switch:</strong> Replacing the <code>current</code> link with a rename,
+  so it is never missing or half-written.</li>
+<li><strong>Rolling restart:</strong> Restarting instances one at a time while the
+  others serve.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Writing <code>Restart=always # keep it up</code> (the comment becomes part of the
+  value) or editing a unit file and forgetting <code>daemon-reload</code>.</li>
+<li>Putting <code>PORT</code> in a shared <code>EnvironmentFile</code>, which overrides the
+  per-instance <code>Environment=PORT=%i</code>.</li>
+<li>Believing <code>Type=simple</code> or <code>Type=exec</code> means the app is ready.</li>
+<li>Setting <code>MemoryDenyWriteExecute=yes</code> on a Node.js service.</li>
+<li>Expecting <code>journalctl -p err</code> to show a Node.js app's errors.</li>
+<li>Assuming a location inherits <code>proxy_set_header</code> lines after adding one
+  of its own.</li>
+<li>Thinking <code>gzip on</code> compresses JSON.</li>
+<li>Restarting all instances at once and calling it a deploy.</li>
+<li>Letting the app user write to its own release directory.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>What does <code>%i</code> expand to in <code>taskflow-api@3002.service</code>, and why
+   does each instance need its own port?</li>
+<li>Explain the difference between <code>Restart=on-failure</code> and
+   <code>Restart=always</code>, and what happens after 5 failed starts in 10
+   seconds.</li>
+<li>Why must <code>TimeoutStopSec=</code> be longer than the app's shutdown deadline,
+   and what does systemd do when it expires?</li>
+<li>Why can a <code>location /ws/</code> block lose the <code>X-Forwarded-For</code> header,
+   and how does a snippet fix it?</li>
+<li>A service logs 2,000 lines per second and the journal's file system
+   has 20 GB free. With journald's defaults, how many lines are dropped
+   per 30-second window? (The burst is 10,000 x 5 = 50,000 per 30 s; the
+   service writes 60,000, so about 10,000 are suppressed every 30 s.)</li>
+<li>Walk through the deploy script and explain what makes the symlink
+   switch atomic and the rollout safe.</li>
+<li>Why does Ubuntu 26.04's nginx need <code>proxy_http_version 1.1</code> and an
+   empty <code>Connection</code> header for upstream keep-alive, while nginx 1.29.7
+   and later do not?</li>
+<li>Name three sandboxing settings that are safe for a Node.js API and
+   one that breaks it, and explain why.</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html">systemd.service</a></li>
+<li><a href="https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html">systemd.exec: sandboxing and credentials</a></li>
+<li><a href="https://www.freedesktop.org/software/systemd/man/latest/systemd.resource-control.html">systemd.resource-control</a></li>
+<li><a href="https://manpages.ubuntu.com/manpages/resolute/man1/journalctl.1.html">journalctl(1) on Ubuntu 26.04</a></li>
+<li><a href="https://nginx.org/en/docs/http/ngx_http_proxy_module.html">nginx: ngx_http_proxy_module</a></li>
+<li><a href="https://nginx.org/en/docs/http/ngx_http_upstream_module.html">nginx: ngx_http_upstream_module</a></li>
+<li><a href="https://nginx.org/en/docs/control.html">nginx: Controlling nginx (reloads)</a></li>
+<li>Next: <a href="../troubleshooting-cpu-memory-disk-and-network/">troubleshooting CPU, memory, disk, and network</a>. Back to the <a href="../">Linux server operations overview</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../setting-up-a-production-server/" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Setting Up a Production Server">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Setting Up a Production Server</span>
+      </a>
+    
+    
+      <a href="../troubleshooting-cpu-memory-disk-and-network/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: Troubleshooting CPU, Memory, Disk, and Network">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">Troubleshooting CPU, Memory, Disk, and Network</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>

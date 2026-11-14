@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="410" viewBox="0 0 860 410" role="img" aria-labelledby="s3c-title s3c-desc">
+  <title id="s3c-title">TaskFlow Web on a private S3 bucket behind CloudFront</title>
+  <desc id="s3c-desc">Step 1: the browser resolves app.example.com through a Route 53 alias to CloudFront. Step 2: it sends HTTPS GET /tasks to the nearest CloudFront edge, which terminates TLS with an ACM certificate, runs a CloudFront Function that rewrites page routes to index.html, and answers from its cache on a hit. Step 3: on a cache miss the edge fetches the file from a private S3 bucket, signing the request with an origin access control; the bucket blocks public access and its policy allows only this distribution, matched by AWS:SourceArn; origin fetches from S3 carry no transfer fee. The file returns to the edge, which caches it and responds to the browser. Separately, a CI pipeline runs npm ci and npm run build, then step 4 uploads with aws s3 sync, hashed assets first and index.html last, and step 5 invalidates only /index.html at CloudFront.</desc>
+  <defs>
+    <marker id="s3c-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#40566b"/>
+    </marker>
+    <marker id="s3c-arrow-ret" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 8 4 0 8z" fill="#60788d"/>
+    </marker>
+  </defs>
+  <rect width="860" height="410" rx="14" fill="#f5f7fb"/>
+  <g font-family="Arial, sans-serif">
+    <rect x="24" y="104" width="130" height="56" rx="8" fill="#fff0d9" stroke="#bd7a20" stroke-width="2"/>
+    <text x="89" y="128" font-size="14" font-weight="700" fill="#66400f" text-anchor="middle">Browser</text>
+    <text x="89" y="146" font-size="11" fill="#66400f" text-anchor="middle">app.example.com</text>
+
+    <rect x="180" y="20" width="150" height="48" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="255" y="40" font-size="13" font-weight="700" fill="#263e5a" text-anchor="middle">Route 53</text>
+    <text x="255" y="57" font-size="11" fill="#263e5a" text-anchor="middle">alias to CloudFront</text>
+
+    <rect x="300" y="96" width="220" height="124" rx="8" fill="#f0e9fb" stroke="#8062a8" stroke-width="2"/>
+    <text x="410" y="118" font-size="14" font-weight="700" fill="#463365" text-anchor="middle">CloudFront edge</text>
+    <g font-size="11.5" fill="#463365">
+      <text x="314" y="142">TLS with an ACM certificate</text>
+      <text x="314" y="162">Function rewrites page routes</text>
+      <text x="314" y="182">Cache hit: answer here</text>
+      <text x="314" y="202">Cache miss: go to the origin</text>
+    </g>
+
+    <rect x="640" y="96" width="196" height="124" rx="8" fill="#e5efff" stroke="#4774aa" stroke-width="2"/>
+    <text x="738" y="118" font-size="14" font-weight="700" fill="#263e5a" text-anchor="middle">S3 bucket (private)</text>
+    <g font-size="11.5" fill="#263e5a">
+      <text x="654" y="142">Block Public Access on</text>
+      <text x="654" y="162">Policy: this distribution</text>
+      <text x="654" y="178">only (AWS:SourceArn)</text>
+      <text x="654" y="202">Origin fetch: no fee</text>
+    </g>
+
+    <g fill="none" stroke="#40566b" stroke-width="2" stroke-linecap="round">
+      <path d="M89 104V44H178" marker-end="url(#s3c-arrow)"/>
+      <path d="M154 120H298" marker-end="url(#s3c-arrow)"/>
+      <path d="M520 130H638" marker-end="url(#s3c-arrow)"/>
+    </g>
+    <g fill="none" stroke="#60788d" stroke-width="2" stroke-dasharray="5 4" stroke-linecap="round">
+      <path d="M298 150H156" marker-end="url(#s3c-arrow-ret)"/>
+      <path d="M638 190H522" marker-end="url(#s3c-arrow-ret)"/>
+    </g>
+    <g font-size="11" fill="#36424e">
+      <text x="98" y="88">1. DNS lookup</text>
+      <text x="226" y="113" text-anchor="middle">2. GET /tasks</text>
+      <text x="226" y="167" text-anchor="middle">response</text>
+      <text x="579" y="123" text-anchor="middle">3. cache miss</text>
+      <text x="579" y="146" text-anchor="middle">signed by OAC</text>
+      <text x="579" y="207" text-anchor="middle">file</text>
+    </g>
+
+    <rect x="24" y="282" width="250" height="62" rx="8" fill="#fff0d9" stroke="#bd7a20" stroke-width="2"/>
+    <text x="149" y="306" font-size="14" font-weight="700" fill="#66400f" text-anchor="middle">CI pipeline</text>
+    <text x="149" y="326" font-size="11.5" fill="#66400f" text-anchor="middle">npm ci &amp;&amp; npm run build</text>
+
+    <g fill="none" stroke="#40566b" stroke-width="2" stroke-linecap="round">
+      <path d="M274 300H410V222" marker-end="url(#s3c-arrow)"/>
+      <path d="M274 330H738V222" marker-end="url(#s3c-arrow)"/>
+    </g>
+    <g font-size="11" fill="#36424e">
+      <text x="420" y="262">5. invalidate /index.html only</text>
+      <text x="426" y="324">4. aws s3 sync: hashed assets first, index.html last</text>
+    </g>
+
+    <text x="430" y="390" font-size="13" fill="#40566b" text-anchor="middle">Users only reach the edge; the bucket stays private, and deploys upload before they invalidate.</text>
+  </g>
+</svg>

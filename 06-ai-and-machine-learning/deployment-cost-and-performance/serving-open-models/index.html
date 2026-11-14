@@ -1,0 +1,4556 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A practical learning guide to full-stack engineering.">
+      
+      
+        <meta name="author" content="Murthy Satti">
+      
+      
+      
+        <link rel="prev" href="../">
+      
+      
+        <link rel="next" href="../latency-optimization/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Serving Open Models - Full Stack Engineering Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#serving-open-models" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-header__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Full Stack Engineering Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Serving Open Models
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../01-networking-and-protocols/" class="md-tabs__link">
+          
+  
+  
+  Networking and Protocols
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../02-frontend-development/" class="md-tabs__link">
+          
+  
+  
+  Frontend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../03-backend-development/" class="md-tabs__link">
+          
+  
+  
+  Backend Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../04-databases/" class="md-tabs__link">
+          
+  
+  
+  Databases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../05-application-architecture/" class="md-tabs__link">
+          
+  
+  
+  Application Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+  AI and Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../07-servers-and-infrastructure/" class="md-tabs__link">
+          
+  
+  
+  Servers and Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../08-devops-and-deployment/" class="md-tabs__link">
+          
+  
+  
+  DevOps and Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../09-operating-systems-and-linux/" class="md-tabs__link">
+          
+  
+  
+  Operating Systems and Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../10-security-and-testing/" class="md-tabs__link">
+          
+  
+  
+  Security and Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../11-rust-and-systems-programming/" class="md-tabs__link">
+          
+  
+  
+  Rust and Systems Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+
+
+
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Full Stack Engineering Notes" class="md-nav__button md-logo" aria-label="Full Stack Engineering Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Full Stack Engineering Notes
+  </label>
+  
+    <div class="md-nav__home md-nav__home--root">
+      
+        <a href="../../" class="md-nav__link" aria-label="Back to AI and Machine Learning">
+          <span class="md-ellipsis">&larr; Back to AI</span>
+        </a>
+      
+    </div>
+  
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../01-networking-and-protocols/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking and Protocols
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../02-frontend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../03-backend-development/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend Development
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../04-databases/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Databases
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../05-application-architecture/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Architecture
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        
+          
+          
+        
+        <nav class="md-nav" data-md-level="1" aria-label="AI module lessons" aria-expanded="true">
+          
+            <div class="md-nav__home md-nav__home--mobile">
+              
+                <a href="../../" class="md-nav__link" aria-label="Back to AI and Machine Learning">
+                  <span class="md-ellipsis">&larr; Back to AI</span>
+                </a>
+              
+            </div>
+          
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+                  
+  
+  
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+    
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+      
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+    
+  
+
+                  
+                    
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+        
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_8" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_7_8" id="__nav_7_8_label" tabindex="">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Production
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_8_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_7_8">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Production
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_8_1" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_7_8_1" id="__nav_7_8_1_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evaluation and Monitoring
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_7_8_1_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_7_8_1">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Evaluation and Monitoring
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../evaluation-and-monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../evaluation-and-monitoring/building-evaluation-sets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Building Evaluation Sets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../evaluation-and-monitoring/llm-as-judge-and-automated-evals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM-as-Judge and Automated Evals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../evaluation-and-monitoring/evals-in-ci-and-regression-testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evals in CI and Regression Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../evaluation-and-monitoring/llm-observability-and-tracing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM Observability and Tracing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../evaluation-and-monitoring/cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../evaluation-and-monitoring/interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_8_2" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_7_8_2" id="__nav_7_8_2_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security, Privacy, and Responsible AI
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_7_8_2_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_7_8_2">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Security, Privacy, and Responsible AI
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security-privacy-and-responsible-ai/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security-privacy-and-responsible-ai/prompt-injection-and-defenses/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Prompt Injection and Defenses
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security-privacy-and-responsible-ai/guardrails-and-content-moderation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guardrails and Content Moderation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security-privacy-and-responsible-ai/privacy-pii-and-data-retention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Privacy, PII, and Data Retention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security-privacy-and-responsible-ai/ai-regulation-and-governance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Regulation and Governance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security-privacy-and-responsible-ai/cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security-privacy-and-responsible-ai/interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_8_3" checked>
+        
+          
+          
+            <label class="md-nav__link" for="__nav_7_8_3" id="__nav_7_8_3_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment, Cost, and Performance
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_7_8_3_label" aria-expanded="true">
+          
+          
+            <label class="md-nav__title" for="__nav_7_8_3">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    Deployment, Cost, and Performance
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Serving Open Models
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Serving Open Models
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prefill-decode-and-the-scheduler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prefill, decode, and the scheduler
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-kv-cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The KV cache
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paged-attention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paged attention
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#continuous-batching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Continuous batching
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prefix-caching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prefix caching
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-engines-compared" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The engines compared
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openai-compatible-endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OpenAI-compatible endpoints
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#running-on-kubernetes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running on Kubernetes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#running-vllm-with-docker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running vLLM with Docker
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-local-engine-for-development" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A local engine for development
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#one-client-for-hosted-and-self-hosted-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        One client for hosted and self-hosted models
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-kubernetes-manifests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Kubernetes manifests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-smoke-test-after-every-deploy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A smoke test after every deploy
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../latency-optimization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Latency Optimization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cost-optimization-for-llm-apps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cost Optimization for LLM Apps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gpu-capacity-and-scaling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GPU Capacity and Scaling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_8_4" >
+        
+          
+          
+            <label class="md-nav__link" for="__nav_7_8_4" id="__nav_7_8_4_label" tabindex="0">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MLOps and Model Lifecycle
+  
+
+    
+  </span>
+  
+  
+
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_7_8_4_label" aria-expanded="false">
+          
+          
+            <label class="md-nav__title" for="__nav_7_8_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+    MLOps and Model Lifecycle
+  
+
+            </label>
+          
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mlops-and-model-lifecycle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mlops-and-model-lifecycle/experiment-tracking-and-model-registry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Experiment Tracking and Model Registry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mlops-and-model-lifecycle/llmops-prompt-and-model-versioning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLMOps: Prompt and Model Versioning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mlops-and-model-lifecycle/production-monitoring-and-drift/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Production Monitoring and Drift
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mlops-and-model-lifecycle/cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+              
+                
+                  
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mlops-and-model-lifecycle/interview-questions-and-answers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interview Questions and Answers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+                  
+                
+              
+            
+              
+                
+                  
+                  
+  
+  
+  
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+      
+  
+  
+  
+
+    
+  
+
+                  
+                
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../07-servers-and-infrastructure/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servers and Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../08-devops-and-deployment/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DevOps and Deployment
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../09-operating-systems-and-linux/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Systems and Linux
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../10-security-and-testing/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Testing
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+      
+        
+        
+  
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../../11-rust-and-systems-programming/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust and Systems Programming
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+      
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prefill-decode-and-the-scheduler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prefill, decode, and the scheduler
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-kv-cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The KV cache
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paged-attention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paged attention
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#continuous-batching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Continuous batching
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prefix-caching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prefix caching
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-engines-compared" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The engines compared
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openai-compatible-endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OpenAI-compatible endpoints
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#running-on-kubernetes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running on Kubernetes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-and-when-not-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use and when not to use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#running-vllm-with-docker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running vLLM with Docker
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-local-engine-for-development" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A local engine for development
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#one-client-for-hosted-and-self-hosted-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        One client for hosted and self-hosted models
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-kubernetes-manifests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Kubernetes manifests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-smoke-test-after-every-deploy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A smoke test after every deploy
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In production
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important terminology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes-and-misconceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes and misconceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further learning
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="serving-open-models">Serving Open Models<a class="headerlink" href="#serving-open-models" title="Permanent link">&para;</a></h1>
+<p>A hosted model API hides everything between "send a prompt" and "receive
+tokens". When you run open-weight models yourself, that hidden part becomes
+yours: a serving engine that loads the weights onto a GPU, schedules many
+requests at once, manages the attention state of every conversation, and
+exposes an HTTP API your backend can call. This lesson explains how modern
+engines (vLLM, SGLang, the llama.cpp server, Ollama, and the now-archived
+Text Generation Inference) work inside: the KV cache, paged attention,
+continuous batching, and prefix caching.</p>
+<p>It then covers the OpenAI-compatible endpoints that let TaskFlow's backend
+switch between a hosted provider and a self-hosted model by changing a base
+URL, and how to run an engine on Kubernetes with GPU nodes, long startup
+probes, a model cache, and queue-based autoscaling. Latency tuning, cost
+accounting, and GPU sizing get their own lessons in this subject.</p>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>A naive server that calls a model's <code>generate</code> function once per request
+leaves most of an expensive GPU idle. Generating text is a loop: one
+forward pass per output token, and each pass for a single sequence reads all
+the model weights from GPU memory to produce one token. The GPU's arithmetic
+units mostly wait for memory. Processing many sequences in the same pass
+reuses each weight read for all of them, which is why a good engine serves
+many times more users on the same card than a request-at-a-time loop.</p>
+<p>The constraint that decides how many sequences fit is GPU memory, and most
+of it is not the weights but the <strong>KV cache</strong>: the attention keys and values
+of every token in every active conversation. Engines differ mainly in how
+well they pack that cache, how quickly they admit new requests into a
+running batch, and how much of a shared prompt they can reuse. Choosing an
+engine, and setting its memory and concurrency limits, decides throughput,
+time to first token, and cost per request far more than small model
+differences do.</p>
+<p>Operationally, a model server is a stateful, slow-starting, GPU-bound
+service. It takes minutes to start, it fails differently from a web server
+(out of memory, queueing, preemption), and its HTTP API is easy to expose by
+accident. Knowing those properties is what lets you deploy it safely.</p>
+<h2 id="real-world-usage">Real-world usage<a class="headerlink" href="#real-world-usage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>vLLM and PagedAttention.</strong> The paper
+  <a href="https://arxiv.org/abs/2309.06180">Efficient Memory Management for Large Language Model Serving with PagedAttention</a>
+  (Kwon and colleagues, SOSP 2023) measured that in earlier systems "only
+  20.4% - 38.2% of the KV cache memory is used to store the actual token
+  states", and that managing the cache in pages lets vLLM improve
+  throughput "by 2-4x with the same level of latency".</li>
+<li><strong>Orca and iteration-level scheduling.</strong> The OSDI 2022 paper
+  <a href="https://www.usenix.org/conference/osdi22/presentation/yu">Orca: A Distributed Serving System for Transformer-Based Generative Models</a>
+  introduced scheduling at the granularity of one decoding iteration, so
+  finished sequences leave the batch and new ones join without waiting for
+  the whole batch. Engines now call this continuous batching.</li>
+<li><strong>SGLang and RadixAttention.</strong> The paper
+  <a href="https://arxiv.org/abs/2312.07104">SGLang: Efficient Execution of Structured Language Model Programs</a>
+  describes RadixAttention, which keeps a tree of cached prefixes for reuse
+  across requests, and reports "up to 6.4x higher throughput" on workloads
+  such as agents and multi-turn chat.</li>
+<li><strong>Text Generation Inference (TGI).</strong> The
+  <a href="https://github.com/huggingface/text-generation-inference">TGI repository README</a>
+  states that "text-generation-inference is now in maintenance mode" and
+  recommends vLLM, SGLang, and local engines such as llama.cpp or MLX going
+  forward. As of November 2026 the repository is archived (read-only), and
+  its last release is v3.3.7 from December 2025.</li>
+<li><strong>vLLM on Kubernetes.</strong> The vLLM guide
+  <a href="https://docs.vllm.ai/en/latest/deployment/k8s/">Using Kubernetes</a> shows a
+  GPU Deployment with a Hugging Face token Secret, a model cache volume, a
+  shared-memory volume, and <code>/health</code> probes, and lists higher-level
+  projects that build on it, such as KServe, llm-d, KubeAI, NVIDIA Dynamo,
+  and the vLLM production stack.</li>
+</ul>
+<p><strong>Popular tools and providers:</strong> vLLM, SGLang, the llama.cpp server
+(<code>llama-server</code>), Ollama, and LM Studio for engines; KServe, llm-d, KubeAI,
+and the vLLM production stack for Kubernetes; KEDA for queue-based
+autoscaling; Hugging Face Hub for model weights; managed endpoints from
+cloud providers when you want open models without operating GPUs.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="prefill-decode-and-the-scheduler">Prefill, decode, and the scheduler<a class="headerlink" href="#prefill-decode-and-the-scheduler" title="Permanent link">&para;</a></h3>
+<p>Every request passes through two phases with very different costs:</p>
+<ol>
+<li><strong>Prefill.</strong> The engine runs the whole prompt through the model in one
+   large, parallel pass, computing attention keys and values for every
+   prompt token and producing the first output token. Prefill is
+   compute-bound: a 4,000-token prompt is a lot of matrix arithmetic, done
+   efficiently.</li>
+<li><strong>Decode.</strong> The engine then generates one token per step. Each step
+   processes only the newest token per sequence, but it must read the
+   weights and that sequence's cached keys and values. Decode is
+   memory-bandwidth-bound: the GPU spends most of the step moving bytes.</li>
+</ol>
+<p>A scheduler loop runs continuously: it picks which waiting requests to
+admit, which running sequences take a decode step, how much prefill work
+fits into the same step, and which requests to pause when memory runs out.
+Its limits (maximum running sequences, maximum tokens per step, memory
+reserved for the cache) are the main knobs you set when deploying.</p>
+<h3 id="the-kv-cache">The KV cache<a class="headerlink" href="#the-kv-cache" title="Permanent link">&para;</a></h3>
+<p>Attention lets each new token look at every earlier token. Recomputing keys
+and values for the whole history at each step would be wasteful, so the
+engine stores them: two vectors (key and value) per layer, per key-value
+head, per token. That store is the KV cache, and it grows with every token
+of every active sequence:</p>
+<div class="highlight"><pre><span></span><code>KV bytes per token = 2 (K and V) x layers x kv_heads x head_dim x bytes per value
+
+An 8-billion-parameter model shape: 32 layers, 8 KV heads, head_dim 128, 16-bit values
+  2 x 32 x 8 x 128 x 2 bytes = 131,072 bytes = 128 KiB per token
+  one 8,192-token conversation = 1 GiB of KV cache
+  weights: about 8 billion x 2 bytes = about 16 GB
+
+Keeping about 10% of GPU memory back for the runtime:
+24 GB GPU: 21.6 GB - 16 GB weights - activations -&gt; roughly 4-5 GB of cache
+           -&gt; about 4 conversations at full 8K context
+80 GB GPU: 72 GB - 16 GB - activations -&gt; roughly 55 GB of cache
+           -&gt; about 55 conversations at full 8K context
+</code></pre></div>
+<p>Two consequences follow. The number of users one GPU can serve at once is
+set mostly by cache space, not by arithmetic. And context length is
+expensive: allowing 32K-token conversations instead of 8K cuts the number of
+concurrent full-length conversations by four. The full sizing method,
+including quantized weights and an FP8 cache, is in
+<a href="../gpu-capacity-and-scaling/">GPU capacity and scaling</a>.</p>
+<h3 id="paged-attention">Paged attention<a class="headerlink" href="#paged-attention" title="Permanent link">&para;</a></h3>
+<p>Early servers reserved one contiguous slab of cache per request, sized for
+the maximum possible output. A request that might produce 2,048 tokens but
+stops after 200 held 90% of its slab empty, and gaps between slabs could not
+be used by anyone.</p>
+<p><img alt="Diagram: two panels compare KV cache allocation; in the contiguous panel, three requests each reserve a slab sized for their maximum length, so most of each slab is reserved but unused and a fourth request is rejected because no slab-sized gap remains; in the paged panel, the same GPU memory is divided into fixed-size blocks, each request has a block table that maps its logical blocks to physical blocks anywhere in memory, blocks are allocated only as tokens arrive, two requests that share a system prompt point to the same physical prefix blocks, and the freed space admits the fourth request; paged allocation wastes at most part of one block per sequence." src="../paged-attention-blocks.svg" /></p>
+<p>PagedAttention borrows the idea of virtual memory. The cache is split into
+small fixed-size blocks (the paper uses 16 tokens per block by default).
+Each sequence has a block table mapping its logical blocks to physical
+blocks anywhere in GPU memory, and the attention kernel follows the table.
+Blocks are allocated only as tokens are produced, so waste is limited to
+the unfilled part of each sequence's last block. Because blocks are
+referenced through tables, sequences can also <strong>share</strong> blocks: parallel
+samples of one prompt, or requests with the same system prompt, point to
+the same physical prefix blocks and copy a block only when they diverge.</p>
+<h3 id="continuous-batching">Continuous batching<a class="headerlink" href="#continuous-batching" title="Permanent link">&para;</a></h3>
+<p>Static batching waits to collect a batch, runs it until the longest
+sequence finishes, and only then starts the next batch. Short answers sit
+finished while the long one completes, and new requests wait at the door.</p>
+<p><img alt="Diagram: a timeline of decode steps for two schedulers; with static batching, requests A, B, C, and D start together, A and C finish early but their slots stay idle until D, the longest, finishes at step 8, and requests E and F wait in the queue until step 9; with continuous batching, the engine decides at every step, so E joins as soon as A finishes at step 3 and F joins when C finishes at step 5, the batch stays full, and E finishes after step 6 instead of 11 and F after step 9 instead of 12." src="../continuous-batching-timeline.svg" /></p>
+<p>Continuous batching (iteration-level scheduling) makes the decision at
+every decode step. When a sequence finishes, its slot and cache blocks are
+freed and a waiting request starts its prefill in the next step. Modern
+engines combine this with <strong>chunked prefill</strong>: a long prompt is processed in
+pieces mixed into decode steps, so one 30,000-token document does not freeze
+every other user's stream while it is read. vLLM's <code>--max-num-batched-tokens</code>
+caps the tokens processed per step, which trades prefill speed against the
+smoothness of everyone's streaming.</p>
+<p>When the cache fills up anyway, an engine must <strong>preempt</strong>: pause a running
+sequence and free its blocks, then recompute or reload them later. A few
+preemptions under bursts are normal; a steady stream means the server is
+admitting more concurrent work than its memory can hold.</p>
+<h3 id="prefix-caching">Prefix caching<a class="headerlink" href="#prefix-caching" title="Permanent link">&para;</a></h3>
+<p>Many TaskFlow requests start with the same long text: the Assistant's system
+prompt and tool definitions, or a project's documents in a Q&amp;A session.
+Prefix caching keeps the KV blocks of finished requests in a lookup keyed
+by a hash of the tokens they contain. A new request whose prompt begins with
+the same tokens reuses those blocks and skips their prefill, which cuts
+time to first token and frees compute for others.</p>
+<p>vLLM's automatic prefix caching is enabled by default
+(<code>enable_prefix_caching</code> defaults to true in vLLM 0.33), and its Prometheus
+metrics report queries and hits. SGLang's RadixAttention organizes cached
+prefixes as a radix tree and is designed around this reuse. The rule for
+your prompts is the same as with hosted prompt caching: put stable content
+first (instructions, tools, shared documents) and variable content last
+(the user's message), and keep the stable part byte-for-byte identical.</p>
+<h3 id="the-engines-compared">The engines compared<a class="headerlink" href="#the-engines-compared" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Engine</th>
+<th>Best fit</th>
+<th>Model format</th>
+<th>Concurrency model</th>
+<th>Notes (November 2026)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>vLLM</td>
+<td>Production GPU serving, many users</td>
+<td>Hugging Face safetensors, many quantized formats</td>
+<td>Continuous batching, paged KV cache, prefix caching</td>
+<td><code>vllm serve</code>; OpenAI-compatible server; very broad model and hardware support; v0.33</td>
+</tr>
+<tr>
+<td>SGLang</td>
+<td>Production GPU serving, agent and multi-turn workloads with shared prefixes</td>
+<td>Hugging Face safetensors and quantized formats</td>
+<td>Continuous batching, RadixAttention prefix tree</td>
+<td><code>sglang serve</code>; OpenAI-compatible; its quickstart uses port 30000</td>
+</tr>
+<tr>
+<td>llama.cpp server</td>
+<td>CPU, Apple silicon, single GPUs, edge devices</td>
+<td>GGUF (often 4- to 8-bit)</td>
+<td>Slots (<code>-np</code>) with continuous batching on by default</td>
+<td><code>llama-server</code>; OpenAI- and Anthropic-compatible routes; binds to <code>127.0.0.1</code> by default</td>
+</tr>
+<tr>
+<td>Ollama</td>
+<td>Developer laptops, internal tools, quick prototypes</td>
+<td>GGUF-based models from its library</td>
+<td>One request per model at a time by default (<code>OLLAMA_NUM_PARALLEL=1</code>), queue of 512</td>
+<td>OpenAI-compatible at <code>http://localhost:11434/v1</code>; easiest setup</td>
+</tr>
+<tr>
+<td>TGI</td>
+<td>Existing deployments only</td>
+<td>Hugging Face safetensors</td>
+<td>Continuous batching</td>
+<td>In maintenance mode; repository archived; plan a migration</td>
+</tr>
+</tbody>
+</table>
+<p>The split is roughly: vLLM or SGLang when the model runs on data-center
+GPUs for many users; llama.cpp or Ollama when it runs on one machine, a
+laptop, or hardware without a large GPU. Ollama also runs GGUF models and
+trades control for convenience. Whatever you pick,
+benchmark it with your own prompts and concurrency, because results depend
+heavily on the model, the GPU, and the request mix.</p>
+<h3 id="openai-compatible-endpoints">OpenAI-compatible endpoints<a class="headerlink" href="#openai-compatible-endpoints" title="Permanent link">&para;</a></h3>
+<p>Every engine above exposes routes shaped like OpenAI's API, so the official
+OpenAI SDK, the Vercel AI SDK, and most frameworks work against them by
+changing the base URL:</p>
+<table>
+<thead>
+<tr>
+<th>Engine</th>
+<th>Base URL (example)</th>
+<th>Chat route</th>
+<th>Also offers</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>vLLM</td>
+<td><code>http://vllm.taskflow.svc.cluster.local/v1</code></td>
+<td><code>/v1/chat/completions</code></td>
+<td><code>/v1/completions</code>, <code>/v1/responses</code>, <code>/v1/embeddings</code> (embedding models), <code>/v1/models</code>, <code>/health</code>, <code>/metrics</code></td>
+</tr>
+<tr>
+<td>SGLang</td>
+<td><code>http://localhost:30000/v1</code></td>
+<td><code>/v1/chat/completions</code></td>
+<td><code>/v1/completions</code>, <code>/v1/models</code></td>
+</tr>
+<tr>
+<td>llama.cpp server</td>
+<td><code>http://127.0.0.1:8080/v1</code></td>
+<td><code>/v1/chat/completions</code></td>
+<td><code>/v1/responses</code>, <code>/v1/embeddings</code>, <code>/v1/messages</code> (Anthropic-style), <code>/health</code>, <code>/metrics</code> with <code>--metrics</code></td>
+</tr>
+<tr>
+<td>Ollama</td>
+<td><code>http://localhost:11434/v1</code></td>
+<td><code>/v1/chat/completions</code></td>
+<td>Native <code>/api/*</code> routes</td>
+</tr>
+</tbody>
+</table>
+<p>"Compatible" means the request and response shapes match for the common
+fields, not that every parameter behaves the same. Structured output, tool
+calling, reasoning output, and some sampling parameters differ by engine
+and by model chat template, so test the features TaskFlow uses against the
+engine you deploy.</p>
+<p>Authentication is the part teams get wrong. vLLM's documentation warns that
+<code>--api-key</code> (or <code>VLLM_API_KEY</code>) "only authenticates requests to endpoints
+under the /v1, /v2, /inference, and /cohere path prefixes", that other
+routes such as <code>/invocations</code> stay open, and that you should not rely on it
+alone. llama.cpp's <code>/health</code> is public by design, and Ollama's OpenAI routes
+require an API key field that they ignore. Treat a model server as an
+internal service: no public IP, a network policy that admits only your
+backend, and authentication at a gateway in front of it.</p>
+<h3 id="running-on-kubernetes">Running on Kubernetes<a class="headerlink" href="#running-on-kubernetes" title="Permanent link">&para;</a></h3>
+<p><img alt="Diagram: TaskFlow API pods in the taskflow namespace call the vllm-chat Service over the cluster network; a network policy allows only the API pods; the Service routes to vLLM pods scheduled on a GPU node pool with one GPU each; each pod mounts a persistent volume holding the downloaded model weights and a memory-backed volume for shared memory, reads the Hugging Face token from a Secret and the model ID from a ConfigMap, and passes a startup probe on /health only after the weights are loaded; Prometheus scrapes /metrics, and KEDA reads vllm:num_requests_waiting from Prometheus to add or remove pods; new pods take minutes to become ready, so autoscaling targets queue length with spare headroom." src="../open-model-serving-on-kubernetes.svg" /></p>
+<p>A model server on Kubernetes is an ordinary Deployment with unusual
+settings, built from the pieces covered in
+<a href="../../../08-devops-and-deployment/kubernetes/pods-deployments-and-services/">pods, Deployments, and Services</a>:</p>
+<ul>
+<li><strong>GPU scheduling.</strong> The container requests <code>nvidia.com/gpu: 1</code> (or more
+  for tensor parallelism), which requires the NVIDIA device plugin or GPU
+  operator on the nodes. GPU node pools are usually tainted, so the pod
+  needs a matching toleration.</li>
+<li><strong>Startup time.</strong> Downloading tens of gigabytes of weights and loading
+  them onto the GPU takes minutes. A startup probe with a generous budget
+  keeps the liveness probe from killing a pod that is still loading, as
+  explained in
+  <a href="../../../08-devops-and-deployment/kubernetes/health-probes-and-rolling-updates/">health probes and rolling updates</a>.</li>
+<li><strong>Model cache.</strong> Weights go on a persistent volume or a node-local cache
+  so a restart does not download them again; see
+  <a href="../../../08-devops-and-deployment/kubernetes/stateful-workloads-and-jobs/">stateful workloads and jobs</a>.</li>
+<li><strong>Shared memory.</strong> PyTorch uses <code>/dev/shm</code> between processes, so the pod
+  mounts a memory-backed <code>emptyDir</code> there (the Docker equivalent is
+  <code>--ipc=host</code> or <code>--shm-size</code>).</li>
+<li><strong>Configuration and secrets.</strong> The model ID comes from a ConfigMap and the
+  Hugging Face token from a Secret, as in
+  <a href="../../../08-devops-and-deployment/kubernetes/configuration-and-secrets/">configuration and secrets</a>.</li>
+<li><strong>Scaling.</strong> CPU usage says nothing useful about a GPU server. Scale on
+  the engine's own queue metric (<code>vllm:num_requests_waiting</code>) through KEDA,
+  and keep headroom, because a new replica needs minutes. Details are in
+  <a href="../gpu-capacity-and-scaling/">GPU capacity and scaling</a> and
+  <a href="../../../08-devops-and-deployment/kubernetes/scaling-and-resource-management/">scaling and resource management</a>.</li>
+</ul>
+<h2 id="when-to-use-and-when-not-to-use">When to use and when not to use<a class="headerlink" href="#when-to-use-and-when-not-to-use" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Situation</th>
+<th>Choose</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A new AI feature, uncertain demand</td>
+<td>A hosted API</td>
+<td>No GPUs to buy or run; pay per token while you learn the demand</td>
+</tr>
+<tr>
+<td>Developers need a local model for TaskFlow features</td>
+<td>Ollama or llama.cpp server</td>
+<td>Minutes to set up, runs on laptops, same OpenAI-style API</td>
+</tr>
+<tr>
+<td>Data must not leave your infrastructure, steady traffic</td>
+<td>vLLM or SGLang on your GPUs</td>
+<td>Full control of data path and model version; high throughput per GPU</td>
+</tr>
+<tr>
+<td>Many requests share long prefixes (agents, document Q&amp;A)</td>
+<td>SGLang or vLLM with prefix caching</td>
+<td>Reused prefixes skip prefill</td>
+</tr>
+<tr>
+<td>CPU-only or edge hardware</td>
+<td>llama.cpp with a quantized GGUF model</td>
+<td>Runs where no data-center GPU exists</td>
+</tr>
+<tr>
+<td>An existing TGI deployment</td>
+<td>Plan a move to vLLM or SGLang</td>
+<td>TGI is in maintenance mode and archived</td>
+</tr>
+<tr>
+<td>Spiky, low-volume traffic</td>
+<td>A hosted API or a managed endpoint</td>
+<td>An idle self-hosted GPU still costs money every hour</td>
+</tr>
+</tbody>
+</table>
+<p>Self-hosting is not automatically cheaper. A GPU costs the same whether it
+serves one request an hour or fifty a second, so it pays off only at
+sustained utilization, or when privacy, control, or latency requirements
+justify it. The trade-off is worked through in
+<a href="../cost-optimization-for-llm-apps/">cost optimization for LLM apps</a>.</p>
+<h2 id="practical-examples">Practical examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<h3 id="running-vllm-with-docker">Running vLLM with Docker<a class="headerlink" href="#running-vllm-with-docker" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Start vLLM on one GPU host; the model ID comes from configuration, not code.</span>
+<span class="c1"># Choose MODEL_ID from the model's Hugging Face page after checking its license.</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">MODEL_ID</span><span class="o">=</span><span class="s2">"&lt;org&gt;/&lt;model-name&gt;"</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">VLLM_API_KEY</span><span class="o">=</span><span class="s2">"&lt;random-internal-key&gt;"</span>
+
+docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>--runtime<span class="w"> </span>nvidia<span class="w"> </span>--gpus<span class="w"> </span>all<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-v<span class="w"> </span>~/.cache/huggingface:/root/.cache/huggingface<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--env<span class="w"> </span><span class="s2">"HF_TOKEN=</span><span class="nv">$HF_TOKEN</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--env<span class="w"> </span><span class="s2">"VLLM_API_KEY=</span><span class="nv">$VLLM_API_KEY</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-p<span class="w"> </span><span class="m">127</span>.0.0.1:8000:8000<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--ipc<span class="o">=</span>host<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>vllm/vllm-openai:v0.33.0<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model<span class="w"> </span><span class="s2">"</span><span class="nv">$MODEL_ID</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--served-model-name<span class="w"> </span>taskflow-chat<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--max-model-len<span class="w"> </span><span class="m">8192</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--max-num-seqs<span class="w"> </span><span class="m">64</span>
+
+<span class="c1"># Once the log says the server is ready:</span>
+curl<span class="w"> </span>-s<span class="w"> </span>http://127.0.0.1:8000/health<span class="w"> </span>-o<span class="w"> </span>/dev/null<span class="w"> </span>-w<span class="w"> </span><span class="s2">"%{http_code}\n"</span>
+curl<span class="w"> </span>-s<span class="w"> </span>http://127.0.0.1:8000/v1/models<span class="w"> </span>-H<span class="w"> </span><span class="s2">"Authorization: Bearer </span><span class="nv">$VLLM_API_KEY</span><span class="s2">"</span>
+</code></pre></div>
+<ul>
+<li>Arguments after the image name are engine arguments; the image's entry
+  point runs the OpenAI-compatible server on port 8000.</li>
+<li><code>--served-model-name taskflow-chat</code> gives the deployment a stable alias.
+  TaskFlow's configuration says <code>CHAT_MODEL=taskflow-chat</code>, so swapping the
+  underlying model is an infrastructure change, not a code change.</li>
+<li><code>--max-model-len 8192</code> caps prompt plus output length. A smaller cap
+  leaves more cache for concurrent requests; the default is the model's own
+  maximum, which can be far larger than the feature needs.</li>
+<li><code>--max-num-seqs</code> caps concurrently running sequences. Too high and the
+  cache thrashes with preemptions; too low and the GPU idles.</li>
+<li>Publishing on <code>127.0.0.1</code> keeps the port off the network while you test.</li>
+<li>Pin the image tag (<code>v0.33.0</code> here) and upgrade deliberately; engine
+  releases change defaults.</li>
+</ul>
+<h3 id="a-local-engine-for-development">A local engine for development<a class="headerlink" href="#a-local-engine-for-development" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Option 1: Ollama. Pull a model from its library, then serve with 4 parallel slots.</span>
+ollama<span class="w"> </span>pull<span class="w"> </span><span class="s2">"</span><span class="nv">$OLLAMA_MODEL</span><span class="s2">"</span>
+<span class="nv">OLLAMA_NUM_PARALLEL</span><span class="o">=</span><span class="m">4</span><span class="w"> </span><span class="nv">OLLAMA_CONTEXT_LENGTH</span><span class="o">=</span><span class="m">8192</span><span class="w"> </span>ollama<span class="w"> </span>serve
+<span class="c1"># OpenAI-compatible base URL: http://localhost:11434/v1 (the API key is ignored)</span>
+
+<span class="c1"># Option 2: llama.cpp server with a GGUF file from Hugging Face (quant after the colon).</span>
+llama-server<span class="w"> </span>-hf<span class="w"> </span><span class="s2">"</span><span class="nv">$GGUF_REPO</span><span class="s2">:Q4_K_M"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--host<span class="w"> </span><span class="m">127</span>.0.0.1<span class="w"> </span>--port<span class="w"> </span><span class="m">8080</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-c<span class="w"> </span><span class="m">16384</span><span class="w"> </span>-np<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--api-key<span class="w"> </span><span class="s2">"</span><span class="nv">$LLAMA_API_KEY</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--metrics
+<span class="c1"># OpenAI-compatible base URL: http://127.0.0.1:8080/v1</span>
+</code></pre></div>
+<p><code>OLLAMA_NUM_PARALLEL</code> defaults to 1, so without it every TaskFlow developer
+request queues behind the previous one; Ollama's documentation notes that
+memory grows with parallel requests times context length. Its default
+context length depends on VRAM (4K below 24 GiB, 32K for 24-48 GiB, 256K at
+48 GiB or more, per the
+<a href="https://docs.ollama.com/context-length">context length page</a>), so set it
+explicitly to get the same behavior on every machine.
+<code>-np</code> sets llama.cpp's parallel slots, and <code>-c</code> must leave enough context
+for all of them. Set <code>--port</code> explicitly: current releases listen on
+<code>127.0.0.1:9931</code> by default, and the default has changed before.</p>
+<h3 id="one-client-for-hosted-and-self-hosted-models">One client for hosted and self-hosted models<a class="headerlink" href="#one-client-for-hosted-and-self-hosted-models" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/ai/llm-client.ts</span>
+<span class="k">import</span><span class="w"> </span><span class="nx">OpenAI</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"openai"</span><span class="p">;</span>
+
+<span class="kd">function</span><span class="w"> </span><span class="nx">requireEnv</span><span class="p">(</span><span class="nx">name</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">[</span><span class="nx">name</span><span class="p">];</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">value</span><span class="p">)</span><span class="w"> </span><span class="k">throw</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="ne">Error</span><span class="p">(</span><span class="sb">`</span><span class="si">${</span><span class="nx">name</span><span class="si">}</span><span class="sb"> is not configured`</span><span class="p">);</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">value</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c1">// LLM_BASE_URL: unset for the provider's own API, or a self-hosted</span>
+<span class="c1">// OpenAI-compatible server such as http://vllm-chat.taskflow.svc.cluster.local/v1</span>
+<span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">llm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">OpenAI</span><span class="p">({</span>
+<span class="w">  </span><span class="nx">baseURL</span><span class="o">:</span><span class="w"> </span><span class="kt">process.env.LLM_BASE_URL</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="kc">undefined</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">apiKey</span><span class="o">:</span><span class="w"> </span><span class="kt">requireEnv</span><span class="p">(</span><span class="s2">"LLM_API_KEY"</span><span class="p">),</span>
+<span class="w">  </span><span class="nx">timeout</span><span class="o">:</span><span class="w"> </span><span class="kt">30_000</span><span class="p">,</span><span class="w"> </span><span class="c1">// a stuck GPU server must not hold the request forever</span>
+<span class="w">  </span><span class="nx">maxRetries</span><span class="o">:</span><span class="w"> </span><span class="kt">1</span><span class="p">,</span><span class="w"> </span><span class="c1">// retries add load to a busy server; keep them few</span>
+<span class="p">});</span>
+
+<span class="c1">// CHAT_MODEL is a provider model ID chosen from its current model list,</span>
+<span class="c1">// or the --served-model-name alias of the self-hosted deployment.</span>
+<span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">CHAT_MODEL</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">requireEnv</span><span class="p">(</span><span class="s2">"CHAT_MODEL"</span><span class="p">);</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">summarizeMeetingNotes</span><span class="p">(</span>
+<span class="w">  </span><span class="nx">notes</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">signal?</span><span class="o">:</span><span class="w"> </span><span class="kt">AbortSignal</span><span class="p">,</span>
+<span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="nb">Promise</span><span class="o">&lt;</span><span class="kt">string</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">completion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">llm</span><span class="p">.</span><span class="nx">chat</span><span class="p">.</span><span class="nx">completions</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">model</span><span class="o">:</span><span class="w"> </span><span class="kt">CHAT_MODEL</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">messages</span><span class="o">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="nx">role</span><span class="o">:</span><span class="w"> </span><span class="s2">"system"</span><span class="p">,</span>
+<span class="w">          </span><span class="nx">content</span><span class="o">:</span>
+<span class="w">            </span><span class="s2">"Summarize meeting notes for a task tracker. Return at most five "</span><span class="w"> </span><span class="o">+</span>
+<span class="w">            </span><span class="s2">"bullet points, then a list of action items with owners."</span><span class="p">,</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nx">role</span><span class="o">:</span><span class="w"> </span><span class="s2">"user"</span><span class="p">,</span><span class="w"> </span><span class="nx">content</span><span class="o">:</span><span class="w"> </span><span class="kt">notes</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="p">],</span>
+<span class="w">      </span><span class="nx">max_tokens</span><span class="o">:</span><span class="w"> </span><span class="kt">400</span><span class="p">,</span><span class="w"> </span><span class="c1">// self-hosted servers read max_tokens; it bounds cost and time</span>
+<span class="w">      </span><span class="nx">temperature</span><span class="o">:</span><span class="w"> </span><span class="kt">0.2</span><span class="p">,</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nx">signal</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="p">);</span>
+
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">completion</span><span class="p">.</span><span class="nx">choices</span><span class="p">[</span><span class="mf">0</span><span class="p">]</span><span class="o">?</span><span class="p">.</span><span class="nx">message</span><span class="o">?</span><span class="p">.</span><span class="nx">content</span><span class="p">;</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">text</span><span class="p">)</span><span class="w"> </span><span class="k">throw</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="ne">Error</span><span class="p">(</span><span class="s2">"empty completion"</span><span class="p">);</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">text</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Chat Completions is used here because every engine supports it. OpenAI's
+own API also offers the Responses API (<code>llm.responses.create</code>), and for the
+hosted path OpenAI prefers <code>max_completion_tokens</code> over the older
+<code>max_tokens</code>. The Anthropic SDK (<code>messages.create</code>) and the Google Gen AI SDK
+(<code>models.generateContent</code>) are not OpenAI-shaped; to switch freely between
+them as well, use a layer such as the Vercel AI SDK, covered in
+<a href="../../building-ai-applications/ai-frameworks-and-sdks/">AI frameworks and SDKs</a>.</p>
+<h3 id="the-kubernetes-manifests">The Kubernetes manifests<a class="headerlink" href="#the-kubernetes-manifests" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># k8s/vllm-chat.yaml</span>
+<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ConfigMap</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vllm-chat</span>
+<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow</span>
+<span class="nt">data</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">MODEL_ID</span><span class="p">:</span><span class="w"> </span><span class="s">"&lt;org&gt;/&lt;model-name&gt;"</span><span class="w"> </span><span class="c1"># chosen after a license and evaluation review</span>
+<span class="nn">---</span>
+<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">apps/v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Deployment</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vllm-chat</span>
+<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">replicas</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">  </span><span class="nt">selector</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">matchLabels</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">app.kubernetes.io/name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vllm-chat</span>
+<span class="w">  </span><span class="nt">template</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">metadata</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">labels</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">app.kubernetes.io/name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vllm-chat</span>
+<span class="w">    </span><span class="nt">spec</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">terminationGracePeriodSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">120</span><span class="w"> </span><span class="c1"># let in-flight generations finish</span>
+<span class="w">      </span><span class="nt">tolerations</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nvidia.com/gpu</span>
+<span class="w">          </span><span class="nt">operator</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Exists</span>
+<span class="w">          </span><span class="nt">effect</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NoSchedule</span>
+<span class="w">      </span><span class="nt">containers</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vllm</span>
+<span class="w">          </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vllm/vllm-openai:v0.33.0</span>
+<span class="w">          </span><span class="nt">args</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"--model"</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"$(MODEL_ID)"</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"--served-model-name"</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"taskflow-chat"</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"--max-model-len"</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"8192"</span>
+<span class="w">          </span><span class="nt">envFrom</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">configMapRef</span><span class="p">:</span>
+<span class="w">                </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vllm-chat</span>
+<span class="w">          </span><span class="nt">env</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">HF_TOKEN</span>
+<span class="w">              </span><span class="nt">valueFrom</span><span class="p">:</span>
+<span class="w">                </span><span class="nt">secretKeyRef</span><span class="p">:</span>
+<span class="w">                  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hf-token</span>
+<span class="w">                  </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">token</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">VLLM_API_KEY</span>
+<span class="w">              </span><span class="nt">valueFrom</span><span class="p">:</span>
+<span class="w">                </span><span class="nt">secretKeyRef</span><span class="p">:</span>
+<span class="w">                  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vllm-api-key</span>
+<span class="w">                  </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">key</span>
+<span class="w">          </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http</span>
+<span class="w">              </span><span class="nt">containerPort</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8000</span>
+<span class="w">          </span><span class="nt">resources</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">requests</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">cpu</span><span class="p">:</span><span class="w"> </span><span class="s">"4"</span>
+<span class="w">              </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">24Gi</span>
+<span class="w">              </span><span class="nt">nvidia.com/gpu</span><span class="p">:</span><span class="w"> </span><span class="s">"1"</span>
+<span class="w">            </span><span class="nt">limits</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">32Gi</span>
+<span class="w">              </span><span class="nt">nvidia.com/gpu</span><span class="p">:</span><span class="w"> </span><span class="s">"1"</span>
+<span class="w">          </span><span class="nt">volumeMounts</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">model-cache</span>
+<span class="w">              </span><span class="nt">mountPath</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/root/.cache/huggingface</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">shm</span>
+<span class="w">              </span><span class="nt">mountPath</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/dev/shm</span>
+<span class="w">          </span><span class="nt">startupProbe</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">httpGet</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/health</span>
+<span class="w">              </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http</span>
+<span class="w">            </span><span class="nt">periodSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+<span class="w">            </span><span class="nt">failureThreshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">90</span><span class="w"> </span><span class="c1"># up to 15 minutes to download and load weights</span>
+<span class="w">          </span><span class="nt">readinessProbe</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">httpGet</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/health</span>
+<span class="w">              </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http</span>
+<span class="w">            </span><span class="nt">periodSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+<span class="w">          </span><span class="nt">livenessProbe</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">httpGet</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/health</span>
+<span class="w">              </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http</span>
+<span class="w">            </span><span class="nt">periodSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+<span class="w">            </span><span class="nt">failureThreshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">6</span>
+<span class="w">      </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">model-cache</span>
+<span class="w">          </span><span class="nt">persistentVolumeClaim</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">claimName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vllm-model-cache</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">shm</span>
+<span class="w">          </span><span class="nt">emptyDir</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">medium</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Memory</span>
+<span class="w">            </span><span class="nt">sizeLimit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2Gi</span>
+<span class="nn">---</span>
+<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Service</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vllm-chat</span>
+<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">selector</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">app.kubernetes.io/name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vllm-chat</span>
+<span class="w">  </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http</span>
+<span class="w">      </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">80</span>
+<span class="w">      </span><span class="nt">targetPort</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http</span>
+<span class="nn">---</span>
+<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">networking.k8s.io/v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NetworkPolicy</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vllm-chat-ingress</span>
+<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">podSelector</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">matchLabels</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">app.kubernetes.io/name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vllm-chat</span>
+<span class="w">  </span><span class="nt">policyTypes</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"Ingress"</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">ingress</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">from</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">podSelector</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">matchLabels</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">app.kubernetes.io/name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">taskflow-api</span>
+<span class="w">      </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8000</span>
+</code></pre></div>
+<ul>
+<li><code>$(MODEL_ID)</code> in <code>args</code> is expanded by Kubernetes from the container's
+  environment, which <code>envFrom</code> fills from the ConfigMap.</li>
+<li>The startup probe allows 90 x 10 s = 15 minutes before liveness checks
+  begin. Measure your real cold start and size the budget from it.</li>
+<li>A <code>ReadWriteOnce</code> volume works for one replica. With several replicas,
+  use a <code>ReadWriteMany</code> volume, a per-node cache, or weights baked into a
+  pre-pulled image, so replicas do not fight over one disk.</li>
+<li>The network policy admits only TaskFlow API pods on port 8000, which also
+  covers the routes <code>--api-key</code> does not protect. It only takes effect if
+  the cluster's network plugin enforces policies.</li>
+<li>Prometheus scraping of <code>/metrics</code> and the KEDA ScaledObject that scales
+  this Deployment are shown in
+  <a href="../gpu-capacity-and-scaling/">GPU capacity and scaling</a>.</li>
+</ul>
+<h3 id="a-smoke-test-after-every-deploy">A smoke test after every deploy<a class="headerlink" href="#a-smoke-test-after-every-deploy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// scripts/smoke-llm.ts</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">CHAT_MODEL</span><span class="p">,</span><span class="w"> </span><span class="nx">llm</span><span class="p">,</span><span class="w"> </span><span class="nx">summarizeMeetingNotes</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">"../src/ai/llm-client.js"</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">started</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Date</span><span class="p">.</span><span class="nx">now</span><span class="p">();</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">models</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">llm</span><span class="p">.</span><span class="nx">models</span><span class="p">.</span><span class="nx">list</span><span class="p">();</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">served</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">models</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">map</span><span class="p">((</span><span class="nx">m</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">m</span><span class="p">.</span><span class="nx">id</span><span class="p">);</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">served</span><span class="p">.</span><span class="nx">includes</span><span class="p">(</span><span class="nx">CHAT_MODEL</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">throw</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="ne">Error</span><span class="p">(</span><span class="sb">`server does not serve </span><span class="si">${</span><span class="nx">CHAT_MODEL</span><span class="si">}</span><span class="sb">; it serves </span><span class="si">${</span><span class="nx">served</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s2">", "</span><span class="p">)</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">summary</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">summarizeMeetingNotes</span><span class="p">(</span>
+<span class="w">  </span><span class="s2">"Ana will draft the release notes by Friday. Ben owns the database upgrade."</span><span class="p">,</span>
+<span class="p">);</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="sr">/Ana/</span><span class="p">.</span><span class="nx">test</span><span class="p">(</span><span class="nx">summary</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="sr">/Ben/</span><span class="p">.</span><span class="nx">test</span><span class="p">(</span><span class="nx">summary</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">throw</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="ne">Error</span><span class="p">(</span><span class="sb">`summary lost the owners: </span><span class="si">${</span><span class="nx">summary</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`ok: </span><span class="si">${</span><span class="nx">CHAT_MODEL</span><span class="si">}</span><span class="sb"> answered in </span><span class="si">${</span><span class="nb">Date</span><span class="p">.</span><span class="nx">now</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nx">started</span><span class="si">}</span><span class="sb"> ms`</span><span class="p">);</span>
+</code></pre></div>
+<p>The check proves three things a <code>/health</code> probe cannot: the alias TaskFlow
+uses is actually served, the chat template works, and output is
+plausible. Run it in the deployment pipeline before shifting traffic.</p>
+<h2 id="best-practices">Best practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Start with a hosted API; self-host when privacy, control, latency, or
+  sustained volume justify a GPU fleet.</li>
+<li>Use vLLM or SGLang for multi-user GPU serving, llama.cpp or Ollama for
+  local and edge use; migrate off TGI.</li>
+<li>Give each deployment a stable served-model alias and keep the real model
+  ID in configuration.</li>
+<li>Cap <code>--max-model-len</code> at what the feature needs; context length is paid
+  for in cache space.</li>
+<li>Put stable prompt content first so prefix caching can reuse it.</li>
+<li>Keep model servers internal: network policies, no public addresses, and
+  authentication at a gateway rather than the engine's API key alone.</li>
+<li>Pin engine image versions and re-run benchmarks and smoke tests on every
+  upgrade.</li>
+<li>Budget startup probes from measured cold starts, and cache weights so
+  restarts do not download them again.</li>
+<li>Scale on queue depth and cache usage, not CPU.</li>
+<li>Test the exact features you use (tools, structured output, streaming)
+  against the engine and model you deploy.</li>
+</ul>
+<h2 id="in-production">In production<a class="headerlink" href="#in-production" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Time to first token climbs while GPU utilization looks fine.</strong>
+  <em>Detect:</em> <code>vllm:num_requests_waiting</code> grows and
+  <code>vllm:request_queue_time_seconds</code> rises; tokens per second per stream is
+  normal. <em>Cause:</em> more concurrent requests than the cache and
+  <code>--max-num-seqs</code> admit, so requests queue. <em>Fix:</em> add replicas, lower
+  <code>--max-model-len</code>, quantize the cache or weights, and scale on queue
+  depth.</li>
+<li><strong>Throughput collapses under bursts and logs show preemptions.</strong>
+  <em>Detect:</em> <code>vllm:num_preemptions</code> increases; latency becomes erratic;
+  <code>vllm:kv_cache_usage_perc</code> sits near 100%. <em>Cause:</em> admitted sequences
+  outgrow the cache and the engine keeps evicting and recomputing them.
+  <em>Fix:</em> lower <code>--max-num-seqs</code>, cap output with <code>max_tokens</code>, and size the
+  cache from real context lengths.</li>
+<li><strong>Pods restart in a loop after a deploy.</strong>
+  <em>Detect:</em> restart count rises; events show liveness probe failures during
+  weight loading. <em>Cause:</em> no startup probe, or a budget shorter than the
+  cold start after the model grew. <em>Fix:</em> a startup probe sized from a
+  measured cold start, and a cached copy of the weights.</li>
+<li><strong>The pod is killed with OOM, or the engine fails at startup with a CUDA
+  out-of-memory error.</strong> <em>Detect:</em> <code>OOMKilled</code> status, or an engine error
+  while allocating the cache. <em>Cause:</em> the container memory limit is below
+  what the engine uses on the host side, or the model plus requested
+  context does not fit the GPU. <em>Fix:</em> raise the container memory limit,
+  reduce <code>--max-model-len</code>, use a quantized model, or add GPUs with tensor
+  parallelism.</li>
+<li><strong>The model server answered requests from outside the cluster.</strong>
+  <em>Detect:</em> unknown client addresses in access logs; usage that matches no
+  TaskFlow traffic. <em>Cause:</em> a LoadBalancer Service or port-forward left
+  open, relying on <code>--api-key</code>, which does not cover every route. <em>Fix:</em>
+  ClusterIP Service, network policies, authentication at a gateway, and an
+  audit of exposed ports.</li>
+<li><strong>Tool calls or structured output fail only on the self-hosted path.</strong>
+  <em>Detect:</em> parse errors or missing tool calls that never happen with the
+  hosted provider. <em>Cause:</em> the engine's tool parser or the model's chat
+  template differs from the provider's behavior. <em>Fix:</em> enable and test the
+  engine's tool and structured-output options for that model, and keep an
+  evaluation set that runs against every backend.</li>
+</ul>
+<h2 id="important-terminology">Important terminology<a class="headerlink" href="#important-terminology" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Serving engine:</strong> Software that loads a model, schedules requests, and
+  serves an API, such as vLLM or SGLang.</li>
+<li><strong>Prefill:</strong> The parallel pass over the prompt that fills the KV cache and
+  produces the first token.</li>
+<li><strong>Decode:</strong> The token-by-token generation phase; bound by memory
+  bandwidth.</li>
+<li><strong>KV cache:</strong> Stored attention keys and values for every token of every
+  active sequence.</li>
+<li><strong>PagedAttention:</strong> Managing the KV cache in fixed-size blocks mapped
+  through per-sequence block tables.</li>
+<li><strong>Continuous batching:</strong> Admitting and retiring sequences at every decode
+  step instead of per batch.</li>
+<li><strong>Chunked prefill:</strong> Splitting a long prompt's prefill into pieces mixed
+  with decode steps.</li>
+<li><strong>Prefix caching:</strong> Reusing KV blocks of an identical prompt prefix across
+  requests.</li>
+<li><strong>Preemption:</strong> Pausing a running sequence and freeing its cache when
+  memory runs out.</li>
+<li><strong>Served model name:</strong> The alias a server exposes in its API, independent
+  of the underlying model ID.</li>
+<li><strong>GGUF:</strong> The single-file model format used by llama.cpp, usually holding
+  quantized weights.</li>
+<li><strong>OpenAI-compatible endpoint:</strong> An API that accepts and returns
+  OpenAI-shaped requests at routes such as <code>/v1/chat/completions</code>.</li>
+</ul>
+<h2 id="common-mistakes-and-misconceptions">Common mistakes and misconceptions<a class="headerlink" href="#common-mistakes-and-misconceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Believing GPU arithmetic is the limit; for chat serving, KV cache memory
+  usually is.</li>
+<li>Leaving <code>--max-model-len</code> at the model maximum "just in case".</li>
+<li>Assuming "OpenAI-compatible" means every parameter and feature works.</li>
+<li>Exposing a model server on a public address protected only by its API key.</li>
+<li>Scaling GPU servers on CPU utilization.</li>
+<li>Using Ollama's single-request default for a shared team server.</li>
+<li>Starting a new project on TGI.</li>
+<li>Treating <code>/health</code> as proof the right model is being served.</li>
+</ul>
+<h2 id="revision-questions">Revision questions<a class="headerlink" href="#revision-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Why is decoding memory-bandwidth-bound, and why does batching many
+   sequences raise throughput?</li>
+<li>Explain the KV cache. What does its size per token depend on?</li>
+<li>A model has 40 layers, 8 KV heads, head dimension 128, and a 16-bit cache.
+   How much cache does one 16,384-token conversation need? (2 x 40 x 8 x
+   128 x 2 = 163,840 bytes per token, times 16,384 tokens = about 2.5 GiB.)</li>
+<li>What problem does PagedAttention solve, and how do block tables enable
+   prefix sharing?</li>
+<li>Compare static and continuous batching. What does chunked prefill add?</li>
+<li>When would you choose vLLM or SGLang, and when llama.cpp or Ollama? What
+   should an existing TGI user do?</li>
+<li>Which vLLM routes does <code>--api-key</code> protect, and how should a model server
+   be secured instead?</li>
+<li>Why does a model server on Kubernetes need a startup probe, a model cache
+   volume, and a shared-memory volume?</li>
+</ol>
+<h2 id="further-learning">Further learning<a class="headerlink" href="#further-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://docs.vllm.ai/en/latest/">vLLM documentation</a></li>
+<li><a href="https://docs.vllm.ai/en/latest/serving/online_serving/openai_compatible_server/">vLLM: OpenAI-compatible server</a></li>
+<li><a href="https://docs.vllm.ai/en/latest/configuration/engine_args/">vLLM: Engine arguments</a></li>
+<li><a href="https://docs.vllm.ai/en/latest/features/automatic_prefix_caching/">vLLM: Automatic prefix caching</a></li>
+<li><a href="https://docs.sglang.io/">SGLang documentation</a></li>
+<li><a href="https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md">llama.cpp server README</a></li>
+<li><a href="https://docs.ollama.com/api/openai-compatibility">Ollama: OpenAI compatibility</a></li>
+<li><a href="https://docs.ollama.com/faq">Ollama FAQ: concurrency and context settings</a></li>
+<li><a href="../../model-serving-and-inference/">Model serving and inference</a> and
+  <a href="../../local-models/">running models locally</a> for the overviews</li>
+<li>Next: <a href="../latency-optimization/">latency optimization</a>. Back to the <a href="../">deployment cost and performance overview</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <nav class="md-content-nav" aria-label="Page navigation">
+    
+      <a href="../" class="md-content-nav__link md-content-nav__link--previous" aria-label="Previous: Introduction">
+        <span class="md-content-nav__direction">&larr; Previous</span>
+        <span class="md-content-nav__title">Introduction</span>
+      </a>
+    
+    
+      <a href="../latency-optimization/" class="md-content-nav__link md-content-nav__link--next" aria-label="Next: Latency Optimization">
+        <span class="md-content-nav__direction">Next &rarr;</span>
+        <span class="md-content-nav__title">Latency Optimization</span>
+      </a>
+    
+  </nav>
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.prune", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/external-links.js"></script>
+      
+    
+  </body>
+</html>
